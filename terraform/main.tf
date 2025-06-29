@@ -48,7 +48,7 @@ variable "aws_region" {
 # Example: ECR Repository
 module "app_ecr" {
   source = "./modules/ecr"
-  
+
   repository_name = "lifestyle-app"
   environment     = var.environment
   scan_on_push    = true
@@ -57,15 +57,15 @@ module "app_ecr" {
 # Example: DynamoDB Table
 module "main_table" {
   source = "./modules/dynamodb"
-  
+
   table_name  = "main"
   environment = var.environment
-  
+
   hash_key = {
     name = "pk"
     type = "S"
   }
-  
+
   range_key = {
     name = "sk"
     type = "S"
