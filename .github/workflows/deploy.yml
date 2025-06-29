@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  TF_VERSION: 1.7.0
+  TF_VERSION: 1.9.8
 
 permissions:
   id-token: write   # Required for OIDC authentication
@@ -81,7 +81,7 @@ jobs:
             -input=false
 
       - name: Upload Plan
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tfplan-${{ needs.setup.outputs.environment }}-${{ github.sha }}
           path: ./terraform/tfplan
@@ -151,7 +151,7 @@ jobs:
           terraform_wrapper: false  # Disable wrapper to get raw output
 
       - name: Download Plan
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: tfplan-${{ needs.setup.outputs.environment }}-${{ github.sha }}
           path: ./terraform
