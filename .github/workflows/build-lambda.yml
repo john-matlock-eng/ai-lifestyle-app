@@ -19,6 +19,13 @@ on:
         options:
           - dev
           - prod
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/src/**'
+      - 'backend/requirements.txt'
+      - 'backend/Dockerfile.*'
+      - '.github/workflows/build-lambda.yml'
   push:
     branches: [main]
     paths:
@@ -35,7 +42,7 @@ permissions:
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy Lambda
+    name: Build and Deploy Lambda ${{ github.event_name == 'pull_request' && '(dev)' || github.event_name == 'push' && '(prod)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -47,6 +54,9 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
             echo "function_name=${{ github.event.inputs.function_name }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "environment=dev" >> $GITHUB_OUTPUT
+            echo "function_name=api-handler" >> $GITHUB_OUTPUT
           else
             echo "environment=prod" >> $GITHUB_OUTPUT
             echo "function_name=api-handler" >> $GITHUB_OUTPUT
@@ -59,13 +69,19 @@ jobs:
           role-session-name: github-actions-lambda-${{ steps.env.outputs.environment }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+          terraform_wrapper: false
+
       - name: Get ECR Repository URL
         id: ecr
         working-directory: ./backend/terraform
         run: |
           terraform init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="key=backend/${{ steps.env.outputs.environment }}/terraform.tfstate" \
+            -backend-config="key=${{ steps.env.outputs.environment }}/terraform.tfstate" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
           
