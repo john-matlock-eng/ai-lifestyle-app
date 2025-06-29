@@ -69,27 +69,22 @@ jobs:
           role-session-name: github-actions-lambda-${{ steps.env.outputs.environment }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.9.8
-          terraform_wrapper: false
-
       - name: Get ECR Repository URL
         id: ecr
-        working-directory: ./backend/terraform
         run: |
-          terraform init \
-            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="key=${{ steps.env.outputs.environment }}/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}" \
-            -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
+          # Simple approach - construct the ECR URL directly
+          ECR_URL="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lifestyle-app-${{ steps.env.outputs.environment }}"
           
-          ECR_URL=$(terraform output -raw ecr_repository_url || echo "")
-          if [ -z "$ECR_URL" ]; then
-            echo "Error: ECR repository not found. Deploy infrastructure first."
+          # Verify the repository exists
+          if aws ecr describe-repositories --repository-names "lifestyle-app-${{ steps.env.outputs.environment }}" 2>/dev/null; then
+            echo "ECR repository found: lifestyle-app-${{ steps.env.outputs.environment }}"
+          else
+            echo "Error: ECR repository lifestyle-app-${{ steps.env.outputs.environment }} does not exist."
+            echo "Please deploy the infrastructure first using the deploy-backend workflow."
             exit 1
           fi
+          
+          echo "Using ECR URL: $ECR_URL"
           echo "ecr_url=$ECR_URL" >> $GITHUB_OUTPUT
 
       - name: Login to Amazon ECR
