@@ -1,0 +1,64 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Lambda Handler",
+      "type": "python",
+      "request": "launch",
+      "module": "src.main",
+      "args": [],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "ENVIRONMENT": "local",
+        "TABLE_NAME": "test-table",
+        "LOG_LEVEL": "DEBUG",
+        "AWS_REGION": "us-east-1",
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Python: Debug Tests",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v",
+        "-s",
+        "${file}"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "Docker: Lambda API",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-build",
+      "platform": "python",
+      "dockerOptions": {
+        "image": "ai-lifestyle-lambda-api",
+        "ports": [
+          {
+            "containerPort": 8080,
+            "hostPort": 9000
+          }
+        ],
+        "env": {
+          "AWS_ACCESS_KEY_ID": "local",
+          "AWS_SECRET_ACCESS_KEY": "local",
+          "ENVIRONMENT": "local",
+          "TABLE_NAME": "test-table"
+        }
+      }
+    }
+  ]
+}
