@@ -1,11 +1,17 @@
-name: Deploy Infrastructure
+name: Deploy Backend Infrastructure
 
 on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
 
 env:
   AWS_REGION: us-east-1
@@ -19,7 +25,7 @@ permissions:
 jobs:
   # Deploy to dev or prod based on trigger
   deploy:
-    name: Deploy ${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
+    name: Deploy Backend ${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
     runs-on: ubuntu-latest
     environment: ${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
     steps:
@@ -49,27 +55,27 @@ jobs:
 
       - name: Terraform Init
         id: init
-        working-directory: ./terraform
+        working-directory: ./backend/terraform
         run: |
           terraform init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="key=${{ steps.env.outputs.environment }}/terraform.tfstate" \
+            -backend-config="key=backend/${{ steps.env.outputs.environment }}/terraform.tfstate" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
 
       - name: Terraform Format Check
         id: fmt
-        working-directory: ./terraform
+        working-directory: ./backend/terraform
         run: terraform fmt -check
 
       - name: Terraform Validate
         id: validate
-        working-directory: ./terraform
+        working-directory: ./backend/terraform
         run: terraform validate
 
       - name: Terraform Plan
         id: plan
-        working-directory: ./terraform
+        working-directory: ./backend/terraform
         run: |
           terraform plan \
             -var="environment=${{ steps.env.outputs.environment }}" \
@@ -81,7 +87,7 @@ jobs:
       - name: Save Plan Output
         id: show_plan
         if: github.event_name == 'pull_request'
-        working-directory: ./terraform
+        working-directory: ./backend/terraform
         run: |
           PLAN_OUTPUT=$(terraform show -no-color tfplan)
           echo "plan<<EOF" >> $GITHUB_OUTPUT
@@ -101,7 +107,7 @@ jobs:
               ? planOutput.substring(0, 65000) + '\n\n... (truncated)'
               : planOutput;
             
-            const output = `#### Terraform Plan (${{ steps.env.outputs.environment }}) 📖
+            const output = `#### Backend Terraform Plan (${{ steps.env.outputs.environment }}) 📖
             <details><summary>Show Plan</summary>
             
             \`\`\`terraform
@@ -125,32 +131,36 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        working-directory: ./terraform
+        working-directory: ./backend/terraform
         run: terraform apply -auto-approve -input=false tfplan
 
       - name: Get Terraform Outputs
         id: tf_output
-        working-directory: ./terraform
+        working-directory: ./backend/terraform
         run: |
           # Get outputs as JSON for reliability
           OUTPUTS=$(terraform output -json)
           
           # Extract individual outputs if they exist
           if [ ! -z "$OUTPUTS" ] && [ "$OUTPUTS" != "{}" ]; then
-            echo "bucket_name=$(echo $OUTPUTS | jq -r '.bucket_name.value // empty')" >> $GITHUB_OUTPUT
-            echo "bucket_arn=$(echo $OUTPUTS | jq -r '.bucket_arn.value // empty')" >> $GITHUB_OUTPUT
+            echo "ecr_repository_url=$(echo $OUTPUTS | jq -r '.ecr_repository_url.value // empty')" >> $GITHUB_OUTPUT
+            echo "ecr_repository_name=$(echo $OUTPUTS | jq -r '.ecr_repository_name.value // empty')" >> $GITHUB_OUTPUT
+            echo "dynamodb_table_name=$(echo $OUTPUTS | jq -r '.dynamodb_table_name.value // empty')" >> $GITHUB_OUTPUT
+            echo "api_endpoint=$(echo $OUTPUTS | jq -r '.api_endpoint.value // empty')" >> $GITHUB_OUTPUT
           fi
 
       - name: Summary
         run: |
-          echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "### Backend Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Environment**: ${{ steps.env.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**Status**: ✅ Deployed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ ! -z "${{ steps.tf_output.outputs.bucket_name }}" ]; then
-            echo "**S3 Bucket**: ${{ steps.tf_output.outputs.bucket_name }}" >> $GITHUB_STEP_SUMMARY
-            echo "**Bucket ARN**: ${{ steps.tf_output.outputs.bucket_arn }}" >> $GITHUB_STEP_SUMMARY
+          if [ ! -z "${{ steps.tf_output.outputs.ecr_repository_url }}" ]; then
+            echo "**ECR Repository**: ${{ steps.tf_output.outputs.ecr_repository_url }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ ! -z "${{ steps.tf_output.outputs.api_endpoint }}" ]; then
+            echo "**API Endpoint**: ${{ steps.tf_output.outputs.api_endpoint }}" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Comment PR with Deploy Status
@@ -159,12 +169,13 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### ✅ Terraform Apply Complete
+            const output = `#### ✅ Backend Terraform Apply Complete
             
             **Environment**: \`${{ steps.env.outputs.environment }}\`
-            ${`${{ steps.tf_output.outputs.bucket_name }}` ? `**S3 Bucket**: \`${{ steps.tf_output.outputs.bucket_name }}\`` : ''}
+            ${`${{ steps.tf_output.outputs.ecr_repository_url }}` ? `**ECR Repository**: \`${{ steps.tf_output.outputs.ecr_repository_url }}\`` : ''}
+            ${`${{ steps.tf_output.outputs.api_endpoint }}` ? `**API Endpoint**: \`${{ steps.tf_output.outputs.api_endpoint }}\`` : ''}
             
-            The infrastructure has been successfully deployed to the **${{ steps.env.outputs.environment }}** environment.`;
+            The backend infrastructure has been successfully deployed to the **${{ steps.env.outputs.environment }}** environment.`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -179,7 +190,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### ❌ Terraform Deployment Failed
+            const output = `#### ❌ Backend Terraform Deployment Failed
             
             **Environment**: \`${{ steps.env.outputs.environment }}\`
             **Failed Step**: \`${{ steps.init.outcome == 'failure' && 'init' || steps.fmt.outcome == 'failure' && 'format' || steps.validate.outcome == 'failure' && 'validate' || steps.plan.outcome == 'failure' && 'plan' || 'apply' }}\`

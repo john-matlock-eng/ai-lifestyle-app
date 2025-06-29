@@ -1,79 +1,43 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-.pytest_cache/
-.coverage
-*.cover
-.hypothesis/
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-*.tfplan
-.terraform.lock.hcl
-terraform.tfvars
-*.auto.tfvars
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-
-# AWS
-.aws/
-
-# Docker
-.docker/
-
-# IDE
+﻿# IDEs
 .idea/
 .vscode/*
 !.vscode/settings.json
-!.vscode/launch.json
 !.vscode/extensions.json
-!.vscode/tasks.json
+!.vscode/launch.json
 *.swp
 *.swo
 *~
 .DS_Store
-*.code-workspace
 
-# Local development
-.env.local
-.env.*.local
-local/
-tmp/
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.coverage
+.pytest_cache/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.terraform/
+*.tfstate*
+
+# Environment files
+.env
+.env.*
+!.env.example
 
 # Logs
 *.log
 logs/
 
-# Build artifacts
-.build/
-.cache/
+# OS
+.DS_Store
+Thumbs.db
