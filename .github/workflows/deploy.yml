@@ -17,14 +17,16 @@ permissions:
   pull-requests: write  # Required for PR comments
 
 jobs:
-  # Determine environment based on event type
-  setup:
-    name: Setup Environment
+  # Deploy to dev or prod based on trigger
+  deploy:
+    name: Deploy ${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
     runs-on: ubuntu-latest
-    outputs:
-      environment: ${{ steps.env.outputs.environment }}
+    environment: ${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
     steps:
-      - name: Determine Environment
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set Environment
         id: env
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -33,20 +35,11 @@ jobs:
             echo "environment=prod" >> $GITHUB_OUTPUT
           fi
 
-  # Terraform Plan
-  terraform-plan:
-    name: Terraform Plan
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/terraform-deployer-ai-lifestyle
-          role-session-name: github-actions-${{ needs.setup.outputs.environment }}-plan
+          role-session-name: github-actions-${{ steps.env.outputs.environment }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
@@ -55,37 +48,45 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Init
+        id: init
         working-directory: ./terraform
         run: |
           terraform init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="key=${{ needs.setup.outputs.environment }}/terraform.tfstate" \
+            -backend-config="key=${{ steps.env.outputs.environment }}/terraform.tfstate" \
             -backend-config="region=${{ env.AWS_REGION }}" \
             -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
 
       - name: Terraform Format Check
+        id: fmt
         working-directory: ./terraform
         run: terraform fmt -check
 
       - name: Terraform Validate
+        id: validate
         working-directory: ./terraform
         run: terraform validate
 
       - name: Terraform Plan
+        id: plan
         working-directory: ./terraform
         run: |
           terraform plan \
-            -var="environment=${{ needs.setup.outputs.environment }}" \
+            -var="environment=${{ steps.env.outputs.environment }}" \
             -var="aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}" \
             -out=tfplan \
-            -input=false
+            -input=false \
+            -no-color
 
-      - name: Upload Plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan-${{ needs.setup.outputs.environment }}-${{ github.sha }}
-          path: ./terraform/tfplan
-          retention-days: 1
+      - name: Save Plan Output
+        id: show_plan
+        if: github.event_name == 'pull_request'
+        working-directory: ./terraform
+        run: |
+          PLAN_OUTPUT=$(terraform show -no-color tfplan)
+          echo "plan<<EOF" >> $GITHUB_OUTPUT
+          echo "$PLAN_OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Comment PR with Plan
         if: github.event_name == 'pull_request'
@@ -93,20 +94,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { execSync } = require('child_process');
-            
-            // Generate plan output
-            const planOutput = execSync(
-              'terraform show -no-color tfplan', 
-              { cwd: './terraform' }
-            ).toString();
+            const planOutput = `${{ steps.show_plan.outputs.plan }}`;
             
             // Truncate if too long
             const truncatedPlan = planOutput.length > 65000 
               ? planOutput.substring(0, 65000) + '\n\n... (truncated)'
               : planOutput;
             
-            const output = `#### Terraform Plan (${{ needs.setup.outputs.environment }}) 📖
+            const output = `#### Terraform Plan (${{ steps.env.outputs.environment }}) 📖
             <details><summary>Show Plan</summary>
             
             \`\`\`terraform
@@ -115,9 +110,11 @@ jobs:
             
             </details>
             
-            *Environment*: \`${{ needs.setup.outputs.environment }}\`
+            *Environment*: \`${{ steps.env.outputs.environment }}\`
             *Triggered by*: @${{ github.actor }}
-            *Action*: \`${{ github.event_name }}\``;
+            *Action*: \`${{ github.event_name }}\`
+            
+            **Note**: This plan will be automatically applied to the **${{ steps.env.outputs.environment }}** environment.`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -126,46 +123,8 @@ jobs:
               body: output
             });
 
-  # Terraform Apply (only on main branch)
-  terraform-apply:
-    name: Terraform Apply
-    runs-on: ubuntu-latest
-    needs: [setup, terraform-plan]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-terraform-role
-          role-session-name: github-actions-${{ needs.setup.outputs.environment }}-apply
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-          terraform_wrapper: false  # Disable wrapper to get raw output
-
-      - name: Download Plan
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan-${{ needs.setup.outputs.environment }}-${{ github.sha }}
-          path: ./terraform
-
-      - name: Terraform Init
-        working-directory: ./terraform
-        run: |
-          terraform init \
-            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="key=${{ needs.setup.outputs.environment }}/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}" \
-            -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
-
       - name: Terraform Apply
+        id: apply
         working-directory: ./terraform
         run: terraform apply -auto-approve -input=false tfplan
 
@@ -173,15 +132,63 @@ jobs:
         id: tf_output
         working-directory: ./terraform
         run: |
-          echo "bucket_name=$(terraform output -raw bucket_name)" >> $GITHUB_OUTPUT
-          echo "bucket_arn=$(terraform output -raw bucket_arn)" >> $GITHUB_OUTPUT
+          # Get outputs as JSON for reliability
+          OUTPUTS=$(terraform output -json)
+          
+          # Extract individual outputs if they exist
+          if [ ! -z "$OUTPUTS" ] && [ "$OUTPUTS" != "{}" ]; then
+            echo "bucket_name=$(echo $OUTPUTS | jq -r '.bucket_name.value // empty')" >> $GITHUB_OUTPUT
+            echo "bucket_arn=$(echo $OUTPUTS | jq -r '.bucket_arn.value // empty')" >> $GITHUB_OUTPUT
+          fi
 
       - name: Summary
         run: |
           echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment**: ${{ needs.setup.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: ${{ steps.env.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**Status**: ✅ Deployed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**S3 Bucket**: ${{ steps.tf_output.outputs.bucket_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Bucket ARN**: ${{ steps.tf_output.outputs.bucket_arn }}" >> $GITHUB_STEP_SUMMARY
+          if [ ! -z "${{ steps.tf_output.outputs.bucket_name }}" ]; then
+            echo "**S3 Bucket**: ${{ steps.tf_output.outputs.bucket_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Bucket ARN**: ${{ steps.tf_output.outputs.bucket_arn }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Comment PR with Deploy Status
+        if: github.event_name == 'pull_request' && success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### ✅ Terraform Apply Complete
+            
+            **Environment**: \`${{ steps.env.outputs.environment }}\`
+            ${`${{ steps.tf_output.outputs.bucket_name }}` ? `**S3 Bucket**: \`${{ steps.tf_output.outputs.bucket_name }}\`` : ''}
+            
+            The infrastructure has been successfully deployed to the **${{ steps.env.outputs.environment }}** environment.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+      - name: Comment PR with Failure
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### ❌ Terraform Deployment Failed
+            
+            **Environment**: \`${{ steps.env.outputs.environment }}\`
+            **Failed Step**: \`${{ steps.init.outcome == 'failure' && 'init' || steps.fmt.outcome == 'failure' && 'format' || steps.validate.outcome == 'failure' && 'validate' || steps.plan.outcome == 'failure' && 'plan' || 'apply' }}\`
+            
+            Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });

@@ -23,7 +23,7 @@ provider "aws" {
     tags = {
       Environment = var.environment
       ManagedBy   = "terraform"
-      Repository  = "john-matlock-eng/your-repo"
+      Repository  = "john-matlock-eng/ai-lifestyle-app"
     }
   }
 }
