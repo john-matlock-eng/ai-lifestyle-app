@@ -2,14 +2,14 @@
 
 terraform {
   required_version = ">= 1.9.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.82"
     }
   }
-  
+
   backend "s3" {
     # Backend config provided via CLI in GitHub Actions
     encrypt = true
@@ -18,7 +18,7 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-  
+
   default_tags {
     tags = {
       Environment = var.environment
