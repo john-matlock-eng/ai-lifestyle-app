@@ -45,6 +45,18 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "deploy_lambda" {
+  description = "Whether to deploy Lambda functions"
+  type        = bool
+  default     = true
+}
+
+variable "api_handler_image_tag" {
+  description = "Docker image tag for API handler Lambda"
+  type        = string
+  default     = "latest"
+}
+
 # ECR Repository for Lambda images
 module "app_ecr" {
   source = "./modules/ecr"
@@ -106,11 +118,12 @@ module "users_table" {
 
 # Lambda Function for API handling
 module "api_lambda" {
+  count  = var.deploy_lambda ? 1 : 0
   source = "./modules/lambda-ecr"
 
   function_name = "api-handler"
   environment   = var.environment
-  ecr_image_uri = "${module.app_ecr.repository_url}:api-handler-${var.environment}-latest"
+  ecr_image_uri = "${module.app_ecr.repository_url}:${var.api_handler_image_tag}"
 
   environment_variables = {
     ENVIRONMENT          = var.environment
@@ -197,8 +210,12 @@ output "cognito_client_id" {
   value       = module.cognito.user_pool_client_id
 }
 
-# Uncomment when Lambda and API modules are activated
-# output "api_endpoint" {
-#   description = "API Gateway endpoint URL"
-#   value       = module.api.invoke_url
-# }
+output "api_lambda_arn" {
+  description = "API Lambda function ARN"
+  value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].lambda_function_arn : "Not deployed"
+}
+
+output "api_lambda_name" {
+  description = "API Lambda function name"
+  value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].lambda_function_name : "Not deployed"
+}

@@ -1,7 +1,29 @@
 # Dev/Prod Deployment Architecture
 
 ## Overview
-The AI Lifestyle App backend is configured for automatic deployments through GitHub Actions with proper environment isolation between dev and prod.
+The AI Lifestyle App backend uses a phased deployment approach to handle the dependency between infrastructure and Docker images. This ensures resources are created in the correct order.
+
+## Deployment Strategy
+
+### Phased Deployment
+The deployment happens in 3 phases to resolve the chicken-and-egg problem between ECR and Lambda:
+
+1. **Phase 1: Base Infrastructure**
+   - Creates ECR repository, Cognito User Pool, and DynamoDB tables
+   - No Lambda functions deployed yet
+   
+2. **Phase 2: Docker Images**
+   - Builds and pushes Docker images to the ECR repository
+   - Images are tagged with environment and commit SHA
+   
+3. **Phase 3: Lambda Functions**
+   - Deploys Lambda functions using the pushed images
+   - Configures all environment variables and permissions
+
+### GitHub Actions Workflow
+The unified workflow (`deploy-backend-unified.yml`) handles all phases automatically:
+- **Pull Request**: Deploys to `dev` environment
+- **Merge to main**: Deploys to `prod` environment
 
 ## Deployment Flow
 
@@ -29,6 +51,19 @@ The AI Lifestyle App backend is configured for automatic deployments through Git
   - CORS: https://ailifestyle.app only
   - API Endpoint: Will be created by API Gateway module
 
+## Manual Deployment
+
+For local testing or manual deployments:
+
+```bash
+# Deploy to dev environment
+cd backend/scripts
+./deploy-phased.sh dev
+
+# Deploy to prod environment
+./deploy-phased.sh prod $AWS_ACCOUNT_ID
+```
+
 ## Architecture Decisions
 
 ### Single Lambda Approach
@@ -54,16 +89,18 @@ Complete separation between environments:
 
 ## GitHub Actions Workflows
 
-### deploy-backend.yml
-- Deploys Terraform infrastructure
-- Runs on PR (dev) or merge to main (prod)
-- Creates all AWS resources
+### deploy-backend-unified.yml
+The main deployment workflow that:
+1. Deploys base infrastructure with `deploy_lambda=false`
+2. Builds and pushes Docker images to ECR
+3. Deploys Lambda functions with `deploy_lambda=true`
+4. Provides PR comments with deployment status
 
-### build-lambda.yml
-- Builds Docker image
-- Pushes to ECR
-- Updates Lambda function code
-- Runs after infrastructure is deployed
+### Old Workflows (Deprecated)
+- `deploy-backend.yml` - Only handles Terraform
+- `build-lambda.yml` - Only handles Docker/Lambda
+
+These are replaced by the unified workflow.
 
 ## Local Development
 

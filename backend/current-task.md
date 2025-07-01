@@ -12,9 +12,9 @@ Build a complete, production-ready authentication system with 2FA support for de
 **Actual Time**: 3 hours
 
 ## 🔄 Completion Report
-**Status**: ✅ Complete (Updated for GHA compatibility)
+**Status**: ✅ Complete (Updated for GHA compatibility with phased deployment)
 **Date**: 2025-07-01
-**Time Spent**: 4 hours
+**Time Spent**: 5 hours
 
 ### What I Built
 - Lambda function: `backend/src/register_user/`
@@ -57,37 +57,38 @@ Build a complete, production-ready authentication system with 2FA support for de
 - Request ID tracking for debugging
 - Prepared for rate limiting at API Gateway level
 
-### Environment Handling Updates (Hour 4)
+### Environment Handling Updates (Hour 4-5)
 To ensure compatibility with the existing GitHub Actions workflow:
 
-1. **Restructured for Single ECR Repository**
-   - Changed from multiple ECR repos to single `lifestyle-app-{env}` repo
-   - Created `backend/Dockerfile.api-handler` for shared container
-   - Modified to use image tags for different functions
+1. **Initial Approach Issues**
+   - Discovered chicken-and-egg problem: Lambda needs ECR image, but ECR must be created first
+   - Original workflows were separate, causing order-of-operations issues
 
-2. **Created Routing Lambda Handler**
-   - Added `src/main.py` to route requests to appropriate handlers
-   - Supports the workflow's expectation of a single Lambda function
-   - Routes based on API Gateway path and HTTP method
+2. **Solution: Phased Deployment**
+   - Created unified workflow (`deploy-backend-unified.yml`) with 3 phases:
+     - Phase 1: Deploy base infrastructure (ECR, Cognito, DynamoDB)
+     - Phase 2: Build and push Docker images
+     - Phase 3: Deploy Lambda functions with the images
+   - Added `deploy_lambda` variable to Terraform for conditional deployment
+   - Workflow captures outputs between phases for proper dependencies
 
 3. **Updated Terraform Configuration**
-   - Modified `terraform/main.tf` to match workflow expectations
-   - Added Cognito User Pool module
-   - Added users table with EmailIndex GSI
-   - Configured single Lambda with all required environment variables
+   - Modified `terraform/main.tf` with conditional Lambda module
+   - Added variables for phased deployment control
+   - Lambda module uses `count` for conditional creation
    - Environment-specific configuration (dev vs prod)
 
-4. **Environment-Specific Settings**
-   - Log level: DEBUG for dev, INFO for prod
-   - CORS origin: * for dev, https://ailifestyle.app for prod
-   - All resources tagged with environment
+4. **Created Supporting Scripts**
+   - `scripts/deploy-phased.sh` for manual phased deployment
+   - Updated deployment documentation with new approach
 
 ### Dev/Prod Deployment Strategy
-- **Pull Request**: Deploys to `dev` environment
-- **Merge to main**: Deploys to `prod` environment
+- **Pull Request**: Deploys to `dev` environment via unified workflow
+- **Merge to main**: Deploys to `prod` environment via unified workflow
 - Lambda name pattern: `api-handler-{environment}`
-- ECR repository: `lifestyle-app-{environment}`
+- ECR repository: `lifestyle-app-{environment}` 
 - Resources properly isolated by environment
+- Phased deployment ensures correct order of operations
 
 ### Task B2: User Login Endpoint 
 **Status**: Next Up
@@ -349,7 +350,7 @@ Update this section daily:
 - Complete Task B4: Deploy infrastructure to dev environment
 - Create integration tests for registration endpoint
 
-**Key Achievement**: Successfully aligned our implementation with the existing CI/CD pipeline while maintaining clean architecture principles. The system now properly handles dev/prod deployments with complete environment isolation.
+**Key Achievement**: Successfully resolved the infrastructure deployment order-of-operations issue by creating a phased deployment approach. The new unified GitHub Actions workflow ensures resources are created in the correct sequence: infrastructure → Docker images → Lambda functions. This maintains clean architecture while working within AWS constraints.
 
 ## 💡 Implementation Notes
 - Use `boto3` for AWS service calls
