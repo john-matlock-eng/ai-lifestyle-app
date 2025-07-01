@@ -1,0 +1,920 @@
+openapi: 3.0.3
+info:
+  title: AI Lifestyle App API
+  description: |
+    API for the AI Lifestyle App - a comprehensive lifestyle management platform
+    covering nutrition, fitness, wellness, and daily routines.
+  version: 1.0.0
+  contact:
+    name: AI Lifestyle Team
+    email: support@ailifestyle.app
+
+servers:
+  - url: https://api.ailifestyle.app/v1
+    description: Production server
+  - url: https://staging-api.ailifestyle.app/v1
+    description: Staging server
+  - url: http://localhost:4000/v1
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the API
+      operationId: getHealthStatus
+      security: []
+      tags:
+        - System
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # Authentication Endpoints
+  /auth/register:
+    post:
+      summary: Register new user
+      description: |
+        Creates a new user account with email and password.
+        Sends a verification email upon successful registration.
+      operationId: registerUser
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              newUser:
+                summary: New user registration
+                value:
+                  email: "user@example.com"
+                  password: "SecureP@ss123"
+                  firstName: "Jane"
+                  lastName: "Doe"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Invalid registration data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: User login
+      description: |
+        Authenticates user with email and password.
+        Returns JWT tokens for API access.
+      operationId: loginUser
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many login attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      description: Uses refresh token to obtain new access token
+      operationId: refreshToken
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # User Profile Endpoints
+  /users/profile:
+    get:
+      summary: Get current user profile
+      description: Returns the authenticated user's profile information
+      operationId: getUserProfile
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update user profile
+      description: Updates the authenticated user's profile information
+      operationId: updateUserProfile
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Invalid profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # 2FA Endpoints
+  /auth/mfa/setup:
+    post:
+      summary: Setup 2FA for user
+      description: |
+        Generates TOTP secret and QR code for 2FA setup.
+        User must verify with a code to complete setup.
+      operationId: setupMfa
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: MFA setup initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaSetupResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: MFA already enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/mfa/verify-setup:
+    post:
+      summary: Verify 2FA setup
+      description: Confirms 2FA setup with user-provided TOTP code
+      operationId: verifyMfaSetup
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyMfaSetupRequest'
+      responses:
+        '200':
+          description: MFA successfully enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaStatusResponse'
+        '400':
+          description: Invalid verification code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/mfa/verify:
+    post:
+      summary: Verify 2FA code during login
+      description: Completes login flow with 2FA verification
+      operationId: verifyMfa
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyMfaRequest'
+      responses:
+        '200':
+          description: MFA verification successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid MFA code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid session or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/mfa/disable:
+    post:
+      summary: Disable 2FA
+      description: Removes 2FA from user account after password verification
+      operationId: disableMfa
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisableMfaRequest'
+      responses:
+        '200':
+          description: MFA successfully disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaStatusResponse'
+        '400':
+          description: Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Password Reset Endpoints
+  /auth/password/reset-request:
+    post:
+      summary: Request password reset
+      description: Sends password reset email to user
+      operationId: requestPasswordReset
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Reset email sent if email exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '429':
+          description: Too many reset attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/password/reset-confirm:
+    post:
+      summary: Confirm password reset
+      description: Resets password using token from email
+      operationId: confirmPasswordReset
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+      responses:
+        '200':
+          description: Password successfully reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/email/verify:
+    post:
+      summary: Verify email address
+      description: Confirms email ownership using verification token
+      operationId: verifyEmail
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationRequest'
+      responses:
+        '200':
+          description: Email successfully verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from Cognito
+
+  schemas:
+    # System Schemas
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - version
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        services:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [connected, disconnected]
+            cache:
+              type: string
+              enum: [connected, disconnected]
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Error type/code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+        request_id:
+          type: string
+          description: Unique request identifier for debugging
+        timestamp:
+          type: string
+          format: date-time
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+        - validation_errors
+      properties:
+        error:
+          type: string
+          enum: [VALIDATION_ERROR]
+        message:
+          type: string
+          default: "Validation failed"
+        validation_errors:
+          type: array
+          items:
+            type: object
+            required:
+              - field
+              - message
+            properties:
+              field:
+                type: string
+                description: Field that failed validation
+              message:
+                type: string
+                description: Validation error message
+        request_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    # Authentication Schemas
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Strong password with at least 8 characters
+          example: "SecureP@ss123"
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+          description: User's first name
+          example: "Jane"
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+          description: User's last name
+          example: "Doe"
+
+    RegisterResponse:
+      type: object
+      required:
+        - userId
+        - email
+        - message
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: Newly created user ID
+        email:
+          type: string
+          format: email
+          description: Registered email address
+        message:
+          type: string
+          description: Success message
+          example: "Registration successful. Please check your email to verify your account."
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          format: password
+          description: User's password
+
+    LoginResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - tokenType
+        - expiresIn
+        - user
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token for API calls
+        refreshToken:
+          type: string
+          description: JWT refresh token for getting new access tokens
+        tokenType:
+          type: string
+          enum: [Bearer]
+          description: Token type for Authorization header
+        expiresIn:
+          type: integer
+          description: Access token expiration time in seconds
+          example: 3600
+        user:
+          $ref: '#/components/schemas/UserProfile'
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          description: Valid refresh token
+
+    RefreshTokenResponse:
+      type: object
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Access token expiration time in seconds
+
+    # User Profile Schemas
+    UserProfile:
+      type: object
+      required:
+        - userId
+        - email
+        - firstName
+        - lastName
+        - createdAt
+        - updatedAt
+        - emailVerified
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: Unique user identifier
+        email:
+          type: string
+          format: email
+          description: User's email address
+        firstName:
+          type: string
+          description: User's first name
+        lastName:
+          type: string
+          description: User's last name
+        emailVerified:
+          type: boolean
+          description: Whether email is verified
+        mfaEnabled:
+          type: boolean
+          description: Whether 2FA is enabled
+          default: false
+        phoneNumber:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+        phoneNumber:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+        dateOfBirth:
+          type: string
+          format: date
+        timezone:
+          type: string
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+
+    UserPreferences:
+      type: object
+      properties:
+        units:
+          type: string
+          enum: [metric, imperial]
+          default: metric
+          description: Measurement unit preference
+        language:
+          type: string
+          pattern: '^[a-z]{2}(-[A-Z]{2})?$'
+          default: en-US
+          description: Language preference (ISO 639-1)
+        notifications:
+          type: object
+          properties:
+            email:
+              type: boolean
+              default: true
+            push:
+              type: boolean
+              default: true
+            sms:
+              type: boolean
+              default: false
+        dietaryRestrictions:
+          type: array
+          items:
+            type: string
+            enum: [vegan, vegetarian, gluten-free, dairy-free, nut-free, halal, kosher]
+        fitnessGoals:
+          type: array
+          items:
+            type: string
+            enum: [weight-loss, muscle-gain, endurance, flexibility, general-health]
+
+    # Common Schemas
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        sort:
+          type: string
+          pattern: '^[a-zA-Z_]+:(asc|desc)$'
+          example: 'created_at:desc'
+
+    PaginatedResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          required:
+            - page
+            - limit
+            - total
+            - pages
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Auth
+    description: Authentication and user management
+  - name: Nutrition
+    description: Meal tracking and nutrition management
+  - name: Fitness
+    description: Workout tracking and fitness goals
+  - name: Wellness
+    description: Wellness tracking and recommendations
+  - name: Routines
+    description: Daily routine management
+          description: User's phone number (E.164 format)
+        dateOfBirth:
+          type: string
+          format: date
+          description: User's date of birth
+        timezone:
+          type: string
+          description: User's timezone (IANA format)
+          example: "America/New_York"
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+        phoneNumber:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+        dateOfBirth:
+          type: string
+          format: date
+        timezone:
+          type: string
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+
+    UserPreferences:
+      type: object
+      properties:
+        units:
+          type: string
+          enum: [metric, imperial]
+          default: metric
+          description: Measurement unit preference
+        language:
+          type: string
+          pattern: '^[a-z]{2}(-[A-Z]{2})?$'
+          default: en-US
+          description: Language preference (ISO 639-1)
+        notifications:
+          type: object
+          properties:
+            email:
+              type: boolean
+              default: true
+            push:
+              type: boolean
+              default: true
+            sms:
+              type: boolean
+              default: false
+        dietaryRestrictions:
+          type: array
+          items:
+            type: string
+            enum: [vegan, vegetarian, gluten-free, dairy-free, nut-free, halal, kosher]
+        fitnessGoals:
+          type: array
+          items:
+            type: string
+            enum: [weight-loss, muscle-gain, endurance, flexibility, general-health]
+
+    # Common Schemas
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        sort:
+          type: string
+          pattern: '^[a-zA-Z_]+:(asc|desc)$'
+          example: 'created_at:desc'
+
+    PaginatedResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          required:
+            - page
+            - limit
+            - total
+            - pages
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Auth
+    description: Authentication and user management
+  - name: Nutrition
+    description: Meal tracking and nutrition management
+  - name: Fitness
+    description: Workout tracking and fitness goals
+  - name: Wellness
+    description: Wellness tracking and recommendations
+  - name: Routines
+    description: Daily routine management

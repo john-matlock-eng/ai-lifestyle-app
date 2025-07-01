@@ -45,7 +45,7 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-# Example: ECR Repository
+# ECR Repository for Lambda images
 module "app_ecr" {
   source = "./modules/ecr"
 
@@ -54,11 +54,25 @@ module "app_ecr" {
   scan_on_push    = true
 }
 
-# Example: DynamoDB Table
-module "main_table" {
+# Cognito User Pool for authentication
+module "cognito" {
+  source = "./modules/cognito"
+
+  project              = "ai-lifestyle"
+  project_display_name = "AI Lifestyle App"
+  environment          = var.environment
+  use_ses_for_email   = false
+
+  tags = {
+    Service = "auth"
+  }
+}
+
+# DynamoDB Tables
+module "users_table" {
   source = "./modules/dynamodb"
 
-  table_name  = "main"
+  table_name  = "users"
   environment = var.environment
 
   hash_key = {
@@ -70,24 +84,48 @@ module "main_table" {
     name = "sk"
     type = "S"
   }
+
+  global_secondary_indexes = [{
+    name            = "EmailIndex"
+    hash_key        = "gsi1_pk"
+    range_key       = "gsi1_sk"
+    projection_type = "ALL"
+  }]
+
+  additional_attributes = [
+    {
+      name = "gsi1_pk"
+      type = "S"
+    },
+    {
+      name = "gsi1_sk"
+      type = "S"
+    }
+  ]
 }
 
-# Example: Lambda Function (after ECR image is pushed)
-# module "api_lambda" {
-#   source = "./modules/lambda-ecr"
-#   
-#   function_name = "api-handler"
-#   environment   = var.environment
-#   ecr_image_uri = "${module.app_ecr.repository_url}:latest"
-#   
-#   environment_variables = {
-#     TABLE_NAME = module.main_table.table_name
-#   }
-#   
-#   additional_policies = [
-#     module.main_table.access_policy_arn
-#   ]
-# }
+# Lambda Function for API handling
+module "api_lambda" {
+  source = "./modules/lambda-ecr"
+  
+  function_name = "api-handler"
+  environment   = var.environment
+  ecr_image_uri = "${module.app_ecr.repository_url}:api-handler-${var.environment}-latest"
+  
+  environment_variables = {
+    ENVIRONMENT           = var.environment
+    LOG_LEVEL            = var.environment == "prod" ? "INFO" : "DEBUG"
+    COGNITO_USER_POOL_ID = module.cognito.user_pool_id
+    COGNITO_CLIENT_ID    = module.cognito.user_pool_client_id
+    USERS_TABLE_NAME     = module.users_table.table_name
+    CORS_ORIGIN         = var.environment == "prod" ? "https://ailifestyle.app" : "*"
+  }
+  
+  additional_policies = [
+    module.users_table.access_policy_arn,
+    aws_iam_policy.cognito_access.arn
+  ]
+}
 
 # Example: API Gateway (after Lambda is created)
 # module "api" {
@@ -105,6 +143,34 @@ module "main_table" {
 #   }
 # }
 
+# IAM Policy for Cognito access
+resource "aws_iam_policy" "cognito_access" {
+  name        = "ai-lifestyle-cognito-access-${var.environment}"
+  description = "Policy for Lambda to access Cognito User Pool"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cognito-idp:AdminCreateUser",
+          "cognito-idp:AdminSetUserPassword",
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminUpdateUserAttributes",
+          "cognito-idp:AdminUserGlobalSignOut",
+          "cognito-idp:AdminDeleteUser",
+          "cognito-idp:AdminInitiateAuth",
+          "cognito-idp:AdminRespondToAuthChallenge"
+        ]
+        Resource = module.cognito.user_pool_arn
+      }
+    ]
+  })
+}
+
+# Policy ARN will be referenced directly from the resource
+
 # Outputs
 output "ecr_repository_url" {
   description = "ECR repository URL for pushing images"
@@ -117,13 +183,18 @@ output "ecr_repository_name" {
 }
 
 output "dynamodb_table_name" {
-  description = "DynamoDB table name"
-  value       = module.main_table.table_name
+  description = "DynamoDB users table name"
+  value       = module.users_table.table_name
 }
 
-output "dynamodb_access_policy_arn" {
-  description = "IAM policy ARN for DynamoDB access"
-  value       = module.main_table.access_policy_arn
+output "cognito_user_pool_id" {
+  description = "Cognito User Pool ID"
+  value       = module.cognito.user_pool_id
+}
+
+output "cognito_client_id" {
+  description = "Cognito User Pool Client ID"
+  value       = module.cognito.user_pool_client_id
 }
 
 # Uncomment when Lambda and API modules are activated

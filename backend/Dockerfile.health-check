@@ -1,19 +1,12 @@
-FROM public.ecr.aws/lambda/python:3.11-arm64
+# Health check Lambda
+FROM public.ecr.aws/lambda/python:3.11
 
-# Install dependencies
+# Copy requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy health check handler
 COPY src/health.py ${LAMBDA_TASK_ROOT}/
 
-# Optional: Install additional tools for debugging in dev
-ARG ENVIRONMENT=prod
-RUN if [ "$ENVIRONMENT" = "dev" ]; then pip install ipdb pytest; fi
-
-# Set environment variables
-ENV PYTHONPATH=${LAMBDA_TASK_ROOT}
-ENV LOG_LEVEL=INFO
-
-# Command to run the Lambda handler
+# Set the handler
 CMD ["health.handler"]

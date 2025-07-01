@@ -101,9 +101,8 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: |
-            ${{ steps.ecr.outputs.ecr_url }}:latest
-            ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-latest
             ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-${{ github.sha }}
+            ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-${{ steps.env.outputs.environment }}-${{ github.sha }}
           build-args: |
             ENVIRONMENT=${{ steps.env.outputs.environment }}
           cache-from: type=gha
@@ -119,7 +118,7 @@ jobs:
             echo "Updating Lambda function $LAMBDA_NAME..."
             aws lambda update-function-code \
               --function-name $LAMBDA_NAME \
-              --image-uri ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-latest
+              --image-uri ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-${{ github.sha }}
             
             # Wait for update to complete
             aws lambda wait function-updated \

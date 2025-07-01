@@ -14,6 +14,7 @@ locals {
     [var.hash_key],
     var.range_key != null ? [var.range_key] : [],
     var.attributes,
+    var.additional_attributes,
     [for idx in var.global_secondary_indexes : { name = idx.hash_key, type = "" }],
     [for idx in var.global_secondary_indexes : { name = idx.range_key, type = "" } if idx.range_key != null],
     [for idx in var.local_secondary_indexes : { name = idx.range_key, type = "" }]
