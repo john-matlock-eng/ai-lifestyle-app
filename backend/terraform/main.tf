@@ -61,7 +61,7 @@ module "cognito" {
   project              = "ai-lifestyle"
   project_display_name = "AI Lifestyle App"
   environment          = var.environment
-  use_ses_for_email   = false
+  use_ses_for_email    = false
 
   tags = {
     Service = "auth"
@@ -107,20 +107,20 @@ module "users_table" {
 # Lambda Function for API handling
 module "api_lambda" {
   source = "./modules/lambda-ecr"
-  
+
   function_name = "api-handler"
   environment   = var.environment
   ecr_image_uri = "${module.app_ecr.repository_url}:api-handler-${var.environment}-latest"
-  
+
   environment_variables = {
-    ENVIRONMENT           = var.environment
+    ENVIRONMENT          = var.environment
     LOG_LEVEL            = var.environment == "prod" ? "INFO" : "DEBUG"
     COGNITO_USER_POOL_ID = module.cognito.user_pool_id
     COGNITO_CLIENT_ID    = module.cognito.user_pool_client_id
     USERS_TABLE_NAME     = module.users_table.table_name
-    CORS_ORIGIN         = var.environment == "prod" ? "https://ailifestyle.app" : "*"
+    CORS_ORIGIN          = var.environment == "prod" ? "https://ailifestyle.app" : "*"
   }
-  
+
   additional_policies = [
     module.users_table.access_policy_arn,
     aws_iam_policy.cognito_access.arn
