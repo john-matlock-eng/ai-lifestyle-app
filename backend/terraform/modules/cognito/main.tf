@@ -78,9 +78,11 @@ resource "aws_cognito_user_pool" "main" {
 
   # Verification message template
   verification_message_template {
-    default_email_option = "CONFIRM_WITH_LINK"
+    default_email_option = "CONFIRM_WITH_CODE"
     email_subject       = "Verify your email for ${var.project_display_name}"
-    email_message       = "Please click the link below to verify your email address. {##Verify Email##}"
+    email_message       = "Your verification code for ${var.project_display_name} is {####}"
+    email_message_by_link = "Please click the link below to verify your email address for ${var.project_display_name}: {##Verify Email##}"
+    sms_message         = "Your verification code for ${var.project_display_name} is {####}"
   }
 
   # Device tracking
