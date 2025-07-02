@@ -15,6 +15,7 @@ from login_user.handler import lambda_handler as login_user_handler
 from debug import handler as debug_handler
 from refresh_token.handler import lambda_handler as refresh_token_handler
 from get_user_profile.handler import lambda_handler as get_user_profile_handler
+from verify_email.handler import lambda_handler as verify_email_handler
 # Future imports:
 # from update_user_profile.handler import lambda_handler as update_user_profile_handler
 
@@ -76,6 +77,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "GET /debug": debug_handler,  # Debug endpoint to inspect events
         "POST /auth/refresh": refresh_token_handler,
         "GET /users/profile": get_user_profile_handler,
+        "POST /auth/email/verify": verify_email_handler,
         # "PUT /users/profile": update_user_profile_handler,
     }
     
