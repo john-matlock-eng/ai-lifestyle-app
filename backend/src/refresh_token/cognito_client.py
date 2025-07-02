@@ -96,6 +96,14 @@ class CognitoClient:
                 # For refresh token flow, we use the refresh token itself as the username
                 auth_params['SECRET_HASH'] = self._calculate_secret_hash(refresh_token)
             
+            logger.info(
+                "Initiating token refresh",
+                extra={
+                    "has_secret": bool(self.client_secret),
+                    "token_length": len(refresh_token)
+                }
+            )
+            
             # Initiate auth flow
             response = self.client.initiate_auth(
                 ClientId=self.client_id,
