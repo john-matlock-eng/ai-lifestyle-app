@@ -37,7 +37,7 @@ metrics = Metrics(namespace="AILifestyleApp")
 logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
 
 
-@logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
+@logger.inject_lambda_context
 @tracer.capture_lambda_handler
 @metrics.log_metrics(capture_cold_start_metric=True)
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -51,19 +51,34 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     Returns:
         API Gateway Lambda proxy response
     """
+    # Debug: Log the raw event
+    logger.info("Raw event received", extra={"event_keys": list(event.keys())})
+    
     request_id = str(uuid4())
     logger.append_keys(request_id=request_id)
     
+    # Add registration attempt metric
+    metrics.add_metric(name="RegistrationAttempts", unit=MetricUnit.Count, value=1)
+    
     try:
+        # Get source IP - handle both v1 and v2 formats
+        source_ip = None
+        if "requestContext" in event:
+            if "http" in event["requestContext"]:  # v2 format
+                source_ip = event["requestContext"]["http"].get("sourceIp")
+            elif "identity" in event["requestContext"]:  # v1 format
+                source_ip = event["requestContext"]["identity"].get("sourceIp")
+        
         # Log incoming request (without sensitive data)
         logger.info("Processing registration request", extra={
             "path": event.get("path"),
             "method": event.get("httpMethod"),
-            "source_ip": event.get("requestContext", {}).get("identity", {}).get("sourceIp")
+            "source_ip": source_ip
         })
         
         # Parse and validate request body
         body = json.loads(event.get("body", "{}"))
+        logger.info("Parsed request body", extra={"body_keys": list(body.keys())})
         
         try:
             request = RegisterRequest(**body)
@@ -162,14 +177,27 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             "headers": get_response_headers(),
             "body": response.model_dump_json()
         }
+    
+    # This should never be reached, but just in case
+    logger.error("Handler reached end without returning a response")
+    return {
+        "statusCode": 500,
+        "headers": get_response_headers(),
+        "body": json.dumps({"error": "INTERNAL_ERROR", "message": "No response generated"})
+    }
 
 
 def get_response_headers() -> Dict[str, str]:
     """Get standard response headers"""
+    try:
+        correlation_id = logger.get_correlation_id() or ""
+    except:
+        correlation_id = ""
+        
     return {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": os.environ.get("CORS_ORIGIN", "*"),
         "Access-Control-Allow-Headers": "Content-Type,Authorization",
         "Access-Control-Allow-Methods": "POST,OPTIONS",
-        "X-Request-ID": logger.get_correlation_id() or ""
+        "X-Request-ID": correlation_id
     }

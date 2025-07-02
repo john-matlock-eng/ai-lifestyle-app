@@ -37,7 +37,7 @@ USERS_TABLE_NAME = os.environ.get('USERS_TABLE_NAME')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')
 
 
-@logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
+@logger.inject_lambda_context
 @tracer.capture_lambda_handler
 @metrics.log_metrics
 def lambda_handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:

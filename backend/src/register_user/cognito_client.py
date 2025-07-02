@@ -17,8 +17,17 @@ class CognitoClient:
     
     def __init__(self):
         self.client = boto3.client('cognito-idp')
-        self.user_pool_id = os.environ['COGNITO_USER_POOL_ID']
-        self.client_id = os.environ['COGNITO_CLIENT_ID']
+        
+        # Get required environment variables
+        self.user_pool_id = os.environ.get('COGNITO_USER_POOL_ID')
+        self.client_id = os.environ.get('COGNITO_CLIENT_ID')
+        
+        if not self.user_pool_id or not self.client_id:
+            raise ValueError(
+                "Missing required environment variables: "
+                f"COGNITO_USER_POOL_ID={self.user_pool_id}, "
+                f"COGNITO_CLIENT_ID={self.client_id}"
+            )
         
     def create_user(
         self,
