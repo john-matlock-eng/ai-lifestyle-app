@@ -118,14 +118,17 @@ class CognitoClient:
                     "has_id_token": bool(auth_result.get('IdToken')),
                     "access_token_length": len(auth_result.get('AccessToken', '')),
                     "refresh_token_length": len(auth_result.get('RefreshToken', '')),
-                    "tokens_are_same": auth_result.get('AccessToken') == auth_result.get('RefreshToken')
+                    "id_token_length": len(auth_result.get('IdToken', '')),
+                    "tokens_are_same": auth_result.get('AccessToken') == auth_result.get('RefreshToken'),
+                    "refresh_equals_id": auth_result.get('RefreshToken') == auth_result.get('IdToken'),
+                    "access_equals_id": auth_result.get('AccessToken') == auth_result.get('IdToken')
                 }
             )
             
             return {
                 'accessToken': auth_result['AccessToken'],
-                'refreshToken': auth_result['RefreshToken'],
-                'idToken': auth_result['IdToken'],
+                'refreshToken': auth_result['RefreshToken'],  # This should be the refresh token
+                'idToken': auth_result['IdToken'],  # This should be the ID token
                 'expiresIn': auth_result['ExpiresIn'],
                 'tokenType': auth_result['TokenType']
             }

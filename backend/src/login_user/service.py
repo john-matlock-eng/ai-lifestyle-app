@@ -169,6 +169,19 @@ class LoginService:
             )
             
             # Build login response
+            # Add debug logging for token investigation
+            logger.info(
+                "Building login response with tokens",
+                extra={
+                    "access_token_length": len(auth_result.get('accessToken', '')),
+                    "refresh_token_length": len(auth_result.get('refreshToken', '')),
+                    "id_token_length": len(auth_result.get('idToken', '')),
+                    "refresh_token_preview": auth_result.get('refreshToken', '')[:50] + '...',
+                    "has_dots_in_refresh": '.' in auth_result.get('refreshToken', ''),
+                    "dot_count": auth_result.get('refreshToken', '').count('.')
+                }
+            )
+            
             login_response = LoginResponse(
                 accessToken=auth_result['accessToken'],
                 refreshToken=auth_result['refreshToken'],
