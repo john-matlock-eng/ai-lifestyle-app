@@ -160,6 +160,11 @@ module "api_gateway" {
       authorization_type = "NONE"
     }
     
+    # Debug endpoint (temporary)
+    "GET /debug" = {
+      authorization_type = "NONE"
+    }
+    
     # Authentication endpoints (public)
     "POST /auth/register" = {
       authorization_type = "NONE"
