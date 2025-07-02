@@ -12,6 +12,7 @@ from uuid import uuid4
 from aws_lambda_powertools import Logger, Metrics, Tracer
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.metrics import MetricUnit
+from aws_lambda_powertools.metrics.base import MetricResolution
 from pydantic import ValidationError as PydanticValidationError
 
 from .errors import (
@@ -39,7 +40,7 @@ logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
 
 @logger.inject_lambda_context
 @tracer.capture_lambda_handler
-@metrics.log_metrics(capture_cold_start_metric=True)
+@metrics.log_metrics(capture_cold_start_metric=True, raise_on_empty_metrics=False)
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     Lambda handler for user registration.
@@ -51,6 +52,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     Returns:
         API Gateway Lambda proxy response
     """
+    print("=== REGISTRATION HANDLER START ===")
+    
     # Debug: Log the raw event
     logger.info("Raw event received", extra={"event_keys": list(event.keys())})
     
@@ -59,6 +62,30 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     # Add registration attempt metric
     metrics.add_metric(name="RegistrationAttempts", unit=MetricUnit.Count, value=1)
+    
+    # Wrap everything in a try-catch to ensure we always return a response
+    try:
+        result = _handle_registration(event, context, request_id)
+        print(f"=== REGISTRATION HANDLER END - Returning status: {result.get('statusCode', 'unknown')} ===")
+        return result
+    except Exception as e:
+        logger.error("Unhandled exception in handler wrapper", exc_info=True, extra={
+            "error_type": type(e).__name__,
+            "error_message": str(e)
+        })
+        return {
+            "statusCode": 500,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({
+                "error": "INTERNAL_ERROR",
+                "message": "An unexpected error occurred",
+                "request_id": request_id
+            })
+        }
+
+
+def _handle_registration(event: Dict[str, Any], context: Any, request_id: str) -> Dict[str, Any]:
+    """Internal function to handle registration logic"""
     
     try:
         # Get source IP - handle both v1 and v2 formats
@@ -82,7 +109,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         try:
             request = RegisterRequest(**body)
+            logger.info("RegisterRequest created successfully", extra={"email": request.email})
         except PydanticValidationError as e:
+            logger.error("Pydantic validation failed", extra={"errors": e.errors()})
             # Convert Pydantic validation errors to our format
             validation_errors = []
             for error in e.errors():
@@ -99,14 +128,31 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 request_id=request_id
             )
             
-            return {
+            response_body = response.model_dump_json()
+            result = {
                 "statusCode": 400,
                 "headers": get_response_headers(),
-                "body": response.model_dump_json()
+                "body": response_body
             }
+            logger.info("Returning validation error response", extra={
+                "status_code": 400,
+                "validation_errors_count": len(validation_errors)
+            })
+            return result
         
         # Process registration
-        service = RegistrationService()
+        logger.info("Creating RegistrationService")
+        try:
+            service = RegistrationService()
+            logger.info("RegistrationService created successfully")
+        except Exception as e:
+            logger.error("Failed to create RegistrationService", exc_info=True, extra={
+                "error_type": type(e).__name__,
+                "error_message": str(e)
+            })
+            raise
+            
+        logger.info("Calling register_user")
         result = service.register_user(request)
         
         # Track successful registration metric
