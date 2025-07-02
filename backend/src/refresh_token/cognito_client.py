@@ -91,10 +91,9 @@ class CognitoClient:
                 'REFRESH_TOKEN': refresh_token
             }
             
-            # Add secret hash if client has a secret
-            if self.client_secret:
-                # For refresh token flow, we use the refresh token itself as the username
-                auth_params['SECRET_HASH'] = self._calculate_secret_hash(refresh_token)
+            # IMPORTANT: For REFRESH_TOKEN_AUTH flow, we should NOT include SECRET_HASH
+            # when the app client doesn't have a secret. The Terraform config shows
+            # generate_secret = false, so we should not calculate or send a secret hash.
             
             logger.info(
                 "Initiating token refresh",
@@ -163,9 +162,20 @@ class CognitoClient:
                         "The refresh token has been revoked.",
                         details={"cognito_error": error_code}
                     )
+                elif 'Invalid Refresh Token' in error_message:
+                    # This is the error we're seeing - provide more context
+                    raise InvalidTokenError(
+                        "The refresh token is invalid. This may occur if the token is malformed, "
+                        "from a different user pool, or if there's a client configuration mismatch.",
+                        details={
+                            "cognito_error": error_code,
+                            "client_id": self.client_id,
+                            "hint": "Ensure the refresh token is from the same client and user pool"
+                        }
+                    )
                 else:
                     raise InvalidTokenError(
-                        "The refresh token is invalid or malformed.",
+                        f"Authentication failed: {error_message}",
                         details={"cognito_error": error_code}
                     )
             

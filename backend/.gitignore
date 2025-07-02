@@ -11,3 +11,14 @@ venv/
 *.tfstate*
 .terraform.lock.hcl
 *.tfplan
+
+# Backup files
+*.bak
+*.backup
+
+# PowerShell scripts (use GitHub Actions instead)
+*.ps1
+
+# Temporary fix files
+*_fixed.py
+cognito_client_fixed.py
