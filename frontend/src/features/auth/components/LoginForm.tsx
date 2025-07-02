@@ -49,9 +49,9 @@ const LoginForm: React.FC = () => {
         setMfaSession({ sessionToken: data.sessionToken });
         setShowMfa(true);
       } else {
-        // Login successful - refresh user data and redirect
-        // The tokens are already stored by authService
-        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        // Login successful - tokens are already stored by authService
+        // Note: User profile endpoint not available yet, so we can't fetch user data
+        queryClient.setQueryData(['currentUser'], data.user); // Store user data from login response
         navigate('/dashboard', { replace: true });
       }
     },
@@ -79,9 +79,8 @@ const LoginForm: React.FC = () => {
     mutationFn: ({ sessionToken, code }: { sessionToken: string; code: string }) =>
       authService.verifyMfa(sessionToken, code),
     onSuccess: (data) => {
-      // MFA verification successful
-      // The tokens are stored by authService
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      // MFA verification successful - tokens are stored by authService
+      queryClient.setQueryData(['currentUser'], data.user); // Store user data from login response
       navigate('/dashboard', { replace: true });
     },
     onError: (error) => {

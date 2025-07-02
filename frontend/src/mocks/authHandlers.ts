@@ -53,18 +53,77 @@ const saveUsers = () => {
 };
 
 export const authHandlers = [
-  // Health check endpoint
-  http.get(`${API_URL}/health`, () => {
+  // TEMPORARY: Mock endpoints that aren't deployed yet
+  // These will help with local development until backend deploys them
+  
+  // Get user profile - MOCK ONLY (not on AWS yet)
+  http.get(`${API_URL}/users/profile`, ({ request }) => {
+    const authHeader = request.headers.get('Authorization');
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        {
+          error: 'UNAUTHORIZED',
+          message: 'Missing or invalid authorization token',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 }
+      );
+    }
+
+    // Return mock user profile
     return HttpResponse.json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      version: '1.0.0',
-      services: {
-        database: 'connected',
-        cache: 'connected'
-      }
+      userId: 'mock-user-id',
+      email: 'user@example.com',
+      firstName: 'John',
+      lastName: 'Doe',
+      emailVerified: true,
+      mfaEnabled: false,
+      preferences: {
+        dietaryRestrictions: [],
+        fitnessGoals: []
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
   }),
+
+  // Refresh token endpoint - MOCK ONLY (not on AWS yet)
+  http.post(`${API_URL}/auth/refresh`, async ({ request }) => {
+    const body = await request.json() as any;
+
+    if (!body.refreshToken || !body.refreshToken.startsWith('mock-refresh-token-')) {
+      return HttpResponse.json(
+        {
+          error: 'INVALID_TOKEN',
+          message: 'Invalid refresh token',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 }
+      );
+    }
+
+    // Generate new access token
+    const accessToken = `mock-access-token-${crypto.randomUUID()}`;
+
+    return HttpResponse.json({
+      accessToken,
+      tokenType: 'Bearer',
+      expiresIn: 3600,
+    });
+  }),
+  // Health check endpoint - NOW ON AWS
+  // http.get(`${API_URL}/health`, () => {
+  //   return HttpResponse.json({
+  //     status: 'healthy',
+  //     timestamp: new Date().toISOString(),
+  //     version: '1.0.0',
+  //     services: {
+  //       database: 'connected',
+  //       cache: 'connected'
+  //     }
+  //   });
+  // }),
 
   // Utility endpoint to clear mock data (for testing)
   http.delete(`${API_URL}/test/clear-users`, () => {
@@ -99,8 +158,8 @@ export const authHandlers = [
     return HttpResponse.json({ message: 'Mock data reset' });
   }),
 
-  // Register endpoint
-  http.post(`${API_URL}/auth/register`, async ({ request }) => {
+  // Register endpoint - NOW ON AWS
+  /* http.post(`${API_URL}/auth/register`, async ({ request }) => {
     console.log('[MSW] Intercepting registration request');
     const body = await request.json() as any;
 
@@ -155,10 +214,10 @@ export const authHandlers = [
       },
       { status: 201 }
     );
-  }),
+  }), */
 
-  // Login endpoint
-  http.post(`${API_URL}/auth/login`, async ({ request }) => {
+  // Login endpoint - NOW ON AWS
+  /* http.post(`${API_URL}/auth/login`, async ({ request }) => {
     console.log('[MSW] Intercepting login request');
     const body = await request.json() as any;
 
@@ -199,7 +258,7 @@ export const authHandlers = [
       expiresIn: 3600,
       user: userProfile,
     });
-  }),
+  }), */
 
   // MFA verification endpoint
   http.post(`${API_URL}/auth/mfa/verify`, async ({ request }) => {
@@ -273,8 +332,8 @@ export const authHandlers = [
     });
   }),
 
-  // Get user profile
-  http.get(`${API_URL}/users/profile`, ({ request }) => {
+  // Get user profile - NOW ON AWS
+  /* http.get(`${API_URL}/users/profile`, ({ request }) => {
     const authHeader = request.headers.get('Authorization');
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -299,10 +358,10 @@ export const authHandlers = [
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
-  }),
+  }), */
 
-  // Refresh token endpoint
-  http.post(`${API_URL}/auth/refresh`, async ({ request }) => {
+  // Refresh token endpoint - NOW ON AWS
+  /* http.post(`${API_URL}/auth/refresh`, async ({ request }) => {
     const body = await request.json() as any;
 
     if (!body.refreshToken || !body.refreshToken.startsWith('mock-refresh-token-')) {
@@ -324,5 +383,5 @@ export const authHandlers = [
       tokenType: 'Bearer',
       expiresIn: 3600,
     });
-  }),
+  }), */
 ];

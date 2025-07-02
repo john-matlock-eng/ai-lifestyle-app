@@ -3,6 +3,29 @@
 ## Overview
 Serverless backend for the AI Lifestyle App built with AWS Lambda, API Gateway, Cognito, and DynamoDB.
 
+## 🚀 Current Status
+
+### ✅ Implemented & Working
+- **Health Check**: `GET /health`
+- **User Registration**: `POST /auth/register`
+- **User Login**: `POST /auth/login` (JWT tokens, MFA detection)
+
+### 🔄 Next Priority
+- **Token Refresh**: `POST /auth/refresh`
+- **Email Verification**: `POST /auth/verify-email`
+- **User Profile**: `GET /users/profile`
+
+### 📋 Planned
+- MFA/2FA verification endpoints
+- Password reset flow
+- User profile management
+- Account deletion
+
+### 🔗 API Documentation
+- **Base URL**: `https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com`
+- **Full Docs**: See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+- **OpenAPI Contract**: See [../contract/openapi.yaml](../contract/openapi.yaml)
+
 ## Architecture
 - **Language**: Python 3.11
 - **Framework**: AWS Lambda with API Gateway
@@ -70,15 +93,28 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment information.
 
 ## API Endpoints
 
-### Authentication
-- `POST /auth/register` - User registration
-- `POST /auth/login` - User login (coming soon)
-- `POST /auth/refresh` - Refresh token (coming soon)
-- `GET /users/profile` - Get user profile (coming soon)
-- `PUT /users/profile` - Update profile (coming soon)
-
 ### System
-- `GET /health` - Health check
+- `GET /health` - Health check ✅
+
+### Authentication
+- `POST /auth/register` - User registration ✅
+- `POST /auth/login` - User login ✅
+- `POST /auth/refresh` - Refresh token 🔄 (in progress)
+- `POST /auth/logout` - Logout 📋 (planned)
+- `POST /auth/verify-email` - Email verification 🔄 (in progress)
+- `POST /auth/password/reset` - Request password reset 📋 (planned)
+- `POST /auth/password/confirm` - Confirm password reset 📋 (planned)
+
+### User Management
+- `GET /users/profile` - Get user profile 🔄 (in progress)
+- `PUT /users/profile` - Update profile 📋 (planned)
+- `DELETE /users/profile` - Delete account 📋 (planned)
+
+### MFA/2FA
+- `POST /auth/mfa/setup` - Setup MFA 📋 (planned)
+- `POST /auth/mfa/verify-setup` - Verify MFA setup 📋 (planned)
+- `POST /auth/mfa/verify` - Verify MFA code 📋 (planned)
+- `DELETE /auth/mfa` - Disable MFA 📋 (planned)
 
 ## Environment Variables
 All Lambda functions use these environment variables:
