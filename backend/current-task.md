@@ -339,11 +339,17 @@ Update this section daily:
   - Created routing Lambda handler for multiple endpoints
   - Added proper environment separation (dev/prod)
   - Created deployment documentation
+- [x] **Resolved deployment issues**
+  - Fixed Terraform output attribute names for Lambda module
+  - Created phased deployment solution for ECR/Lambda dependencies
+  - Documented IAM permissions needed for Cognito
+  - Set deploy_lambda=false by default for initial deployment
 
 **In Progress**:
-- [ ] Task B4: Infrastructure setup (Terraform modules created, ready for deployment)
+- [ ] Task B4: Infrastructure setup (Terraform modules created, waiting for IAM permissions)
 
-**Blockers**: None
+**Blockers**: 
+- [ ] IAM permissions needed for Cognito User Pool creation (see `terraform/iam-policy-terraform-deployer.md`)
 
 **Tomorrow's Plan**:
 - Start Task B2: Login endpoint implementation

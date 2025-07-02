@@ -46,9 +46,9 @@ variable "aws_region" {
 }
 
 variable "deploy_lambda" {
-  description = "Whether to deploy Lambda functions"
+  description = "Whether to deploy Lambda functions (set to false for initial deployment)"
   type        = bool
-  default     = true
+  default     = false  # Start with false for phased deployment
 }
 
 variable "api_handler_image_tag" {
@@ -212,10 +212,10 @@ output "cognito_client_id" {
 
 output "api_lambda_arn" {
   description = "API Lambda function ARN"
-  value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].lambda_function_arn : "Not deployed"
+  value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_arn : "Not deployed"
 }
 
 output "api_lambda_name" {
   description = "API Lambda function name"
-  value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].lambda_function_name : "Not deployed"
+  value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_name : "Not deployed"
 }
