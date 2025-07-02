@@ -8,6 +8,7 @@ import os
 from typing import Any, Dict
 
 # Import all endpoint handlers
+from register_user.minimal_handler import lambda_handler as register_user_handler_minimal
 from register_user.handler import lambda_handler as register_user_handler
 from health import handler as health_check_handler
 from login_user.handler import lambda_handler as login_user_handler
@@ -59,6 +60,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     routes = {
         "GET /health": health_check_handler,
         "POST /auth/register": register_user_handler,
+        "POST /auth/register-test": register_user_handler_minimal,  # Test minimal handler
         "POST /auth/login": login_user_handler,
         "GET /debug": debug_handler,  # Debug endpoint to inspect events
         # "POST /auth/refresh": refresh_token_handler,
@@ -76,7 +78,10 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             event["httpMethod"] = http_method
             event["path"] = path
             
-        return handler(event, context)
+        print(f"Calling handler for route: {route_key}")
+        response = handler(event, context)
+        print(f"Handler returned response with status: {response.get('statusCode', 'unknown')}")
+        return response
     else:
         # Return 404 for unmatched routes
         request_id = None

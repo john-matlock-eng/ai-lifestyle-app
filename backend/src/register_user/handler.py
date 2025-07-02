@@ -60,11 +60,11 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     request_id = str(uuid4())
     logger.append_keys(request_id=request_id)
     
-    # Add registration attempt metric
-    metrics.add_metric(name="RegistrationAttempts", unit=MetricUnit.Count, value=1)
-    
     # Wrap everything in a try-catch to ensure we always return a response
     try:
+        # Add registration attempt metric inside try block
+        metrics.add_metric(name="RegistrationAttempts", unit=MetricUnit.Count, value=1)
+        
         result = _handle_registration(event, context, request_id)
         print(f"=== REGISTRATION HANDLER END - Returning status: {result.get('statusCode', 'unknown')} ===")
         return result

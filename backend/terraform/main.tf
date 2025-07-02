@@ -169,6 +169,9 @@ module "api_gateway" {
     "POST /auth/register" = {
       authorization_type = "NONE"
     }
+    "POST /auth/register-test" = {
+      authorization_type = "NONE"
+    }
     "POST /auth/login" = {
       authorization_type = "NONE"
     }
