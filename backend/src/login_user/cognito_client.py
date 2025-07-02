@@ -108,6 +108,20 @@ class CognitoClient:
                     
             # Successful authentication without MFA
             auth_result = response['AuthenticationResult']
+            
+            # Debug logging to verify tokens
+            logger.info(
+                "Authentication successful - token details",
+                extra={
+                    "has_access_token": bool(auth_result.get('AccessToken')),
+                    "has_refresh_token": bool(auth_result.get('RefreshToken')),
+                    "has_id_token": bool(auth_result.get('IdToken')),
+                    "access_token_length": len(auth_result.get('AccessToken', '')),
+                    "refresh_token_length": len(auth_result.get('RefreshToken', '')),
+                    "tokens_are_same": auth_result.get('AccessToken') == auth_result.get('RefreshToken')
+                }
+            )
+            
             return {
                 'accessToken': auth_result['AccessToken'],
                 'refreshToken': auth_result['RefreshToken'],
