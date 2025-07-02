@@ -798,16 +798,45 @@ Update this section daily:
   - Updated Cognito client to gracefully skip failed login tracking
   - Fixed timestamp parsing issues in the service layer
   - Made login handler more robust
+- [x] Fixed DynamoDB schema mismatch issue
+  - Login was failing with "Query condition missed key schema element: gsi1_pk"
+  - Registration uses `gsi1_pk = EMAIL#{email}` pattern
+  - Login was trying to query by `email` directly
+  - Updated login repository to match registration schema
 
 **Login Endpoint Fix Details**:
 1. **Issue**: Login was failing with generic "LOGIN_ERROR"
-2. **Root Cause**: 
+2. **Root Causes**: 
    - Cognito User Pool missing custom attributes (failed_login_attempts, last_failed_login)
-   - Cannot add attributes to existing Cognito User Pool
-3. **Solution**:
+   - DynamoDB query using wrong key schema
+   - Field name mismatch (snake_case vs camelCase)
+3. **Solutions**:
    - Modified `update_failed_login_attempts` and `reset_failed_login_attempts` to skip gracefully
    - Added robust timestamp parsing to handle different date formats
-   - Maintained all other security features
+   - Fixed DynamoDB queries to use correct key patterns:
+     - Query by email: `gsi1_pk = EMAIL#{email}`
+     - Get by ID: `pk = USER#{user_id}`, `sk = USER#{user_id}`
+   - Added field mapping in `_deserialize_user` to convert snake_case to camelCase
+
+**DynamoDB Schema Fix**:
+```python
+# Old (incorrect):
+KeyConditionExpression=Key('email').eq(email)
+Key={'userId': user_id}
+
+# New (correct):
+KeyConditionExpression=Key('gsi1_pk').eq(f'EMAIL#{email}')
+Key={'pk': f'USER#{user_id}', 'sk': f'USER#{user_id}'}
+```
+
+**Field Mapping Added**:
+- user_id → userId
+- first_name → firstName  
+- last_name → lastName
+- email_verified → emailVerified
+- mfa_enabled → mfaEnabled
+- created_at → createdAt
+- updated_at → updatedAt
 
 **Updated Terraform for Future Deployments**:
 - Added custom attributes to Cognito User Pool schema
@@ -823,6 +852,49 @@ Update this section daily:
 1. Deploy the fixed login handler
 2. Test end-to-end authentication flow
 3. Implement Task B3: Token refresh endpoint
+
+### Troubleshooting Login Test Failures
+
+If the login tests are failing with null responses or no status codes:
+
+1. **Run diagnostics first**:
+   ```powershell
+   .\diagnose-api.ps1
+   ```
+   This will check:
+   - DNS resolution
+   - Lambda function status
+   - Recent Lambda logs
+   - API Gateway configuration
+   - Basic connectivity
+   - ECR image status
+
+2. **Quick API health check**:
+   ```powershell
+   .\test-api-quick.ps1
+   ```
+
+3. **Deploy the updated Lambda** (if needed):
+   ```powershell
+   .\deploy-login-fix.ps1
+   ```
+
+4. **After deployment, test login**:
+   ```powershell
+   .\test-login-fixed.ps1
+   ```
+
+Common issues:
+- Lambda not deployed or in error state
+- API Gateway routes not configured
+- ECR image not pushed
+- AWS credentials not configured
+
+## API Configuration
+
+- **API URL**: `https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com`
+- **API Gateway ID**: `3sfkg1mc0c`
+- **AWS Region**: `us-east-1`
 
 ## 💡 Implementation Notes
 - Use `boto3` for AWS service calls

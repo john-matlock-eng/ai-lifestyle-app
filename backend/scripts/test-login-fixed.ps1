@@ -1,7 +1,7 @@
 # Test login endpoint after fixes
 # This script tests that login works with the updated handler
 
-$API_URL = "https://lifestyle-api-dev.john-ai.com"
+$API_URL = "https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com"
 
 Write-Host "=== Testing Login After Fixes ===" -ForegroundColor Green
 
@@ -22,13 +22,13 @@ try {
         -ContentType "application/json" `
         -ErrorAction Stop
     
-    Write-Host "`n✅ Login successful!" -ForegroundColor Green
+    Write-Host "`n[SUCCESS] Login successful!" -ForegroundColor Green
     Write-Host "Response:" -ForegroundColor Gray
     $response | ConvertTo-Json -Depth 10 | Write-Host
     
     # Check if we got tokens
     if ($response.accessToken -and $response.refreshToken) {
-        Write-Host "`n✅ Received JWT tokens!" -ForegroundColor Green
+        Write-Host "`n[SUCCESS] Received JWT tokens!" -ForegroundColor Green
         Write-Host "Token Type: $($response.tokenType)" -ForegroundColor Gray
         Write-Host "Expires In: $($response.expiresIn) seconds" -ForegroundColor Gray
         
@@ -45,13 +45,28 @@ try {
     
 } catch {
     $statusCode = $_.Exception.Response.StatusCode.value__
-    Write-Host "`n❌ Login failed: $statusCode" -ForegroundColor Red
+    Write-Host "`n[ERROR] Login failed: $statusCode" -ForegroundColor Red
     
-    try {
-        $errorBody = $_.ErrorDetails.Message | ConvertFrom-Json
-        $errorBody | ConvertTo-Json -Depth 10 | Write-Host
-    } catch {
-        Write-Host $_.ErrorDetails.Message
+    # Try different ways to get error details
+    if ($_.ErrorDetails.Message) {
+        try {
+            $errorBody = $_.ErrorDetails.Message | ConvertFrom-Json
+            $errorBody | ConvertTo-Json -Depth 10 | Write-Host
+        } catch {
+            Write-Host "Raw error: $($_.ErrorDetails.Message)" -ForegroundColor Gray
+        }
+    } elseif ($_.Exception.Response) {
+        # Try to read the response stream
+        try {
+            $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+            $reader.BaseStream.Position = 0
+            $responseBody = $reader.ReadToEnd()
+            Write-Host "Response body: $responseBody" -ForegroundColor Gray
+        } catch {
+            Write-Host "Could not read response body" -ForegroundColor Gray
+        }
+    } else {
+        Write-Host "Full error: $_" -ForegroundColor Gray
     }
 }
 
@@ -68,21 +83,24 @@ try {
         -ContentType "application/json" `
         -ErrorAction Stop
     
-    Write-Host "❌ Unexpected success!" -ForegroundColor Red
+    Write-Host "[ERROR] Unexpected success!" -ForegroundColor Red
     
 } catch {
     $statusCode = $_.Exception.Response.StatusCode.value__
     if ($statusCode -eq 401) {
-        Write-Host "✅ Correctly rejected with 401 Unauthorized!" -ForegroundColor Green
+        Write-Host "[SUCCESS] Correctly rejected with 401 Unauthorized!" -ForegroundColor Green
         
         try {
             $errorBody = $_.ErrorDetails.Message | ConvertFrom-Json
             if ($errorBody.error -eq "INVALID_CREDENTIALS") {
-                Write-Host "✅ Correct error code: INVALID_CREDENTIALS" -ForegroundColor Green
+                Write-Host "[SUCCESS] Correct error code: INVALID_CREDENTIALS" -ForegroundColor Green
             }
         } catch {}
     } else {
-        Write-Host "❌ Unexpected status code: $statusCode" -ForegroundColor Red
+        Write-Host "[ERROR] Unexpected status code: $statusCode" -ForegroundColor Red
+        if ($_.ErrorDetails.Message) {
+            Write-Host "Error: $($_.ErrorDetails.Message)" -ForegroundColor Gray
+        }
     }
 }
 
@@ -99,14 +117,17 @@ try {
         -ContentType "application/json" `
         -ErrorAction Stop
     
-    Write-Host "❌ Unexpected success!" -ForegroundColor Red
+    Write-Host "[ERROR] Unexpected success!" -ForegroundColor Red
     
 } catch {
     $statusCode = $_.Exception.Response.StatusCode.value__
     if ($statusCode -eq 401) {
-        Write-Host "✅ Correctly rejected with 401 Unauthorized!" -ForegroundColor Green
+        Write-Host "[SUCCESS] Correctly rejected with 401 Unauthorized!" -ForegroundColor Green
     } else {
-        Write-Host "❌ Unexpected status code: $statusCode" -ForegroundColor Red
+        Write-Host "[ERROR] Unexpected status code: $statusCode" -ForegroundColor Red
+        if ($_.ErrorDetails.Message) {
+            Write-Host "Error: $($_.ErrorDetails.Message)" -ForegroundColor Gray
+        }
     }
 }
 

@@ -228,7 +228,7 @@ function Test-UserRegistration {
                 email     = "test.user.$timestamp@example.com"
                 password  = "TestPassword123!"
                 firstName = "Test"
-                lastName  = "User$timestamp"
+                lastName  = "User"
             }
             Write-Info "`nRegistering user: $($user.email)"
         }

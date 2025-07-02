@@ -41,7 +41,7 @@ class UserRepository:
         try:
             response = self.table.query(
                 IndexName='EmailIndex',
-                KeyConditionExpression=Key('email').eq(email),
+                KeyConditionExpression=Key('gsi1_pk').eq(f'EMAIL#{email}'),
                 Limit=1
             )
             
@@ -76,7 +76,10 @@ class UserRepository:
         """
         try:
             response = self.table.get_item(
-                Key={'userId': user_id}
+                Key={
+                    'pk': f'USER#{user_id}',
+                    'sk': f'USER#{user_id}'
+                }
             )
             
             if 'Item' in response:
@@ -106,8 +109,11 @@ class UserRepository:
         """
         try:
             self.table.update_item(
-                Key={'userId': user_id},
-                UpdateExpression='SET lastLogin = :timestamp, updatedAt = :timestamp',
+                Key={
+                    'pk': f'USER#{user_id}',
+                    'sk': f'USER#{user_id}'
+                },
+                UpdateExpression='SET last_login = :timestamp, updated_at = :timestamp',
                 ExpressionAttributeValues={
                     ':timestamp': login_timestamp.isoformat()
                 }
@@ -185,4 +191,23 @@ class UserRepository:
                 return [convert_decimal(i) for i in obj]
             return obj
         
-        return convert_decimal(item)
+        # Convert snake_case to camelCase and map fields
+        user_data = {
+            'userId': item.get('user_id'),
+            'email': item.get('email'),
+            'firstName': item.get('first_name'),
+            'lastName': item.get('last_name'),
+            'emailVerified': item.get('email_verified', False),
+            'mfaEnabled': item.get('mfa_enabled', False),
+            'phoneNumber': item.get('phone_number'),
+            'dateOfBirth': item.get('date_of_birth'),
+            'timezone': item.get('timezone'),
+            'preferences': item.get('preferences'),
+            'createdAt': item.get('created_at'),
+            'updatedAt': item.get('updated_at'),
+            'lastLogin': item.get('last_login')
+        }
+        
+        # Remove None values and convert decimals
+        user_data = {k: v for k, v in user_data.items() if v is not None}
+        return convert_decimal(user_data)
