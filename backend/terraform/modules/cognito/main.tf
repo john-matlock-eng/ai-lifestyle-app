@@ -78,7 +78,7 @@ resource "aws_cognito_user_pool" "main" {
   
   # Custom attributes for security tracking
   schema {
-    name                     = "failed_login_attempts"
+    name                     = "failed_login_count"
     attribute_data_type     = "Number"
     required                = false
     mutable                 = true
