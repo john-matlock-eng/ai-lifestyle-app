@@ -140,21 +140,80 @@ module "api_lambda" {
   ]
 }
 
-# Example: API Gateway (after Lambda is created)
-# module "api" {
-#   source = "./modules/api-gateway"
-#   
-#   api_name    = "lifestyle"
-#   environment = var.environment
-#   
-#   routes = {
-#     "/health" = {
-#       method               = "GET"
-#       lambda_invoke_arn    = module.api_lambda.invoke_arn
-#       lambda_function_name = module.api_lambda.function_name
-#     }
-#   }
-# }
+# API Gateway
+module "api_gateway" {
+  source = "./modules/api-gateway"
+  
+  api_name             = "ai-lifestyle"
+  environment          = var.environment
+  description          = "AI Lifestyle App API Gateway"
+  
+  lambda_function_name = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_name : ""
+  lambda_invoke_arn    = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].invoke_arn : ""
+  
+  cors_origins = var.environment == "prod" ? ["https://ailifestyle.app"] : ["*"]
+  
+  # Define all routes
+  routes = {
+    # Health check
+    "GET /health" = {
+      authorization_type = "NONE"
+    }
+    
+    # Authentication endpoints (public)
+    "POST /auth/register" = {
+      authorization_type = "NONE"
+    }
+    "POST /auth/login" = {
+      authorization_type = "NONE"
+    }
+    "POST /auth/refresh" = {
+      authorization_type = "NONE"
+    }
+    "POST /auth/password/reset-request" = {
+      authorization_type = "NONE"
+    }
+    "POST /auth/password/reset-confirm" = {
+      authorization_type = "NONE"
+    }
+    "POST /auth/email/verify" = {
+      authorization_type = "NONE"
+    }
+    
+    # User endpoints (will need auth later)
+    "GET /users/profile" = {
+      authorization_type = "NONE"  # TODO: Change to JWT
+    }
+    "PUT /users/profile" = {
+      authorization_type = "NONE"  # TODO: Change to JWT
+    }
+    
+    # 2FA endpoints (will need auth later)
+    "POST /auth/mfa/setup" = {
+      authorization_type = "NONE"  # TODO: Change to JWT
+    }
+    "POST /auth/mfa/verify-setup" = {
+      authorization_type = "NONE"  # TODO: Change to JWT
+    }
+    "POST /auth/mfa/verify" = {
+      authorization_type = "NONE"
+    }
+    "POST /auth/mfa/disable" = {
+      authorization_type = "NONE"  # TODO: Change to JWT
+    }
+  }
+  
+  # JWT authorizer configuration (for future use)
+  enable_jwt_authorizer = false  # TODO: Enable when ready
+  jwt_issuer           = "https://cognito-idp.${var.aws_region}.amazonaws.com/${module.cognito.user_pool_id}"
+  jwt_audience         = [module.cognito.user_pool_client_id]
+  
+  tags = {
+    Service = "api"
+  }
+  
+  depends_on = [module.api_lambda]
+}
 
 # IAM Policy for Cognito access
 resource "aws_iam_policy" "cognito_access" {
@@ -215,7 +274,12 @@ output "api_lambda_arn" {
   value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_arn : "Not deployed"
 }
 
-output "api_lambda_name" {
-  description = "API Lambda function name"
-  value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_name : "Not deployed"
+output "api_endpoint" {
+  description = "API Gateway endpoint URL"
+  value       = module.api_gateway.api_endpoint
+}
+
+output "api_id" {
+  description = "API Gateway ID"
+  value       = module.api_gateway.api_id
 }
