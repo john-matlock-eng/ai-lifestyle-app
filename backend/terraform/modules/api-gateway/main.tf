@@ -22,7 +22,7 @@ resource "aws_apigatewayv2_api" "this" {
     allow_headers     = ["*"]
     expose_headers    = ["*"]
     max_age           = 86400
-    allow_credentials = true
+    allow_credentials = var.cors_origins[0] != "*" ? true : false
   }
 
   tags = local.tags
