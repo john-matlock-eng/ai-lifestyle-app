@@ -59,11 +59,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const lastActivityRef = useRef<number>(Date.now());
 
   // Check if user has a valid token on mount
-  // TEMPORARILY DISABLED: /users/profile endpoint not deployed yet
   const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
     queryKey: ['currentUser'],
     queryFn: authService.getCurrentUser,
-    enabled: false, // DISABLED until endpoint is deployed
+    enabled: !!getAccessToken() && isInitialized,
     retry: (failureCount, error: any) => {
       // Only retry on network errors, not auth errors
       if (error?.response?.status === 401) return false;
@@ -210,13 +209,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const handleTokenRefresh = useCallback(async () => {
-    // TEMPORARILY DISABLED: /auth/refresh endpoint not deployed yet
-    console.warn('Token refresh attempted but endpoint not available');
-    // For now, just logout when token expires
-    logout('timeout');
-    return;
-    
-    /* Original code - restore when endpoint is deployed
     try {
       const newToken = await refreshAccessToken();
       if (newToken) {
@@ -237,8 +229,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Token refresh failed:', error);
       logout('timeout');
     }
-    */
-  }, [queryClient, logout]);
+  }, [queryClient]);
 
   // Monitor for authentication changes
   useEffect(() => {
@@ -307,9 +298,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [stopSessionManagement]);
 
-  // TEMPORARY: Since user profile endpoint is not available, just check for token
-  const isAuthenticated = !!getAccessToken() && isInitialized;
-  const isLoading = !isInitialized;
+  const isAuthenticated = !!user && !!getAccessToken();
+  const isLoading = !isInitialized || isLoadingUser;
 
   const value: AuthContextValue = {
     user: user || null,

@@ -53,65 +53,6 @@ const saveUsers = () => {
 };
 
 export const authHandlers = [
-  // TEMPORARY: Mock endpoints that aren't deployed yet
-  // These will help with local development until backend deploys them
-  
-  // Get user profile - MOCK ONLY (not on AWS yet)
-  http.get(`${API_URL}/users/profile`, ({ request }) => {
-    const authHeader = request.headers.get('Authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return HttpResponse.json(
-        {
-          error: 'UNAUTHORIZED',
-          message: 'Missing or invalid authorization token',
-          timestamp: new Date().toISOString(),
-        },
-        { status: 401 }
-      );
-    }
-
-    // Return mock user profile
-    return HttpResponse.json({
-      userId: 'mock-user-id',
-      email: 'user@example.com',
-      firstName: 'John',
-      lastName: 'Doe',
-      emailVerified: true,
-      mfaEnabled: false,
-      preferences: {
-        dietaryRestrictions: [],
-        fitnessGoals: []
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-  }),
-
-  // Refresh token endpoint - MOCK ONLY (not on AWS yet)
-  http.post(`${API_URL}/auth/refresh`, async ({ request }) => {
-    const body = await request.json() as any;
-
-    if (!body.refreshToken || !body.refreshToken.startsWith('mock-refresh-token-')) {
-      return HttpResponse.json(
-        {
-          error: 'INVALID_TOKEN',
-          message: 'Invalid refresh token',
-          timestamp: new Date().toISOString(),
-        },
-        { status: 401 }
-      );
-    }
-
-    // Generate new access token
-    const accessToken = `mock-access-token-${crypto.randomUUID()}`;
-
-    return HttpResponse.json({
-      accessToken,
-      tokenType: 'Bearer',
-      expiresIn: 3600,
-    });
-  }),
   // Health check endpoint - NOW ON AWS
   // http.get(`${API_URL}/health`, () => {
   //   return HttpResponse.json({

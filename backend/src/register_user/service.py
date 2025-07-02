@@ -84,14 +84,16 @@ class RegistrationService:
                 email_verified=False,
                 mfa_enabled=False,
                 created_at=now,
-                updated_at=now
+                updated_at=now,
+                # Additional fields for email GSI
+                gsi1_pk=f"EMAIL#{request.email}",
+                gsi1_sk=f"EMAIL#{request.email}"
             )
             
             self.user_repository.create_user(dynamodb_user)
             
-            # Step 3: Send verification email
-            logger.info("Sending verification email")
-            self.cognito_client.send_verification_email(str(user_id))
+            # Step 3: Verification email is sent automatically by Cognito sign_up
+            logger.info("Verification email sent automatically by Cognito")
             
             logger.info(f"Successfully registered user: {user_id}")
             

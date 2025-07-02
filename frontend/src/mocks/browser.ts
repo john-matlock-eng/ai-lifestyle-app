@@ -25,11 +25,11 @@ export async function startMockServiceWorker() {
     console.log('  - GET /health');
     console.log('  - POST /auth/register');
     console.log('  - POST /auth/login');
-    console.log('[MSW] ⚠️ Mock-Only Endpoints (Not on AWS yet):');
     console.log('  - GET /users/profile');
     console.log('  - POST /auth/refresh');
+    console.log('[MSW] ⚠️ Mock-Only Endpoints (Not on AWS yet):');
     console.log('  - POST /auth/mfa/verify');
-    console.log('[MSW] Test accounts for local development:');
+    console.log('[MSW] Test accounts for local development (MFA testing only):');
     console.log('  - user@example.com / ExistingP@ss123 (no MFA)');
     console.log('  - mfa@example.com / MfaUserP@ss123 (MFA enabled)');
     
