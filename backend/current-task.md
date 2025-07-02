@@ -349,7 +349,15 @@ Update this section daily:
 - [ ] Task B4: Infrastructure setup (Terraform modules created, waiting for IAM permissions)
 
 **Blockers**: 
-- [ ] IAM permissions needed for Cognito User Pool creation (see `terraform/iam-policy-terraform-deployer.md`)
+- [x] ~~IAM permissions needed for Cognito User Pool creation~~ (Partially resolved)
+- [ ] IAM permission needed: `iam:ListInstanceProfilesForRole`
+- [x] Docker images need to be built and pushed to ECR (see DEPLOYMENT_STATUS.md)
+
+**Current State**:
+- ECR repository created successfully ✅
+- DynamoDB table created successfully ✅
+- Lambda function waiting for Docker images 🔄
+- Cognito status unknown (check if IAM permissions were added)
 
 **Tomorrow's Plan**:
 - Start Task B2: Login endpoint implementation
