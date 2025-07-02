@@ -17,7 +17,8 @@ class RegisterRequest(BaseModel):
         min_length=8,
         max_length=128,
         description="Strong password with at least 8 characters",
-        example="SecureP@ss123"
+        example="SecureP@ss123",
+        repr=False  # Exclude from string representation
     )
     firstName: str = Field(
         ...,
@@ -49,6 +50,12 @@ class RegisterRequest(BaseModel):
         if not any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in v):
             raise ValueError("Password must contain at least one special character")
         return v
+    
+    class Config:
+        # Hide password in any JSON serialization for logging
+        json_encoders = {
+            str: lambda v: "<redacted>" if "password" in str(v).lower() else v
+        }
 
 
 class RegisterResponse(BaseModel):

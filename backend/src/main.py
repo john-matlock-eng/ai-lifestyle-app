@@ -30,8 +30,19 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     Returns:
         API Gateway Lambda proxy response
     """
-    # Log the incoming event for debugging
-    print(f"Incoming event: {json.dumps(event)}")
+    # Log the incoming event for debugging (sanitized)
+    # Never log the body which may contain passwords
+    sanitized_event = {
+        "httpMethod": event.get("httpMethod"),
+        "path": event.get("path"),
+        "headers": "<redacted>",
+        "requestContext": {
+            "requestId": event.get("requestContext", {}).get("requestId"),
+            "accountId": event.get("requestContext", {}).get("accountId"),
+            "stage": event.get("requestContext", {}).get("stage")
+        } if "requestContext" in event else None
+    }
+    print(f"Incoming request: {json.dumps(sanitized_event)}")
     
     # Try to extract HTTP method and path for both v1 and v2 formats
     # API Gateway v2 (HTTP API) format

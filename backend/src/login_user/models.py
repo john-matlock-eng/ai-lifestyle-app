@@ -20,8 +20,15 @@ class LoginRequest(BaseModel):
         ...,
         description="User's password",
         min_length=1,  # Just ensure it's not empty
-        max_length=128
+        max_length=128,
+        repr=False  # Exclude from string representation
     )
+    
+    class Config:
+        # Hide password in any JSON serialization for logging
+        json_encoders = {
+            str: lambda v: "<redacted>" if "password" in str(v).lower() else v
+        }
 
 
 class UserProfile(BaseModel):

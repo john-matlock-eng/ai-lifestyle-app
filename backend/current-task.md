@@ -849,9 +849,24 @@ Key={'pk': f'USER#{user_id}', 'sk': f'USER#{user_id}'}
 - ⏳ Token refresh endpoint - Next to implement
 
 **Next Steps**:
-1. Deploy the fixed login handler
+1. Deploy the fixed login handler and logging security fixes
 2. Test end-to-end authentication flow
-3. Implement Task B3: Token refresh endpoint
+3. Verify no passwords appear in CloudWatch logs
+4. Implement Task B3: Token refresh endpoint
+
+### Logging Security Fixes Applied
+**Date**: 2025-07-02
+**Issue**: Passwords were being logged in the main router
+**Fix**: 
+- Updated `main.py` to sanitize events before logging
+- Added `repr=False` to password fields in Pydantic models
+- Created script to check for password logging issues
+- Only log necessary metadata, never request bodies
+
+**Files Updated**:
+- `/src/main.py` - Sanitized event logging
+- `/src/login_user/models.py` - Protected password field
+- `/src/register_user/models.py` - Protected password field
 
 ### Troubleshooting Login Test Failures
 
