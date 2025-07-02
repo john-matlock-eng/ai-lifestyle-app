@@ -74,7 +74,7 @@ def handler(event, context):
             "dynamodb": dynamodb_status
         },
         "system": system_info,
-        "request_id": context.request_id
+        "request_id": context.aws_request_id
     }
     
     return {
