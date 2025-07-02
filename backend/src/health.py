@@ -10,7 +10,7 @@ from aws_lambda_powertools.metrics import MetricUnit
 
 logger = Logger()
 tracer = Tracer()
-metrics = Metrics()
+metrics = Metrics(namespace="AILifestyleApp")
 
 # Environment variables
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')

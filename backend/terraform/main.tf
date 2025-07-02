@@ -238,7 +238,9 @@ resource "aws_iam_policy" "cognito_access" {
           "cognito-idp:AdminUserGlobalSignOut",
           "cognito-idp:AdminDeleteUser",
           "cognito-idp:AdminInitiateAuth",
-          "cognito-idp:AdminRespondToAuthChallenge"
+          "cognito-idp:AdminRespondToAuthChallenge",
+          "cognito-idp:InitiateAuth",
+          "cognito-idp:GetUser"
         ]
         Resource = module.cognito.user_pool_arn
       }

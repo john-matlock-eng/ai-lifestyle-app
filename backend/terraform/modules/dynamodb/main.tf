@@ -113,6 +113,7 @@ data "aws_iam_policy_document" "table_access" {
     effect = "Allow"
     
     actions = [
+      "dynamodb:DescribeTable",
       "dynamodb:GetItem",
       "dynamodb:PutItem",
       "dynamodb:UpdateItem",

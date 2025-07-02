@@ -27,7 +27,7 @@ from .errors import (
 # Initialize AWS Lambda Powertools
 logger = Logger()
 tracer = Tracer()
-metrics = Metrics()
+metrics = Metrics(namespace="AILifestyleApp")
 
 # Environment variables
 COGNITO_USER_POOL_ID = os.environ.get('COGNITO_USER_POOL_ID')

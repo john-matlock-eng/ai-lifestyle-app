@@ -2,11 +2,7 @@
 # PowerShell version with user prompts and comprehensive testing
 #
 # --- FIXES APPLIED ---
-# 1. Set output encoding to UTF-8 to correctly display banner characters.
-# 2. Made API error handling more robust by reading the exception response stream.
-# 3. Added input validation to user selection menus to prevent crashes from invalid input.
-# 4. Removed unused '$Environment' parameter.
-# 5. Refined status code retrieval in the error handling block.
+# 1. Removed invalid '-Color' parameter from all 'ConvertTo-Json' commands.
 
 # Ensure console can display special characters
 [System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -201,11 +197,11 @@ function Test-HealthCheck {
     
     if ($result.Success) {
         Write-Success " Success (Status: 200)"
-        Write-Host ($result.Response | ConvertTo-Json -Depth 10 -Color)
+        Write-Host ($result.Response | ConvertTo-Json -Depth 10)
     }
     else {
         Write-Error " Failed (Status: $($result.StatusCode))"
-        Write-Host ($result.Response | ConvertTo-Json -Depth 10 -Color)
+        Write-Host ($result.Response | ConvertTo-Json -Depth 10)
     }
     
     return $result
@@ -296,7 +292,7 @@ function Test-UserRegistration {
         # A successful registration should be a 201 Created
         $result.StatusCode = 201
         Write-Success " Success (Status: $($result.StatusCode))"
-        Write-Host ($result.Response | ConvertTo-Json -Depth 10 -Color)
+        Write-Host ($result.Response | ConvertTo-Json -Depth 10)
         
         if ($user.email -notin $script:testSession.registeredUsers) {
             $script:testSession.registeredUsers += $user.email
@@ -304,7 +300,7 @@ function Test-UserRegistration {
     }
     else {
         Write-Error " Failed (Status: $($result.StatusCode))"
-        Write-Host ($result.Response | ConvertTo-Json -Depth 10 -Color)
+        Write-Host ($result.Response | ConvertTo-Json -Depth 10)
     }
     
     $script:testSession.lastResponse = $result
@@ -374,7 +370,7 @@ function Test-UserLogin {
     
     if ($result.Success) {
         Write-Success " Success (Status: 200)"
-        Write-Host ($result.Response | ConvertTo-Json -Depth 10 -Color)
+        Write-Host ($result.Response | ConvertTo-Json -Depth 10)
         
         if ($result.Response.accessToken) {
             $script:testSession.authTokens[$credentials.email] = @{
@@ -387,7 +383,7 @@ function Test-UserLogin {
     }
     else {
         Write-Error " Failed (Status: $($result.StatusCode))"
-        Write-Host ($result.Response | ConvertTo-Json -Depth 10 -Color)
+        Write-Host ($result.Response | ConvertTo-Json -Depth 10)
     }
     
     $script:testSession.lastResponse = $result

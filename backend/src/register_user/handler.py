@@ -31,7 +31,7 @@ from .service import RegistrationService
 # Initialize AWS Lambda Powertools
 logger = Logger()
 tracer = Tracer()
-metrics = Metrics()
+metrics = Metrics(namespace="AILifestyleApp")
 
 # Set up standard logging
 logging.basicConfig(level=os.environ.get('LOG_LEVEL', 'INFO'))
