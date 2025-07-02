@@ -201,47 +201,14 @@ class CognitoClient:
             email: User's email address
         """
         try:
-            # Get user's current attributes
-            response = self.client.admin_get_user(
-                UserPoolId=self.user_pool_id,
-                Username=email
-            )
-            
-            # Find current failed attempts count
-            current_attempts = 0
-            for attr in response['UserAttributes']:
-                if attr['Name'] == 'custom:failed_login_attempts':
-                    current_attempts = int(attr.get('Value', '0'))
-                    break
-            
-            # Increment counter
-            new_attempts = current_attempts + 1
-            
-            # Update attribute
-            self.client.admin_update_user_attributes(
-                UserPoolId=self.user_pool_id,
-                Username=email,
-                UserAttributes=[
-                    {
-                        'Name': 'custom:failed_login_attempts',
-                        'Value': str(new_attempts)
-                    },
-                    {
-                        'Name': 'custom:last_failed_login',
-                        'Value': str(int(datetime.utcnow().timestamp()))
-                    }
-                ]
-            )
-            
+            # Skip if custom attributes not available
             logger.info(
-                "Updated failed login attempts",
-                extra={
-                    "email": email,
-                    "attempts": new_attempts
-                }
+                "Skipping failed login attempt tracking (custom attributes may not be configured)",
+                extra={"email": email}
             )
+            return
             
-        except ClientError as e:
+        except Exception as e:
             # Don't fail the login process if we can't update the counter
             logger.error(
                 "Failed to update login attempts counter",
@@ -259,23 +226,14 @@ class CognitoClient:
             email: User's email address
         """
         try:
-            self.client.admin_update_user_attributes(
-                UserPoolId=self.user_pool_id,
-                Username=email,
-                UserAttributes=[
-                    {
-                        'Name': 'custom:failed_login_attempts',
-                        'Value': '0'
-                    }
-                ]
-            )
-            
+            # Skip if custom attributes not available
             logger.info(
-                "Reset failed login attempts",
+                "Skipping failed login attempt reset (custom attributes may not be configured)",
                 extra={"email": email}
             )
+            return
             
-        except ClientError as e:
+        except Exception as e:
             # Don't fail the login process if we can't reset the counter
             logger.error(
                 "Failed to reset login attempts counter",

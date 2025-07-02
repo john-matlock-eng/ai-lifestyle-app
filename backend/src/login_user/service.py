@@ -139,6 +139,20 @@ class LoginService:
                 phone_verified = user_data.get('phoneVerified', False)
             
             # Build user profile
+            # Handle timestamp parsing gracefully
+            created_at = user_data.get('createdAt')
+            updated_at = user_data.get('updatedAt')
+            
+            if isinstance(created_at, str):
+                created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+            elif not isinstance(created_at, datetime):
+                created_at = datetime.utcnow()
+                
+            if isinstance(updated_at, str):
+                updated_at = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+            elif not isinstance(updated_at, datetime):
+                updated_at = datetime.utcnow()
+            
             user_profile = UserProfile(
                 userId=user_data['userId'],
                 email=user_data['email'],
@@ -150,8 +164,8 @@ class LoginService:
                 dateOfBirth=user_data.get('dateOfBirth'),
                 timezone=user_data.get('timezone'),
                 preferences=user_data.get('preferences'),
-                createdAt=datetime.fromisoformat(user_data['createdAt']),
-                updatedAt=datetime.fromisoformat(user_data['updatedAt'])
+                createdAt=created_at,
+                updatedAt=updated_at
             )
             
             # Build login response

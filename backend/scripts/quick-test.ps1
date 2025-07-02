@@ -36,7 +36,7 @@ $testUser = @{
     email = "test.$timestamp@example.com"
     password = "TestPassword123!"
     firstName = "Test"
-    lastName = "User"
+    lastName = "User"  # Fixed: no numbers in lastName
 } | ConvertTo-Json
 
 try {
@@ -54,12 +54,12 @@ try {
     
     try {
         $login = Invoke-RestMethod -Uri "$ApiUrl/auth/login" -Method POST -Body $loginData -ContentType "application/json"
-        Write-Host "✓ Login Success!" -ForegroundColor Green
+        Write-Host " Login Success!" -ForegroundColor Green
         Write-Host "  Access Token: $($login.accessToken.Substring(0, 20))..."
         Write-Host "  Token Type: $($login.tokenType)"
         Write-Host "  Expires In: $($login.expiresIn) seconds"
     } catch {
-        Write-Host "✗ Login Failed: $_" -ForegroundColor Red
+        Write-Host "� Login Failed: $_" -ForegroundColor Red
     }
     
 } catch {

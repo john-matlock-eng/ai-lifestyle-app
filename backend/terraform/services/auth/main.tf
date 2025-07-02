@@ -89,7 +89,9 @@ module "lambda_functions" {
         "cognito-idp:AdminUserGlobalSignOut",
         "cognito-idp:AdminDeleteUser",
         "cognito-idp:AdminInitiateAuth",
-        "cognito-idp:AdminRespondToAuthChallenge"
+        "cognito-idp:AdminRespondToAuthChallenge",
+        "cognito-idp:InitiateAuth",
+        "cognito-idp:GetUser"
       ]
       resources = [var.cognito_user_pool_arn]
     },

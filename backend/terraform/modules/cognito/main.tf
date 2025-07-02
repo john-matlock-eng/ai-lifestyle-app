@@ -75,6 +75,33 @@ resource "aws_cognito_user_pool" "main" {
       max_length = 2048
     }
   }
+  
+  # Custom attributes for security tracking
+  schema {
+    name                     = "failed_login_attempts"
+    attribute_data_type     = "Number"
+    required                = false
+    mutable                 = true
+    developer_only_attribute = false
+    
+    number_attribute_constraints {
+      min_value = "0"
+      max_value = "100"
+    }
+  }
+  
+  schema {
+    name                     = "last_failed_login"
+    attribute_data_type     = "Number"
+    required                = false
+    mutable                 = true
+    developer_only_attribute = false
+    
+    number_attribute_constraints {
+      min_value = "0"
+      max_value = "9999999999"
+    }
+  }
 
   # Verification message template
   verification_message_template {

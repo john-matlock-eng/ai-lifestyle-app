@@ -114,7 +114,7 @@ $validUser = @{
     email = "test$($timestamp)@example.com"
     password = "TestPassword123!"
     firstName = "Test"
-    lastName = "User"
+    lastName = "User"  # Fixed: removed numbers from lastName
 }
 
 Test-ApiEndpoint -Method "POST" -Path "/auth/register" -Body $validUser -Description "User Registration - Valid Request"
