@@ -364,7 +364,12 @@ Update this section daily:
 - Complete Task B4: Deploy infrastructure to dev environment
 - Create integration tests for registration endpoint
 
-**Key Achievement**: Successfully resolved the infrastructure deployment order-of-operations issue by creating a phased deployment approach. The new unified GitHub Actions workflow ensures resources are created in the correct sequence: infrastructure → Docker images → Lambda functions. This maintains clean architecture while working within AWS constraints.
+**Key Achievement**: Successfully created a fully automated phased deployment workflow that handles the complete backend deployment lifecycle. The unified GitHub Actions workflow (`backend-deploy.yml`) automatically:
+1. Creates infrastructure (ECR, Cognito, DynamoDB)
+2. Builds and pushes Docker images with correct architecture (ARM64)
+3. Deploys Lambda functions with the built images
+
+Fixed Docker manifest compatibility issues by disabling provenance metadata. Deprecated old workflows to prevent confusion.
 
 ## 💡 Implementation Notes
 - Use `boto3` for AWS service calls

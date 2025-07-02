@@ -4,8 +4,8 @@ This directory contains CI/CD workflows for the AI Lifestyle App.
 
 ## Active Workflows
 
-### deploy-backend-unified.yml ✅ (RECOMMENDED)
-The unified deployment workflow that handles infrastructure and Lambda deployment in the correct order.
+### backend-deploy.yml ✅ (RECOMMENDED)
+The main backend deployment workflow that handles infrastructure and Lambda deployment in the correct order.
 
 **Triggers:**
 - Pull Request to main → Deploys to `dev`

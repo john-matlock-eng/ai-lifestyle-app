@@ -1,4 +1,7 @@
-name: Deploy Backend (Unified)
+name: Backend Deploy
+
+# This is the main deployment workflow for the backend
+# It handles infrastructure, Docker builds, and Lambda deployment in the correct order
 
 on:
   pull_request:
@@ -88,6 +91,11 @@ jobs:
           echo "users_table_name=$(terraform output -raw dynamodb_table_name)" >> $GITHUB_OUTPUT
 
       # Phase 2: Build and push Docker images
+      - name: Check ECR Repository
+        run: |
+          echo "Checking ECR repository: ${{ steps.apply_base.outputs.ecr_url }}"
+          aws ecr describe-repositories --repository-names lifestyle-app-${{ steps.env.outputs.environment }} || exit 1
+
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
@@ -106,6 +114,7 @@ jobs:
             ${{ steps.apply_base.outputs.ecr_url }}:api-handler-${{ steps.env.outputs.environment }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false  # Disable provenance to avoid manifest issues
 
       - name: Build and push Health Check image
         uses: docker/build-push-action@v5
@@ -119,6 +128,7 @@ jobs:
             ${{ steps.apply_base.outputs.ecr_url }}:health-check-${{ steps.env.outputs.environment }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false  # Disable provenance to avoid manifest issues
 
       # Phase 3: Deploy Lambda functions with the pushed images
       - name: Terraform Plan (Lambda Functions)

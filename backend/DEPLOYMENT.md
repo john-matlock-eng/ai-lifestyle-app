@@ -21,7 +21,7 @@ The deployment happens in 3 phases to resolve the chicken-and-egg problem betwee
    - Configures all environment variables and permissions
 
 ### GitHub Actions Workflow
-The unified workflow (`deploy-backend-unified.yml`) handles all phases automatically:
+The unified workflow (`backend-deploy.yml`) handles all phases automatically:
 - **Pull Request**: Deploys to `dev` environment
 - **Merge to main**: Deploys to `prod` environment
 
@@ -89,10 +89,10 @@ Complete separation between environments:
 
 ## GitHub Actions Workflows
 
-### deploy-backend-unified.yml
+### backend-deploy.yml
 The main deployment workflow that:
 1. Deploys base infrastructure with `deploy_lambda=false`
-2. Builds and pushes Docker images to ECR
+2. Builds and pushes Docker images to ECR with `provenance=false` for Lambda compatibility
 3. Deploys Lambda functions with `deploy_lambda=true`
 4. Provides PR comments with deployment status
 
@@ -100,7 +100,7 @@ The main deployment workflow that:
 - `deploy-backend.yml` - Only handles Terraform
 - `build-lambda.yml` - Only handles Docker/Lambda
 
-These are replaced by the unified workflow.
+The backend deployment has been consolidated into the `backend-deploy.yml` workflow
 
 ## Local Development
 

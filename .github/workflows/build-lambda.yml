@@ -1,8 +1,15 @@
-name: Build and Deploy Lambda
+# DEPRECATED - Use deploy-backend-unified.yml instead
+# This workflow is kept for reference but should not be used
+
+name: Build and Deploy Lambda (DEPRECATED)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Only manual trigger for emergency use
     inputs:
+      confirm:
+        description: 'Type DEPRECATED to confirm you want to use this old workflow'
+        required: true
+        type: string
       function_name:
         description: 'Lambda function name'
         required: true
@@ -19,19 +26,6 @@ on:
         options:
           - dev
           - prod
-  pull_request:
-    branches: [main]
-    paths:
-      - 'backend/src/**'
-      - 'backend/requirements.txt'
-      - 'backend/Dockerfile.*'
-      - '.github/workflows/build-lambda.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'backend/src/**'
-      - 'backend/requirements.txt'
-      - 'backend/Dockerfile.*'
 
 env:
   AWS_REGION: us-east-1
