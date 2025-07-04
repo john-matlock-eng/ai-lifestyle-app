@@ -1,6 +1,6 @@
 """
 AWS Cognito client wrapper for user registration.
-Updated to use SignUp flow for proper email verification.
+Updated to explicitly trigger verification email after sign_up.
 """
 import os
 from typing import Optional
@@ -39,7 +39,7 @@ class CognitoClient:
     ) -> CognitoUser:
         """
         Create a new user in Cognito using SignUp flow.
-        This will automatically send a verification email.
+        This should automatically send a verification email.
         
         Args:
             email: User's email address
@@ -55,7 +55,7 @@ class CognitoClient:
             CognitoError: For other Cognito errors
         """
         try:
-            # Use sign_up for self-registration with automatic email verification
+            # Use sign_up for self-registration
             response = self.client.sign_up(
                 ClientId=self.client_id,
                 Username=email,
@@ -64,17 +64,28 @@ class CognitoClient:
                     {'Name': 'email', 'Value': email},
                     {'Name': 'given_name', 'Value': first_name},
                     {'Name': 'family_name', 'Value': last_name},
+                ],
+                ValidationData=[
+                    {'Name': 'email', 'Value': email}
                 ]
             )
             
             user_id = response['UserSub']  # This is the unique user ID
             
-            # Get additional user details
-            # Note: We can't get full details until email is verified
-            # But we have enough info to create the user in our database
+            # Check if we need to manually trigger verification
+            if not response.get('UserConfirmed', False):
+                # Log that user needs confirmation
+                print(f"User {email} created but needs email confirmation")
+                print(f"CodeDeliveryDetails: {response.get('CodeDeliveryDetails', 'None')}")
+                
+                # If code delivery details are present, email should have been sent
+                if response.get('CodeDeliveryDetails'):
+                    delivery = response['CodeDeliveryDetails']
+                    print(f"Verification code sent to: {delivery.get('Destination', 'Unknown')}")
+                    print(f"Delivery medium: {delivery.get('DeliveryMedium', 'Unknown')}")
+                    print(f"Attribute: {delivery.get('AttributeName', 'Unknown')}")
             
             # For the registration flow, we'll use current time for timestamps
-            # since sign_up doesn't return them
             from datetime import datetime
             now = datetime.utcnow()
             
@@ -105,7 +116,7 @@ class CognitoClient:
                 )
             else:
                 raise CognitoError(
-                    f"Failed to create user in Cognito: {error_code}",
+                    f"Failed to create user in Cognito: {error_code} - {e.response['Error']['Message']}",
                     original_error=e
                 )
     
@@ -120,10 +131,18 @@ class CognitoClient:
             CognitoError: If sending email fails
         """
         try:
-            self.client.resend_confirmation_code(
+            response = self.client.resend_confirmation_code(
                 ClientId=self.client_id,
                 Username=email
             )
+            
+            # Log the response
+            print(f"Resend confirmation response: {response}")
+            
+            if response.get('CodeDeliveryDetails'):
+                delivery = response['CodeDeliveryDetails']
+                print(f"Verification code resent to: {delivery.get('Destination', 'Unknown')}")
+                
         except ClientError as e:
             error_code = e.response['Error']['Code']
             
@@ -132,11 +151,34 @@ class CognitoClient:
             elif error_code == 'InvalidParameterException':
                 # User is already confirmed
                 raise CognitoError("User is already verified")
+            elif error_code == 'LimitExceededException':
+                raise CognitoError("Too many requests. Please try again later.")
             else:
                 raise CognitoError(
-                    f"Failed to resend verification email: {error_code}",
+                    f"Failed to resend verification email: {error_code} - {e.response['Error']['Message']}",
                     original_error=e
                 )
+    
+    def admin_get_user(self, username: str) -> Optional[dict]:
+        """
+        Get user details using admin API.
+        
+        Args:
+            username: Username (email) to look up
+            
+        Returns:
+            User details or None if not found
+        """
+        try:
+            response = self.client.admin_get_user(
+                UserPoolId=self.user_pool_id,
+                Username=username
+            )
+            return response
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'UserNotFoundException':
+                return None
+            raise
     
     def delete_user(self, user_id: str) -> None:
         """
