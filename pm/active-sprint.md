@@ -1,150 +1,155 @@
-# Sprint 1-2 Plan - Authentication Milestone
-**Duration**: 2 Weeks (Week 1 COMPLETE ✅)
-**Theme**: "Production-Ready Authentication with 2FA"
-**Milestone Goal**: Complete auth system deployed to AWS with CloudFront
+# Active Sprint Status
 
-## Week 1 Goals (COMPLETE ✅)
-1. ✅ Complete basic authentication flow (register, login, token refresh)
-2. ✅ Deploy infrastructure to AWS (Cognito, DynamoDB, API Gateway)
-3. ⛳ Deploy frontend to CloudFront with custom domain (ready for deployment)
-4. ✅ Establish CI/CD pipeline (backend deployed)
+## Current Focus: Transitioning to Journaling Feature 🎯
 
-## Week 1 Final Status
-| Feature | Backend | Frontend | Status |
-|---------|---------|----------|--------|
-| User Registration | ✅ 6h (3h actual) | ✅ 4h (3.5h actual) | COMPLETE |
-| User Login | ✅ 4h (2h actual) | ✅ 4h (1.5h actual) | COMPLETE |
-| Token Refresh | ✅ 3h | ✅ Integrated | COMPLETE |
-| Get User Profile | ✅ Added | ✅ Ready to use | COMPLETE |
-| App Shell & Routing | - | ✅ 6h (1.5h actual) | COMPLETE |
-| State Management | - | ✅ 4h (2h actual) | COMPLETE |
-| Core Infrastructure | ✅ 8h | - | COMPLETE |
+### Authentication Milestone Status ✅
+**Week 1**: COMPLETE (150% velocity!)
+- ✅ All 5 core endpoints deployed and working
+- ✅ Frontend successfully integrated
+- ✅ Users can register, login, and maintain sessions
+- 🚨 **CRITICAL**: Token refresh fix needs deployment
 
-**Week 1 Velocity**: ~150% (Both teams finished early!)
+### Immediate Actions Required
 
-## Week 2 Goals (Starting Now)
-1. Frontend-Backend Integration Testing
-2. Frontend deployment to CloudFront
-3. 2FA setup and verification endpoints
-4. Password reset flow
-5. Email verification endpoint
-6. Production security hardening
+#### 1. Deploy Token Refresh Fix (URGENT)
+```bash
+# Backend agent should execute:
+git add backend/src/refresh_token/cognito_client.py
+git commit -m "fix: remove SECRET_HASH from token refresh flow"
+git push origin feature/fix-token-refresh
+# Create PR to trigger deployment
+```
 
-## Week 2 Task Breakdown
-| Feature | Backend | Frontend | Priority |
-|---------|---------|----------|----------|
-| Integration Testing | Support | 4h | HIGHEST |
-| CloudFront Deployment | - | 4h | HIGH |
-| Email Verification | 4h | 2h | MEDIUM |
-| Update Profile | 4h | 4h | MEDIUM |
-| 2FA Setup/Verify | 8h | 6h | HIGH |
-| Password Reset | 6h | 4h | HIGH |
-| Rate Limiting | 4h | - | MEDIUM |
-| Production Hardening | 6h | 2h | HIGH |
+#### 2. Complete Authentication Week 2 Tasks
+**Backend Current Tasks**:
+- [ ] 2FA Setup endpoints (8 hours)
+- [ ] Email verification endpoint (4 hours) 
+- [ ] Update profile endpoint (4 hours)
+- [ ] Rate limiting implementation (4 hours)
 
-## Infrastructure Components
-- [x] OpenAPI Contract with 2FA endpoints
-- [ ] Cognito User Pool with MFA
-- [ ] DynamoDB users table
-- [ ] API Gateway with JWT authorizer
-- [ ] CloudFront distribution
-- [ ] Route 53 domain setup
-- [ ] ACM SSL certificates
-- [ ] Lambda container deployments
+**Frontend Current Tasks**:
+- [ ] CloudFront deployment (4 hours)
+- [ ] Integration testing support
+- [ ] 2FA UI components (when backend ready)
 
-## Success Metrics
-- [ ] Authentication working end-to-end
-- [ ] Frontend accessible via https://ailifestyleapp.com
-- [ ] API accessible via https://api.ailifestyleapp.com
-- [ ] <200ms API response time (p95)
-- [ ] 2FA setup and verification functional
-- [ ] Zero security vulnerabilities
+### Upcoming: Journaling Feature Sprint Plan 📓
 
-## Daily Standup Log
+#### Why Journaling First?
+- User requested feature for mental wellness
+- High engagement potential (daily use)
+- Showcases AI capabilities immediately  
+- No external dependencies
+- DICE Score: 4.2 (highest after auth)
 
-### Day 1 - Milestone Kickoff
-**Date**: Yesterday
-- Completed: 
-  - ✅ Set up instruction framework for all agents
-  - ✅ Designed complete authentication contract with 2FA
-  - ✅ Created authentication milestone plan
-  - ✅ Assigned comprehensive tasks to both agents
-  - ✅ Created infrastructure blueprint
+#### Sprint 2.1: Core Journaling (Weeks 1-2)
+**Backend Tasks**:
+- **J-B1**: Journal Entry CRUD (10h)
+- **J-B2**: Media Upload Support (6h)
+- **J-B3**: Privacy & Security Layer (8h)
 
-### Day 2 - Major Progress! 🎉
-**Date**: Today
-- Completed:
-  - ✅ Backend: Registration & Login endpoints deployed to AWS
-  - ✅ Backend: Infrastructure fully operational 
-  - ✅ Frontend: ALL Week 1 tasks complete (8.5 hours!)
-  - ✅ Frontend: Registration, Login, Routing, State Management
-  - ✅ PM: Reviewed backend work, made priority decisions
-- Working on:
-  - Backend: Token Refresh endpoint (highest priority)
-  - Frontend: Ready for API integration testing
-  - PM: Coordinating integration between teams
-- Blockers: None - Both teams ahead of schedule!
+**Frontend Tasks**:
+- **J-F1**: TipTap Editor Integration (12h)
+- **J-F2**: Entry Management UI (10h)
+- **J-F3**: State Management & API (8h)
 
-### Day 3 - Week 1 Complete! 🎆
-**Date**: Today (Later)
-- Completed:
-  - ✅ Backend: Token Refresh & Get Profile endpoints DONE
-  - ✅ Backend: ALL Week 1 deliverables complete
-  - ✅ Frontend: Notified of all available endpoints
-  - ✅ PM: Week 1 review and Week 2 planning
-- Next Actions:
-  - Frontend: Begin integration testing with real APIs
-  - Backend: Start Week 2 tasks (Email verification, 2FA)
-  - PM: Support integration, monitor for issues
-- Status: **WEEK 1 COMPLETE - 3 days early!**
+#### Sprint 2.2: AI & Goals (Weeks 3-4)
+**Backend Tasks**:
+- **J-B4**: AI Integration Service (12h)
+- **J-B5**: Journaling Goals System (10h)
+- **J-B6**: Analytics Engine (8h)
 
-### Task Assignments
-- **Backend Agent**: 
-  - `backend/current-task.md` - Authentication System Implementation
-  - Focus: Complete Week 1 tasks (B1-B4)
-- **Frontend Agent**: 
-  - `frontend/current-task.md` - Authentication UI System
-  - Focus: Complete Week 1 tasks (F1-F4)
+**Frontend Tasks**:
+- **J-F4**: AI Assistant UI (10h)
+- **J-F5**: Goals Management UI (12h)
+- **J-F6**: Analytics Dashboard (8h)
 
-## Architecture Decisions
-1. **Deployment Strategy**: CloudFront + S3 for frontend, API Gateway + Lambda for backend
-2. **Authentication**: AWS Cognito with TOTP-based 2FA
-3. **Infrastructure**: Terraform for all resources, multi-environment support
-4. **Security**: WAF on CloudFront, rate limiting on API Gateway
-5. **Data Storage**: DynamoDB single-table design for user data
+#### Sprint 2.3: Social & Polish (Weeks 5-6)
+**Backend Tasks**:
+- **J-B7**: Social Features API (10h)
+- **J-B8**: Performance Optimization (8h)
+- **J-B9**: Email & Notifications (6h)
 
-## Week 1 Deliverables Checklist
-- [ ] User can register with email/password
-- [ ] User can login and receive JWT tokens
+**Frontend Tasks**:
+- **J-F7**: Social Features UI (10h)
+- **J-F8**: Mobile Optimization (8h)
+- **J-F9**: Polish & Testing (10h)
+
+### Timeline Overview
+
+```
+Week 1 (COMPLETE) ✅: Authentication Core
+Week 2 (CURRENT) 🔄: Authentication Completion + Prep
+Week 3-4 ⏳: Journaling Core (Sprint 2.1)
+Week 5-6 ⏳: Journaling AI (Sprint 2.2)  
+Week 7-8 ⏳: Journaling Social (Sprint 2.3)
+```
+
+### Key Documentation Created
+
+1. **[Journaling Feature Overview](../docs/features/journaling/feature-overview.md)**
+2. **[Sprint Plan](../docs/features/journaling/sprint-plan.md)**
+3. **[Data Model](../docs/features/journaling/data-model.md)**
+4. **[API Contract](../docs/features/journaling/api-contract.md)**
+5. **[Technical Architecture](../docs/features/journaling/technical-architecture.md)**
+
+### Action Items This Week
+
+#### Product Manager
+- [ ] Review and approve journaling documentation
+- [ ] Merge journaling endpoints into OpenAPI contract
+- [ ] Communicate priority shift to stakeholders
+- [ ] Set up weekly demos for journaling progress
+
+#### Backend Agent  
+- [ ] Deploy token refresh fix IMMEDIATELY
+- [ ] Complete 2FA implementation
+- [ ] Review journaling technical requirements
+- [ ] Estimate infrastructure needs
+
+#### Frontend Agent
+- [ ] Deploy to CloudFront
+- [ ] Complete 2FA UI when backend ready
+- [ ] Research TipTap editor requirements
+- [ ] Plan component architecture
+
+### Success Metrics
+
+#### Week 2 (Authentication Completion)
+- [ ] Token refresh working in production
+- [ ] 2FA fully functional
 - [ ] Frontend deployed to CloudFront
-- [ ] API deployed to API Gateway
-- [ ] Basic infrastructure operational
-- [ ] Dev environment fully functional
+- [ ] All auth endpoints stable
 
-## Week 2 Planning (Preview)
-- 2FA implementation (TOTP with QR codes)
-- Password reset via email
-- Email verification flow
-- Production security hardening
-- Performance optimization
-- Comprehensive testing
+#### Journaling Sprint 1
+- [ ] Users can create/edit journal entries
+- [ ] TipTap editor working smoothly
+- [ ] Privacy controls implemented
+- [ ] Basic UI responsive on mobile
 
-## Risk Register
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Cognito complexity | High | Following AWS best practices, allocated extra time |
-| CloudFront configuration | Medium | Using proven Terraform modules |
-| 2FA user experience | Medium | Building intuitive UI with clear instructions |
-| Integration delays | Low | Using MSW for frontend development |
+### Risk Register Update
 
-## Resources
-- [Milestone Details](../docs/milestone-1-auth.md)
-- [Infrastructure Plan](../docs/infrastructure-plan.md)
-- [Task Breakdown](../docs/auth-milestone-tasks.md)
-- [OpenAPI Contract](../contract/openapi.yaml)
+| Risk | Impact | Status | Mitigation |
+|------|--------|--------|------------|
+| Token refresh broken | HIGH | 🔴 ACTIVE | Fix ready, needs deployment |
+| CloudFront setup complexity | MEDIUM | 🟡 MONITORING | Following AWS best practices |
+| TipTap learning curve | MEDIUM | 🟡 PLANNED | Extra time allocated |
+| AI API costs | MEDIUM | 🟢 MANAGED | Caching strategy planned |
 
-## Notes
-- Both agents have comprehensive task lists for the full milestone
-- Infrastructure and application code proceeding in parallel
-- Daily sync points at 9 AM and 5 PM
-- Flag any blockers immediately for quick resolution
+### Communication Schedule
+
+- **Daily Standup**: 10am ET
+- **Weekly Demo**: Friday 3pm ET  
+- **Stakeholder Update**: Monday 2pm ET
+- **Technical Deep Dive**: Wednesday 2pm ET (as needed)
+
+### Notes
+
+- Both teams delivered exceptional work in Week 1
+- Journaling feature adds significant value to wellness platform
+- 6-week timeline for journaling includes testing and polish
+- Social features can be deferred to v2 if needed
+
+---
+
+**Next Update**: After token refresh deployment and 2FA completion
+**Last Updated**: 2025-01-07 by PM Agent
