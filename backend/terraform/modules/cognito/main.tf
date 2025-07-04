@@ -25,13 +25,10 @@ resource "aws_cognito_user_pool" "main" {
     }
   }
 
-  # Email configuration - CRITICAL FOR SENDING EMAILS
+  # Email configuration
   email_configuration {
     email_sending_account = "COGNITO_DEFAULT"
   }
-  
-  # IMPORTANT: Do NOT use auto_verified_attributes for email
-  # This would skip email verification entirely
   
   # Username configuration
   username_attributes = ["email"]
@@ -103,30 +100,19 @@ resource "aws_cognito_user_pool" "main" {
     }
   }
 
-  # Verification message template - REQUIRED FOR EMAIL SENDING
+  # Verification message template
   verification_message_template {
-    default_email_option  = "CONFIRM_WITH_CODE"
-    email_subject        = "Verify your email for ${var.project_display_name}"
-    email_message        = "Your verification code for ${var.project_display_name} is {####}"
-    sms_message          = "Your verification code for ${var.project_display_name} is {####}"
-  }
-  
-  # Invite message template (for admin-created users)
-  invite_message_template {
-    email_subject = "Welcome to ${var.project_display_name}"
-    email_message = "Your username is {username} and temporary password is {####}"
-    sms_message   = "Your username is {username} and temporary password is {####}"
+    default_email_option = "CONFIRM_WITH_CODE"
+    email_subject       = "Verify your email for ${var.project_display_name}"
+    email_message       = "Your verification code for ${var.project_display_name} is {####}"
+    email_message_by_link = "Please click the link below to verify your email address for ${var.project_display_name}: {##Verify Email##}"
+    sms_message         = "Your verification code for ${var.project_display_name} is {####}"
   }
 
   # Device tracking
   device_configuration {
     challenge_required_on_new_device      = false
     device_only_remembered_on_user_prompt = false
-  }
-
-  # User pool add-ons
-  user_pool_add_ons {
-    advanced_security_mode = "OFF"  # Set to "ENFORCED" for production
   }
 
   # Lambda triggers (to be added later)
@@ -192,9 +178,6 @@ resource "aws_cognito_user_pool_client" "main" {
 
   # Analytics
   enable_token_revocation = true
-  
-  # Ensure client depends on user pool
-  depends_on = [aws_cognito_user_pool.main]
 }
 
 # IAM role for Cognito to send emails via SES (if using SES)
