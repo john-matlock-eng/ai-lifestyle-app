@@ -73,14 +73,19 @@ class CognitoClient:
             # Note: We can't get full details until email is verified
             # But we have enough info to create the user in our database
             
+            # For the registration flow, we'll use current time for timestamps
+            # since sign_up doesn't return them
+            from datetime import datetime
+            now = datetime.utcnow()
+            
             return CognitoUser(
                 user_id=UUID(user_id),
                 email=email,
                 email_verified=False,  # Will be false until user verifies
                 enabled=True,
                 status='UNCONFIRMED',  # User needs to verify email
-                created_at=None,  # Not available from sign_up response
-                updated_at=None   # Not available from sign_up response
+                created_at=now,
+                updated_at=now
             )
             
         except ClientError as e:

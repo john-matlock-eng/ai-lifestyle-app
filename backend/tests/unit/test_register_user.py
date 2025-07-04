@@ -66,8 +66,7 @@ class TestRegistrationService:
         # Mock DynamoDB user creation
         registration_service.user_repository.create_user.return_value = Mock()
         
-        # Mock email sending
-        registration_service.cognito_client.send_verification_email.return_value = None
+        # Email is sent automatically by sign_up, no separate call needed
         
         # Act
         result = registration_service.register_user(valid_request)
@@ -82,7 +81,7 @@ class TestRegistrationService:
         registration_service.user_repository.get_user_by_email.assert_called_once_with(valid_request.email)
         registration_service.cognito_client.create_user.assert_called_once()
         registration_service.user_repository.create_user.assert_called_once()
-        registration_service.cognito_client.send_verification_email.assert_called_once()
+        # Email verification is handled automatically by Cognito sign_up
     
     def test_registration_with_existing_email(self, registration_service, valid_request):
         """Test registration fails when email already exists"""
@@ -139,8 +138,8 @@ class TestRegistrationService:
         # Verify rollback was attempted
         registration_service.cognito_client.delete_user.assert_called_once_with(str(user_id))
     
-    def test_rollback_on_email_sending_failure(self, registration_service, valid_request):
-        """Test rollback when email sending fails"""
+    def test_rollback_on_dynamodb_create_failure_after_cognito(self, registration_service, valid_request):
+        """Test rollback when DynamoDB creation fails after Cognito user created"""
         # Arrange
         user_id = uuid4()
         
@@ -157,20 +156,17 @@ class TestRegistrationService:
         )
         registration_service.cognito_client.create_user.return_value = cognito_user
         
-        registration_service.user_repository.create_user.return_value = Mock()
-        
-        # Mock email sending failure
-        registration_service.cognito_client.send_verification_email.side_effect = CognitoError(
-            "Failed to send verification email"
+        # Mock DynamoDB failure
+        registration_service.user_repository.create_user.side_effect = DynamoDBError(
+            "Failed to create user in database"
         )
         
         # Act & Assert
-        with pytest.raises(CognitoError):
+        with pytest.raises(DynamoDBError):
             registration_service.register_user(valid_request)
         
-        # Verify rollback was attempted
+        # Verify rollback was attempted for Cognito user
         registration_service.cognito_client.delete_user.assert_called_once_with(str(user_id))
-        registration_service.user_repository.delete_user.assert_called_once_with(user_id)
 
 
 class TestPasswordValidation:
