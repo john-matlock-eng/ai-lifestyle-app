@@ -58,7 +58,7 @@ export default apiClient;
 export interface ApiError {
   error: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   request_id?: string;
   timestamp: string;
 }
