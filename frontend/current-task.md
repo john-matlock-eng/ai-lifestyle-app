@@ -161,12 +161,24 @@ Once deployed with backend integration:
 - ✅ Clean separation of concerns
 
 ### Next Steps:
-1. Continue with goal UI component development
-2. Focus on:
+1. **Install testing dependencies**: Run `npm install` to install vitest and testing libraries
+2. Continue with goal UI component development
+3. Focus on:
    - Complete goal creation wizard
    - Activity logging interface
    - Progress visualization components
    - Goal detail pages
+
+### Testing Setup Required:
+To run tests, you need to install the missing dependencies:
+```bash
+npm install
+```
+
+Then you can run:
+```bash
+npm test -- --run
+```
 
 ## ✅ Lint Error Cleanup Complete!
 **Started**: 2025-01-05

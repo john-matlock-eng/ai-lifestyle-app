@@ -1,6 +1,7 @@
+// Test setup file
 import '@testing-library/jest-dom';
+import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
 
 // Cleanup after each test case
 afterEach(() => {
@@ -21,3 +22,11 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 });
+
+// Mock IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  disconnect() {}
+  observe() {}
+  unobserve() {}
+};
