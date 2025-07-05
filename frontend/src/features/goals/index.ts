@@ -1,25 +1,25 @@
-// Goal System Feature Exports
+// Export all goals components
+export { default as GoalList } from './components/display/GoalList';
+export { default as GoalCard } from './components/display/GoalCard';
+export { default as GoalWizard } from './components/creation/GoalWizard';
+export { default as PatternSelector } from './components/creation/PatternSelector';
+export { default as QuickLogModal } from './components/logging/QuickLogModal';
 
-// Types
-export * from './types/goal.types';
+// Export types
+export * from './types/api.types';
+export * from './types/ui.types';
 
-// Components - GoalCreator
-export { GoalTypeSelector } from './components/GoalCreator/GoalTypeSelector';
-export { RecurringGoalForm } from './components/GoalCreator/RecurringGoalForm';
-export { MilestoneGoalForm } from './components/GoalCreator/MilestoneGoalForm';
-export { TargetGoalForm } from './components/GoalCreator/TargetGoalForm';
-export { StreakGoalForm } from './components/GoalCreator/StreakGoalForm';
-export { LimitGoalForm } from './components/GoalCreator/LimitGoalForm';
+// Export services
+export * from './services/goalService';
 
-// Components - GoalProgress
-export { ProgressRing, GoalProgressRing, MiniProgressRing } from './components/GoalProgress/ProgressRing';
-export { StreakCalendar, StreakBadge } from './components/GoalProgress/StreakCalendar';
-export { MilestoneChart, MilestoneBar } from './components/GoalProgress/MilestoneChart';
-export { TrendLine } from './components/GoalProgress/TrendLine';
-
-// Components - Main
-export { GoalList } from './components/GoalList';
-export { GoalDetail } from './components/GoalDetail';
-
-// Hooks
-export { useGoals } from './hooks/useGoals';
+// Export hooks
+export { 
+  default as useGoalManagement,
+  useGoals,
+  useGoal,
+  useCreateGoal,
+  useUpdateGoal,
+  useArchiveGoal,
+  useLogActivity,
+  useGoalProgress
+} from './hooks/useGoals';

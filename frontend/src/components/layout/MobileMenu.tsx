@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface MobileMenuProps {
@@ -9,6 +9,11 @@ interface MobileMenuProps {
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    return location.pathname.startsWith(path);
+  };
 
   if (!isOpen) return null;
 
@@ -55,28 +60,45 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         <nav className="px-2 pt-2 pb-3 space-y-1">
           <Link
             to="/dashboard"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-100"
+            className={`block px-3 py-2 rounded-md text-base font-medium ${
+              isActive('/dashboard') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            }`}
             onClick={onClose}
           >
             Dashboard
           </Link>
           <Link
+            to="/goals"
+            className={`block px-3 py-2 rounded-md text-base font-medium ${
+              isActive('/goals') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+            onClick={onClose}
+          >
+            Goals
+          </Link>
+          <Link
             to="/meals"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+            className={`block px-3 py-2 rounded-md text-base font-medium ${
+              isActive('/meals') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            }`}
             onClick={onClose}
           >
             Meals
           </Link>
           <Link
             to="/workouts"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+            className={`block px-3 py-2 rounded-md text-base font-medium ${
+              isActive('/workouts') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            }`}
             onClick={onClose}
           >
             Workouts
           </Link>
           <Link
             to="/wellness"
-            className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+            className={`block px-3 py-2 rounded-md text-base font-medium ${
+              isActive('/wellness') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+            }`}
             onClick={onClose}
           >
             Wellness

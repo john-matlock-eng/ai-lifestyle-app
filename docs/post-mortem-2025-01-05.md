@@ -10,7 +10,9 @@
 - **16:22 UTC**: First Lambda errors detected in CloudWatch
 - **16:23 UTC**: Multiple retries, all failing with same error
 - **16:25 UTC**: Issue identified and hotfix task created
-- **[TBD]**: Fix deployed
+- **16:45 UTC**: Fix implemented - added missing exports to goals_common
+- **[TBD]**: PR created and reviewed
+- **[TBD]**: Fix deployed via Terraform
 - **[TBD]**: Service restored
 
 ## Root Cause Analysis
@@ -37,7 +39,22 @@ cannot import name 'GoalValidationError' from 'goals_common'
 - ❌ Estimated [X] users affected
 
 ## Resolution
-[To be filled after fix is deployed]
+
+### Fix Applied
+Added missing error class exports to `backend/src/goals_common/__init__.py`:
+```python
+from .errors import (
+    GoalError,
+    GoalNotFoundError,
+    GoalValidationError,  # This was missing!
+    # ... other error classes
+)
+```
+
+### Verification
+- Created test script to verify all imports work
+- Tested locally - all imports successful
+- Ready for deployment via Terraform
 
 ## Lessons Learned
 
@@ -109,6 +126,6 @@ def test_lambda_imports():
 
 ---
 
-**Status**: Draft - To be completed after incident resolution
+**Status**: Partially Complete - Awaiting deployment confirmation
 **Author**: PM Agent
 **Reviewers**: Backend Team Lead, DevOps Lead

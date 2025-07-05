@@ -1,0 +1,262 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci-cd.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci-cd.yml'
+
+env:
+  NODE_VERSION: '18'
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  test:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linter
+        run: npm run lint
+      
+      - name: Run type check
+        run: npm run type-check
+      
+      - name: Run tests
+        run: npm test -- --run
+      
+      - name: Build application
+        run: npm run build
+
+  deploy-dev:
+    name: Deploy to Dev
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    environment:
+      name: development
+      url: ${{ steps.deploy.outputs.frontend_url }}
+    defaults:
+      run:
+        working-directory: frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+      
+      - name: Deploy infrastructure
+        id: terraform
+        working-directory: frontend/terraform
+        run: |
+          terraform init -backend-config=backend-dev.conf
+          terraform plan -var-file=environments/dev.tfvars -out=tfplan
+          terraform apply -auto-approve tfplan
+          
+          # Capture outputs
+          echo "cloudfront_distribution_id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
+          echo "s3_bucket_name=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+          echo "frontend_url=$(terraform output -raw frontend_url)" >> $GITHUB_OUTPUT
+      
+      - name: Generate environment config
+        working-directory: frontend/terraform
+        run: |
+          chmod +x generate-env.sh
+          ./generate-env.sh dev
+      
+      - name: Build frontend with env config
+        run: npm run build
+      
+      - name: Deploy to S3
+        run: |
+          aws s3 sync dist s3://${{ steps.terraform.outputs.s3_bucket_name }} --delete \
+            --cache-control "public, max-age=31536000" \
+            --exclude "index.html" \
+            --exclude "*.map"
+          
+          aws s3 cp dist/index.html s3://${{ steps.terraform.outputs.s3_bucket_name }}/index.html \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "text/html"
+      
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.terraform.outputs.cloudfront_distribution_id }} \
+            --paths "/*"
+      
+      - name: Comment PR with deployment URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Frontend deployed to development environment!\n\nURL: ${{ steps.terraform.outputs.frontend_url }}`
+            })
+    
+    outputs:
+      frontend_url: ${{ steps.terraform.outputs.frontend_url }}
+
+  deploy-prod:
+    name: Deploy to Production
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.frontend_url }}
+    defaults:
+      run:
+        working-directory: frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+      
+      - name: Deploy infrastructure
+        id: terraform
+        working-directory: frontend/terraform
+        run: |
+          terraform init -backend-config=backend-prod.conf
+          terraform plan -var-file=environments/prod.tfvars -out=tfplan
+          terraform apply -auto-approve tfplan
+          
+          # Capture outputs
+          echo "cloudfront_distribution_id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
+          echo "s3_bucket_name=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+          echo "frontend_url=$(terraform output -raw frontend_url)" >> $GITHUB_OUTPUT
+      
+      - name: Generate environment config
+        working-directory: frontend/terraform
+        run: |
+          chmod +x generate-env.sh
+          ./generate-env.sh prod
+      
+      - name: Build frontend with env config
+        run: npm run build
+      
+      - name: Deploy to S3
+        run: |
+          aws s3 sync dist s3://${{ steps.terraform.outputs.s3_bucket_name }} --delete \
+            --cache-control "public, max-age=31536000" \
+            --exclude "index.html" \
+            --exclude "*.map"
+          
+          aws s3 cp dist/index.html s3://${{ steps.terraform.outputs.s3_bucket_name }}/index.html \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "text/html"
+      
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.terraform.outputs.cloudfront_distribution_id }} \
+            --paths "/*"
+      
+      - name: Create deployment notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: release } = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `frontend-${new Date().toISOString().split('T')[0]}-${context.sha.substr(0, 7)}`,
+              name: `Frontend Production Deployment - ${new Date().toISOString().split('T')[0]}`,
+              body: `Frontend deployed to production!\n\nURL: ${{ steps.terraform.outputs.frontend_url }}\nCommit: ${context.sha}`,
+              draft: false,
+              prerelease: false
+            });
+    
+    outputs:
+      frontend_url: ${{ steps.terraform.outputs.frontend_url }}
+
+  cleanup-dev:
+    name: Cleanup Dev Environment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    defaults:
+      run:
+        working-directory: frontend/terraform
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+      
+      - name: Destroy dev infrastructure
+        run: |
+          terraform init -backend-config=backend-dev.conf
+          terraform destroy -var-file=environments/dev.tfvars -auto-approve

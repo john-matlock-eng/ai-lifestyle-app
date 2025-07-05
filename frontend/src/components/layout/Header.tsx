@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +28,10 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname.startsWith(path);
   };
 
   return (
@@ -50,25 +55,41 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
             <nav className="hidden md:ml-6 md:flex md:space-x-8">
               <Link
                 to="/dashboard"
-                className="text-gray-900 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                className={`${
+                  isActive('/dashboard') ? 'text-gray-900' : 'text-gray-500'
+                } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Dashboard
               </Link>
               <Link
+                to="/goals"
+                className={`${
+                  isActive('/goals') ? 'text-gray-900' : 'text-gray-500'
+                } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
+              >
+                Goals
+              </Link>
+              <Link
                 to="/meals"
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                className={`${
+                  isActive('/meals') ? 'text-gray-900' : 'text-gray-500'
+                } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Meals
               </Link>
               <Link
                 to="/workouts"
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                className={`${
+                  isActive('/workouts') ? 'text-gray-900' : 'text-gray-500'
+                } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Workouts
               </Link>
               <Link
                 to="/wellness"
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                className={`${
+                  isActive('/wellness') ? 'text-gray-900' : 'text-gray-500'
+                } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Wellness
               </Link>

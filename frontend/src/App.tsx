@@ -22,6 +22,11 @@ import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import { ComponentShowcase } from './pages/ComponentShowcase';
 
+// Pages - Goals
+import GoalsPage from './pages/goals/GoalsPage';
+import CreateGoalPage from './pages/goals/CreateGoalPage';
+import GoalDetailPage from './pages/goals/GoalDetailPage';
+
 // Components
 import DevTools from './components/common/DevTools';
 import { SessionWarning } from './components/SessionWarning';
@@ -72,6 +77,12 @@ function App() {
               <Route path="/profile" element={<div>Profile - Coming Soon</div>} />
               <Route path="/settings" element={<div>Settings - Coming Soon</div>} />
               <Route path="/settings/security" element={<div>Security Settings - Coming Soon</div>} />
+              
+              {/* Goals Routes */}
+              <Route path="/goals" element={<GoalsPage />} />
+              <Route path="/goals/new" element={<CreateGoalPage />} />
+              <Route path="/goals/:goalId" element={<GoalDetailPage />} />
+              
               <Route path="/meals" element={<div>Meals - Coming Soon</div>} />
               <Route path="/workouts" element={<div>Workouts - Coming Soon</div>} />
               <Route path="/wellness" element={<div>Wellness - Coming Soon</div>} />

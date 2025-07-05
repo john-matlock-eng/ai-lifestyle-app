@@ -6,25 +6,15 @@ import {
   ShareDialog,
   KeyManagement,
   EncryptionOnboarding,
-  ShareableItem,
-  ShareToken,
 } from '../components/encryption';
 
 import {
-  // Goal Components
-  GoalTypeSelector,
-  RecurringGoalForm,
-  MilestoneGoalForm,
-  TargetGoalForm,
-  StreakGoalForm,
-  LimitGoalForm,
+  // Goal Components (only what we've built so far)
   GoalList,
-  GoalDetail,
-  ProgressRing,
-  GoalProgressRing,
-  StreakCalendar,
-  MilestoneChart,
-  TrendLine,
+  GoalCard,
+  GoalWizard,
+  PatternSelector,
+  QuickLogModal,
   
   // Types
   Goal,
@@ -38,7 +28,7 @@ const mockGoals: Goal[] = [
     userId: 'demo',
     title: 'Daily Exercise',
     description: 'Stay active every day',
-    category: 'health',
+    category: 'fitness',
     goalPattern: 'recurring',
     target: {
       metric: 'count',
@@ -57,7 +47,7 @@ const mockGoals: Goal[] = [
       currentPeriodValue: 1,
       successRate: 85,
       trend: 'improving',
-      lastActivityDate: new Date(),
+      lastActivityDate: new Date().toISOString(),
     },
     context: {
       importanceLevel: 4,
@@ -69,14 +59,14 @@ const mockGoals: Goal[] = [
     },
     status: 'active',
     visibility: 'private',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date(),
+    createdAt: new Date('2024-01-01').toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     goalId: '2',
     userId: 'demo',
     title: 'Write 50,000 Words',
-    category: 'creative',
+    category: 'creativity',
     goalPattern: 'milestone',
     target: {
       metric: 'count',
@@ -102,7 +92,7 @@ const mockGoals: Goal[] = [
     rewards: {
       pointsPerActivity: 50,
       milestoneRewards: [
-        { value: 10000, reward: 'Novice Writer', unlockedAt: new Date('2024-02-01') },
+        { value: 10000, reward: 'Novice Writer', unlockedAt: new Date('2024-02-01').toISOString() },
         { value: 25000, reward: 'Dedicated Writer' },
         { value: 50000, reward: 'Novel Complete!' },
       ],
@@ -110,8 +100,8 @@ const mockGoals: Goal[] = [
     },
     status: 'active',
     visibility: 'private',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date(),
+    createdAt: new Date('2024-01-01').toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     goalId: '3',
@@ -135,7 +125,6 @@ const mockGoals: Goal[] = [
       percentComplete: 40,
       currentStreak: 12,
       longestStreak: 15,
-      targetStreak: 30,
       successRate: 80,
       trend: 'improving',
     },
@@ -149,62 +138,37 @@ const mockGoals: Goal[] = [
     },
     status: 'active',
     visibility: 'private',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date(),
+    createdAt: new Date('2024-01-01').toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
-const mockActivities = [
-  {
-    activityId: '1',
-    goalId: '1',
-    userId: 'demo',
-    value: 1,
-    unit: 'workout',
-    activityType: 'completed' as const,
-    activityDate: new Date(),
-    loggedAt: new Date(),
-    timezone: 'America/New_York',
-    context: {
-      timeOfDay: 'morning' as const,
-      dayOfWeek: 'Monday',
-      isWeekend: false,
-      isHoliday: false,
-      withOthers: false,
-    },
-    source: 'manual' as const,
-  },
-];
+interface ShareToken {
+  id: string;
+  recipientEmail: string;
+  permissions: string[];
+  expiresAt: string;
+}
 
-const mockMilestoneData = [
-  { date: new Date('2024-01-01'), value: 0 },
-  { date: new Date('2024-01-15'), value: 5000 },
-  { date: new Date('2024-02-01'), value: 10000 },
-  { date: new Date('2024-02-15'), value: 12000 },
-  { date: new Date('2024-03-01'), value: 15000 },
-];
-
-const mockTrendData = [
-  { date: new Date('2024-01-01'), value: 180 },
-  { date: new Date('2024-01-15'), value: 178 },
-  { date: new Date('2024-02-01'), value: 175 },
-  { date: new Date('2024-02-15'), value: 174 },
-  { date: new Date('2024-03-01'), value: 172 },
-];
+interface ShareableItem {
+  id: string;
+  title: string;
+  type: string;
+  createdAt: string;
+  encrypted: boolean;
+}
 
 export const ComponentShowcase: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string>('overview');
   const [selectedGoalPattern, setSelectedGoalPattern] = useState<GoalPattern | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [encryptionEnabled, setEncryptionEnabled] = useState(false);
-  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  const [showQuickLog, setShowQuickLog] = useState<string | null>(null);
 
   const sections = [
     { id: 'overview', label: 'Overview' },
     { id: 'encryption', label: 'Encryption Components' },
-    { id: 'goal-forms', label: 'Goal Forms' },
-    { id: 'visualizations', label: 'Progress Visualizations' },
-    { id: 'goal-management', label: 'Goal Management' },
+    { id: 'goal-components', label: 'Goal Components' },
   ];
 
   const handleShare = (tokens: ShareToken[]) => {
@@ -279,7 +243,7 @@ export const ComponentShowcase: React.FC = () => {
                       📊 Visualizations
                     </h3>
                     <p className="text-sm text-green-700">
-                      Beautiful charts and progress indicators
+                      Beautiful charts and progress indicators (coming soon)
                     </p>
                   </div>
                 </div>
@@ -287,16 +251,16 @@ export const ComponentShowcase: React.FC = () => {
               
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Quick Stats
+                  Implementation Status
                 </h3>
                 <div className="grid grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-purple-600">16</div>
-                    <div className="text-sm text-gray-600">Components Built</div>
+                    <div className="text-3xl font-bold text-purple-600">✅</div>
+                    <div className="text-sm text-gray-600">2FA Complete</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">5</div>
-                    <div className="text-sm text-gray-600">Goal Patterns</div>
+                    <div className="text-3xl font-bold text-blue-600">🔄</div>
+                    <div className="text-sm text-gray-600">Goals In Progress</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-green-600">100%</div>
@@ -373,178 +337,52 @@ export const ComponentShowcase: React.FC = () => {
             </div>
           )}
 
-          {activeSection === 'goal-forms' && (
+          {activeSection === 'goal-components' && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-gray-900">Goal Creation Forms</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Goal Components</h2>
               
-              {/* Goal Type Selector */}
-              {!selectedGoalPattern ? (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <GoalTypeSelector onSelectType={setSelectedGoalPattern} />
-                </div>
-              ) : (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <button
-                    onClick={() => setSelectedGoalPattern(null)}
-                    className="mb-4 text-purple-600 hover:text-purple-700"
-                  >
-                    ← Back to selection
-                  </button>
-                  
-                  {selectedGoalPattern === 'recurring' && (
-                    <RecurringGoalForm
-                      onSubmit={(data) => {
-                        console.log('Recurring goal created:', data);
-                        setSelectedGoalPattern(null);
-                      }}
-                      onCancel={() => setSelectedGoalPattern(null)}
-                    />
-                  )}
-                  
-                  {selectedGoalPattern === 'milestone' && (
-                    <MilestoneGoalForm
-                      onSubmit={(data) => {
-                        console.log('Milestone goal created:', data);
-                        setSelectedGoalPattern(null);
-                      }}
-                      onCancel={() => setSelectedGoalPattern(null)}
-                    />
-                  )}
-                  
-                  {selectedGoalPattern === 'target' && (
-                    <TargetGoalForm
-                      onSubmit={(data) => {
-                        console.log('Target goal created:', data);
-                        setSelectedGoalPattern(null);
-                      }}
-                      onCancel={() => setSelectedGoalPattern(null)}
-                    />
-                  )}
-                  
-                  {selectedGoalPattern === 'streak' && (
-                    <StreakGoalForm
-                      onSubmit={(data) => {
-                        console.log('Streak goal created:', data);
-                        setSelectedGoalPattern(null);
-                      }}
-                      onCancel={() => setSelectedGoalPattern(null)}
-                    />
-                  )}
-                  
-                  {selectedGoalPattern === 'limit' && (
-                    <LimitGoalForm
-                      onSubmit={(data) => {
-                        console.log('Limit goal created:', data);
-                        setSelectedGoalPattern(null);
-                      }}
-                      onCancel={() => setSelectedGoalPattern(null)}
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeSection === 'visualizations' && (
-            <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-gray-900">Progress Visualizations</h2>
-              
-              {/* Progress Rings */}
+              {/* Pattern Selector */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Progress Rings</h3>
-                <div className="flex items-center gap-8">
-                  <div className="text-center">
-                    <ProgressRing progress={25} color="#3B82F6" />
-                    <p className="mt-2 text-sm text-gray-600">25% Complete</p>
-                  </div>
-                  <div className="text-center">
-                    <ProgressRing progress={75} color="#8B5CF6" />
-                    <p className="mt-2 text-sm text-gray-600">75% Complete</p>
-                  </div>
-                  <div className="text-center">
-                    <ProgressRing progress={100} color="#10B981" />
-                    <p className="mt-2 text-sm text-gray-600">Goal Complete!</p>
-                  </div>
-                  <div className="text-center">
-                    <GoalProgressRing
-                      current={15}
-                      target={20}
-                      unit="miles"
-                      color="#F59E0B"
-                    />
-                    <p className="mt-2 text-sm text-gray-600">Goal Progress</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Streak Calendar */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Streak Calendar</h3>
-                <StreakCalendar
-                  currentStreak={12}
-                  longestStreak={15}
-                  completedDates={[
-                    '2024-03-01', '2024-03-02', '2024-03-03', '2024-03-04',
-                    '2024-03-05', '2024-03-06', '2024-03-08', '2024-03-09',
-                    '2024-03-10', '2024-03-11', '2024-03-12', '2024-03-13',
-                  ]}
-                  skippedDates={['2024-03-07']}
-                />
-              </div>
-              
-              {/* Milestone Chart */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Milestone Chart</h3>
-                <MilestoneChart
-                  data={mockMilestoneData}
-                  targetValue={50000}
-                  currentValue={15000}
-                  unit="words"
-                  color="#8B5CF6"
-                />
-              </div>
-              
-              {/* Trend Line */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Trend Line</h3>
-                <TrendLine
-                  data={mockTrendData}
-                  startValue={180}
-                  targetValue={160}
-                  targetDate={new Date('2024-06-01')}
-                  unit="lbs"
-                  direction="decrease"
-                  color="#10B981"
-                />
-              </div>
-            </div>
-          )}
-
-          {activeSection === 'goal-management' && (
-            <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-gray-900">Goal Management</h2>
-              
-              {!selectedGoal ? (
-                <GoalList
-                  goals={mockGoals}
-                  onSelectGoal={setSelectedGoal}
-                  onCreateGoal={() => setActiveSection('goal-forms')}
-                  onEditGoal={(goal) => console.log('Edit goal:', goal)}
-                  onUpdateStatus={(goalId, status) => console.log('Update status:', goalId, status)}
-                  onDeleteGoal={(goalId) => console.log('Delete goal:', goalId)}
-                />
-              ) : (
-                <GoalDetail
-                  goal={selectedGoal}
-                  activities={mockActivities}
-                  onBack={() => setSelectedGoal(null)}
-                  onEdit={(goal) => console.log('Edit goal:', goal)}
-                  onUpdateStatus={(status) => console.log('Update status:', status)}
-                  onDelete={() => {
-                    console.log('Delete goal');
-                    setSelectedGoal(null);
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Pattern Selector</h3>
+                <PatternSelector 
+                  onSelect={(pattern) => {
+                    console.log('Selected pattern:', pattern);
+                    setSelectedGoalPattern(pattern);
                   }}
-                  onLogActivity={(activity) => console.log('Log activity:', activity)}
+                  selectedPattern={selectedGoalPattern}
+                />
+              </div>
+
+              {/* Goal List */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Goal List</h3>
+                <GoalList 
+                  goals={mockGoals}
+                  isLoading={false}
+                  onQuickLog={(goalId) => setShowQuickLog(goalId)}
+                />
+              </div>
+
+              {/* Goal Cards */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Goal Cards</h3>
+                <div className="space-y-4">
+                  {mockGoals.map(goal => (
+                    <GoalCard 
+                      key={goal.goalId}
+                      goal={goal}
+                      onQuickLog={(goalId) => setShowQuickLog(goalId)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Log Modal */}
+              {showQuickLog && (
+                <QuickLogModal
+                  goalId={showQuickLog}
+                  isOpen={!!showQuickLog}
+                  onClose={() => setShowQuickLog(null)}
                 />
               )}
             </div>
