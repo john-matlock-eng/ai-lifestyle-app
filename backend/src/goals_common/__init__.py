@@ -59,6 +59,22 @@ from .utils import (
     GoalValidator,
 )
 
+from .errors import (
+    GoalError,
+    GoalNotFoundError,
+    GoalValidationError,
+    GoalQuotaExceededError,
+    GoalPermissionError,
+    ActivityNotFoundError,
+    ActivityValidationError,
+    InvalidGoalPatternError,
+    GoalAlreadyCompletedError,
+    InvalidDateRangeError,
+    GoalArchivedException,
+    AttachmentUploadError,
+    GoalSyncError,
+)
+
 __all__ = [
     # Enums
     'GoalPattern',
@@ -103,4 +119,19 @@ __all__ = [
     'ProgressCalculator',
     'DateHelper',
     'GoalValidator',
+    
+    # Errors
+    'GoalError',
+    'GoalNotFoundError',
+    'GoalValidationError',
+    'GoalQuotaExceededError',
+    'GoalPermissionError',
+    'ActivityNotFoundError',
+    'ActivityValidationError',
+    'InvalidGoalPatternError',
+    'GoalAlreadyCompletedError',
+    'InvalidDateRangeError',
+    'GoalArchivedException',
+    'AttachmentUploadError',
+    'GoalSyncError',
 ]
