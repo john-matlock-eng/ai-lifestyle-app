@@ -187,7 +187,7 @@ export const selectNeedsBackupReminder = (state: { encryption: EncryptionState }
   const { modules, globalSettings } = state.encryption;
   const reminderThreshold = Date.now() - (globalSettings.backupReminderDays * 24 * 60 * 60 * 1000);
   
-  return Object.entries(modules).some(([_, module]) => {
+  return Object.entries(modules).some(([, module]) => {
     if (!module.isEnabled || !module.hasBackup) return false;
     if (!module.lastBackupDate) return true;
     return new Date(module.lastBackupDate).getTime() < reminderThreshold;

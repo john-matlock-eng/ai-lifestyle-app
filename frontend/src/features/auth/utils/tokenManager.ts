@@ -109,7 +109,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
     });
 
     return data.accessToken;
-  } catch (error) {
+  } catch {
     clearTokens();
     return null;
   }

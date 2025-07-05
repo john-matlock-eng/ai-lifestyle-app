@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -10,10 +9,9 @@ import {
   ReferenceLine,
   ReferenceDot,
   Legend,
-  Area,
   ComposedChart,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Target, Calendar, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calendar, AlertCircle } from 'lucide-react';
 
 interface TrendDataPoint {
   date: Date;
@@ -129,13 +127,19 @@ export const TrendLine: React.FC<TrendLineProps> = ({
   chartData.sort((a, b) => a.fullDate.getTime() - b.fullDate.getTime());
   
   // Custom tooltip
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipPayload {
+    payload: { date: string; actual?: number; ideal?: number; projected?: number; fullDate: Date };
+    value: number;
+    name: string;
+    stroke: string;
+  }
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) => {
     if (active && payload && payload.length > 0) {
       const data = payload[0].payload;
       return (
         <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
           <p className="text-sm font-medium text-gray-900">{data.date}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <p key={index} className="text-sm" style={{ color: entry.stroke }}>
               {entry.name}: {entry.value?.toFixed(1)} {unit}
             </p>
@@ -147,7 +151,14 @@ export const TrendLine: React.FC<TrendLineProps> = ({
   };
 
   // Custom dot
-  const CustomDot = (props: any) => {
+  interface DotPayload {
+    date: string;
+    actual?: number;
+    ideal?: number;
+    projected?: number;
+    fullDate: Date;
+  }
+  const CustomDot = (props: { cx?: number; cy?: number; payload?: DotPayload; dataKey?: string }) => {
     const { cx, cy, payload, dataKey } = props;
     
     if (dataKey === 'actual' && payload.actual !== undefined) {

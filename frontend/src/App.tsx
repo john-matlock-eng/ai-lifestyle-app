@@ -6,7 +6,7 @@ import { store } from './store';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from './contexts';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';

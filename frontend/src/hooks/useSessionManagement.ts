@@ -70,10 +70,8 @@ export const useIdleTimeout = (
 ) => {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    let lastActivity = Date.now();
 
     const resetTimeout = () => {
-      lastActivity = Date.now();
       if (timeoutId) {
         clearTimeout(timeoutId);
       }

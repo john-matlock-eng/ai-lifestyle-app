@@ -70,6 +70,7 @@ const RegistrationForm: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     setGeneralError('');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
   };

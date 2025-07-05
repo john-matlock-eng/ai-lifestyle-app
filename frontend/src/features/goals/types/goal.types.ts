@@ -67,7 +67,7 @@ export interface Goal {
   completedAt?: Date;
   
   // Feature-specific extensions
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface GoalTarget {

@@ -181,7 +181,7 @@ Use these codes if you lose access to your authenticator app.
             type="checkbox"
             id="confirm-saved"
             className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            onChange={(e) => {
+            onChange={() => {
               // Could track this state if needed
             }}
           />

@@ -29,7 +29,7 @@ const DEFAULT_CONFIG: Required<RetryConfig> = {
   },
 };
 
-export const useNetworkErrorRecovery = <T = any>(
+export const useNetworkErrorRecovery = <T = unknown>(
   config: RetryConfig = {}
 ): UseNetworkErrorRecoveryResult<T> => {
   const [isRetrying, setIsRetrying] = useState(false);
@@ -37,7 +37,6 @@ export const useNetworkErrorRecovery = <T = any>(
   const [lastError, setLastError] = useState<Error | null>(null);
   
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
-  const mergedConfig = { ...DEFAULT_CONFIG, ...config };
 
   const reset = useCallback(() => {
     setIsRetrying(false);
@@ -50,6 +49,7 @@ export const useNetworkErrorRecovery = <T = any>(
 
   const execute = useCallback(
     async (fn: () => Promise<T>): Promise<T> => {
+      const mergedConfig = { ...DEFAULT_CONFIG, ...config };
       let currentRetry = 0;
       let lastError: Error | null = null;
 
@@ -95,7 +95,7 @@ export const useNetworkErrorRecovery = <T = any>(
 
       return attempt();
     },
-    [mergedConfig, reset]
+    [config, reset]
   );
 
   return {
@@ -128,17 +128,17 @@ export const useNetworkStatus = () => {
 };
 
 // Hook for queuing failed requests
-interface QueuedRequest {
+interface QueuedRequest<T = unknown> {
   id: string;
-  request: () => Promise<any>;
+  request: () => Promise<T>;
   timestamp: number;
 }
 
-export const useRequestQueue = () => {
-  const queueRef = useRef<QueuedRequest[]>([]);
+export const useRequestQueue = <T = unknown>() => {
+  const queueRef = useRef<QueuedRequest<T>[]>([]);
   const { isOnline } = useNetworkStatus();
 
-  const addToQueue = useCallback((request: () => Promise<any>) => {
+  const addToQueue = useCallback((request: () => Promise<T>) => {
     const id = Math.random().toString(36).substr(2, 9);
     queueRef.current.push({
       id,

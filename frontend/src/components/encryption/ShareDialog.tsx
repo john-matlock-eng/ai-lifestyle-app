@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Clock, Users, Shield, X, AlertCircle } from 'lucide-react';
+import { Share2, Shield, X, AlertCircle } from 'lucide-react';
 
 interface ShareableItem {
   id: string;

@@ -1,7 +1,6 @@
 import React from 'react';
 import { GoalPattern, GoalTarget } from '../../types/api.types';
-import { getDefaultsByPattern, METRIC_OPTIONS, getUnitSuggestions } from '../../types/ui.types';
-import Input from '../../../../components/common/Input';
+import { getDefaultsByPattern } from '../../types/ui.types';
 import Button from '../../../../components/common/Button';
 
 interface TargetStepProps {

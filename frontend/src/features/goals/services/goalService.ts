@@ -8,8 +8,6 @@ import {
   LogActivityRequest,
   GoalActivityListResponse,
   GoalProgress,
-  GoalFilters,
-  GoalSortOption,
 } from '../types/api.types';
 
 class GoalService {

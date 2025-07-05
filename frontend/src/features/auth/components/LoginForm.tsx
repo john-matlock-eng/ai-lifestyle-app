@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { LoginFormData, loginSchema, MfaFormData } from '../utils/validation';
-import { authService, MfaRequiredResponse } from '../services/authService';
+import { LoginFormData, loginSchema } from '../utils/validation';
+import { authService } from '../services/authService';
 import { isApiError } from '../../../api/client';
 import { setRememberMe } from '../utils/tokenManager';
 import Input from '../../../components/common/Input';
@@ -12,16 +12,9 @@ import Button from '../../../components/common/Button';
 import PasswordInput from './PasswordInput';
 import MfaCodeInput from './MfaCodeInput';
 
-interface LocationState {
-  from?: string;
-}
-
 const LoginForm: React.FC = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const state = location.state as LocationState;
-  
   const [generalError, setGeneralError] = useState<string>('');
   const [mfaSession, setMfaSession] = useState<{ sessionToken: string } | null>(null);
   const [showMfa, setShowMfa] = useState(false);
@@ -31,7 +24,6 @@ const LoginForm: React.FC = () => {
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-    watch,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -39,7 +31,7 @@ const LoginForm: React.FC = () => {
     },
   });
 
-  const rememberMe = watch('rememberMe');
+
 
   const loginMutation = useMutation({
     mutationFn: authService.login,
@@ -78,7 +70,7 @@ const LoginForm: React.FC = () => {
   const mfaMutation = useMutation({
     mutationFn: ({ sessionToken, code }: { sessionToken: string; code: string }) =>
       authService.verifyMfa(sessionToken, code),
-    onSuccess: (data) => {
+    onSuccess: () => {
       // MFA verification successful
       // The tokens are stored by authService
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });

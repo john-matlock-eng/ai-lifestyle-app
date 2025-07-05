@@ -123,7 +123,7 @@ export const useEncryption = (moduleId: string, options: UseEncryptionOptions = 
   }, [moduleId, dispatch]);
 
   // Encrypt data (mock implementation)
-  const encrypt = useCallback(async (data: any) => {
+  const encrypt = useCallback(async <T = unknown>(data: T) => {
     if (!isEncrypted) {
       return data; // Return unencrypted if module encryption is disabled
     }
@@ -140,9 +140,15 @@ export const useEncryption = (moduleId: string, options: UseEncryptionOptions = 
   }, [isEncrypted, moduleState]);
 
   // Decrypt data (mock implementation)
-  const decrypt = useCallback(async (encryptedData: any) => {
-    if (!encryptedData.encrypted) {
-      return encryptedData;
+  interface EncryptedData {
+    encrypted: boolean;
+    data: string;
+    algorithm?: string;
+    keyId?: string;
+  }
+  const decrypt = useCallback(async <T = unknown>(encryptedData: EncryptedData | T): Promise<T> => {
+    if (!('encrypted' in encryptedData) || !encryptedData.encrypted) {
+      return encryptedData as T;
     }
     
     // In real implementation, this would use the encryption service
@@ -179,11 +185,11 @@ export const useEncryptionStatus = () => {
   const encryptionState = useAppSelector(state => state.encryption);
   
   const enabledModules = Object.entries(encryptionState.modules)
-    .filter(([_, module]) => module.isEnabled)
+    .filter(([, module]) => module.isEnabled)
     .map(([moduleId]) => moduleId);
   
   const modulesNeedingBackup = Object.entries(encryptionState.modules)
-    .filter(([_, module]) => module.isEnabled && !module.hasBackup)
+    .filter(([, module]) => module.isEnabled && !module.hasBackup)
     .map(([moduleId]) => moduleId);
   
   return {

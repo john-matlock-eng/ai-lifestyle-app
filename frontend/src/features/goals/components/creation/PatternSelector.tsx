@@ -31,7 +31,7 @@ const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPat
             `}
             style={{
               borderColor: selectedPattern === pattern.id ? pattern.color : undefined,
-              ['--tw-ring-color' as any]: pattern.color,
+              ...({ '--tw-ring-color': pattern.color } as React.CSSProperties),
             }}
           >
             {/* Pattern Icon */}

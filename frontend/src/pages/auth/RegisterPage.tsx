@@ -1,6 +1,5 @@
 import React from 'react';
 import RegistrationForm from '../../features/auth/components/RegistrationForm';
-import DevTools from '../../components/common/DevTools';
 
 const RegisterPage: React.FC = () => {
   return (

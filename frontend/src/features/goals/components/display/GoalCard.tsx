@@ -89,7 +89,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog }) => {
           </div>
         );
 
-      case 'limit':
+      case 'limit': {
         const isOverLimit = (goal.progress.currentPeriodValue || 0) > goal.target.value;
         return (
           <div className="space-y-1">
@@ -106,6 +106,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog }) => {
             )}
           </div>
         );
+      }
 
       default:
         return null;

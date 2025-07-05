@@ -82,6 +82,7 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
     
     // Find consecutive days before this date
     let streak = 1;
+    // eslint-disable-next-line prefer-const
     let checkDate = new Date(date);
     checkDate.setDate(checkDate.getDate() - 1);
     

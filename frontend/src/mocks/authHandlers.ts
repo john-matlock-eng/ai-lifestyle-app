@@ -190,6 +190,7 @@ export const authHandlers = [
     const accessToken = `mock-access-token-${crypto.randomUUID()}`;
     const refreshToken = `mock-refresh-token-${crypto.randomUUID()}`;
 
+
     const { password, ...userProfile } = user;
 
     return HttpResponse.json({
@@ -204,7 +205,11 @@ export const authHandlers = [
   // MFA verification endpoint
   http.post(`${API_URL}/auth/mfa/verify`, async ({ request }) => {
     console.log('[MSW] Intercepting MFA verification');
-    const body = await request.json() as any;
+    interface MfaVerifyRequest {
+      sessionToken: string;
+      code: string;
+    }
+    const body = await request.json() as MfaVerifyRequest;
 
     const session = sessions.get(body.sessionToken);
     if (!session) {
@@ -259,6 +264,7 @@ export const authHandlers = [
     const accessToken = `mock-access-token-${crypto.randomUUID()}`;
     const refreshToken = `mock-refresh-token-${crypto.randomUUID()}`;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userProfile } = user;
 
     // Clear session

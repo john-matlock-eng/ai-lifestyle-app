@@ -31,7 +31,7 @@ export interface Goal {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface GoalTarget {
@@ -114,7 +114,7 @@ export interface CreateGoalRequest {
   context?: GoalContext;
   rewards?: GoalRewards;
   visibility?: GoalVisibility;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateGoalRequest {
@@ -129,7 +129,7 @@ export interface UpdateGoalRequest {
   rewards?: GoalRewards;
   status?: 'active' | 'paused';
   visibility?: GoalVisibility;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface GoalActivity {

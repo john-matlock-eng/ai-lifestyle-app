@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Target, Calendar, TrendingUp, TrendingDown, Info } from 'lucide-react';
 import {
   TargetGoalFormData,
-  Direction,
   GOAL_CATEGORIES,
   METRIC_UNITS,
   MetricType,

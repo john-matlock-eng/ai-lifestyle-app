@@ -5,14 +5,12 @@ import {
   EncryptionIndicator,
   ShareDialog,
   KeyManagement,
-  EncryptionOnboarding,
 } from '../components/encryption';
 
 import {
   // Goal Components (only what we've built so far)
   GoalList,
   GoalCard,
-  GoalWizard,
   PatternSelector,
   QuickLogModal,
   
@@ -148,14 +146,6 @@ interface ShareToken {
   recipientEmail: string;
   permissions: string[];
   expiresAt: string;
-}
-
-interface ShareableItem {
-  id: string;
-  title: string;
-  type: string;
-  createdAt: string;
-  encrypted: boolean;
 }
 
 export const ComponentShowcase: React.FC = () => {

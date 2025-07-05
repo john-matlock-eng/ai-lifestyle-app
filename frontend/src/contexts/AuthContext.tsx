@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService, UserProfile } from '../features/auth/services/authService';
@@ -7,34 +7,10 @@ import {
   getRefreshToken, 
   clearTokens, 
   refreshAccessToken,
-  getTokenExpiry,
-  setRememberMe,
-  getRememberMe 
+  getTokenExpiry
 } from '../features/auth/utils/tokenManager';
+import { AuthContext, AuthContextValue } from './AuthContextType';
 
-interface AuthContextValue {
-  user: UserProfile | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  sessionExpiry: Date | null;
-  isSessionWarningActive: boolean;
-  login: (credentials: { email: string; password: string; rememberMe?: boolean }) => Promise<void>;
-  logout: (reason?: 'manual' | 'timeout' | 'security') => void;
-  refreshToken: () => Promise<void>;
-  refreshSession: () => Promise<void>;
-  dismissSessionWarning: () => void;
-  updateUser: (updates: Partial<UserProfile>) => void;
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -45,7 +21,7 @@ const SESSION_WARNING_TIME = 5 * 60 * 1000; // 5 minutes before expiry
 const SESSION_CHECK_INTERVAL = 30 * 1000; // Check every 30 seconds
 const IDLE_TIMEOUT = 30 * 60 * 1000; // 30 minutes of inactivity
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -59,18 +35,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const lastActivityRef = useRef<number>(Date.now());
 
   // Check if user has a valid token on mount
-  const { data: user, isLoading: isLoadingUser, error: userError } = useQuery({
+  const { data: user, isLoading: isLoadingUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: authService.getCurrentUser,
     enabled: !!getAccessToken() && isInitialized,
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Only retry on network errors, not auth errors
-      if (error?.response?.status === 401) return false;
+      const errorResponse = error as { response?: { status?: number } };
+      if (errorResponse?.response?.status === 401) return false;
       return failureCount < 2;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    onError: (error: any) => {
-      if (error?.response?.status === 401) {
+    onError: (error: unknown) => {
+      const errorResponse = error as { response?: { status?: number } };
+      if (errorResponse?.response?.status === 401) {
         // Token is invalid, try to refresh
         handleTokenRefresh();
       }
@@ -116,7 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     initializeAuth();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Activity tracking for idle timeout
   useEffect(() => {
@@ -154,7 +132,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Schedule token refresh
     scheduleTokenRefresh();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const stopSessionManagement = useCallback(() => {
     if (sessionCheckIntervalRef.current) {
@@ -186,7 +164,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Session expired
       handleTokenRefresh();
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const scheduleTokenRefresh = useCallback(() => {
     const expiry = getTokenExpiry();
@@ -206,7 +184,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     refreshTimeoutRef.current = setTimeout(() => {
       handleTokenRefresh();
     }, refreshTime);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTokenRefresh = useCallback(async () => {
     try {
@@ -229,7 +207,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Token refresh failed:', error);
       logout('timeout');
     }
-  }, [queryClient]);
+  }, [queryClient]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Monitor for authentication changes
   useEffect(() => {
@@ -244,7 +222,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [user, sessionExpiry, startSessionManagement]);
 
-  const login = async (credentials: { email: string; password: string; rememberMe?: boolean }) => {
+  const login = async () => {
     // LoginForm component handles the actual login
     // This is kept for interface compatibility
     return Promise.resolve();
@@ -270,15 +248,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [navigate, queryClient, stopSessionManagement]);
 
-  const refreshToken = async () => {
+  const refreshToken = useCallback(async () => {
     await handleTokenRefresh();
-  };
+  }, [handleTokenRefresh]);
 
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     // Extend session by refreshing token
     await handleTokenRefresh();
     setIsSessionWarningActive(false);
-  };
+  }, [handleTokenRefresh]);
 
   const dismissSessionWarning = () => {
     setIsSessionWarningActive(false);
@@ -317,3 +295,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+export default AuthProvider;

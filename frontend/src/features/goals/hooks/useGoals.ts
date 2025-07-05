@@ -10,11 +10,8 @@ import {
 } from '../services/goalService';
 import { 
   Goal, 
-  CreateGoalRequest, 
   UpdateGoalRequest, 
-  LogActivityRequest,
-  GoalFilters,
-  GoalSortOption 
+  LogActivityRequest
 } from '../types/api.types';
 
 // Hook for listing goals with filters
@@ -100,7 +97,7 @@ export function useLogActivity(goalId: string) {
       queryClient.invalidateQueries({ queryKey: ['goals'] }); // Update list progress
     },
     // Optimistic update example (optional)
-    onMutate: async (activity) => {
+    onMutate: async () => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['goal', goalId] });
       

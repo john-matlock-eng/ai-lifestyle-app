@@ -1,7 +1,5 @@
 import React from 'react';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   XAxis,
@@ -10,8 +8,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  ReferenceDot,
-  Legend,
 } from 'recharts';
 import { TrendingUp, Calendar, Trophy } from 'lucide-react';
 
@@ -62,7 +58,11 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
   const progressPercentage = (currentValue / targetValue) * 100;
 
   // Custom tooltip
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface TooltipPayload {
+    payload: { date: string; value: number };
+    value: number;
+  }
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) => {
     if (active && payload && payload[0]) {
       return (
         <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
@@ -77,7 +77,11 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
   };
 
   // Custom dot for milestones
-  const CustomDot = (props: any) => {
+  interface DotPayload {
+    value: number;
+    date: string;
+  }
+  const CustomDot = (props: { cx?: number; cy?: number; payload?: DotPayload }) => {
     const { cx, cy, payload } = props;
     const milestone = milestones.find(m => Math.abs(payload.value - m.value) < 0.1);
     

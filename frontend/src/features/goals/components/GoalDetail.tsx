@@ -4,7 +4,7 @@ import {
   Archive, Trash2, Plus, CheckCircle, XCircle, Clock, Target, Trophy,
   Flame, ShieldAlert, BarChart3, Share2
 } from 'lucide-react';
-import { Goal, GoalActivity, ActivityType, GOAL_PATTERN_COLORS } from '../types/goal.types';
+import { Goal, GoalActivity, GOAL_PATTERN_COLORS } from '../types/goal.types';
 import { GoalProgressRing } from './GoalProgress/ProgressRing';
 import { StreakCalendar } from './GoalProgress/StreakCalendar';
 import { useEncryption } from '../../../hooks/useEncryption';

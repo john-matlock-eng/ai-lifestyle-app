@@ -1,8 +1,6 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
 
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
