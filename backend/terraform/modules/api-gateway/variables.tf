@@ -4,96 +4,90 @@ variable "api_name" {
 }
 
 variable "environment" {
-  description = "Environment (dev, prod)"
+  description = "Environment name"
   type        = string
 }
 
 variable "description" {
-  description = "Description of the API"
+  description = "API description"
   type        = string
   default     = ""
 }
 
 variable "routes" {
-  description = "Map of routes to configure"
+  description = "Map of route keys to route configuration"
   type = map(object({
-    method             = string
-    lambda_invoke_arn  = string
-    lambda_function_name = string
     authorization_type = optional(string, "NONE")
-    authorizer_id      = optional(string)
-    api_key_required   = optional(bool, false)
-    request_parameters = optional(map(string), {})
-    throttle_burst_limit = optional(number)
-    throttle_rate_limit  = optional(number)
   }))
+  default = {}
 }
 
-variable "cors_configuration" {
-  description = "CORS configuration"
-  type = object({
-    allow_origins     = list(string)
-    allow_methods     = list(string)
-    allow_headers     = list(string)
-    expose_headers    = list(string)
-    max_age          = number
-    allow_credentials = bool
-  })
-  default = {
-    allow_origins     = ["*"]
-    allow_methods     = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allow_headers     = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token"]
-    expose_headers    = ["x-request-id"]
-    max_age          = 300
-    allow_credentials = false
-  }
-}
-
-variable "stage_name" {
-  description = "Deployment stage name"
+variable "lambda_function_name" {
+  description = "Name of the Lambda function to integrate"
   type        = string
-  default     = "v1"
 }
 
-variable "throttle_settings" {
-  description = "Default throttle settings"
-  type = object({
-    burst_limit = number
-    rate_limit  = number
-  })
-  default = {
-    burst_limit = 1000
-    rate_limit  = 500
-  }
-}
-
-variable "access_log_settings" {
-  description = "Access log settings"
-  type = object({
-    destination_arn = string
-    format         = string
-  })
-  default = null
-}
-
-variable "custom_domain" {
-  description = "Custom domain configuration"
-  type = object({
-    domain_name     = string
-    certificate_arn = string
-    base_path       = optional(string, "")
-  })
-  default = null
-}
-
-variable "api_key_source" {
-  description = "Source of the API key for requests"
+variable "lambda_invoke_arn" {
+  description = "Invoke ARN of the Lambda function"
   type        = string
-  default     = "HEADER"
+}
+
+variable "cors_origins" {
+  description = "Allowed CORS origins"
+  type        = list(string)
+  default     = ["*"]
+}
+
+variable "log_retention_days" {
+  description = "CloudWatch log retention in days"
+  type        = number
+  default     = 7
+}
+
+variable "throttle_rate_limit" {
+  description = "API throttling rate limit (requests per second)"
+  type        = number
+  default     = 100
+}
+
+variable "throttle_burst_limit" {
+  description = "API throttling burst limit"
+  type        = number
+  default     = 200
+}
+
+variable "enable_jwt_authorizer" {
+  description = "Enable JWT authorizer for protected routes"
+  type        = bool
+  default     = false
+}
+
+variable "jwt_audience" {
+  description = "JWT audience for the authorizer"
+  type        = list(string)
+  default     = []
+}
+
+variable "jwt_issuer" {
+  description = "JWT issuer URL"
+  type        = string
+  default     = ""
+}
+
+variable "custom_domain_name" {
+  description = "Custom domain name for the API"
+  type        = string
+  default     = null
+}
+
+variable "acm_certificate_arn" {
+  description = "ACM certificate ARN for custom domain"
+  type        = string
+  default     = null
 }
 
 variable "tags" {
-  description = "Additional tags for resources"
+  description = "Additional tags"
   type        = map(string)
   default     = {}
 }

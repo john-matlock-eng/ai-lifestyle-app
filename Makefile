@@ -47,3 +47,9 @@ clean: ## Clean all build artifacts
 	cd backend && make clean
 	cd frontend && rm -rf dist node_modules || true
 	rm -rf .pytest_cache .coverage
+
+fix-workflows: ## Commit and push workflow fixes
+	@echo "${YELLOW}Pushing workflow fixes...${NC}"
+	git add .github/workflows/
+	git commit -m "Fix: Lambda workflows now trigger on PRs for dev deployment" || true
+	git push

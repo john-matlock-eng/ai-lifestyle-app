@@ -1,0 +1,1427 @@
+# Goal System Endpoints to Add to OpenAPI Contract
+
+Add these endpoints after the authentication endpoints (after line 299) and before the AI Analysis endpoints:
+
+```yaml
+  # Goal System Endpoints
+  /goals:
+    post:
+      summary: Create a new goal
+      description: |
+        Creates a new goal with support for 5 patterns: recurring, milestone, target, streak, and limit.
+        Feature-specific data goes in the metadata field.
+      operationId: createGoal
+      tags:
+        - Goals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoalRequest'
+      responses:
+        '201':
+          description: Goal created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Invalid goal data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '403':
+          description: Goal quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: List user's goals
+      description: Returns paginated list of goals with filtering options
+      operationId: listGoals
+      tags:
+        - Goals
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [journal, workout, nutrition, reading, meditation, custom]
+          description: Filter by goal type
+        - name: pattern
+          in: query
+          schema:
+            type: string
+            enum: [recurring, milestone, target, streak, limit]
+          description: Filter by goal pattern
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, paused, completed, archived, all]
+            default: active
+          description: Filter by status
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, title, progress, nextDue]
+            default: createdAt
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Goals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GoalSummary'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}:
+    get:
+      summary: Get a specific goal
+      description: Returns detailed information about a single goal
+      operationId: getGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Goal retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update a goal
+      description: Updates goal properties, target, schedule, or metadata
+      operationId: updateGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGoalRequest'
+      responses:
+        '200':
+          description: Goal updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Invalid update data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete a goal
+      description: Archives a goal (soft delete)
+      operationId: deleteGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Goal archived successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}/track:
+    post:
+      summary: Track goal progress
+      description: Records an activity for a goal with rich context
+      operationId: trackGoalProgress
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackProgressRequest'
+      responses:
+        '200':
+          description: Progress tracked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackProgressResponse'
+        '400':
+          description: Invalid tracking data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}/activities:
+    get:
+      summary: Get goal activities
+      description: Returns activities logged for a specific goal
+      operationId: getGoalActivities
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Activities retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  activities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GoalActivity'
+                  summary:
+                    $ref: '#/components/schemas/ActivitySummary'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}/pause:
+    post:
+      summary: Pause a goal
+      description: Temporarily pauses goal tracking
+      operationId: pauseGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PauseGoalRequest'
+      responses:
+        '200':
+          description: Goal paused successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Goal cannot be paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}/resume:
+    post:
+      summary: Resume a goal
+      description: Resumes a paused goal
+      operationId: resumeGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Goal resumed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Goal is not paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}/complete:
+    post:
+      summary: Complete a goal
+      description: Marks a goal as completed
+      operationId: completeGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteGoalRequest'
+      responses:
+        '200':
+          description: Goal completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Goal cannot be completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}/stats:
+    get:
+      summary: Get goal statistics
+      description: Returns detailed statistics and insights for a goal
+      operationId: getGoalStats
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month, year, all]
+            default: month
+        - name: groupBy
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: week
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalStatistics'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/summary:
+    get:
+      summary: Get all goals summary
+      description: Returns summary statistics across all user's goals
+      operationId: getGoalsSummary
+      tags:
+        - Goals
+      responses:
+        '200':
+          description: Summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalsSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/templates:
+    get:
+      summary: Get goal templates
+      description: Returns available goal templates
+      operationId: getGoalTemplates
+      tags:
+        - Goals
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [journal, workout, nutrition, reading, meditation, custom]
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+            enum: [beginner, intermediate, advanced]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [popular, newest, rating]
+            default: popular
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Templates retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GoalTemplate'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/from-template:
+    post:
+      summary: Create goal from template
+      description: Creates a new goal based on a template
+      operationId: createGoalFromTemplate
+      tags:
+        - Goals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFromTemplateRequest'
+      responses:
+        '201':
+          description: Goal created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Invalid template or customizations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Template not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+```
+
+Also add these schemas to the components/schemas section (after the UserPreferences schema):
+
+```yaml
+    # Goal System Schemas
+    CreateGoalRequest:
+      type: object
+      required:
+        - goalType
+        - goalPattern
+        - title
+        - target
+      properties:
+        goalType:
+          type: string
+          enum: [journal, workout, nutrition, reading, meditation, custom]
+        goalPattern:
+          type: string
+          enum: [recurring, milestone, target, streak, limit]
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        category:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        target:
+          $ref: '#/components/schemas/GoalTarget'
+        schedule:
+          $ref: '#/components/schemas/GoalSchedule'
+        reminders:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoalReminder'
+        context:
+          $ref: '#/components/schemas/GoalContext'
+        metadata:
+          type: object
+          description: Feature-specific data
+
+    UpdateGoalRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        category:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        target:
+          $ref: '#/components/schemas/GoalTarget'
+        schedule:
+          $ref: '#/components/schemas/GoalSchedule'
+        reminders:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoalReminder'
+        context:
+          $ref: '#/components/schemas/GoalContext'
+        metadata:
+          type: object
+
+    Goal:
+      type: object
+      required:
+        - goalId
+        - userId
+        - goalType
+        - goalPattern
+        - title
+        - target
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        goalId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        goalType:
+          type: string
+          enum: [journal, workout, nutrition, reading, meditation, custom]
+        goalPattern:
+          type: string
+          enum: [recurring, milestone, target, streak, limit]
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+        target:
+          $ref: '#/components/schemas/GoalTarget'
+        schedule:
+          $ref: '#/components/schemas/GoalSchedule'
+        progress:
+          $ref: '#/components/schemas/GoalProgress'
+        reminders:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoalReminder'
+        context:
+          $ref: '#/components/schemas/GoalContext'
+        rewards:
+          $ref: '#/components/schemas/GoalRewards'
+        status:
+          type: string
+          enum: [active, paused, completed, archived]
+        visibility:
+          type: string
+          enum: [private, friends, public]
+        metadata:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    GoalSummary:
+      type: object
+      required:
+        - goalId
+        - goalType
+        - goalPattern
+        - title
+        - status
+        - progress
+        - createdAt
+      properties:
+        goalId:
+          type: string
+          format: uuid
+        goalType:
+          type: string
+        goalPattern:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+        status:
+          type: string
+        target:
+          type: object
+          properties:
+            value:
+              type: number
+            unit:
+              type: string
+            period:
+              type: string
+        progress:
+          type: object
+          properties:
+            percentComplete:
+              type: number
+            currentStreak:
+              type: integer
+            lastActivityDate:
+              type: string
+              format: date-time
+        nextDue:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    GoalTarget:
+      type: object
+      required:
+        - metric
+        - value
+        - unit
+        - direction
+        - targetType
+      properties:
+        metric:
+          type: string
+          enum: [count, duration, amount, weight, distance, calories, money, custom]
+        value:
+          type: number
+          minimum: 0
+        unit:
+          type: string
+        period:
+          type: string
+          enum: [day, week, month, quarter, year]
+        direction:
+          type: string
+          enum: [increase, decrease, maintain]
+        targetType:
+          type: string
+          enum: [minimum, maximum, exact, range]
+        targetDate:
+          type: string
+          format: date
+        startValue:
+          type: number
+        currentValue:
+          type: number
+        minValue:
+          type: number
+        maxValue:
+          type: number
+
+    GoalSchedule:
+      type: object
+      properties:
+        frequency:
+          type: string
+          enum: [daily, weekly, monthly, custom]
+        daysOfWeek:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+        preferredTimes:
+          type: array
+          items:
+            type: string
+            pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$'
+        checkInFrequency:
+          type: string
+          enum: [daily, weekly, monthly]
+        allowSkipDays:
+          type: integer
+          minimum: 0
+        catchUpAllowed:
+          type: boolean
+
+    GoalProgress:
+      type: object
+      properties:
+        percentComplete:
+          type: number
+          minimum: 0
+          maximum: 100
+        lastActivityDate:
+          type: string
+          format: date-time
+        currentPeriodValue:
+          type: number
+        periodHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+              achieved:
+                type: boolean
+              value:
+                type: number
+        totalAccumulated:
+          type: number
+        remainingToGoal:
+          type: number
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        targetStreak:
+          type: integer
+        averageValue:
+          type: number
+        daysOverLimit:
+          type: integer
+        trend:
+          type: string
+          enum: [improving, stable, declining]
+        projectedCompletion:
+          type: string
+          format: date-time
+        successRate:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    GoalReminder:
+      type: object
+      required:
+        - enabled
+        - type
+        - timing
+      properties:
+        enabled:
+          type: boolean
+        type:
+          type: string
+          enum: [push, email, sms, in-app]
+        timing:
+          type: string
+          enum: [at-time, before, after]
+        offsetMinutes:
+          type: integer
+        message:
+          type: string
+
+    GoalContext:
+      type: object
+      properties:
+        motivation:
+          type: string
+        importanceLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+        supportingGoals:
+          type: array
+          items:
+            type: string
+        conflictingGoals:
+          type: array
+          items:
+            type: string
+        obstacles:
+          type: array
+          items:
+            type: string
+        successFactors:
+          type: array
+          items:
+            type: string
+        preferredActivities:
+          type: array
+          items:
+            type: string
+        avoidActivities:
+          type: array
+          items:
+            type: string
+
+    GoalRewards:
+      type: object
+      properties:
+        pointsPerActivity:
+          type: integer
+        milestoneRewards:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: number
+              reward:
+                type: string
+              unlockedAt:
+                type: string
+                format: date-time
+        badges:
+          type: array
+          items:
+            type: string
+
+    TrackProgressRequest:
+      type: object
+      required:
+        - value
+        - unit
+      properties:
+        value:
+          type: number
+        unit:
+          type: string
+        activityDate:
+          type: string
+          format: date-time
+        context:
+          $ref: '#/components/schemas/ActivityContext'
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityAttachment'
+        note:
+          type: string
+
+    TrackProgressResponse:
+      type: object
+      required:
+        - activityId
+        - goalId
+        - progress
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        goalId:
+          type: string
+          format: uuid
+        progress:
+          type: object
+          properties:
+            currentPeriodValue:
+              type: number
+            periodTarget:
+              type: number
+            achieved:
+              type: boolean
+            currentStreak:
+              type: integer
+            percentComplete:
+              type: number
+        insights:
+          type: object
+          properties:
+            message:
+              type: string
+            milestone:
+              type: string
+
+    GoalActivity:
+      type: object
+      required:
+        - activityId
+        - goalId
+        - userId
+        - value
+        - unit
+        - activityDate
+        - createdAt
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        goalId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        value:
+          type: number
+        unit:
+          type: string
+        activityDate:
+          type: string
+          format: date-time
+        activityType:
+          type: string
+          enum: [progress, completed, skipped, partial]
+        achieved:
+          type: boolean
+        context:
+          $ref: '#/components/schemas/ActivityContext'
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityAttachment'
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ActivityContext:
+      type: object
+      properties:
+        timeOfDay:
+          type: string
+          enum: [early-morning, morning, afternoon, evening, night]
+        dayOfWeek:
+          type: integer
+          minimum: 0
+          maximum: 6
+        isWeekend:
+          type: boolean
+        isHoliday:
+          type: boolean
+        weather:
+          type: object
+          properties:
+            condition:
+              type: string
+            temperature:
+              type: number
+            humidity:
+              type: number
+        location:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [home, work, gym, outdoors, travel]
+            city:
+              type: string
+            coordinates:
+              type: array
+              items:
+                type: number
+              minItems: 2
+              maxItems: 2
+        energyLevel:
+          type: integer
+          minimum: 1
+          maximum: 10
+        stressLevel:
+          type: integer
+          minimum: 1
+          maximum: 10
+        sleepHours:
+          type: number
+        mood:
+          type: string
+        withOthers:
+          type: boolean
+        socialContext:
+          type: string
+          enum: [alone, partner, friends, group, online]
+        difficulty:
+          type: integer
+          minimum: 1
+          maximum: 5
+        enjoyment:
+          type: integer
+          minimum: 1
+          maximum: 10
+
+    ActivityAttachment:
+      type: object
+      required:
+        - type
+        - url
+      properties:
+        type:
+          type: string
+          enum: [image, link, reference]
+        url:
+          type: string
+          format: uri
+        entityId:
+          type: string
+        caption:
+          type: string
+
+    ActivitySummary:
+      type: object
+      properties:
+        totalActivities:
+          type: integer
+        successRate:
+          type: number
+        averageValue:
+          type: number
+        trend:
+          type: string
+          enum: [improving, stable, declining]
+
+    PauseGoalRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+        resumeDate:
+          type: string
+          format: date
+
+    CompleteGoalRequest:
+      type: object
+      properties:
+        completionNotes:
+          type: string
+        actualValue:
+          type: number
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        wouldRecommend:
+          type: boolean
+
+    GoalStatistics:
+      type: object
+      properties:
+        overview:
+          type: object
+          properties:
+            totalDays:
+              type: integer
+            activeDays:
+              type: integer
+            successRate:
+              type: number
+            currentStreak:
+              type: integer
+            averageValue:
+              type: number
+        patterns:
+          type: object
+          properties:
+            bestTimeOfDay:
+              type: string
+            bestDayOfWeek:
+              type: string
+            worstDayOfWeek:
+              type: string
+            consistencyScore:
+              type: number
+        trends:
+          type: array
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+              average:
+                type: number
+              successRate:
+                type: number
+        predictions:
+          type: object
+          properties:
+            nextWeekSuccess:
+              type: number
+            monthlyProjection:
+              type: number
+            recommendedAdjustment:
+              type: object
+
+    GoalsSummary:
+      type: object
+      properties:
+        totalGoals:
+          type: integer
+        activeGoals:
+          type: integer
+        completedGoals:
+          type: integer
+        overallSuccessRate:
+          type: number
+        currentStreaks:
+          type: object
+          additionalProperties:
+            type: integer
+        weeklyProgress:
+          type: object
+          properties:
+            achieved:
+              type: integer
+            target:
+              type: integer
+            percentage:
+              type: number
+        insights:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [correlation, recommendation, milestone]
+              message:
+                type: string
+              confidence:
+                type: number
+              goalId:
+                type: string
+        upcomingMilestones:
+          type: array
+          items:
+            type: object
+            properties:
+              goalId:
+                type: string
+              milestone:
+                type: string
+              daysUntil:
+                type: integer
+
+    GoalTemplate:
+      type: object
+      required:
+        - templateId
+        - name
+        - description
+        - goalType
+        - difficulty
+      properties:
+        templateId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        goalType:
+          type: string
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        duration:
+          type: integer
+          description: Duration in days
+        popularity:
+          type: integer
+        rating:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+        defaultGoal:
+          type: object
+          description: Pre-configured goal settings
+
+    CreateFromTemplateRequest:
+      type: object
+      required:
+        - templateId
+      properties:
+        templateId:
+          type: string
+          format: uuid
+        customizations:
+          type: object
+          properties:
+            title:
+              type: string
+            startDate:
+              type: string
+              format: date
+            target:
+              type: object
+            schedule:
+              type: object
+
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - pages
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+```
+
+Also add to the tags section:
+
+```yaml
+  - name: Goals
+    description: Universal goal system for all lifestyle tracking
+```

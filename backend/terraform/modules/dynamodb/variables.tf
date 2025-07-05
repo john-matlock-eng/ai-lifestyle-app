@@ -52,6 +52,15 @@ variable "attributes" {
   default = []
 }
 
+variable "additional_attributes" {
+  description = "Additional attributes that need to be defined"
+  type = list(object({
+    name = string
+    type = string  # S, N, or B
+  }))
+  default = []
+}
+
 variable "global_secondary_indexes" {
   description = "Global secondary indexes"
   type = list(object({

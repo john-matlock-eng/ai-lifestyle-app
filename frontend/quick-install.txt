@@ -1,0 +1,1 @@
+npm install --legacy-peer-deps react-router-dom @tanstack/react-query axios zod js-cookie react-hook-form @hookform/resolvers clsx

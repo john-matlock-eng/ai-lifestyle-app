@@ -4,46 +4,41 @@ output "api_id" {
 }
 
 output "api_endpoint" {
-  description = "Default endpoint URL of the API"
-  value       = aws_apigatewayv2_api.this.api_endpoint
+  description = "Default endpoint URL of the API Gateway"
+  value       = aws_apigatewayv2_stage.default.invoke_url
 }
 
-output "invoke_url" {
-  description = "Invoke URL for the API stage"
-  value       = aws_apigatewayv2_stage.this.invoke_url
+output "api_arn" {
+  description = "ARN of the API Gateway"
+  value       = aws_apigatewayv2_api.this.arn
 }
 
 output "execution_arn" {
-  description = "Execution ARN of the API"
+  description = "Execution ARN of the API Gateway"
   value       = aws_apigatewayv2_api.this.execution_arn
 }
 
 output "stage_id" {
-  description = "ID of the deployment stage"
-  value       = aws_apigatewayv2_stage.this.id
+  description = "ID of the default stage"
+  value       = aws_apigatewayv2_stage.default.id
 }
 
-output "stage_arn" {
-  description = "ARN of the deployment stage"
-  value       = aws_apigatewayv2_stage.this.arn
+output "stage_name" {
+  description = "Name of the default stage"
+  value       = aws_apigatewayv2_stage.default.name
 }
 
 output "custom_domain_name" {
-  description = "Custom domain name (if configured)"
-  value       = var.custom_domain != null ? aws_apigatewayv2_domain_name.this[0].domain_name : null
+  description = "Custom domain name if configured"
+  value       = var.custom_domain_name
 }
 
-output "custom_domain_hosted_zone_id" {
-  description = "Route 53 hosted zone ID for custom domain"
-  value       = var.custom_domain != null ? aws_apigatewayv2_domain_name.this[0].domain_name_configuration[0].hosted_zone_id : null
+output "cloudwatch_log_group" {
+  description = "CloudWatch log group for API Gateway logs"
+  value       = aws_cloudwatch_log_group.api_logs.name
 }
 
-output "custom_domain_target_domain_name" {
-  description = "Target domain name for custom domain DNS"
-  value       = var.custom_domain != null ? aws_apigatewayv2_domain_name.this[0].domain_name_configuration[0].target_domain_name : null
-}
-
-output "log_group_name" {
-  description = "CloudWatch log group name"
-  value       = aws_cloudwatch_log_group.api.name
+output "authorizer_id" {
+  description = "ID of the JWT authorizer if enabled"
+  value       = var.enable_jwt_authorizer ? aws_apigatewayv2_authorizer.jwt[0].id : null
 }

@@ -1,0 +1,3165 @@
+openapi: 3.0.3
+info:
+  title: AI Lifestyle App API
+  description: |
+    API for the AI Lifestyle App - a comprehensive lifestyle management platform
+    covering nutrition, fitness, wellness, and daily routines.
+  version: 1.0.0
+  contact:
+    name: AI Lifestyle Team
+    email: support@ailifestyle.app
+
+servers:
+  - url: https://api.ailifestyle.app/v1
+    description: Production server
+  - url: https://staging-api.ailifestyle.app/v1
+    description: Staging server
+  - url: http://localhost:4000/v1
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the API
+      operationId: getHealthStatus
+      security: []
+      tags:
+        - System
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # Authentication Endpoints
+  /auth/register:
+    post:
+      summary: Register new user
+      description: |
+        Creates a new user account with email and password.
+        Sends a verification email upon successful registration.
+      operationId: registerUser
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              newUser:
+                summary: New user registration
+                value:
+                  email: "user@example.com"
+                  password: "SecureP@ss123"
+                  firstName: "Jane"
+                  lastName: "Doe"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Invalid registration data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: User login
+      description: |
+        Authenticates user with email and password.
+        Returns JWT tokens for API access.
+      operationId: loginUser
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many login attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      description: Uses refresh token to obtain new access token
+      operationId: refreshToken
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # User Profile Endpoints
+  /users/profile:
+    get:
+      summary: Get current user profile
+      description: Returns the authenticated user's profile information
+      operationId: getUserProfile
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update user profile
+      description: Updates the authenticated user's profile information
+      operationId: updateUserProfile
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Invalid profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # 2FA Endpoints
+  /auth/mfa/setup:
+    post:
+      summary: Setup 2FA for user
+      description: |
+        Generates TOTP secret and QR code for 2FA setup.
+        User must verify with a code to complete setup.
+      operationId: setupMfa
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: MFA setup initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaSetupResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: MFA already enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/mfa/verify-setup:
+    post:
+      summary: Verify 2FA setup
+      description: Confirms 2FA setup with user-provided TOTP code
+      operationId: verifyMfaSetup
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyMfaSetupRequest'
+      responses:
+        '200':
+          description: MFA successfully enabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaStatusResponse'
+        '400':
+          description: Invalid verification code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/mfa/verify:
+    post:
+      summary: Verify 2FA code during login
+      description: Completes login flow with 2FA verification
+      operationId: verifyMfa
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyMfaRequest'
+      responses:
+        '200':
+          description: MFA verification successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid MFA code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid session or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/mfa/disable:
+    post:
+      summary: Disable 2FA
+      description: Removes 2FA from user account after password verification
+      operationId: disableMfa
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisableMfaRequest'
+      responses:
+        '200':
+          description: MFA successfully disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaStatusResponse'
+        '400':
+          description: Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Password Reset Endpoints
+  /auth/password/reset-request:
+    post:
+      summary: Request password reset
+      description: Sends password reset email to user
+      operationId: requestPasswordReset
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Reset email sent if email exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '429':
+          description: Too many reset attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/password/reset-confirm:
+    post:
+      summary: Confirm password reset
+      description: Resets password using token from email
+      operationId: confirmPasswordReset
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirm'
+      responses:
+        '200':
+          description: Password successfully reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/email/verify:
+    post:
+      summary: Verify email address
+      description: Confirms email ownership using verification token
+      operationId: verifyEmail
+      security: []
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationRequest'
+      responses:
+        '200':
+          description: Email successfully verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Goal Management Endpoints
+  /goals:
+    get:
+      summary: List user goals
+      description: |
+        Retrieves all goals for the authenticated user with filtering and pagination.
+        Supports filtering by status, category, pattern type, and date ranges.
+      operationId: listGoals
+      tags:
+        - Goals
+      parameters:
+        - name: status
+          in: query
+          description: Filter by goal status
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [draft, active, paused, completed, archived]
+          style: form
+          explode: true
+        - name: goalPattern
+          in: query
+          description: Filter by goal pattern type
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [recurring, milestone, target, streak, limit]
+          style: form
+          explode: true
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: sort
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum: [created_asc, created_desc, updated_asc, updated_desc, title_asc, title_desc]
+            default: updated_desc
+      responses:
+        '200':
+          description: Goals retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalListResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create a new goal
+      description: |
+        Creates a new goal for the authenticated user. Supports all 5 goal patterns:
+        recurring, milestone, target, streak, and limit goals.
+      operationId: createGoal
+      tags:
+        - Goals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoalRequest'
+            examples:
+              recurringGoal:
+                summary: Daily steps goal
+                value:
+                  title: "Walk 10,000 steps daily"
+                  description: "Stay active by walking 10k steps every day"
+                  category: "fitness"
+                  goalPattern: "recurring"
+                  target:
+                    metric: "count"
+                    value: 10000
+                    unit: "steps"
+                    period: "day"
+                    direction: "increase"
+                    targetType: "minimum"
+              milestoneGoal:
+                summary: Novel writing goal
+                value:
+                  title: "Write 80,000 word novel"
+                  description: "Complete my first novel draft"
+                  category: "creativity"
+                  goalPattern: "milestone"
+                  target:
+                    metric: "count"
+                    value: 80000
+                    unit: "words"
+                    direction: "increase"
+                    targetDate: "2024-12-31"
+      responses:
+        '201':
+          description: Goal created successfully
+          headers:
+            Location:
+              description: URL of created goal
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Invalid goal data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Business rule violation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}:
+    get:
+      summary: Get goal details
+      description: Retrieves detailed information about a specific goal
+      operationId: getGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Goal retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update goal
+      description: |
+        Updates an existing goal. Cannot change goalPattern after creation.
+        Completed or archived goals cannot be updated.
+      operationId: updateGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGoalRequest'
+      responses:
+        '200':
+          description: Goal updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '400':
+          description: Invalid update data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Cannot update completed/archived goal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Archive goal
+      description: |
+        Archives a goal. Goals are never hard deleted to preserve history.
+        Archived goals can be restored later.
+      operationId: archiveGoal
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Goal archived successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}/activities:
+    get:
+      summary: List goal activities
+      description: |
+        Retrieves activity history for a specific goal with pagination.
+        Activities include progress logs, completions, and skips.
+      operationId: listGoalActivities
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          description: Filter activities after this date
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: Filter activities before this date
+          schema:
+            type: string
+            format: date
+        - name: activityType
+          in: query
+          description: Filter by activity type
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [progress, completed, skipped, partial]
+          style: form
+          explode: true
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Activities retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalActivityListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Log goal activity
+      description: |
+        Records progress toward a goal. The activity type and validation
+        depends on the goal pattern (recurring, milestone, etc.).
+      operationId: logGoalActivity
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogActivityRequest'
+            examples:
+              dailySteps:
+                summary: Log daily steps
+                value:
+                  value: 12500
+                  unit: "steps"
+                  activityType: "completed"
+                  activityDate: "2024-01-20"
+                  context:
+                    timeOfDay: "evening"
+                    energyLevel: 8
+                    enjoyment: 9
+                    weather:
+                      condition: "sunny"
+                      temperature: 72
+                  note: "Great walk in the park!"
+      responses:
+        '201':
+          description: Activity logged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalActivity'
+        '400':
+          description: Invalid activity data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Activity violates goal rules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /goals/{goalId}/progress:
+    get:
+      summary: Get goal progress
+      description: |
+        Retrieves current progress and analytics for a goal.
+        Progress calculation varies by goal pattern.
+      operationId: getGoalProgress
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: period
+          in: query
+          description: Time period for progress calculation
+          schema:
+            type: string
+            enum: [current, week, month, quarter, year, all]
+            default: current
+      responses:
+        '200':
+          description: Progress retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalProgress'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # AI Analysis Endpoints
+  /ai-analysis/shares:
+    post:
+      summary: Create AI analysis share
+      description: |
+        Creates a temporary share of selected encrypted entries with the AI analysis service.
+        Requires explicit user consent and sets appropriate retention periods.
+      operationId: createAIAnalysisShare
+      tags:
+        - AI Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAIShareRequest'
+      responses:
+        '201':
+          description: Analysis share created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIAnalysisShare'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '403':
+          description: User does not own all specified entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Analysis quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ai-analysis/shares/{shareId}/status:
+    get:
+      summary: Get analysis status
+      description: Check the processing status of an AI analysis share
+      operationId: getAnalysisStatus
+      tags:
+        - AI Analysis
+      parameters:
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analysis status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisStatus'
+        '404':
+          description: Share not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ai-analysis/results/{shareId}:
+    get:
+      summary: Get analysis results
+      description: Retrieve the results of a completed AI analysis
+      operationId: getAnalysisResults
+      tags:
+        - AI Analysis
+      parameters:
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analysis results retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIAnalysisResult'
+        '404':
+          description: Results not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '202':
+          description: Analysis still processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /ai-analysis/shares/{shareId}:
+    delete:
+      summary: Delete analysis share
+      description: Delete an analysis share and all associated data
+      operationId: deleteAnalysisShare
+      tags:
+        - AI Analysis
+      parameters:
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Share deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Share not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ai-analysis/public-key:
+    get:
+      summary: Get AI service public key
+      description: Retrieve the public key of the AI analysis service for encryption
+      operationId: getAIServicePublicKey
+      tags:
+        - AI Analysis
+      responses:
+        '200':
+          description: Public key retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIServicePublicKey'
+
+  # Core Encryption Service Endpoints
+  /encryption/initialize:
+    post:
+      summary: Initialize encryption for a module
+      description: Set up encryption context for a specific module (journal, goals, etc)
+      operationId: initializeEncryption
+      tags:
+        - Encryption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitializeEncryptionRequest'
+      responses:
+        '200':
+          description: Encryption initialized successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EncryptionStatus'
+        '400':
+          description: Invalid configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/encrypt:
+    post:
+      summary: Encrypt data
+      description: Encrypt data using the core encryption service
+      operationId: encryptData
+      tags:
+        - Encryption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EncryptRequest'
+      responses:
+        '200':
+          description: Data encrypted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EncryptedData'
+        '400':
+          description: Encryption failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/decrypt:
+    post:
+      summary: Decrypt data
+      description: Decrypt data using the core encryption service
+      operationId: decryptData
+      tags:
+        - Encryption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecryptRequest'
+      responses:
+        '200':
+          description: Data decrypted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecryptedData'
+        '400':
+          description: Decryption failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/share:
+    post:
+      summary: Create share token
+      description: Create a temporary share token for encrypted data
+      operationId: createShareToken
+      tags:
+        - Encryption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShareRequest'
+      responses:
+        '201':
+          description: Share token created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareToken'
+        '403':
+          description: Not authorized to share this data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/share/{shareToken}:
+    delete:
+      summary: Revoke share token
+      description: Revoke a previously created share token
+      operationId: revokeShareToken
+      tags:
+        - Encryption
+      parameters:
+        - name: shareToken
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Share token revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: Share token not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/keys/backup:
+    post:
+      summary: Backup encryption keys
+      description: Create an encrypted backup of user's encryption keys
+      operationId: backupKeys
+      tags:
+        - Encryption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackupKeysRequest'
+      responses:
+        '200':
+          description: Keys backed up successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyBackup'
+        '400':
+          description: Backup failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/keys/restore:
+    post:
+      summary: Restore encryption keys
+      description: Restore encryption keys from backup
+      operationId: restoreKeys
+      tags:
+        - Encryption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestoreKeysRequest'
+      responses:
+        '200':
+          description: Keys restored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Restore failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from Cognito
+
+  schemas:
+    # System Schemas
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - version
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        services:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [connected, disconnected]
+            cache:
+              type: string
+              enum: [connected, disconnected]
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Error type/code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+        request_id:
+          type: string
+          description: Unique request identifier for debugging
+        timestamp:
+          type: string
+          format: date-time
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+        - validation_errors
+      properties:
+        error:
+          type: string
+          enum: [VALIDATION_ERROR]
+        message:
+          type: string
+          default: "Validation failed"
+        validation_errors:
+          type: array
+          items:
+            type: object
+            required:
+              - field
+              - message
+            properties:
+              field:
+                type: string
+                description: Field that failed validation
+              message:
+                type: string
+                description: Validation error message
+        request_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    MessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Response message
+
+    # Authentication Schemas
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Strong password with at least 8 characters
+          example: "SecureP@ss123"
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+          description: User's first name
+          example: "Jane"
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+          description: User's last name
+          example: "Doe"
+
+    RegisterResponse:
+      type: object
+      required:
+        - userId
+        - email
+        - message
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: Newly created user ID
+        email:
+          type: string
+          format: email
+          description: Registered email address
+        message:
+          type: string
+          description: Success message
+          example: "Registration successful. Please check your email to verify your account."
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          format: password
+          description: User's password
+
+    LoginResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - tokenType
+        - expiresIn
+        - user
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token for API calls
+        refreshToken:
+          type: string
+          description: JWT refresh token for getting new access tokens
+        tokenType:
+          type: string
+          enum: [Bearer]
+          description: Token type for Authorization header
+        expiresIn:
+          type: integer
+          description: Access token expiration time in seconds
+          example: 3600
+        user:
+          $ref: '#/components/schemas/UserProfile'
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          description: Valid refresh token
+
+    RefreshTokenResponse:
+      type: object
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Access token expiration time in seconds
+
+    PasswordResetRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+
+    PasswordResetConfirm:
+      type: object
+      required:
+        - token
+        - newPassword
+      properties:
+        token:
+          type: string
+          description: Reset token from email
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: New password
+
+    EmailVerificationRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: Verification token from email
+
+    MfaSetupResponse:
+      type: object
+      required:
+        - secret
+        - qrCode
+      properties:
+        secret:
+          type: string
+          description: TOTP secret for manual entry
+        qrCode:
+          type: string
+          description: Base64 encoded QR code image
+
+    VerifyMfaSetupRequest:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+          description: 6-digit TOTP code
+
+    MfaStatusResponse:
+      type: object
+      required:
+        - enabled
+      properties:
+        enabled:
+          type: boolean
+          description: Whether MFA is enabled
+
+    VerifyMfaRequest:
+      type: object
+      required:
+        - sessionToken
+        - code
+      properties:
+        sessionToken:
+          type: string
+          description: Session token from login response
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+          description: 6-digit TOTP code
+
+    DisableMfaRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+          description: Current password for verification
+
+    # User Profile Schemas
+    UserProfile:
+      type: object
+      required:
+        - userId
+        - email
+        - firstName
+        - lastName
+        - createdAt
+        - updatedAt
+        - emailVerified
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: Unique user identifier
+        email:
+          type: string
+          format: email
+          description: User's email address
+        firstName:
+          type: string
+          description: User's first name
+        lastName:
+          type: string
+          description: User's last name
+        emailVerified:
+          type: boolean
+          description: Whether email is verified
+        mfaEnabled:
+          type: boolean
+          description: Whether 2FA is enabled
+          default: false
+        phoneNumber:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+          description: User's phone number (E.164 format)
+        dateOfBirth:
+          type: string
+          format: date
+          description: User's date of birth
+        timezone:
+          type: string
+          description: User's timezone (IANA format)
+          example: "America/New_York"
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: '^[a-zA-Z\s-]+$'
+        phoneNumber:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+        dateOfBirth:
+          type: string
+          format: date
+        timezone:
+          type: string
+        preferences:
+          $ref: '#/components/schemas/UserPreferences'
+
+    UserPreferences:
+      type: object
+      properties:
+        units:
+          type: string
+          enum: [metric, imperial]
+          default: metric
+          description: Measurement unit preference
+        language:
+          type: string
+          pattern: '^[a-z]{2}(-[A-Z]{2})?$'
+          default: en-US
+          description: Language preference (ISO 639-1)
+        notifications:
+          type: object
+          properties:
+            email:
+              type: boolean
+              default: true
+            push:
+              type: boolean
+              default: true
+            sms:
+              type: boolean
+              default: false
+        dietaryRestrictions:
+          type: array
+          items:
+            type: string
+            enum: [vegan, vegetarian, gluten-free, dairy-free, nut-free, halal, kosher]
+        fitnessGoals:
+          type: array
+          items:
+            type: string
+            enum: [weight-loss, muscle-gain, endurance, flexibility, general-health]
+
+    # AI Analysis Schemas
+    CreateAIShareRequest:
+      type: object
+      required:
+        - entryIds
+        - analysisType
+        - permissions
+      properties:
+        entryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+          maxItems: 100
+          description: IDs of entries to analyze
+        analysisType:
+          type: string
+          enum: [mood, patterns, goals, wellness, custom]
+          description: Type of analysis to perform
+        permissions:
+          $ref: '#/components/schemas/AIAnalysisPermissions'
+        parameters:
+          type: object
+          description: Analysis-specific parameters
+          additionalProperties: true
+
+    AIAnalysisPermissions:
+      type: object
+      required:
+        - retentionPeriod
+        - dataUsage
+      properties:
+        retentionPeriod:
+          type: string
+          enum: [ephemeral, 24h, 7d, 30d]
+          description: How long AI service can retain decrypted data
+        allowCrossEntryAnalysis:
+          type: boolean
+          default: true
+          description: Allow analysis across multiple entries
+        allowHistoricalComparison:
+          type: boolean
+          default: false
+          description: Allow comparison with user's historical data
+        allowModelTraining:
+          type: boolean
+          default: false
+          description: Allow anonymous usage for model improvement
+        dataUsage:
+          type: string
+          enum: [personal, aggregate, research]
+          description: How the data can be used
+
+    AIAnalysisShare:
+      type: object
+      required:
+        - shareId
+        - status
+        - createdAt
+        - expiresAt
+      properties:
+        shareId:
+          type: string
+          description: Unique identifier for this share
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, expired]
+        estimatedProcessingTime:
+          type: integer
+          description: Estimated seconds until completion
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        error:
+          type: string
+          description: Error message if failed
+
+    AnalysisStatus:
+      type: object
+      required:
+        - shareId
+        - status
+        - progress
+      properties:
+        shareId:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, expired]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Processing progress percentage
+        currentStep:
+          type: string
+          description: Current processing step
+        estimatedTimeRemaining:
+          type: integer
+          description: Estimated seconds remaining
+
+    AIAnalysisResult:
+      type: object
+      required:
+        - resultId
+        - shareId
+        - insights
+        - createdAt
+        - validUntil
+      properties:
+        resultId:
+          type: string
+        shareId:
+          type: string
+        insights:
+          type: object
+          required:
+            - summary
+            - confidence
+            - findings
+          properties:
+            summary:
+              type: string
+              description: Executive summary of analysis
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Overall confidence score
+            findings:
+              type: array
+              items:
+                $ref: '#/components/schemas/AnalysisFinding'
+        patterns:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalysisPattern'
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalysisRecommendation'
+        metadata:
+          type: object
+          properties:
+            analysisVersion:
+              type: string
+            processingTime:
+              type: integer
+            entryCount:
+              type: integer
+            dateRange:
+              type: object
+              properties:
+                start:
+                  type: string
+                  format: date
+                end:
+                  type: string
+                  format: date
+        createdAt:
+          type: string
+          format: date-time
+        validUntil:
+          type: string
+          format: date-time
+
+    AnalysisFinding:
+      type: object
+      required:
+        - type
+        - description
+        - strength
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        evidence:
+          type: array
+          items:
+            type: string
+          description: References to support finding
+        strength:
+          type: string
+          enum: [strong, moderate, weak]
+
+    AnalysisPattern:
+      type: object
+      required:
+        - patternType
+        - description
+        - frequency
+      properties:
+        patternType:
+          type: string
+          enum: [temporal, behavioral, emotional, correlation]
+        description:
+          type: string
+        frequency:
+          type: number
+          description: How often pattern occurs
+        visualization:
+          type: object
+          description: Data for visual representation
+
+    AnalysisRecommendation:
+      type: object
+      required:
+        - type
+        - action
+        - rationale
+        - priority
+      properties:
+        type:
+          type: string
+        action:
+          type: string
+          description: Recommended action
+        rationale:
+          type: string
+          description: Why this is recommended
+        priority:
+          type: string
+          enum: [high, medium, low]
+        relatedGoals:
+          type: array
+          items:
+            type: string
+          description: Related goal IDs
+
+    AIServicePublicKey:
+      type: object
+      required:
+        - publicKey
+        - publicKeyId
+        - algorithm
+        - createdAt
+      properties:
+        publicKey:
+          type: string
+          description: Base64 encoded public key
+        publicKeyId:
+          type: string
+          description: Key fingerprint for identification
+        algorithm:
+          type: string
+          enum: [RSA-OAEP]
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+
+    # Core Encryption Service Schemas
+    InitializeEncryptionRequest:
+      type: object
+      required:
+        - moduleId
+        - encryptionLevel
+      properties:
+        moduleId:
+          type: string
+          enum: [journal, goals, health, finance, ai-analysis]
+          description: Module requesting encryption
+        encryptionLevel:
+          type: string
+          enum: [standard, high, maximum]
+          description: Level of encryption security
+        features:
+          type: object
+          properties:
+            sharing:
+              type: boolean
+              default: true
+            search:
+              type: boolean
+              default: false
+            versioning:
+              type: boolean
+              default: true
+            audit:
+              type: boolean
+              default: true
+
+    EncryptionStatus:
+      type: object
+      required:
+        - moduleId
+        - initialized
+        - publicKey
+      properties:
+        moduleId:
+          type: string
+        initialized:
+          type: boolean
+        publicKey:
+          type: string
+          description: Module's public key for sharing
+        encryptionLevel:
+          type: string
+        features:
+          type: object
+
+    EncryptRequest:
+      type: object
+      required:
+        - moduleId
+        - data
+      properties:
+        moduleId:
+          type: string
+        data:
+          type: object
+          description: Data to encrypt (any JSON object)
+        metadata:
+          type: object
+          description: Unencrypted metadata
+        options:
+          type: object
+          properties:
+            compression:
+              type: boolean
+              default: false
+
+    EncryptedData:
+      type: object
+      required:
+        - id
+        - moduleId
+        - ciphertext
+        - iv
+        - algorithm
+      properties:
+        id:
+          type: string
+          format: uuid
+        moduleId:
+          type: string
+        ciphertext:
+          type: string
+          description: Base64 encoded encrypted data
+        iv:
+          type: string
+          description: Base64 encoded initialization vector
+        algorithm:
+          type: string
+          default: AES-256-GCM
+        metadata:
+          type: object
+          description: Unencrypted metadata
+        createdAt:
+          type: string
+          format: date-time
+
+    DecryptRequest:
+      type: object
+      required:
+        - encryptedData
+      properties:
+        encryptedData:
+          $ref: '#/components/schemas/EncryptedData'
+
+    DecryptedData:
+      type: object
+      required:
+        - data
+        - moduleId
+      properties:
+        data:
+          type: object
+          description: Decrypted data
+        moduleId:
+          type: string
+        metadata:
+          type: object
+
+    CreateShareRequest:
+      type: object
+      required:
+        - dataId
+        - recipientId
+        - permissions
+      properties:
+        dataId:
+          type: string
+          format: uuid
+        recipientId:
+          type: string
+          description: User ID or service ID
+        permissions:
+          type: object
+          required:
+            - actions
+            - expiresIn
+          properties:
+            actions:
+              type: array
+              items:
+                type: string
+                enum: [read, write, share, delete]
+            expiresIn:
+              type: string
+              description: Duration like "24h", "7d", "30d"
+            singleUse:
+              type: boolean
+              default: false
+
+    ShareToken:
+      type: object
+      required:
+        - token
+        - dataId
+        - expiresAt
+      properties:
+        token:
+          type: string
+          format: uuid
+        dataId:
+          type: string
+        recipientId:
+          type: string
+        permissions:
+          type: object
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    BackupKeysRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+          description: Password to encrypt the backup
+        includeModules:
+          type: array
+          items:
+            type: string
+          description: Specific modules to backup
+
+    KeyBackup:
+      type: object
+      required:
+        - backupId
+        - encryptedKeys
+        - createdAt
+      properties:
+        backupId:
+          type: string
+          format: uuid
+        encryptedKeys:
+          type: string
+          description: Base64 encoded encrypted key backup
+        modules:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        checksum:
+          type: string
+
+    RestoreKeysRequest:
+      type: object
+      required:
+        - backup
+        - password
+      properties:
+        backup:
+          $ref: '#/components/schemas/KeyBackup'
+        password:
+          type: string
+          format: password
+
+    # Goal Management Schemas
+    Goal:
+      type: object
+      required:
+        - goalId
+        - userId
+        - title
+        - category
+        - goalPattern
+        - target
+        - progress
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        goalId:
+          type: string
+          format: uuid
+          description: Unique goal identifier
+        userId:
+          type: string
+          format: uuid
+          description: Owner of the goal
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Goal title
+        description:
+          type: string
+          maxLength: 1000
+          description: Detailed goal description
+        category:
+          type: string
+          description: Goal category (fitness, nutrition, wellness, etc.)
+        icon:
+          type: string
+          description: Icon identifier for UI
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        sort:
+          type: string
+          pattern: '^[a-zA-Z_]+:(asc|desc)$'
+          example: 'created_at:desc'
+
+    PaginatedResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          required:
+            - page
+            - limit
+            - total
+            - pages
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Auth
+    description: Authentication and user management
+  - name: Encryption
+    description: Core encryption service for all modules
+  - name: AI Analysis
+    description: AI analysis of encrypted entries
+  - name: Nutrition
+    description: Meal tracking and nutrition management
+  - name: Fitness
+    description: Workout tracking and fitness goals
+  - name: Wellness
+    description: Wellness tracking and recommendations
+  - name: Routines
+    description: Daily routine management
+          description: Hex color for UI
+        goalPattern:
+          type: string
+          enum: [recurring, milestone, target, streak, limit]
+          description: Type of goal pattern
+        target:
+          $ref: '#/components/schemas/GoalTarget'
+        schedule:
+          $ref: '#/components/schemas/GoalSchedule'
+        progress:
+          $ref: '#/components/schemas/GoalProgressDetails'
+        context:
+          $ref: '#/components/schemas/GoalContext'
+        rewards:
+          $ref: '#/components/schemas/GoalRewards'
+        status:
+          type: string
+          enum: [draft, active, paused, completed, archived]
+          description: Current status of the goal
+        visibility:
+          type: string
+          enum: [private, friends, public]
+          default: private
+          description: Goal visibility setting
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          description: When goal was completed
+        metadata:
+          type: object
+          description: Additional custom metadata
+          additionalProperties: true
+
+    CreateGoalRequest:
+      type: object
+      required:
+        - title
+        - category
+        - goalPattern
+        - target
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        category:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        sort:
+          type: string
+          pattern: '^[a-zA-Z_]+:(asc|desc)$'
+          example: 'created_at:desc'
+
+    PaginatedResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          required:
+            - page
+            - limit
+            - total
+            - pages
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Auth
+    description: Authentication and user management
+  - name: Encryption
+    description: Core encryption service for all modules
+  - name: AI Analysis
+    description: AI analysis of encrypted entries
+  - name: Nutrition
+    description: Meal tracking and nutrition management
+  - name: Fitness
+    description: Workout tracking and fitness goals
+  - name: Wellness
+    description: Wellness tracking and recommendations
+  - name: Routines
+    description: Daily routine management
+        goalPattern:
+          type: string
+          enum: [recurring, milestone, target, streak, limit]
+        target:
+          $ref: '#/components/schemas/GoalTarget'
+        schedule:
+          $ref: '#/components/schemas/GoalSchedule'
+        context:
+          $ref: '#/components/schemas/GoalContext'
+        rewards:
+          $ref: '#/components/schemas/GoalRewards'
+        visibility:
+          type: string
+          enum: [private, friends, public]
+          default: private
+        metadata:
+          type: object
+          additionalProperties: true
+
+    UpdateGoalRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1000
+        category:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        sort:
+          type: string
+          pattern: '^[a-zA-Z_]+:(asc|desc)$'
+          example: 'created_at:desc'
+
+    PaginatedResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          required:
+            - page
+            - limit
+            - total
+            - pages
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Auth
+    description: Authentication and user management
+  - name: Encryption
+    description: Core encryption service for all modules
+  - name: AI Analysis
+    description: AI analysis of encrypted entries
+  - name: Nutrition
+    description: Meal tracking and nutrition management
+  - name: Fitness
+    description: Workout tracking and fitness goals
+  - name: Wellness
+    description: Wellness tracking and recommendations
+  - name: Routines
+    description: Daily routine management
+        target:
+          $ref: '#/components/schemas/GoalTargetUpdate'
+        schedule:
+          $ref: '#/components/schemas/GoalSchedule'
+        context:
+          $ref: '#/components/schemas/GoalContext'
+        rewards:
+          $ref: '#/components/schemas/GoalRewards'
+        status:
+          type: string
+          enum: [active, paused]
+          description: Can only transition between active and paused
+        visibility:
+          type: string
+          enum: [private, friends, public]
+        metadata:
+          type: object
+          additionalProperties: true
+
+    GoalTarget:
+      type: object
+      required:
+        - metric
+        - value
+        - unit
+        - direction
+      properties:
+        metric:
+          type: string
+          enum: [count, duration, amount, weight, distance, calories, money, custom]
+          description: What to measure
+        value:
+          type: number
+          minimum: 0
+          description: The goal value
+        unit:
+          type: string
+          description: Unit of measurement (steps, words, pounds, dollars, minutes, etc.)
+        period:
+          type: string
+          enum: [day, week, month, quarter, year]
+          description: For recurring/limit goals
+        targetDate:
+          type: string
+          format: date
+          description: For milestone/target goals
+        startValue:
+          type: number
+          description: Starting point (for tracking progress)
+        currentValue:
+          type: number
+          description: Latest measurement
+        direction:
+          type: string
+          enum: [increase, decrease, maintain]
+          description: Goal direction
+        targetType:
+          type: string
+          enum: [minimum, maximum, exact, range]
+          default: exact
+          description: Type of target
+        minValue:
+          type: number
+          description: For range targets
+        maxValue:
+          type: number
+          description: For range targets
+
+    GoalTargetUpdate:
+      type: object
+      properties:
+        value:
+          type: number
+          minimum: 0
+        targetDate:
+          type: string
+          format: date
+        currentValue:
+          type: number
+        minValue:
+          type: number
+        maxValue:
+          type: number
+
+    GoalSchedule:
+      type: object
+      properties:
+        frequency:
+          type: string
+          enum: [daily, weekly, monthly, custom]
+          description: When to work on goal
+        daysOfWeek:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+          description: Days of week (0=Sunday, 6=Saturday)
+        preferredTimes:
+          type: array
+          items:
+            type: string
+            pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        sort:
+          type: string
+          pattern: '^[a-zA-Z_]+:(asc|desc)$'
+          example: 'created_at:desc'
+
+    PaginatedResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          required:
+            - page
+            - limit
+            - total
+            - pages
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Auth
+    description: Authentication and user management
+  - name: Encryption
+    description: Core encryption service for all modules
+  - name: AI Analysis
+    description: AI analysis of encrypted entries
+  - name: Nutrition
+    description: Meal tracking and nutrition management
+  - name: Fitness
+    description: Workout tracking and fitness goals
+  - name: Wellness
+    description: Wellness tracking and recommendations
+  - name: Routines
+    description: Daily routine management
+          description: Preferred times in HH:MM format
+        checkInFrequency:
+          type: string
+          enum: [daily, weekly, monthly]
+          default: daily
+          description: How often to check progress
+        allowSkipDays:
+          type: integer
+          minimum: 0
+          description: Allowed skip days per period
+        catchUpAllowed:
+          type: boolean
+          default: true
+          description: Can make up missed days
+
+    GoalProgressDetails:
+      type: object
+      required:
+        - percentComplete
+        - successRate
+        - trend
+      properties:
+        percentComplete:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Overall progress percentage
+        lastActivityDate:
+          type: string
+          format: date-time
+        currentPeriodValue:
+          type: number
+          description: Value for current period (recurring)
+        totalAccumulated:
+          type: number
+          description: Total accumulated (milestone)
+        remainingToGoal:
+          type: number
+          description: Remaining to reach goal
+        currentStreak:
+          type: integer
+          minimum: 0
+          description: Current streak count
+        longestStreak:
+          type: integer
+          minimum: 0
+          description: Longest streak achieved
+        averageValue:
+          type: number
+          description: Average value (for limits)
+        daysOverLimit:
+          type: integer
+          minimum: 0
+          description: Days exceeded limit
+        trend:
+          type: string
+          enum: [improving, stable, declining]
+        projectedCompletion:
+          type: string
+          format: date
+          description: Projected completion date
+        successRate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Success rate percentage
+        periodHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/PeriodHistory'
+          description: Historical period data
+
+    PeriodHistory:
+      type: object
+      required:
+        - period
+        - achieved
+        - value
+      properties:
+        period:
+          type: string
+          description: Period identifier (e.g., "2024-01-20")
+        achieved:
+          type: boolean
+          description: Whether goal was achieved
+        value:
+          type: number
+          description: Value achieved in period
+
+    GoalContext:
+      type: object
+      properties:
+        motivation:
+          type: string
+          maxLength: 500
+          description: Why this goal matters
+        importanceLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Goal importance (1-5)
+        supportingGoals:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Goals that help this one
+        conflictingGoals:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Goals that compete with this
+        obstacles:
+          type: array
+          items:
+            type: string
+          description: Potential obstacles
+        successFactors:
+          type: array
+          items:
+            type: string
+          description: Success factors
+        preferredActivities:
+          type: array
+          items:
+            type: string
+          description: Preferred ways to achieve goal
+        avoidActivities:
+          type: array
+          items:
+            type: string
+          description: Activities to avoid
+
+    GoalRewards:
+      type: object
+      properties:
+        pointsPerActivity:
+          type: integer
+          minimum: 0
+          default: 10
+          description: Points earned per activity
+        milestoneRewards:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilestoneReward'
+        badges:
+          type: array
+          items:
+            type: string
+          description: Earned badges
+
+    MilestoneReward:
+      type: object
+      required:
+        - value
+        - reward
+      properties:
+        value:
+          type: number
+          description: Milestone value
+        reward:
+          type: string
+          description: Reward description
+        unlockedAt:
+          type: string
+          format: date-time
+          description: When milestone was unlocked
+
+    GoalListResponse:
+      type: object
+      required:
+        - goals
+        - pagination
+      properties:
+        goals:
+          type: array
+          items:
+            $ref: '#/components/schemas/Goal'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    GoalActivity:
+      type: object
+      required:
+        - activityId
+        - goalId
+        - userId
+        - value
+        - unit
+        - activityType
+        - activityDate
+        - loggedAt
+        - timezone
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        goalId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        value:
+          type: number
+          description: Activity value
+        unit:
+          type: string
+          description: Unit of measurement
+        activityType:
+          type: string
+          enum: [progress, completed, skipped, partial]
+        activityDate:
+          type: string
+          format: date
+          description: Date of activity
+        loggedAt:
+          type: string
+          format: date-time
+          description: When activity was logged
+        timezone:
+          type: string
+          description: User's timezone
+        location:
+          $ref: '#/components/schemas/ActivityLocation'
+        context:
+          $ref: '#/components/schemas/ActivityContext'
+        note:
+          type: string
+          maxLength: 500
+          description: Activity note
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityAttachment'
+        source:
+          type: string
+          enum: [manual, device, integration, import]
+          default: manual
+        deviceInfo:
+          $ref: '#/components/schemas/DeviceInfo'
+
+    LogActivityRequest:
+      type: object
+      required:
+        - value
+        - unit
+        - activityType
+      properties:
+        value:
+          type: number
+          minimum: 0
+        unit:
+          type: string
+        activityType:
+          type: string
+          enum: [progress, completed, skipped, partial]
+        activityDate:
+          type: string
+          format: date
+          description: Defaults to today if not provided
+        location:
+          $ref: '#/components/schemas/ActivityLocation'
+        context:
+          $ref: '#/components/schemas/ActivityContext'
+        note:
+          type: string
+          maxLength: 500
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityAttachmentRequest'
+        source:
+          type: string
+          enum: [manual, device, integration, import]
+          default: manual
+
+    ActivityLocation:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [home, work, gym, outdoors, travel]
+        city:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: number
+          minItems: 2
+          maxItems: 2
+          description: [longitude, latitude]
+
+    ActivityContext:
+      type: object
+      properties:
+        timeOfDay:
+          type: string
+          enum: [early-morning, morning, afternoon, evening, night]
+        dayOfWeek:
+          type: string
+          enum: [sunday, monday, tuesday, wednesday, thursday, friday, saturday]
+        isWeekend:
+          type: boolean
+        isHoliday:
+          type: boolean
+        weather:
+          $ref: '#/components/schemas/WeatherInfo'
+        energyLevel:
+          type: integer
+          minimum: 1
+          maximum: 10
+        sleepHours:
+          type: number
+          minimum: 0
+          maximum: 24
+        stressLevel:
+          type: integer
+          minimum: 1
+          maximum: 10
+        withOthers:
+          type: boolean
+        socialContext:
+          type: string
+          enum: [alone, partner, friends, group, online]
+        previousActivity:
+          type: string
+        nextActivity:
+          type: string
+        duration:
+          type: integer
+          minimum: 0
+          description: Duration in minutes
+        difficulty:
+          type: integer
+          minimum: 1
+          maximum: 5
+        enjoyment:
+          type: integer
+          minimum: 1
+          maximum: 5
+        mood:
+          type: string
+
+    WeatherInfo:
+      type: object
+      properties:
+        condition:
+          type: string
+        temperature:
+          type: number
+          description: Temperature in Celsius
+        humidity:
+          type: number
+          minimum: 0
+          maximum: 100
+
+    ActivityAttachment:
+      type: object
+      required:
+        - type
+        - url
+      properties:
+        type:
+          type: string
+          enum: [image, link, reference]
+        url:
+          type: string
+          format: uri
+        entityId:
+          type: string
+          format: uuid
+          description: Reference to another entity
+
+    ActivityAttachmentRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [image, link, reference]
+        url:
+          type: string
+          format: uri
+          description: Required for link type
+        entityId:
+          type: string
+          format: uuid
+          description: Required for reference type
+
+    DeviceInfo:
+      type: object
+      properties:
+        type:
+          type: string
+        model:
+          type: string
+        appVersion:
+          type: string
+
+    GoalActivityListResponse:
+      type: object
+      required:
+        - activities
+        - pagination
+      properties:
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/GoalActivity'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    GoalProgress:
+      type: object
+      required:
+        - goalId
+        - period
+        - progress
+        - statistics
+      properties:
+        goalId:
+          type: string
+          format: uuid
+        period:
+          type: string
+          enum: [current, week, month, quarter, year, all]
+        progress:
+          $ref: '#/components/schemas/GoalProgressDetails'
+        statistics:
+          $ref: '#/components/schemas/GoalStatistics'
+        insights:
+          $ref: '#/components/schemas/GoalInsights'
+
+    GoalStatistics:
+      type: object
+      properties:
+        totalActivities:
+          type: integer
+          minimum: 0
+        completedActivities:
+          type: integer
+          minimum: 0
+        skippedActivities:
+          type: integer
+          minimum: 0
+        averageValue:
+          type: number
+        bestValue:
+          type: number
+        worstValue:
+          type: number
+        consistency:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Consistency percentage
+
+    GoalInsights:
+      type: object
+      properties:
+        bestTimeOfDay:
+          type: string
+          enum: [early-morning, morning, afternoon, evening, night]
+        bestDayOfWeek:
+          type: string
+          enum: [sunday, monday, tuesday, wednesday, thursday, friday, saturday]
+        successPatterns:
+          type: array
+          items:
+            type: string
+          description: Identified success patterns
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Personalized recommendations
+
+    PaginationInfo:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - pages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        pages:
+          type: integer
+          minimum: 0
+
+    # Common Schemas
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        sort:
+          type: string
+          pattern: '^[a-zA-Z_]+:(asc|desc)$'
+          example: 'created_at:desc'
+
+    PaginatedResponse:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          items: {}
+        pagination:
+          type: object
+          required:
+            - page
+            - limit
+            - total
+            - pages
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Auth
+    description: Authentication and user management
+  - name: Encryption
+    description: Core encryption service for all modules
+  - name: AI Analysis
+    description: AI analysis of encrypted entries
+  - name: Nutrition
+    description: Meal tracking and nutrition management
+  - name: Fitness
+    description: Workout tracking and fitness goals
+  - name: Wellness
+    description: Wellness tracking and recommendations
+  - name: Routines
+    description: Daily routine management

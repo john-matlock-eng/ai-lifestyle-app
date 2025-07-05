@@ -1,0 +1,159 @@
+# Additional Authentication Schemas
+
+## 2FA Schemas
+
+MfaSetupResponse:
+  type: object
+  required:
+    - secret
+    - qrCode
+    - backupCodes
+  properties:
+    secret:
+      type: string
+      description: TOTP secret key (base32 encoded)
+      example: "JBSWY3DPEHPK3PXP"
+    qrCode:
+      type: string
+      description: Data URL for QR code image
+      example: "data:image/png;base64,..."
+    backupCodes:
+      type: array
+      description: One-time backup codes
+      items:
+        type: string
+        pattern: '^[0-9]{8}$'
+      minItems: 8
+      maxItems: 8
+
+VerifyMfaSetupRequest:
+  type: object
+  required:
+    - code
+  properties:
+    code:
+      type: string
+      pattern: '^[0-9]{6}$'
+      description: 6-digit TOTP code
+
+MfaStatusResponse:
+  type: object
+  required:
+    - mfaEnabled
+    - message
+  properties:
+    mfaEnabled:
+      type: boolean
+    message:
+      type: string
+    backupCodesRemaining:
+      type: integer
+      description: Number of unused backup codes
+
+VerifyMfaRequest:
+  type: object
+  required:
+    - sessionToken
+    - code
+  properties:
+    sessionToken:
+      type: string
+      description: Temporary session from login response
+    code:
+      type: string
+      pattern: '^[0-9]{6,8}$'
+      description: 6-digit TOTP or 8-digit backup code
+
+DisableMfaRequest:
+  type: object
+  required:
+    - password
+  properties:
+    password:
+      type: string
+      format: password
+      description: Current password for verification
+
+## Password Reset Schemas
+
+PasswordResetRequest:
+  type: object
+  required:
+    - email
+  properties:
+    email:
+      type: string
+      format: email
+      description: Email address to send reset link
+
+PasswordResetConfirm:
+  type: object
+  required:
+    - token
+    - password
+  properties:
+    token:
+      type: string
+      description: Reset token from email
+    password:
+      type: string
+      format: password
+      minLength: 8
+      maxLength: 128
+      description: New password
+
+## Email Verification Schema
+
+EmailVerificationRequest:
+  type: object
+  required:
+    - token
+  properties:
+    token:
+      type: string
+      description: Verification token from email
+
+## Common Response Schema
+
+MessageResponse:
+  type: object
+  required:
+    - message
+  properties:
+    message:
+      type: string
+      description: Success message
+
+## Updated LoginResponse for 2FA
+
+LoginResponse:
+  type: object
+  required:
+    - tokenType
+  properties:
+    # When MFA is not required
+    accessToken:
+      type: string
+      description: JWT access token (only if MFA not required)
+    refreshToken:
+      type: string
+      description: JWT refresh token (only if MFA not required)
+    expiresIn:
+      type: integer
+      description: Access token expiration in seconds
+    user:
+      $ref: '#/components/schemas/UserProfile'
+      description: User profile (only if MFA not required)
+    
+    # When MFA is required
+    sessionToken:
+      type: string
+      description: Temporary session for MFA verification
+    mfaRequired:
+      type: boolean
+      description: Indicates MFA verification needed
+    
+    tokenType:
+      type: string
+      enum: [Bearer]
+      description: Token type for Authorization header
