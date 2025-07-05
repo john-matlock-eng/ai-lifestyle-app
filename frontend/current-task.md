@@ -169,26 +169,33 @@ Once deployed with backend integration:
    - Progress visualization components
    - Goal detail pages
 
-### Testing Setup Required:
-Due to React 19 compatibility issues with testing libraries, you need to:
+## 🔧 CI/CD Node Version and Lock File Fix
+**Started**: 2025-01-05
+**Completed**: 2025-01-05
+**Fixed**: Node version compatibility and package-lock sync issues
 
-1. **Install dependencies with legacy peer deps** (React 19 is very new):
-```bash
-cd frontend
-npm install --legacy-peer-deps
-```
+### Issues Fixed:
+1. **Node Version Compatibility**:
+   - Updated CI/CD from Node 18 to Node 20
+   - react-router-dom requires Node >= 20
+   - vite 7 requires Node >= 20.19.0
 
-2. **Then run tests**:
-```bash
-npm test -- --run
-```
+2. **Package Lock File Sync**:
+   - package-lock.json was out of sync with new testing dependencies
+   - Changed all `npm ci` to `npm install --legacy-peer-deps` in CI/CD
+   - This allows npm to generate a fresh lock file automatically
 
-**Note**: I've updated the testing library versions to be more compatible:
-- @testing-library/react: ^16.1.0 (supports React 19)
-- vitest: ^2.0.0 (latest version)
-- happy-dom: ^15.0.0 (latest version)
+### Changes Made:
+- `.github/workflows/frontend-ci-cd.yml`:
+  - `NODE_VERSION: '18'` → `NODE_VERSION: '20'`
+  - All `npm ci` → `npm install --legacy-peer-deps`
+  - Removed npm cache configuration (not needed with npm install)
+- Temporarily removed package-lock.json to allow fresh generation
 
-**GitHub Actions Fix**: Restored package-lock.json to fix CI/CD caching
+### Next Steps:
+1. The CI/CD will now generate a fresh package-lock.json on first run
+2. Future runs can switch back to `npm ci` once lock file is stable
+3. Continue with goal UI component development
 
 ## ✅ Lint Error Cleanup Complete!
 **Started**: 2025-01-05
