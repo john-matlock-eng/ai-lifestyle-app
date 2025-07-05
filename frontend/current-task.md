@@ -170,15 +170,23 @@ Once deployed with backend integration:
    - Goal detail pages
 
 ### Testing Setup Required:
-To run tests, you need to install the missing dependencies:
+Due to React 19 compatibility issues with testing libraries, you need to:
+
+1. **Install dependencies with legacy peer deps** (React 19 is very new):
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
-Then you can run:
+2. **Then run tests**:
 ```bash
 npm test -- --run
 ```
+
+**Note**: I've updated the testing library versions to be more compatible:
+- @testing-library/react: ^16.1.0 (supports React 19)
+- vitest: ^2.0.0 (latest version)
+- happy-dom: ^15.0.0 (latest version)
+- Removed package-lock.json to allow fresh dependency resolution
 
 ## ✅ Lint Error Cleanup Complete!
 **Started**: 2025-01-05
