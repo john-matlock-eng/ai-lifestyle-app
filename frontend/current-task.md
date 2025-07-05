@@ -174,6 +174,7 @@ Due to React 19 compatibility issues with testing libraries, you need to:
 
 1. **Install dependencies with legacy peer deps** (React 19 is very new):
 ```bash
+cd frontend
 npm install --legacy-peer-deps
 ```
 
@@ -186,7 +187,8 @@ npm test -- --run
 - @testing-library/react: ^16.1.0 (supports React 19)
 - vitest: ^2.0.0 (latest version)
 - happy-dom: ^15.0.0 (latest version)
-- Removed package-lock.json to allow fresh dependency resolution
+
+**GitHub Actions Fix**: Restored package-lock.json to fix CI/CD caching
 
 ## ✅ Lint Error Cleanup Complete!
 **Started**: 2025-01-05
