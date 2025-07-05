@@ -1,219 +1,297 @@
-# Frontend Current Tasks - 2FA UI + Goal System Planning
+# Frontend Current Tasks - 2FA UI + Goal System UI
 
-## 📅 Current Sprint (Week 2)
+## 🎊 Backend Update: Goal System COMPLETE!
 
-### Primary Focus: Complete Authentication UI
-1. **CloudFront Deployment** - In progress
-2. **2FA Setup Flow** - Ready to implement (backend complete!)
-3. **Goal UI Planning** - Start component design
+### Amazing news! The backend team has finished ALL goal endpoints in record time!
+- ✅ All 8 endpoints implemented and wired
+- ✅ Clean architecture with great performance
+- ✅ Full support for all 5 goal patterns
+- ✅ Ready for frontend integration!
 
-## 🔔 Update: Goal Endpoints Ready!
+This means you can start building the goal UI with confidence that the backend is solid.
 
-The PM has added all goal management endpoints to the contract. You can now start planning the UI components for the enhanced goal system.
+## 📅 Week 3 Priorities
 
-### New Endpoints Available:
-- `GET /goals` - List with filtering and pagination
-- `POST /goals` - Create goal (5 patterns!)
-- `GET /goals/{goalId}` - Goal details
-- `PUT /goals/{goalId}` - Update goal
-- `DELETE /goals/{goalId}` - Archive goal
-- `POST /goals/{goalId}/activities` - Log activity
-- `GET /goals/{goalId}/activities` - Activity history
-- `GET /goals/{goalId}/progress` - Progress analytics
+### Monday Focus: 2FA Completion + Goal UI Planning
 
-## 🎯 Today's Tasks
+#### Morning: Finish 2FA Implementation
+**Time estimate**: 2-3 hours to complete all components
 
-### 1. Complete 2FA UI Components (Priority: HIGH)
-Backend is ready and waiting! Implement:
+1. **MFA Setup Flow** ⏱️ 45 min
+   ```tsx
+   components/auth/
+   ├── MFASetupModal.tsx
+   ├── QRCodeDisplay.tsx      // Use qrcode.js
+   ├── BackupCodesDisplay.tsx  // Print-friendly
+   └── SetupInstructions.tsx   // Step-by-step guide
+   ```
 
-#### MFA Setup Flow
+2. **MFA Challenge Flow** ⏱️ 30 min
+   ```tsx
+   components/auth/
+   ├── MFAChallenge.tsx       // 6-digit input
+   ├── RememberDevice.tsx     // 30-day option
+   └── UseBackupCode.tsx      // Alternative flow
+   ```
+
+3. **Settings Integration** ⏱️ 30 min
+   ```tsx
+   components/settings/
+   └── SecuritySection.tsx    // Enable/disable MFA
+   ```
+
+4. **Testing & Polish** ⏱️ 30 min
+   - Error states (wrong code, expired)
+   - Loading states
+   - Success feedback
+   - Mobile responsiveness
+
+#### Afternoon: Goal UI Architecture
+
+1. **Study the Contract** ⏱️ 30 min
+   Review the goal schemas to understand:
+   - 5 pattern types and their differences
+   - Activity context structure
+   - Progress response format
+   - Filtering/sorting options
+
+2. **Component Planning** ⏱️ 1 hour
+   Create component hierarchy:
+   ```tsx
+   features/goals/
+   ├── creation/
+   │   ├── GoalWizard.tsx         // Multi-step flow
+   │   ├── PatternSelector.tsx    // Visual pattern cards
+   │   ├── TargetSetter.tsx       // Pattern-specific
+   │   └── ScheduleBuilder.tsx    // For recurring
+   ├── display/
+   │   ├── GoalCard.tsx          // List item
+   │   ├── GoalGrid.tsx          // Responsive grid
+   │   └── EmptyState.tsx        // First goal CTA
+   ├── detail/
+   │   ├── GoalDetailPage.tsx    // Full view
+   │   ├── ProgressChart.tsx     // Visualizations
+   │   └── ActivityFeed.tsx      // Timeline
+   └── logging/
+       ├── QuickLog.tsx          // Floating button
+       ├── ActivityModal.tsx     // Full context
+       └── BulkLogger.tsx        // Multiple goals
+   ```
+
+3. **State Management Design** ⏱️ 30 min
+   ```tsx
+   // stores/goals.ts
+   interface GoalStore {
+     goals: Goal[]
+     loading: boolean
+     filter: GoalFilter
+     
+     // Actions
+     fetchGoals: () => Promise<void>
+     createGoal: (goal: GoalInput) => Promise<void>
+     logActivity: (goalId: string, activity: ActivityInput) => Promise<void>
+     
+     // Optimistic updates
+     optimisticLog: (goalId: string, value: number) => void
+     rollbackLog: (goalId: string) => void
+   }
+   ```
+
+### Tuesday: Core Goal Components
+
+#### Pattern Selector Component
+**Key feature**: Help users choose the right pattern
+
 ```tsx
-// Components needed:
-- MFASetupModal
-- QRCodeDisplay
-- ManualSecretEntry
-- VerificationCodeInput
-- BackupCodesDisplay (save/print)
+const patterns = [
+  {
+    type: 'recurring',
+    icon: '🔄',
+    title: 'Build a Habit',
+    description: 'Do something regularly',
+    examples: ['Exercise daily', 'Meditate', 'Journal']
+  },
+  {
+    type: 'milestone',
+    icon: '🎯',
+    title: 'Reach a Total',
+    description: 'Accumulate over time',
+    examples: ['Read 50 books', 'Save $5000', 'Run 500 miles']
+  },
+  // ... other patterns
+]
 ```
 
-#### MFA Login Flow
+#### Goal Card Component
+**Focus**: Quick scan and action
+
 ```tsx
-// After regular login, if MFA enabled:
-- MFAChallenge component
-- 6-digit code input
-- Remember device option
-- Backup code alternative
+<GoalCard>
+  <PatternIcon />
+  <Title />
+  <ProgressIndicator /> // Varies by pattern
+  <QuickStats />        // Current/target, streak, etc
+  <QuickLogButton />    // One-tap logging
+</GoalCard>
 ```
 
-#### Settings Page
+### Wednesday: Activity Logging UI
+
+#### Quick Log Experience
+**Goal**: Log activity in < 3 seconds
+
+1. **Floating Action Button**
+   - Always visible
+   - Opens quick log modal
+   - Recent goals at top
+
+2. **Smart Defaults**
+   - Pre-fill common values
+   - Remember last entries
+   - Quick increment buttons
+
+3. **Context Capture**
+   ```tsx
+   // Optional but valuable
+   <MoodSelector />      // 😊 😐 😔
+   <EnergySlider />      // 1-5 scale
+   <QuickNote />         // Voice or text
+   <LocationTag />       // Auto or manual
+   ```
+
+### Thursday: Progress Visualization
+
+#### Pattern-Specific Charts
+1. **Recurring**: Calendar heatmap
+2. **Milestone**: Progress bar with milestones
+3. **Target**: Line chart with projection
+4. **Streak**: Chain visualization
+5. **Limit**: Gauge with safe zones
+
+#### Insights Panel
 ```tsx
-// MFA management section:
-- Enable/disable 2FA toggle
-- Current status display
-- Re-generate backup codes
-- Disable with password confirmation
+<InsightsPanel>
+  <TrendSummary />      // Up/down/steady
+  <BestStreak />        // Motivation
+  <Projection />        // When you'll hit target
+  <Recommendations />   // AI-powered tips
+</InsightsPanel>
 ```
 
-### 2. CloudFront Deployment (Continue)
-- Complete configuration
-- Test HTTPS setup
-- Configure cache behaviors
-- Set up error pages
+### Friday: Polish & Testing
 
-### 3. Goal UI Component Planning (New!)
+1. **Accessibility Audit**
+   - Keyboard navigation
+   - Screen reader testing
+   - Color contrast
+   - Focus management
 
-Start designing components for the 5 goal patterns:
+2. **Performance Testing**
+   - Bundle size check
+   - Lazy loading
+   - Virtualization for lists
+   - Image optimization
 
-#### Goal Creation Flow
-Think about how to handle different patterns:
-1. **Recurring**: "Do X every day/week/month"
-2. **Milestone**: "Achieve X total"
-3. **Target**: "Reach X by date Y"
-4. **Streak**: "Do X for Y consecutive days"
-5. **Limit**: "Keep X below Y"
+3. **Cross-Browser Testing**
+   - Chrome, Firefox, Safari
+   - Mobile browsers
+   - PWA features
+   - Offline support
 
-#### Component Architecture
+## 🎨 Design System Extensions
+
+### Goal-Specific Components
 ```tsx
-// Suggested structure:
-- GoalWizard (guides through creation)
-  - PatternSelector
-  - TargetConfiguration
-  - ScheduleSetup (for recurring)
-  - ContextBuilder (motivation, obstacles)
-  
-- GoalCard (list display)
-  - ProgressIndicator (varies by pattern)
-  - QuickLogButton
-  - StatusBadge
-  
-- GoalDetailView
-  - ProgressChart
-  - ActivityTimeline
-  - InsightsPanel
-  - EditActions
-  
-- ActivityLogger
-  - ValueInput
-  - ContextCapture (mood, energy, etc.)
-  - AttachmentUpload
+// New design tokens
+colors: {
+  patterns: {
+    recurring: 'blue.500',
+    milestone: 'purple.500',
+    target: 'green.500',
+    streak: 'orange.500',
+    limit: 'red.500'
+  }
+}
+
+// New components
+<ProgressRing value={0.75} />
+<StreakFlame days={7} />
+<TrendArrow direction="up" />
+<PatternBadge type="recurring" />
 ```
 
-## 📋 Week 3 Frontend Plan
-
-### Monday: 2FA Completion
-- Finish all 2FA components
-- Integration testing with backend
-- Error handling flows
-
-### Tuesday: Goal UI Design
-- Create Figma mockups for goal flows
-- Design pattern-specific components
-- Plan responsive layouts
-
-### Wednesday: Goal Components Start
-- Implement PatternSelector
-- Create GoalCard component
-- Build ProgressIndicator variants
-
-### Thursday: Activity Logging
-- Design quick-log experience
-- Context capture UI
-- Rich activity timeline
-
-### Friday: Testing & Polish
-- Cross-browser testing
-- Accessibility review
-- Performance optimization
-
-## 🎨 Design Considerations
-
-### Goal Pattern UX
-Each pattern needs different UI:
-- **Recurring**: Calendar view, streak tracking
-- **Milestone**: Progress bar, cumulative counter
-- **Target**: Countdown, trajectory graph
-- **Streak**: Chain visualization, day counter
-- **Limit**: Gauge, daily tracking
-
-### Mobile-First
-- Quick actions prominent
-- Swipe gestures for logging
-- Condensed progress views
-- Offline capability
-
-### Gamification Elements
-- Progress animations
-- Milestone celebrations
-- Streak fire effects
-- Achievement unlocks
-
-## 🔧 Technical Notes
-
-### State Management
-Consider goal-specific stores:
+### Animation Library
 ```tsx
-// Zustand stores:
-- useGoalStore (CRUD operations)
-- useActivityStore (logging)
-- useProgressStore (calculations)
-- useInsightsStore (analytics)
+// Micro-interactions
+const animations = {
+  logSuccess: 'bounce-in',
+  streakCelebration: 'fire-burst',
+  milestoneReached: 'confetti',
+  progressUpdate: 'smooth-fill'
+}
 ```
 
-### Real-time Updates
-- Optimistic UI for activity logging
-- WebSocket for progress updates
-- Background sync for offline
+## 🧪 Testing Strategy
 
-### Performance
-- Virtual scrolling for activity lists
-- Lazy load progress charts
-- Cache progress calculations
-- Debounce activity saves
+### Component Tests
+```tsx
+// Each component needs:
+- Render tests
+- Interaction tests
+- Error state tests
+- Loading state tests
+- Accessibility tests
+```
 
-## 📚 Resources
+### Integration Tests
+```tsx
+// Critical flows:
+- Create goal → See in list
+- Log activity → Update progress
+- Filter goals → Correct results
+- Edit goal → Persist changes
+```
 
-### Contract References
-- Goal schemas: See `components/schemas/Goal*` in contract
-- Activity context: Rich data model for AI
-- Progress types: Pattern-specific calculations
+## 📱 Mobile Considerations
 
-### Design Inspiration
-- Habitica (gamification)
-- Strava (activity tracking)
-- Duolingo (streaks)
-- MyFitnessPal (progress)
+### Gesture Support
+- Swipe to log activity
+- Pull to refresh
+- Long press for options
+- Pinch to zoom charts
 
-## ✅ Definition of Done
+### Offline Strategy
+- Cache goals locally
+- Queue activity logs
+- Sync when online
+- Show sync status
 
-### For 2FA:
-- [ ] All flows implemented
-- [ ] Error states handled
-- [ ] Accessible (WCAG AA)
-- [ ] Mobile responsive
-- [ ] Integration tested
+## 🚀 Pro Tips
 
-### For Goals (This Week):
-- [ ] Component architecture defined
-- [ ] Figma designs created
-- [ ] Pattern selector built
-- [ ] Basic goal card ready
+### 1. Start Simple
+Build recurring goals first - they're the most common and establish patterns for others.
 
-## 🚨 Blockers/Questions
+### 2. Fake It First
+Use mock data to build UI before integrating with backend. This speeds up iteration.
 
-Currently unblocked! Backend has:
-- ✅ 2FA endpoints ready
-- ✅ Goal contract complete
-- ✅ Infrastructure deployed
+### 3. Animation Budget
+Limit to 3-4 key animations to keep the app feeling fast.
 
-If you need clarification on:
-- Goal pattern behaviors
-- Activity context requirements
-- Progress calculation methods
+### 4. Progressive Disclosure
+Don't show all features at once. Guide users through complexity.
 
-Check the contract first, then ask PM.
+## ❓ Questions to Consider
+
+1. **Onboarding**: Should we have a goal template selector for new users?
+2. **Gamification**: What achievements make sense? Streak badges?
+3. **Social**: Future sharing features - design with this in mind?
+4. **Notifications**: What triggers would be valuable?
 
 ---
 
-**Status**: In Progress - 2FA UI
-**Next**: Goal component planning
-**Updated**: 2025-01-04 by PM Agent
+**Status**: Ready to build goal UI! Backend is waiting 🚀
+**Monday Focus**: Complete 2FA, then start goal components
+**Blockers**: None - full steam ahead!
+**Team Sync**: Backend ready for integration testing
+
+**Updated**: 2025-01-05 by PM Agent

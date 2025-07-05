@@ -320,6 +320,21 @@ resource "aws_sqs_queue_policy" "goal_notifications" {
 # Data sources
 data "aws_caller_identity" "current" {}
 
+# CloudWatch Monitoring for Goals Service
+module "monitoring" {
+  source = "../../modules/monitoring"
+  
+  app_name     = var.app_name
+  service_name = local.service_name
+  environment  = var.environment
+  aws_region   = var.aws_region
+  
+  # Use existing SNS topic for alarms
+  alarm_actions = [aws_sns_topic.goal_notifications.arn]
+  
+  tags = local.tags
+}
+
 # Outputs for Lambda functions
 output "goals_table_name" {
   value       = module.goals_table.table_name
