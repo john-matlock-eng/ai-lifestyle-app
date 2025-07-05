@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Provider } from 'react-redux';
+import { store } from './store';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
@@ -18,6 +20,7 @@ import LoginPage from './pages/auth/LoginPage';
 
 // Pages - App
 import DashboardPage from './pages/DashboardPage';
+import { ComponentShowcase } from './pages/ComponentShowcase';
 
 // Components
 import DevTools from './components/common/DevTools';
@@ -41,9 +44,10 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <AuthProvider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AuthProvider>
           <Routes>
             {/* Public Routes */}
             <Route element={<PublicLayout />}>
@@ -64,6 +68,7 @@ function App() {
               }
             >
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/showcase" element={<ComponentShowcase />} />
               <Route path="/profile" element={<div>Profile - Coming Soon</div>} />
               <Route path="/settings" element={<div>Settings - Coming Soon</div>} />
               <Route path="/settings/security" element={<div>Security Settings - Coming Soon</div>} />
@@ -79,10 +84,11 @@ function App() {
           {/* Global Components */}
           <SessionWarning />
           <DevTools />
-        </AuthProvider>
-      </Router>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-    </QueryClientProvider>
+          </AuthProvider>
+        </Router>
+        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      </QueryClientProvider>
+    </Provider>
   );
 }
 

@@ -16,6 +16,18 @@ from debug import handler as debug_handler
 from refresh_token.handler import lambda_handler as refresh_token_handler
 from get_user_profile.handler import lambda_handler as get_user_profile_handler
 from verify_email.handler import lambda_handler as verify_email_handler
+from setup_mfa.handler import lambda_handler as setup_mfa_handler
+from verify_mfa_setup.handler import lambda_handler as verify_mfa_setup_handler
+from verify_mfa.handler import lambda_handler as verify_mfa_handler
+# Goal endpoints
+from create_goal.handler import lambda_handler as create_goal_handler
+from get_goal.handler import lambda_handler as get_goal_handler
+from list_goals.handler import lambda_handler as list_goals_handler
+from update_goal.handler import lambda_handler as update_goal_handler
+from archive_goal.handler import lambda_handler as archive_goal_handler
+from log_activity.handler import lambda_handler as log_activity_handler
+from list_activities.handler import lambda_handler as list_activities_handler
+from get_progress.handler import lambda_handler as get_progress_handler
 # Future imports:
 # from update_user_profile.handler import lambda_handler as update_user_profile_handler
 
@@ -78,11 +90,57 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "POST /auth/refresh": refresh_token_handler,
         "GET /users/profile": get_user_profile_handler,
         "POST /auth/email/verify": verify_email_handler,
+        "POST /auth/mfa/setup": setup_mfa_handler,
+        "POST /auth/mfa/verify-setup": verify_mfa_setup_handler,
+        "POST /auth/mfa/verify": verify_mfa_handler,
+        # Goal endpoints
+        "GET /goals": list_goals_handler,
+        "POST /goals": create_goal_handler,
+        "GET /goals/{goalId}": get_goal_handler,
+        "PUT /goals/{goalId}": update_goal_handler,
+        "DELETE /goals/{goalId}": archive_goal_handler,
+        "GET /goals/{goalId}/activities": list_activities_handler,
+        "POST /goals/{goalId}/activities": log_activity_handler,
+        "GET /goals/{goalId}/progress": get_progress_handler,
         # "PUT /users/profile": update_user_profile_handler,
     }
     
     # Find and execute the appropriate handler
     handler = routes.get(route_key)
+    
+    # If no exact match, check for path parameter routes
+    if not handler:
+        # Check if this might be a path with parameters
+        path_parts = path.split('/')
+        
+        # Check for goal-specific routes with {goalId}
+        if len(path_parts) >= 3 and path_parts[1] == 'goals':
+            # Extract goalId for path parameter
+            goal_id = path_parts[2]
+            
+            # Add path parameters to event if not present
+            if 'pathParameters' not in event:
+                event['pathParameters'] = {}
+            event['pathParameters']['goalId'] = goal_id
+            
+            # Check for specific goal endpoints
+            if len(path_parts) == 3:
+                # /goals/{goalId}
+                if http_method == 'GET':
+                    handler = get_goal_handler
+                elif http_method == 'PUT':
+                    handler = update_goal_handler
+                elif http_method == 'DELETE':
+                    handler = archive_goal_handler
+            elif len(path_parts) == 4:
+                # /goals/{goalId}/activities or /goals/{goalId}/progress
+                if path_parts[3] == 'activities':
+                    if http_method == 'GET':
+                        handler = list_activities_handler
+                    elif http_method == 'POST':
+                        handler = log_activity_handler
+                elif path_parts[3] == 'progress' and http_method == 'GET':
+                    handler = get_progress_handler
     
     if handler:
         # Ensure the event has the expected format for handlers

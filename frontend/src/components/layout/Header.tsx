@@ -72,6 +72,12 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
               >
                 Wellness
               </Link>
+              <Link
+                to="/showcase"
+                className="text-purple-600 hover:text-purple-700 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                🎨 Component Showcase
+              </Link>
             </nav>
           </div>
 

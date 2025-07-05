@@ -1,5 +1,8 @@
 # Journaling Feature - Data Model Design
 
+## ⚠️ IMPORTANT: Goal System Update
+**Note**: This document has been updated to use the [Generic Goal System](../core/goal-system-design-v2.md). Journaling goals are now created using the generic goal model with journaling-specific metadata.
+
 ## Overview
 The journaling feature supports private reflection, goal-based writing, AI-assisted insights, and optional social sharing. The data model is designed for flexibility, privacy, and scalability.
 
@@ -29,7 +32,7 @@ interface JournalEntry {
   };
   
   // Organization
-  goalId?: string;          // Link to journaling goal
+  goalId?: string;          // Link to generic goal (type: 'journal')
   promptId?: string;        // AI or custom prompt used
   tags: string[];
   mood?: 'great' | 'good' | 'neutral' | 'difficult' | 'challenging';
@@ -58,54 +61,50 @@ interface JournalEntry {
 }
 ```
 
-### 2. Journaling Goals
+### 2. Journaling Goals - NOW USES GENERIC GOAL SYSTEM
 ```typescript
-interface JournalingGoal {
-  goalId: string;           // GOAL#{uuid}
-  userId: string;           // USER#{userId}
+// ❌ OLD - DO NOT USE
+// interface JournalingGoal { ... }
+
+// ✅ NEW - Use Generic Goal with metadata
+import { Goal } from '../core/goal-system-design-v2';
+
+// Example journaling goal using generic system:
+const journalingGoal: Goal = {
+  goalType: 'journal',
+  goalPattern: 'recurring',
+  title: 'Daily Gratitude Journal',
   
-  // Goal Definition
-  title: string;            // "Morning Reflections"
-  description: string;
-  category: 'gratitude' | 'reflection' | 'goals' | 'mood' | 'custom';
+  target: {
+    metric: 'count',
+    value: 1,
+    unit: 'entry',
+    period: 'day',
+    direction: 'increase',
+    targetType: 'minimum'
+  },
   
-  // Schedule
-  frequency: {
-    type: 'daily' | 'weekly' | 'monthly' | 'custom';
-    daysOfWeek?: number[];  // 0-6 for weekly
-    dayOfMonth?: number;    // 1-31 for monthly
-    customCron?: string;    // Advanced scheduling
-  };
+  schedule: {
+    frequency: 'daily',
+    preferredTimes: ['21:00']
+  },
   
-  // Reminders
-  reminderTime?: string;    // "09:00" in user's timezone
-  reminderEnabled: boolean;
-  
-  // Prompts
-  prompts: {
-    promptId: string;
-    text: string;
-    order: number;
-    optional: boolean;
-  }[];
-  useAiPrompts: boolean;    // Generate dynamic prompts
-  
-  // Progress Tracking
-  targetEntries?: number;   // Entries per period
-  currentStreak: number;
-  longestStreak: number;
-  totalEntries: number;
-  lastEntryDate?: Date;
-  
-  // Status
-  status: 'active' | 'paused' | 'completed' | 'archived';
-  startDate: Date;
-  endDate?: Date;           // For time-bound goals
-  
-  // Metadata
-  createdAt: Date;
-  updatedAt: Date;
-}
+  // Journaling-specific data in metadata
+  metadata: {
+    category: 'gratitude',
+    prompts: [
+      {
+        promptId: 'prompt-1',
+        text: 'What are three things you are grateful for today?',
+        order: 1,
+        optional: false
+      }
+    ],
+    useAiPrompts: true,
+    preferredTopics: ['gratitude', 'personal-growth'],
+    privacyLevel: 'private'
+  }
+};
 ```
 
 ### 3. Prompts & Templates
@@ -171,11 +170,11 @@ interface JournalInteraction {
 ## DynamoDB Schema Design
 
 ### Primary Table: `journaling`
+Note: Journaling goals are stored in the main `goals` table, not here.
 
 | PK | SK | Type | GSI1PK | GSI1SK | GSI2PK | GSI2SK |
 |----|----|----|--------|--------|--------|--------|
 | USER#123 | ENTRY#456 | JournalEntry | ENTRY#456 | 2024-01-15 | SHARED | 2024-01-15 |
-| USER#123 | GOAL#789 | JournalingGoal | GOAL#789 | ACTIVE | USER#123#DAILY | 2024-01-15 |
 | ENTRY#456 | INTERACTION#abc | JournalInteraction | USER#567 | 2024-01-15 | - | - |
 | SYSTEM | PROMPT#def | JournalPrompt | CATEGORY#gratitude | RATING#4.5 | PUBLIC | 2024-01-01 |
 
@@ -193,14 +192,57 @@ interface JournalInteraction {
    - Query GSI1: PK = `SHARED`, sorted by date
    - Filter by visibility and user relationships
 
-4. **User's Active Goals**
-   - Query GSI1: PK = `GOAL#{goalId}`, SK = `ACTIVE`
-
-5. **Entries for a Goal**
+4. **Entries for a Goal**
    - Query: PK = `USER#{userId}`, filter by goalId attribute
+   - Goal details fetched from generic goals table
 
-6. **Public Prompts by Category**
+5. **Public Prompts by Category**
    - Query GSI1: PK = `CATEGORY#{category}`
+
+## Integration with Generic Goal System
+
+### Creating a Journaling Goal
+```typescript
+// Use the generic goal API
+POST /goals
+{
+  "goalType": "journal",
+  "goalPattern": "recurring",
+  "title": "Evening Reflection",
+  "target": {
+    "metric": "count",
+    "value": 1,
+    "unit": "entry",
+    "period": "day"
+  },
+  "metadata": {
+    "prompts": [...],
+    "category": "reflection"
+  }
+}
+```
+
+### Tracking Journal Progress
+```typescript
+// When user completes a journal entry
+POST /goals/{goalId}/track
+{
+  "value": 1,
+  "unit": "entry",
+  "activityDate": "2024-01-15",
+  "context": {
+    "mood": "good",
+    "wordCount": 523,
+    "entryId": "entry-123"
+  }
+}
+```
+
+### Benefits of Generic System
+1. **Unified Dashboard**: Journal goals appear with all other lifestyle goals
+2. **Cross-Goal Insights**: "You journal more on days you exercise"
+3. **Consistent UX**: Same progress tracking, reminders, streaks
+4. **Reusable Infrastructure**: No duplicate code for goals
 
 ## Privacy & Security Considerations
 
@@ -230,7 +272,7 @@ enum Visibility {
 - Dynamic prompts based on:
   - User's recent entries
   - Identified patterns/themes
-  - Goal progress
+  - Goal progress (from generic system)
   - Time of day/season
 
 ### 2. Content Analysis
@@ -269,14 +311,16 @@ For 10,000 active users:
 - Reads: 3M/month = $0.75/month
 - **Total: ~$18/month**
 
-## Migration & Versioning
+## Migration Notes
 
-### Schema Version
-- Current: `v1.0`
-- Version stored with each record
-- Migration scripts for updates
+### From Old JournalingGoal to Generic Goal
+If migrating from an older version that had journaling-specific goals:
+1. Create new generic goals with `goalType: 'journal'`
+2. Move journaling-specific fields to `metadata`
+3. Update journal entries to reference new goal IDs
+4. Archive old journaling goals table
 
-### Future Enhancements
+## Future Enhancements
 1. **Voice Journaling**
    - Audio transcription
    - Voice mood analysis
@@ -289,21 +333,9 @@ For 10,000 active users:
    - Mood tracking over time
    - Word clouds and trends
    - Achievement badges
+   - Integration with generic goal insights
 
-## Integration with Other Modules
-
-### 1. Wellness Module
-- Link mood entries to wellness metrics
-- Correlate journaling with health outcomes
-
-### 2. Goals Module  
-- Connect journal entries to life goals
-- Track progress through reflection
-
-### 3. Social Module
-- Share inspirational entries
-- Build support communities
-
-### 4. AI Coach Module
-- Personalized insights
-- Guided meditation/reflection
+## Related Documentation
+- [Generic Goal System](../core/goal-system-design-v2.md)
+- [Goal System Integration](./goal-system-integration.md)
+- [Journaling API Contract](./api-contract.md)

@@ -1,5 +1,8 @@
 # Journaling Feature - API Contract Design
 
+## ⚠️ IMPORTANT: Goal Endpoints Update
+**Note**: Journaling goals now use the [Generic Goal System API](../core/goal-api-contract.md). The journaling-specific goal endpoints below have been deprecated in favor of the generic `/goals` endpoints.
+
 ## Overview
 RESTful API design for journaling functionality with support for CRUD operations, AI integration, and social features.
 
@@ -22,7 +25,7 @@ POST /journal/entries
   },
   "contentMarkdown": "# Morning Reflections\n\nToday I'm grateful for...",
   "visibility": "private",
-  "goalId": "goal-123",
+  "goalId": "goal-123",  // Reference to generic goal
   "promptId": "prompt-456",
   "tags": ["gratitude", "morning"],
   "mood": "good",
@@ -63,7 +66,7 @@ GET /journal/entries
 - `page` (default: 1)
 - `limit` (default: 20, max: 100)
 - `visibility` (private|shared|all)
-- `goalId` (filter by goal)
+- `goalId` (filter by goal - uses generic goal ID)
 - `tags` (comma-separated)
 - `startDate` (ISO 8601)
 - `endDate` (ISO 8601)
@@ -170,63 +173,110 @@ DELETE /journal/entries/{entryId}
 }
 ```
 
-### Journaling Goals
+### Journaling Goals - DEPRECATED ⚠️
 
-#### Create Journaling Goal
+<details>
+<summary>View deprecated endpoints (use generic /goals API instead)</summary>
+
 ```yaml
+# ❌ DEPRECATED - Use POST /goals instead
 POST /journal/goals
-```
 
-**Request:**
-```json
-{
-  "title": "Daily Gratitude Practice",
-  "description": "Write three things I'm grateful for each day",
-  "category": "gratitude",
-  "frequency": {
-    "type": "daily"
-  },
-  "reminderTime": "21:00",
-  "reminderEnabled": true,
-  "prompts": [
-    {
-      "text": "What are three things you're grateful for today?",
-      "order": 1,
-      "optional": false
-    },
-    {
-      "text": "Who made a positive impact on your day?",
-      "order": 2,
-      "optional": true
-    }
-  ],
-  "useAiPrompts": true,
-  "targetEntries": 30,
-  "startDate": "2024-01-15",
-  "endDate": "2024-02-14"
-}
-```
-
-#### Get User's Goals
-```yaml
+# ❌ DEPRECATED - Use GET /goals?type=journal instead  
 GET /journal/goals
-```
 
-**Query Parameters:**
-- `status` (active|paused|completed|archived|all)
-- `category` (gratitude|reflection|goals|mood|custom)
-
-#### Update Goal Progress
-```yaml
+# ❌ DEPRECATED - Use POST /goals/{goalId}/track instead
 POST /journal/goals/{goalId}/checkin
 ```
 
+</details>
+
+### Using Generic Goal System for Journaling
+
+#### Create a Journaling Goal
+```yaml
+POST /goals
+```
+
 **Request:**
 ```json
 {
-  "entryId": "entry-789",
-  "completed": true
+  "goalType": "journal",
+  "goalPattern": "recurring",
+  "title": "Daily Gratitude Practice",
+  "description": "Write three things I'm grateful for each day",
+  
+  "target": {
+    "metric": "count",
+    "value": 1,
+    "unit": "entry",
+    "period": "day",
+    "direction": "increase",
+    "targetType": "minimum"
+  },
+  
+  "schedule": {
+    "frequency": "daily",
+    "preferredTimes": ["21:00"],
+    "checkInFrequency": "daily"
+  },
+  
+  "reminders": [{
+    "enabled": true,
+    "type": "push",
+    "timing": "at-time",
+    "message": "Time for your gratitude journal!"
+  }],
+  
+  "metadata": {
+    "category": "gratitude",
+    "prompts": [
+      {
+        "promptId": "prompt-1",
+        "text": "What are three things you're grateful for today?",
+        "order": 1,
+        "optional": false
+      }
+    ],
+    "useAiPrompts": true,
+    "minimumWords": 100,
+    "preferredTopics": ["gratitude", "personal-growth"]
+  }
 }
+```
+
+#### Track Journal Entry Completion
+```yaml
+POST /goals/{goalId}/track
+```
+
+**Request:**
+```json
+{
+  "value": 1,
+  "unit": "entry",
+  "activityDate": "2024-01-15T21:30:00Z",
+  
+  "context": {
+    "timeOfDay": "evening",
+    "mood": "good",
+    "energyLevel": 7,
+    "location": "home"
+  },
+  
+  "attachments": [{
+    "type": "reference",
+    "entityId": "entry-789",
+    "url": "/journal/entries/entry-789"
+  }],
+  
+  "note": "Great journaling session, felt very reflective"
+}
+```
+
+#### Get Journaling Goals
+```yaml
+GET /goals?type=journal&status=active
 ```
 
 ### AI Integration
@@ -426,8 +476,6 @@ GET /journal/stats
 {
   "stats": {
     "totalEntries": 156,
-    "currentStreak": 14,
-    "longestStreak": 30,
     "averageWordCount": 324,
     "totalWords": 50544,
     "moodDistribution": {
@@ -448,14 +496,7 @@ GET /journal/stats
       "evening": 78,
       "night": 10
     },
-    "goalsProgress": [
-      {
-        "goalId": "goal-123",
-        "title": "Daily Gratitude",
-        "completion": 0.87,
-        "streak": 14
-      }
-    ]
+    "goalsProgress": []  // Note: Goal progress now fetched from /goals/stats
   }
 }
 ```
@@ -506,7 +547,7 @@ POST /journal/export
 
 ### Error Codes
 - `ENTRY_NOT_FOUND` - Journal entry does not exist
-- `GOAL_NOT_FOUND` - Journaling goal does not exist  
+- `GOAL_NOT_FOUND` - Goal does not exist (check generic goals)
 - `UNAUTHORIZED` - User not authenticated
 - `FORBIDDEN` - User lacks permission
 - `VALIDATION_ERROR` - Invalid request data
@@ -524,26 +565,14 @@ POST /journal/export
 | AI Prompt Generation | 30/hour |
 | Export | 2/day |
 
-## Webhook Events
+## Integration with Generic Goals
 
-For future integration with other services:
+The journaling feature now integrates seamlessly with the generic goal system:
 
-```json
-{
-  "event": "journal.entry.created",
-  "data": {
-    "entryId": "entry-789",
-    "userId": "user-123",
-    "visibility": "private",
-    "hasGoal": true
-  },
-  "timestamp": "2024-01-15T09:30:00Z"
-}
-```
+1. **Goal Creation**: Use `/goals` API with `goalType: "journal"`
+2. **Progress Tracking**: Automatic when entry is created with goalId
+3. **Analytics**: Combined insights across all goal types
+4. **Reminders**: Unified notification system
+5. **Streaks**: Managed by generic goal system
 
-Events:
-- `journal.entry.created`
-- `journal.entry.updated`
-- `journal.entry.shared`
-- `journal.goal.completed`
-- `journal.streak.milestone` (7, 30, 100 days)
+See [Generic Goal API](../core/goal-api-contract.md) for complete goal management endpoints.
