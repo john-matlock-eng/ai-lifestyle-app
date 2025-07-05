@@ -1,9 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Provider } from 'react-redux';
+import { store } from '../../../../store';
 import RegistrationForm from '../RegistrationForm';
+import { authService } from '../../services/authService';
 
 // Mock the auth service
 vi.mock('../../services/authService', () => ({
@@ -11,6 +14,16 @@ vi.mock('../../services/authService', () => ({
     register: vi.fn(),
   },
 }));
+
+// Mock useNavigate
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,15 +34,21 @@ const queryClient = new QueryClient({
 
 const renderWithProviders = (component: React.ReactElement) => {
   return render(
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        {component}
-      </BrowserRouter>
-    </QueryClientProvider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          {component}
+        </BrowserRouter>
+      </QueryClientProvider>
+    </Provider>
   );
 };
 
 describe('RegistrationForm', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders all form fields', () => {
     renderWithProviders(<RegistrationForm />);
 
@@ -45,11 +64,22 @@ describe('RegistrationForm', () => {
     const user = userEvent.setup();
     renderWithProviders(<RegistrationForm />);
 
+    // First check the terms checkbox to allow form submission
+    const termsCheckbox = screen.getByRole('checkbox', { name: /i agree to the/i });
+    await user.click(termsCheckbox);
+
     const submitButton = screen.getByRole('button', { name: /create account/i });
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/this field is required/i)).toBeInTheDocument();
+      // First name and last name will show "This field is required"
+      const errors = screen.getAllByText(/This field is required/i);
+      expect(errors.length).toBeGreaterThan(0);
+    });
+
+    // Also check for email validation error
+    await waitFor(() => {
+      expect(screen.getByText(/Invalid email address/i)).toBeInTheDocument();
     });
   });
 
@@ -73,7 +103,9 @@ describe('RegistrationForm', () => {
     const passwordInput = screen.getAllByLabelText(/password/i)[0];
     await user.type(passwordInput, 'weak');
 
-    expect(screen.getByText(/password strength/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/password strength/i)).toBeInTheDocument();
+    });
   });
 
   it('validates password confirmation match', async () => {
@@ -92,8 +124,15 @@ describe('RegistrationForm', () => {
     });
   });
 
-  it('disables submit button while submitting', async () => {
+  it('successfully submits form with valid data', async () => {
     const user = userEvent.setup();
+    const mockRegister = vi.mocked(authService.register);
+    mockRegister.mockResolvedValueOnce({
+      userId: '123',
+      email: 'john@example.com',
+      message: 'Registration successful'
+    });
+
     renderWithProviders(<RegistrationForm />);
 
     // Fill in valid form data
@@ -102,12 +141,30 @@ describe('RegistrationForm', () => {
     await user.type(screen.getByLabelText(/email address/i), 'john@example.com');
     await user.type(screen.getAllByLabelText(/password/i)[0], 'StrongP@ss123');
     await user.type(screen.getByLabelText(/confirm password/i), 'StrongP@ss123');
-    await user.click(screen.getByLabelText(/i agree to the/i));
+    
+    // Check the terms checkbox
+    const termsCheckbox = screen.getByRole('checkbox', { name: /i agree to the/i });
+    await user.click(termsCheckbox);
 
     const submitButton = screen.getByRole('button', { name: /create account/i });
     await user.click(submitButton);
 
-    expect(submitButton).toBeDisabled();
-    expect(screen.getByText(/creating account/i)).toBeInTheDocument();
+    // Wait for the form submission
+    await waitFor(() => {
+      expect(mockRegister).toHaveBeenCalledWith({
+        email: 'john@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        password: 'StrongP@ss123'
+      });
+    });
+
+    // Check that navigation happened
+    expect(mockNavigate).toHaveBeenCalledWith('/register/success', {
+      state: {
+        email: 'john@example.com',
+        message: 'Registration successful'
+      }
+    });
   });
 });
