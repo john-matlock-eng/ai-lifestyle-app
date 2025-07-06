@@ -130,6 +130,48 @@ Once deployed with backend integration:
 
 **Updated**: 2025-01-06 by Frontend Agent
 
+## 🔐 AWS Authentication Fixed for CI/CD
+**Status**: ✅ Complete
+**Date**: 2025-01-06
+**Time Spent**: 10 minutes
+
+### Issue Fixed
+GitHub Actions was failing with:
+```
+Error: Credentials could not be loaded, please check your action inputs: Could not load credentials from any providers
+```
+
+### Solution Applied
+Updated frontend CI/CD workflow to use OIDC authentication (same as backend):
+1. Added `permissions` block with `id-token: write`
+2. Changed from AWS access keys to role assumption
+3. Updated all jobs (deploy-dev, deploy-prod, cleanup-dev)
+
+### Key Changes
+```yaml
+# Added permissions
+permissions:
+  id-token: write       # Required for OIDC
+  contents: read
+  pull-requests: write
+
+# Updated authentication
+- name: Configure AWS credentials
+  uses: aws-actions/configure-aws-credentials@v4
+  with:
+    role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/terraform-deployer-ai-lifestyle
+    role-session-name: github-actions-frontend-[env]
+    aws-region: ${{ env.AWS_REGION }}
+```
+
+### Required Setup
+- Ensure `AWS_ACCOUNT_ID` secret is set in GitHub repository
+- IAM role `terraform-deployer-ai-lifestyle` must exist with proper trust policy
+- Remove old access key secrets (no longer needed)
+
+### Documentation
+Created `AWS_AUTH_UPDATE.md` with complete details
+
 ## 🔧 Timeout Type Errors Fixed!
 **Status**: ✅ Complete
 **Date**: 2025-01-06
