@@ -34,7 +34,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Refs for timeout management
   const sessionCheckIntervalRef = useRef<NodeJS.Timeout>();
   const idleTimeoutRef = useRef<NodeJS.Timeout>();
-  const refreshTimeoutRef = useRef<NodeJS.Timeout>();
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | undefined>();
   const lastActivityRef = useRef<number>(Date.now());
 
   // Check if user has a valid token on mount
@@ -56,7 +56,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (error) {
       const errorResponse = error as { response?: { status?: number } };
       if (errorResponse?.response?.status === 401) {
-        handleTokenRefresh();
+        void handleTokenRefresh();
       }
     }
   }, [error]); // eslint-disable-line react-hooks/exhaustive-deps
