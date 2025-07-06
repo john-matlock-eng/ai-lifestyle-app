@@ -44,8 +44,10 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
   const [privateNotes, setPrivateNotes] = useState<string | null>(null);
   React.useEffect(() => {
     if (goal.metadata?.encryptedNotes) {
-      decrypt(goal.metadata.encryptedNotes).then((decrypted: any) => {
-        setPrivateNotes(decrypted.notes);
+      decrypt(goal.metadata.encryptedNotes).then((decrypted) => {
+        if (typeof decrypted === 'object' && decrypted !== null && 'notes' in decrypted) {
+          setPrivateNotes(decrypted.notes as string);
+        }
       }).catch(err => {
         console.error('Failed to decrypt notes:', err);
       });
