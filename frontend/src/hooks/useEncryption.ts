@@ -123,7 +123,7 @@ export const useEncryption = (moduleId: string, options: UseEncryptionOptions = 
   }, [moduleId, dispatch]);
 
   // Encrypt data (mock implementation)
-  const encrypt = useCallback(async <T = unknown>(data: T) => {
+  const encrypt = useCallback(async <T = unknown>(data: T): Promise<T | EncryptedData> => {
     if (!isEncrypted) {
       return data; // Return unencrypted if module encryption is disabled
     }

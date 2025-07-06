@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { authService, UserProfile } from '../features/auth/services/authService';
+import { authService } from '../features/auth/services/authService';
+import type { UserProfile } from '../features/auth/services/authService';
 import { 
   getAccessToken, 
   getRefreshToken, 
@@ -9,7 +11,8 @@ import {
   refreshAccessToken,
   getTokenExpiry
 } from '../features/auth/utils/tokenManager';
-import { AuthContext, AuthContextValue } from './AuthContextType';
+import { AuthContext } from './AuthContextType';
+import type { AuthContextValue } from './AuthContextType';
 
 
 interface AuthProviderProps {
@@ -35,7 +38,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const lastActivityRef = useRef<number>(Date.now());
 
   // Check if user has a valid token on mount
-  const { data: user, isLoading: isLoadingUser } = useQuery({
+  const { data: user, isLoading: isLoadingUser, error } = useQuery({
     queryKey: ['currentUser'],
     queryFn: authService.getCurrentUser,
     enabled: !!getAccessToken() && isInitialized,
@@ -46,14 +49,17 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return failureCount < 2;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    onError: (error: unknown) => {
+  });
+
+  // Handle 401 errors
+  useEffect(() => {
+    if (error) {
       const errorResponse = error as { response?: { status?: number } };
       if (errorResponse?.response?.status === 401) {
-        // Token is invalid, try to refresh
         handleTokenRefresh();
       }
-    },
-  });
+    }
+  }, [error]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialize auth state and restore session
   useEffect(() => {
@@ -280,7 +286,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isLoading = !isInitialized || isLoadingUser;
 
   const value: AuthContextValue = {
-    user: user || null,
+    user: (user as UserProfile) || null,
     isAuthenticated,
     isLoading,
     sessionExpiry,
@@ -296,4 +302,4 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export default AuthProvider;
+export { AuthProvider };

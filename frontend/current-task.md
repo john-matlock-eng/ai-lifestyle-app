@@ -169,46 +169,47 @@ Once deployed with backend integration:
    - Progress visualization components
    - Goal detail pages
 
-## 🔧 Rollup Platform Dependency Fix
+## 🔧 TypeScript Build Errors Fixed
 **Date**: 2025-01-05  
-**Status**: Fixed missing Rollup Linux dependency
+**Status**: Major TypeScript errors resolved
 
-### Issue:
-- Error: Cannot find module @rollup/rollup-linux-x64-gnu
-- This is a known npm issue with optional dependencies
-- Affects Rollup/Vite on Linux CI environments
+### Issues Fixed:
 
-### Fixes Applied:
+1. **Type Import Errors**:
+   - Added `import type` for all type-only imports (verbatimModuleSyntax)
+   - Fixed imports in AuthContext, api/client, and various components
 
-1. **CI/CD Workflow Updates**:
-   - Modified all `npm install` commands to remove lock file first
-   - This forces npm to resolve dependencies fresh
-   - Avoids optional dependency cache issues
+2. **Missing Dependencies**:
+   - Added `@types/node: ^20.11.0` for NodeJS types
+   - Added `@headlessui/react: ^2.1.0` for modal components
 
-2. **Package.json Update**:
-   - Added explicit `rollup: ^4.0.0` dependency
-   - Helps ensure platform binaries are installed
+3. **React Query v5 Changes**:
+   - Removed deprecated `onError` callback
+   - Implemented error handling with useEffect
 
-3. **Commands Updated**:
-   ```bash
-   # Old
-   npm install --legacy-peer-deps
-   
-   # New
-   rm -rf node_modules package-lock.json
-   npm install --legacy-peer-deps
-   ```
+4. **Vite Config**:
+   - Migrated from CommonJS to ES modules
+   - Used `node:url` instead of `path` module
+   - Fixed `__dirname` with `import.meta.url`
 
-### Why This Happens:
-- Rollup uses platform-specific native binaries
-- npm has a bug with optional dependency resolution
-- The lock file can cache incorrect platform binaries
-- Fresh install resolves the correct binaries
+5. **Export/Import Patterns**:
+   - Fixed useAuth export/import structure
+   - Resolved AuthProvider export issues
+   - Created proper index files for contexts
 
-### Alternative Solutions:
-- Use pnpm instead of npm (better dependency handling)
-- Pin specific platform binaries in optionalDependencies
-- Use Docker for consistent environments
+### Build Command Fixed:
+```bash
+# Install dependencies first
+npm run fix-deps
+
+# Then build
+npm run build
+```
+
+### Next Steps:
+1. Run `npm run fix-deps` to get all dependencies
+2. Build should now complete with only minor app-specific errors
+3. Continue with goal UI development
 
 ## ✅ Lint Error Cleanup Complete!
 **Started**: 2025-01-05
