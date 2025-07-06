@@ -123,7 +123,7 @@ export const useEncryption = (moduleId: string, options: UseEncryptionOptions = 
   }, [moduleId, dispatch]);
 
   // Encrypt data (mock implementation)
-  const encrypt = useCallback(async <T extends object = object>(data: T): Promise<T | EncryptedData> => {
+  const encrypt = useCallback(async <T extends Record<string, unknown> = Record<string, unknown>>(data: T): Promise<T | EncryptedData> => {
     if (!isEncrypted) {
       return data; // Return unencrypted if module encryption is disabled
     }
@@ -147,7 +147,7 @@ export const useEncryption = (moduleId: string, options: UseEncryptionOptions = 
     keyId?: string;
   }
   const decrypt = useCallback(async <T = unknown>(encryptedData: EncryptedData | T): Promise<T> => {
-    if (!('encrypted' in encryptedData) || !encryptedData.encrypted) {
+    if (typeof encryptedData !== 'object' || encryptedData === null || !('encrypted' in encryptedData) || !encryptedData.encrypted) {
       return encryptedData as T;
     }
     

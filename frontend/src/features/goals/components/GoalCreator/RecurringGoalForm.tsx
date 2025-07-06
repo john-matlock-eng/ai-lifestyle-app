@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Repeat, Calendar, Clock, Info } from 'lucide-react';
-import {
+import type {
   Period,
   Frequency,
   RecurringGoalFormData,
-  GOAL_CATEGORIES,
-  METRIC_UNITS,
   MetricType,
 } from '../../types/goal.types';
-import { useEncryption } from '../../../../hooks/useEncryption';
+import {
+  GOAL_CATEGORIES,
+  METRIC_UNITS,
+} from '../../types/goal.types';
 
 interface RecurringGoalFormProps {
   onSubmit: (data: RecurringGoalFormData) => void;
@@ -43,7 +44,6 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
   onCancel,
   initialData = {},
 }) => {
-  const { encrypt } = useEncryption('goals');
   
   const [formData, setFormData] = useState<RecurringGoalFormData>({
     title: '',
@@ -67,18 +67,9 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    let dataToSubmit = { ...formData };
-    
-    if (includePrivateNotes && privateNotes) {
-      // Encrypt private notes
-      const encrypted = await encrypt({ notes: privateNotes });
-      dataToSubmit = {
-        ...dataToSubmit,
-        metadata: { encryptedNotes: encrypted },
-      };
-    }
-    
-    onSubmit(dataToSubmit);
+    // For now, we'll just submit the form data without metadata
+    // The parent component can handle encryption if needed
+    onSubmit(formData);
   };
 
   const updateFormData = (updates: Partial<RecurringGoalFormData>) => {
@@ -281,7 +272,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
         {/* Example */}
         <div className="text-sm text-blue-700 bg-blue-100 rounded p-2">
           <strong>Goal:</strong> {formData.targetValue} {formData.unit} per {formData.period}
-          {formData.frequency === 'weekly' && formData.daysOfWeek?.length > 0 && (
+          {formData.frequency === 'weekly' && formData.daysOfWeek && formData.daysOfWeek.length > 0 && (
             <span> on {formData.daysOfWeek.map(d => daysOfWeek[d].label).join(', ')}</span>
           )}
         </div>

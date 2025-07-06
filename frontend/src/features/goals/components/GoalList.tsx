@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Search, MoreVertical, Edit2, Pause, Play, Archive, Trash2, Target } from 'lucide-react';
-import { Goal, GoalStatus, GOAL_PATTERN_COLORS, GOAL_CATEGORIES } from '../types/goal.types';
+import type { Goal, GoalStatus } from '../types/goal.types';
+import { GOAL_PATTERN_COLORS, GOAL_CATEGORIES } from '../types/goal.types';
 import { MiniProgressRing } from './GoalProgress/ProgressRing';
 import { StreakBadge } from './GoalProgress/StreakCalendar';
 

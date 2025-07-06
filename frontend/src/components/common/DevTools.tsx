@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts';
 import { getAccessToken, getRefreshToken } from '../../features/auth/utils/tokenManager';
 
 const DevTools: React.FC = () => {

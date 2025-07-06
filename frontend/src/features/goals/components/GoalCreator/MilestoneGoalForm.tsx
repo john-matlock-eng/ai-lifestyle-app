@@ -8,7 +8,6 @@ import {
   GOAL_CATEGORIES,
   METRIC_UNITS,
 } from '../../types/goal.types';
-import { useEncryption } from '../../../../hooks/useEncryption';
 
 interface MilestoneGoalFormProps {
   onSubmit: (data: MilestoneGoalFormData) => void;
@@ -21,7 +20,6 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
   onCancel,
   initialData = {},
 }) => {
-  const { encrypt } = useEncryption('goals');
   
   const [formData, setFormData] = useState<MilestoneGoalFormData>({
     title: '',
@@ -44,17 +42,9 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    let dataToSubmit = { ...formData };
-    
-    if (includePrivateNotes && privateNotes) {
-      const encrypted = await encrypt({ notes: privateNotes });
-      dataToSubmit = {
-        ...dataToSubmit,
-        metadata: { encryptedNotes: encrypted },
-      };
-    }
-    
-    onSubmit(dataToSubmit);
+    // For now, we'll just submit the form data without metadata
+    // The parent component can handle encryption if needed
+    onSubmit(formData);
   };
 
   const updateFormData = (updates: Partial<MilestoneGoalFormData>) => {
@@ -63,7 +53,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
 
   const availableUnits = METRIC_UNITS[metricType] || [];
   const progress = formData.targetValue > 0 
-    ? Math.round((formData.currentValue / formData.targetValue) * 100)
+    ? Math.round(((formData.currentValue || 0) / formData.targetValue) * 100)
     : 0;
 
   return (

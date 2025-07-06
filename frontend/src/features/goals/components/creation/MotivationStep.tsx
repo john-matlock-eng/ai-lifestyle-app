@@ -1,5 +1,5 @@
 import React from 'react';
-import { GoalContext } from '../../types/api.types';
+import type { GoalContext } from '../../types/api.types';
 import Button from '../../../../components/common/Button';
 
 interface MotivationStepProps {

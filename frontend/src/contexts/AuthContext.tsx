@@ -34,9 +34,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [sessionExpiry, setSessionExpiry] = useState<Date | null>(null);
   
   // Refs for timeout management
-  const sessionCheckIntervalRef = useRef<NodeJS.Timeout | undefined>();
-  const idleTimeoutRef = useRef<NodeJS.Timeout | undefined>();
-  const refreshTimeoutRef = useRef<NodeJS.Timeout | undefined>();
+  const sessionCheckIntervalRef = useRef<number | undefined>(undefined);
+  const idleTimeoutRef = useRef<number | undefined>(undefined);
+  const refreshTimeoutRef = useRef<number | undefined>(undefined);
   const lastActivityRef = useRef<number>(Date.now());
 
   // Check if user has a valid token on mount

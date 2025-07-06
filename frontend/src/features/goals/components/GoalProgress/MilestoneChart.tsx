@@ -83,6 +83,9 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
   }
   const CustomDot = (props: { cx?: number; cy?: number; payload?: DotPayload }) => {
     const { cx, cy, payload } = props;
+    
+    if (!cx || !cy || !payload) return null;
+    
     const milestone = milestones.find(m => Math.abs(payload.value - m.value) < 0.1);
     
     if (milestone) {

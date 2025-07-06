@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Target, Calendar, TrendingUp, TrendingDown, Info } from 'lucide-react';
-import {
+import type {
   TargetGoalFormData,
-  GOAL_CATEGORIES,
-  METRIC_UNITS,
   MetricType,
 } from '../../types/goal.types';
-import { useEncryption } from '../../../../hooks/useEncryption';
+import {
+  GOAL_CATEGORIES,
+  METRIC_UNITS,
+} from '../../types/goal.types';
 
 interface TargetGoalFormProps {
   onSubmit: (data: TargetGoalFormData) => void;
@@ -19,7 +20,6 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
   onCancel,
   initialData = {},
 }) => {
-  const { encrypt } = useEncryption('goals');
   
   const [formData, setFormData] = useState<TargetGoalFormData>({
     title: '',
@@ -43,17 +43,9 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    let dataToSubmit = { ...formData };
-    
-    if (includePrivateNotes && privateNotes) {
-      const encrypted = await encrypt({ notes: privateNotes });
-      dataToSubmit = {
-        ...dataToSubmit,
-        metadata: { encryptedNotes: encrypted },
-      };
-    }
-    
-    onSubmit(dataToSubmit);
+    // For now, we'll just submit the form data without metadata
+    // The parent component can handle encryption if needed
+    onSubmit(formData);
   };
 
   const updateFormData = (updates: Partial<TargetGoalFormData>) => {

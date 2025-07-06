@@ -32,6 +32,14 @@ interface TrendLineProps {
   className?: string;
 }
 
+interface ChartDataPoint {
+  date: string;
+  actual?: number;
+  ideal?: number;
+  projected?: number;
+  fullDate: Date;
+}
+
 export const TrendLine: React.FC<TrendLineProps> = ({
   data,
   startValue,
@@ -71,7 +79,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
     : projectedValue <= targetValue;
   
   // Prepare chart data
-  const chartData = data.map(point => ({
+  const chartData: ChartDataPoint[] = data.map(point => ({
     date: point.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     actual: point.value,
     fullDate: point.date,
@@ -119,7 +127,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
     if (existing) {
       existing.ideal = point.ideal;
     } else {
-      chartData.push({ ...point, actual: undefined });
+      chartData.push({ date: point.date, ideal: point.ideal, fullDate: point.fullDate });
     }
   });
   
@@ -161,11 +169,11 @@ export const TrendLine: React.FC<TrendLineProps> = ({
   const CustomDot = (props: { cx?: number; cy?: number; payload?: DotPayload; dataKey?: string }) => {
     const { cx, cy, payload, dataKey } = props;
     
-    if (dataKey === 'actual' && payload.actual !== undefined) {
-      return <circle cx={cx} cy={cy} r={4} fill={color} stroke="white" strokeWidth={2} />;
+    if (!cx || !cy || !payload || dataKey !== 'actual' || payload.actual === undefined) {
+      return null;
     }
     
-    return null;
+    return <circle cx={cx} cy={cy} r={4} fill={color} stroke="white" strokeWidth={2} />;
   };
 
   return (

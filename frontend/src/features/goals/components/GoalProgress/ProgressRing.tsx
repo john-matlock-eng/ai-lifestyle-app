@@ -96,11 +96,11 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 };
 
 // Compound component for goal-specific progress
-interface GoalProgressRingProps extends Omit<ProgressRingProps, 'children'> {
+interface GoalProgressRingProps extends Omit<ProgressRingProps, 'children' | 'progress'> {
   current: number;
   target: number;
   unit: string;
-  goalType?: 'recurring' | 'milestone' | 'target' | 'limit';
+  goalType?: 'recurring' | 'milestone' | 'target' | 'limit' | 'streak';
 }
 
 export const GoalProgressRing: React.FC<GoalProgressRingProps> = ({

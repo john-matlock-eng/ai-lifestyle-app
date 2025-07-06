@@ -4,11 +4,13 @@ import {
   Archive, Trash2, Plus, CheckCircle, XCircle, Clock, Target, Trophy,
   Flame, ShieldAlert, BarChart3, Share2
 } from 'lucide-react';
-import { Goal, GoalActivity, GOAL_PATTERN_COLORS } from '../types/goal.types';
+import type { Goal, GoalActivity } from '../types/goal.types';
+import { GOAL_PATTERN_COLORS } from '../types/goal.types';
 import { GoalProgressRing } from './GoalProgress/ProgressRing';
 import { StreakCalendar } from './GoalProgress/StreakCalendar';
 import { useEncryption } from '../../../hooks/useEncryption';
-import { ShareDialog, ShareableItem, ShareToken } from '../../../components/encryption';
+import type { ShareableItem, ShareToken } from '../../../components/encryption';
+import { ShareDialog } from '../../../components/encryption';
 
 interface GoalDetailProps {
   goal: Goal;
@@ -42,7 +44,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
   const [privateNotes, setPrivateNotes] = useState<string | null>(null);
   React.useEffect(() => {
     if (goal.metadata?.encryptedNotes) {
-      decrypt(goal.metadata.encryptedNotes).then(decrypted => {
+      decrypt(goal.metadata.encryptedNotes).then((decrypted: any) => {
         setPrivateNotes(decrypted.notes);
       }).catch(err => {
         console.error('Failed to decrypt notes:', err);

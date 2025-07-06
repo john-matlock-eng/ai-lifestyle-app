@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts';
 
 interface UseSessionManagementOptions {
   warnBeforeExpiry?: number; // milliseconds before expiry to show warning
@@ -69,7 +69,7 @@ export const useIdleTimeout = (
   onTimeout: () => void
 ) => {
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const resetTimeout = () => {
       if (timeoutId) {

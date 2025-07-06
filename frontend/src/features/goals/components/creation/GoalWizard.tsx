@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { GoalPattern, CreateGoalRequest, GoalTarget, GoalSchedule, GoalContext } from '../../types/api.types';
+import type { GoalPattern, CreateGoalRequest, GoalTarget, GoalSchedule, GoalContext } from '../../types/api.types';
 import { getDefaultsByPattern } from '../../types/ui.types';
 import PatternSelector from './PatternSelector';
 import BasicInfoStep from './BasicInfoStep';
@@ -74,12 +74,12 @@ const GoalWizard: React.FC = () => {
     handleNext();
   };
 
-  const handleScheduleComplete = (schedule: GoalSchedule) => {
+  const handleScheduleComplete = (schedule?: GoalSchedule) => {
     setWizardState({ ...wizardState, schedule });
     handleNext();
   };
 
-  const handleMotivationComplete = (context: GoalContext) => {
+  const handleMotivationComplete = (context?: GoalContext) => {
     setWizardState({ ...wizardState, context });
     handleNext();
   };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts';
 import { Button } from './common';
 
 export const SessionWarning: React.FC = () => {

@@ -85,12 +85,10 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
               <div className="relative space-y-3">
                 <div
                   className="inline-flex p-3 rounded-lg"
-                  style={{ backgroundColor: `${config.color}20` }}
+                  style={{ backgroundColor: `${config.color}20`, color: config.color }}
                 >
                   <Icon
                     className="h-6 w-6"
-                    style={{ color: config.color }}
-                    aria-hidden={true}
                   />
                 </div>
 

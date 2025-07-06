@@ -1,5 +1,5 @@
 import React from 'react';
-import { GoalPattern } from '../../types/api.types';
+import type { GoalPattern } from '../../types/api.types';
 import { GOAL_PATTERNS } from '../../types/ui.types';
 
 interface PatternSelectorProps {
