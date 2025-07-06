@@ -36,7 +36,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: |
+          # Remove any existing lock file and node_modules to avoid optional dependency issues
+          rm -rf node_modules package-lock.json
+          npm install --legacy-peer-deps
       
       - name: Run linter
         run: npm run lint
@@ -103,7 +106,10 @@ jobs:
           ./generate-env.sh dev
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: |
+          # Remove any existing lock file and node_modules to avoid optional dependency issues
+          rm -rf node_modules package-lock.json
+          npm install --legacy-peer-deps
       
       - name: Build frontend with env config
         run: npm run build
@@ -193,7 +199,10 @@ jobs:
           ./generate-env.sh prod
       
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: |
+          # Remove any existing lock file and node_modules to avoid optional dependency issues
+          rm -rf node_modules package-lock.json
+          npm install --legacy-peer-deps
       
       - name: Build frontend with env config
         run: npm run build

@@ -3,7 +3,8 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
+- Node.js 20+ (required by Vite 7 and react-router-dom)
+- npm 8+
 - Git
 
 ### Installation
@@ -12,11 +13,11 @@
 
 1. Install dependencies:
 ```bash
-# Essential dependencies for authentication UI
-npm install --legacy-peer-deps react-router-dom @tanstack/react-query axios zod js-cookie react-hook-form @hookform/resolvers clsx tailwindcss postcss autoprefixer @tailwindcss/forms
+# Recommended: Use fix-deps script to handle platform-specific issues
+npm run fix-deps
 
-# Development dependencies
-npm install -D @types/js-cookie msw @testing-library/react @testing-library/user-event vitest happy-dom
+# Or install manually with legacy peer deps
+npm install --legacy-peer-deps
 ```
 
 2. Initialize MSW (for API mocking):
@@ -81,8 +82,20 @@ src/
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run test` - Run tests
+- `npm run test:ui` - Run tests with UI
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
+- `npm run type-check` - Check TypeScript types
+- `npm run fix-deps` - Fix dependency issues (platform-specific)
+
+## 🚨 Troubleshooting
+
+See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for common issues and solutions.
+
+**Quick fixes:**
+- Rollup platform errors: Run `npm run fix-deps`
+- React 19 compatibility: Always use `--legacy-peer-deps`
+- Test failures: Ensure Node 20+ is installed
 
 ## 🎨 Design System
 

@@ -169,27 +169,46 @@ Once deployed with backend integration:
    - Progress visualization components
    - Goal detail pages
 
-## 🔧 Test Fix in Progress
-**Date**: 2025-01-05
-**Status**: Fixing validation test
+## 🔧 Rollup Platform Dependency Fix
+**Date**: 2025-01-05  
+**Status**: Fixed missing Rollup Linux dependency
 
-### Issue Found:
-- The form has a required checkbox (terms and conditions) that prevents form submission
-- Without checking this box, the form won't submit and React Hook Form validation won't trigger
-- This is why the test couldn't find validation error messages
+### Issue:
+- Error: Cannot find module @rollup/rollup-linux-x64-gnu
+- This is a known npm issue with optional dependencies
+- Affects Rollup/Vite on Linux CI environments
 
-### Fix Applied:
-- Updated the "shows validation errors for empty fields" test to:
-  1. First check the terms checkbox
-  2. Then click submit button
-  3. Wait for validation errors to appear
-  4. Also check for email validation error
+### Fixes Applied:
 
-### Test Status:
-- 7/8 tests passing
-- 1 test being fixed
-- All dependencies properly installed
-- React 19 compatibility maintained
+1. **CI/CD Workflow Updates**:
+   - Modified all `npm install` commands to remove lock file first
+   - This forces npm to resolve dependencies fresh
+   - Avoids optional dependency cache issues
+
+2. **Package.json Update**:
+   - Added explicit `rollup: ^4.0.0` dependency
+   - Helps ensure platform binaries are installed
+
+3. **Commands Updated**:
+   ```bash
+   # Old
+   npm install --legacy-peer-deps
+   
+   # New
+   rm -rf node_modules package-lock.json
+   npm install --legacy-peer-deps
+   ```
+
+### Why This Happens:
+- Rollup uses platform-specific native binaries
+- npm has a bug with optional dependency resolution
+- The lock file can cache incorrect platform binaries
+- Fresh install resolves the correct binaries
+
+### Alternative Solutions:
+- Use pnpm instead of npm (better dependency handling)
+- Pin specific platform binaries in optionalDependencies
+- Use Docker for consistent environments
 
 ## ✅ Lint Error Cleanup Complete!
 **Started**: 2025-01-05
