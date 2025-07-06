@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Trophy, TrendingUp, Calendar, Info } from 'lucide-react';
-import {
+import type {
   MilestoneGoalFormData,
+  MetricType,
+} from '../../types/goal.types';
+import {
   GOAL_CATEGORIES,
   METRIC_UNITS,
-  MetricType,
 } from '../../types/goal.types';
 import { useEncryption } from '../../../../hooks/useEncryption';
 

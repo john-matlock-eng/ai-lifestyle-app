@@ -36,7 +36,7 @@ export const useNetworkErrorRecovery = <T = unknown>(
   const [retryCount, setRetryCount] = useState(0);
   const [lastError, setLastError] = useState<Error | null>(null);
   
-  const retryTimeoutRef = useRef<NodeJS.Timeout>();
+  const retryTimeoutRef = useRef<NodeJS.Timeout | undefined>();
 
   const reset = useCallback(() => {
     setIsRetrying(false);

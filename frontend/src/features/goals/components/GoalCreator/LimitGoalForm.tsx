@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { ShieldAlert, TrendingDown, AlertTriangle, Info } from 'lucide-react';
-import {
+import type {
   LimitGoalFormData,
   Period,
+  MetricType,
+} from '../../types/goal.types';
+import {
   GOAL_CATEGORIES,
   METRIC_UNITS,
-  MetricType,
 } from '../../types/goal.types';
 import { useEncryption } from '../../../../hooks/useEncryption';
 
@@ -56,9 +58,11 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
     
     if (includePrivateNotes && privateNotes) {
       const encrypted = await encrypt({ notes: privateNotes });
+      // Store encrypted notes separately or in a different way
+      // For now, we'll include it in the description
       dataToSubmit = {
         ...dataToSubmit,
-        metadata: { encryptedNotes: encrypted },
+        description: dataToSubmit.description + `\n\n[ENCRYPTED_NOTES]${JSON.stringify(encrypted)}`,
       };
     }
     

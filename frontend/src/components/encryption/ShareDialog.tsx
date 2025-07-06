@@ -16,6 +16,13 @@ interface ShareToken {
   expiresAt: string;
 }
 
+interface SharePermissions {
+  read: boolean;
+  write: boolean;
+  share: boolean;
+  delete?: boolean;
+}
+
 interface ShareDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -274,3 +281,4 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 };
 
 export default ShareDialog;
+export type { ShareableItem, ShareToken, SharePermissions };

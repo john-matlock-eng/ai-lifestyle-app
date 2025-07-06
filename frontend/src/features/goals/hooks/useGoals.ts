@@ -8,7 +8,7 @@ import {
   getGoal,
   getProgress
 } from '../services/goalService';
-import { 
+import type { 
   Goal, 
   UpdateGoalRequest, 
   LogActivityRequest

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getGoal, logActivity } from '../../services/goalService';
-import { LogActivityRequest, ActivityType } from '../../types/api.types';
+import type { LogActivityRequest, ActivityType } from '../../types/api.types';
 import { formatGoalValue } from '../../types/ui.types';
 import Input from '../../../../components/common/Input';
 import Button from '../../../../components/common/Button';

@@ -21,8 +21,8 @@ const DevTools: React.FC = () => {
     const loadTokens = async () => {
       const access = await getAccessToken();
       const refresh = await getRefreshToken();
-      setAccessToken(access);
-      setRefreshToken(refresh);
+      setAccessToken(access || null);
+      setRefreshToken(refresh || null);
     };
     loadTokens();
 

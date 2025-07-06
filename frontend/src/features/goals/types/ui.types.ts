@@ -1,5 +1,5 @@
 // UI-specific types and configurations for goals
-import { GoalPattern, Metric, Period, Direction, TargetType } from './api.types';
+import type { GoalPattern, Metric, Period, Direction, TargetType } from './api.types';
 
 export interface GoalPatternConfig {
   id: GoalPattern;

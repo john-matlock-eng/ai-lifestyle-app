@@ -13,8 +13,9 @@ import {
   GoalCard,
   PatternSelector,
   QuickLogModal,
-  
-  // Types
+} from '../features/goals';
+
+import type {
   Goal,
   GoalPattern,
 } from '../features/goals';
@@ -150,7 +151,7 @@ interface ShareToken {
 
 export const ComponentShowcase: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string>('overview');
-  const [selectedGoalPattern, setSelectedGoalPattern] = useState<GoalPattern | null>(null);
+  const [selectedGoalPattern, setSelectedGoalPattern] = useState<GoalPattern | undefined>(undefined);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [encryptionEnabled, setEncryptionEnabled] = useState(false);
   const [showQuickLog, setShowQuickLog] = useState<string | null>(null);

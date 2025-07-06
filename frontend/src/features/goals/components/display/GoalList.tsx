@@ -1,5 +1,5 @@
 import React from 'react';
-import { Goal } from '../../types/api.types';
+import type { Goal } from '../../types/api.types';
 import GoalCard from './GoalCard';
 import EmptyState from './EmptyState';
 

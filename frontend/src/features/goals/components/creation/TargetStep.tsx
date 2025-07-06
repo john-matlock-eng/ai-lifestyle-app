@@ -1,5 +1,5 @@
 import React from 'react';
-import { GoalPattern, GoalTarget } from '../../types/api.types';
+import type { GoalPattern, GoalTarget } from '../../types/api.types';
 import { getDefaultsByPattern } from '../../types/ui.types';
 import Button from '../../../../components/common/Button';
 

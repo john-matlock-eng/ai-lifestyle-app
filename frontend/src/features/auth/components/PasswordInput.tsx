@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import Input, { InputProps } from '../../../components/common/Input';
+import Input from '../../../components/common/Input';
+import type { InputProps } from '../../../components/common/Input';
 
 export interface PasswordInputProps extends Omit<InputProps, 'type' | 'rightIcon'> {
   showToggle?: boolean;

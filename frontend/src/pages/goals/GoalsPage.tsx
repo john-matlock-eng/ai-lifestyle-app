@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { GoalStatus, GoalPattern } from '../../features/goals/types/api.types';
+import type { GoalStatus, GoalPattern } from '../../features/goals/types/api.types';
 import { GOAL_PATTERNS, GOAL_CATEGORIES } from '../../features/goals/types/ui.types';
 import { listGoals } from '../../features/goals/services/goalService';
 import GoalList from '../../features/goals/components/display/GoalList';

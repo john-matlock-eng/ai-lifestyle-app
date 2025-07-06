@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { RegisterFormData, registerSchema } from '../utils/validation';
+import { registerSchema } from '../utils/validation';
+import type { RegisterFormData } from '../utils/validation';
 import { authService } from '../services/authService';
 import { isValidationError } from '../../../api/client';
 import Input from '../../../components/common/Input';
@@ -42,18 +43,19 @@ const RegistrationForm: React.FC = () => {
       if (isValidationError(error)) {
         // Handle field-specific validation errors from the API
         error.response?.data.validation_errors.forEach((validationError) => {
-          if (validationError.field in registerSchema.shape) {
-            setError(validationError.field as keyof RegisterFormData, {
+          const field = validationError.field as keyof RegisterFormData;
+          if (field === 'email' || field === 'password' || field === 'firstName' || field === 'lastName' || field === 'confirmPassword') {
+            setError(field, {
               message: validationError.message,
             });
           }
         });
-      } else if (error.response?.status === 409) {
+      } else if ((error as any).response?.status === 409) {
         // Email already exists
         setError('email', {
           message: 'An account with this email already exists',
         });
-      } else if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+      } else if ((error as any).code === 'ERR_NETWORK' || (error as any).code === 'ERR_CONNECTION_REFUSED') {
         // Network error - backend not available
         setGeneralError(
           'Unable to connect to the server. Make sure the backend is running or MSW is properly configured.'
@@ -61,7 +63,7 @@ const RegistrationForm: React.FC = () => {
       } else {
         // General error
         setGeneralError(
-          error.response?.data?.message || 
+          (error as any).response?.data?.message || 
           'Something went wrong. Please try again.'
         );
       }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Target, Repeat, Trophy, Flame, ShieldAlert } from 'lucide-react';
-import { GoalPattern, GoalPatternConfig, GOAL_PATTERN_COLORS } from '../../types/goal.types';
+import type { GoalPattern, GoalPatternConfig } from '../../types/goal.types';
+import { GOAL_PATTERN_COLORS } from '../../types/goal.types';
 
 interface GoalTypeSelectorProps {
   onSelectType: (pattern: GoalPattern) => void;
@@ -89,7 +90,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
                   <Icon
                     className="h-6 w-6"
                     style={{ color: config.color }}
-                    aria-hidden="true"
+                    aria-hidden={true}
                   />
                 </div>
 

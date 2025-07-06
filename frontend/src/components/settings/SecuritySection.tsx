@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { authService, UserProfile } from '../../features/auth/services/authService';
+import { authService } from '../../features/auth/services/authService';
+import type { UserProfile } from '../../features/auth/services/authService';
 import MFASetupModal from '../../features/auth/components/MFASetupModal';
 import Button from '../common/Button';
 import { isApiError } from '../../api/client';

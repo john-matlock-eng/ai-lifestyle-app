@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Goal } from '../../types/api.types';
+import type { Goal } from '../../types/api.types';
 import { GOAL_PATTERNS, GOAL_CATEGORIES, formatGoalValue, getProgressColor, getTrendIcon } from '../../types/ui.types';
 import Button from '../../../../components/common/Button';
 

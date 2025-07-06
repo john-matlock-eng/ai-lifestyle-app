@@ -19,6 +19,8 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+export { useAuth } from './useAuth';
+
 // Session timeout settings
 const SESSION_WARNING_TIME = 5 * 60 * 1000; // 5 minutes before expiry
 const SESSION_CHECK_INTERVAL = 30 * 1000; // Check every 30 seconds
@@ -32,8 +34,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [sessionExpiry, setSessionExpiry] = useState<Date | null>(null);
   
   // Refs for timeout management
-  const sessionCheckIntervalRef = useRef<NodeJS.Timeout>();
-  const idleTimeoutRef = useRef<NodeJS.Timeout>();
+  const sessionCheckIntervalRef = useRef<NodeJS.Timeout | undefined>();
+  const idleTimeoutRef = useRef<NodeJS.Timeout | undefined>();
   const refreshTimeoutRef = useRef<NodeJS.Timeout | undefined>();
   const lastActivityRef = useRef<number>(Date.now());
 
@@ -302,4 +304,4 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export { AuthProvider };
+export default AuthProvider;

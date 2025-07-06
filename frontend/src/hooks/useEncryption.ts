@@ -123,7 +123,7 @@ export const useEncryption = (moduleId: string, options: UseEncryptionOptions = 
   }, [moduleId, dispatch]);
 
   // Encrypt data (mock implementation)
-  const encrypt = useCallback(async <T = unknown>(data: T): Promise<T | EncryptedData> => {
+  const encrypt = useCallback(async <T extends object = object>(data: T): Promise<T | EncryptedData> => {
     if (!isEncrypted) {
       return data; // Return unencrypted if module encryption is disabled
     }
@@ -136,7 +136,7 @@ export const useEncryption = (moduleId: string, options: UseEncryptionOptions = 
       data: btoa(JSON.stringify(data)), // Mock encryption with base64
       algorithm: 'AES-256-GCM',
       keyId: moduleState?.publicKeyId,
-    };
+    } as EncryptedData;
   }, [isEncrypted, moduleState]);
 
   // Decrypt data (mock implementation)

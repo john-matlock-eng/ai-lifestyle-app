@@ -1,5 +1,5 @@
 import React from 'react';
-import { GoalPattern, GoalSchedule } from '../../types/api.types';
+import type { GoalPattern, GoalSchedule } from '../../types/api.types';
 import Button from '../../../../components/common/Button';
 
 interface ScheduleStepProps {
