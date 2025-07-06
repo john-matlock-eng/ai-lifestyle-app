@@ -19,7 +19,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export { useAuth } from './useAuth';
+
 
 // Session timeout settings
 const SESSION_WARNING_TIME = 5 * 60 * 1000; // 5 minutes before expiry

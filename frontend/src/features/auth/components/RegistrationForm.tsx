@@ -50,22 +50,35 @@ const RegistrationForm: React.FC = () => {
             });
           }
         });
-      } else if ((error as any).response?.status === 409) {
-        // Email already exists
-        setError('email', {
-          message: 'An account with this email already exists',
-        });
-      } else if ((error as any).code === 'ERR_NETWORK' || (error as any).code === 'ERR_CONNECTION_REFUSED') {
-        // Network error - backend not available
-        setGeneralError(
-          'Unable to connect to the server. Make sure the backend is running or MSW is properly configured.'
-        );
       } else {
-        // General error
-        setGeneralError(
-          (error as any).response?.data?.message || 
-          'Something went wrong. Please try again.'
-        );
+        // Type guard for axios-like errors
+        const axiosError = error as {
+          response?: {
+            status?: number;
+            data?: {
+              message?: string;
+            };
+          };
+          code?: string;
+        };
+        
+        if (axiosError.response?.status === 409) {
+          // Email already exists
+          setError('email', {
+            message: 'An account with this email already exists',
+          });
+        } else if (axiosError.code === 'ERR_NETWORK' || axiosError.code === 'ERR_CONNECTION_REFUSED') {
+          // Network error - backend not available
+          setGeneralError(
+            'Unable to connect to the server. Make sure the backend is running or MSW is properly configured.'
+          );
+        } else {
+          // General error
+          setGeneralError(
+            axiosError.response?.data?.message || 
+            'Something went wrong. Please try again.'
+          );
+        }
       }
     },
   });
