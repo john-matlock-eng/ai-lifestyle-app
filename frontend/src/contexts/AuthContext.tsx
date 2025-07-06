@@ -126,7 +126,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Set up session check interval
     sessionCheckIntervalRef.current = setInterval(() => {
       checkSessionStatus();
-    }, SESSION_CHECK_INTERVAL);
+    }, SESSION_CHECK_INTERVAL) as unknown as number;
 
     // Set up idle timeout check
     idleTimeoutRef.current = setInterval(() => {
@@ -136,7 +136,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (idleTime > IDLE_TIMEOUT) {
         logout('timeout');
       }
-    }, 60000); // Check every minute
+    }, 60000) as unknown as number; // Check every minute
 
     // Schedule token refresh
     scheduleTokenRefresh();
@@ -191,7 +191,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     refreshTimeoutRef.current = setTimeout(() => {
       handleTokenRefresh();
-    }, refreshTime);
+    }, refreshTime) as unknown as number;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTokenRefresh = useCallback(async () => {

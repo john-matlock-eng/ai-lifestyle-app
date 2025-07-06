@@ -86,7 +86,7 @@ export const useNetworkErrorRecovery = <T = unknown>(
 
           // Wait before retrying
           await new Promise((resolve) => {
-            retryTimeoutRef.current = setTimeout(resolve, delay);
+            retryTimeoutRef.current = setTimeout(resolve, delay) as unknown as number;
           });
 
           return attempt();
