@@ -116,6 +116,19 @@ module "users_table" {
   ]
 }
 
+# Goals Service Infrastructure
+module "goals_service" {
+  source = "./services/goals"
+
+  app_name     = "ai-lifestyle"
+  environment  = var.environment
+  aws_region   = var.aws_region
+  
+  tags = {
+    Service = "goals"
+  }
+}
+
 # Lambda Function for API handling
 module "api_lambda" {
   count  = var.deploy_lambda ? 1 : 0
@@ -140,6 +153,35 @@ module "api_lambda" {
   ]
 }
 
+# Goals Lambda Function
+module "goals_lambda" {
+  count  = var.deploy_lambda ? 1 : 0
+  source = "./modules/lambda-ecr"
+
+  function_name = "goals-handler"
+  environment   = var.environment
+  ecr_image_uri = "${module.app_ecr.repository_url}:${var.api_handler_image_tag}"
+  memory_size   = 512
+  timeout       = 30
+
+  environment_variables = {
+    ENVIRONMENT                  = var.environment
+    LOG_LEVEL                    = var.environment == "prod" ? "INFO" : "DEBUG"
+    COGNITO_USER_POOL_ID        = module.cognito.user_pool_id
+    COGNITO_CLIENT_ID           = module.cognito.user_pool_client_id
+    GOALS_TABLE_NAME            = module.goals_service.goals_table_name
+    GOAL_AGGREGATIONS_TABLE_NAME = module.goals_service.goal_aggregations_table_name
+    GOAL_ATTACHMENTS_BUCKET     = module.goals_service.goal_attachments_bucket_name
+    CORS_ORIGIN                 = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
+  }
+
+  additional_policies = [
+    aws_iam_policy.goals_dynamodb_access.arn,
+    aws_iam_policy.goals_s3_access.arn,
+    aws_iam_policy.cognito_access.arn
+  ]
+}
+
 # API Gateway
 module "api_gateway" {
   source = "./modules/api-gateway"
@@ -153,7 +195,7 @@ module "api_gateway" {
   
   cors_origins = var.environment == "prod" ? ["https://ailifestyle.app"] : ["https://d3qx4wyq22oaly.cloudfront.net", "http://localhost:3000", "http://localhost:5173"]
   
-  # Define all routes
+  # Define auth and user routes (handled by api_lambda)
   routes = {
     # Health check
     "GET /health" = {
@@ -223,6 +265,110 @@ module "api_gateway" {
   depends_on = [module.api_lambda]
 }
 
+# Goals Lambda integration for API Gateway
+resource "aws_apigatewayv2_integration" "goals" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id = module.api_gateway.api_id
+  
+  integration_type       = "AWS_PROXY"
+  integration_uri        = module.goals_lambda[0].invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 29000
+}
+
+# Goals Routes - CRITICAL FOR FRONTEND
+resource "aws_apigatewayv2_route" "list_goals" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id    = module.api_gateway.api_id
+  route_key = "GET /goals"
+  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
+  
+  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+}
+
+resource "aws_apigatewayv2_route" "create_goal" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id    = module.api_gateway.api_id
+  route_key = "POST /goals"
+  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
+  
+  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+}
+
+resource "aws_apigatewayv2_route" "get_goal" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id    = module.api_gateway.api_id
+  route_key = "GET /goals/{goalId}"
+  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
+  
+  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+}
+
+resource "aws_apigatewayv2_route" "update_goal" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id    = module.api_gateway.api_id
+  route_key = "PUT /goals/{goalId}"
+  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
+  
+  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+}
+
+resource "aws_apigatewayv2_route" "delete_goal" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id    = module.api_gateway.api_id
+  route_key = "DELETE /goals/{goalId}"
+  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
+  
+  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+}
+
+resource "aws_apigatewayv2_route" "list_goal_activities" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id    = module.api_gateway.api_id
+  route_key = "GET /goals/{goalId}/activities"
+  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
+  
+  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+}
+
+resource "aws_apigatewayv2_route" "create_goal_activity" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id    = module.api_gateway.api_id
+  route_key = "POST /goals/{goalId}/activities"
+  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
+  
+  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+}
+
+resource "aws_apigatewayv2_route" "get_goal_progress" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  api_id    = module.api_gateway.api_id
+  route_key = "GET /goals/{goalId}/progress"
+  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
+  
+  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+}
+
+# Lambda permission for API Gateway to invoke Goals Lambda
+resource "aws_lambda_permission" "goals_api_gateway" {
+  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
+  
+  statement_id  = "AllowAPIGatewayInvokeGoals"
+  action        = "lambda:InvokeFunction"
+  function_name = module.goals_lambda[0].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${module.api_gateway.execution_arn}/*/*"
+}
+
 # IAM Policy for Cognito access
 resource "aws_iam_policy" "cognito_access" {
   name        = "ai-lifestyle-cognito-access-${var.environment}"
@@ -246,6 +392,67 @@ resource "aws_iam_policy" "cognito_access" {
           "cognito-idp:GetUser"
         ]
         Resource = module.cognito.user_pool_arn
+      }
+    ]
+  })
+}
+
+# IAM Policy for Goals DynamoDB access
+resource "aws_iam_policy" "goals_dynamodb_access" {
+  name        = "ai-lifestyle-goals-dynamodb-${var.environment}"
+  description = "Policy for Lambda to access Goals DynamoDB tables"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:DescribeStream",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator",
+          "dynamodb:ListStreams"
+        ]
+        Resource = [
+          module.goals_service.goals_table_arn,
+          "${module.goals_service.goals_table_arn}/*",
+          module.goals_service.goal_aggregations_table_arn,
+          "${module.goals_service.goal_aggregations_table_arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# IAM Policy for Goals S3 access
+resource "aws_iam_policy" "goals_s3_access" {
+  name        = "ai-lifestyle-goals-s3-${var.environment}"
+  description = "Policy for Lambda to access Goals S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          module.goals_service.goal_attachments_bucket_arn,
+          "${module.goals_service.goal_attachments_bucket_arn}/*"
+        ]
       }
     ]
   })
@@ -284,6 +491,16 @@ output "api_lambda_arn" {
   value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_arn : "Not deployed"
 }
 
+output "goals_lambda_arn" {
+  description = "Goals Lambda function ARN"
+  value       = var.deploy_lambda && length(module.goals_lambda) > 0 ? module.goals_lambda[0].function_arn : "Not deployed"
+}
+
+output "goals_lambda_name" {
+  description = "Goals Lambda function name"
+  value       = var.deploy_lambda && length(module.goals_lambda) > 0 ? module.goals_lambda[0].function_name : "Not deployed"
+}
+
 output "api_endpoint" {
   description = "API Gateway endpoint URL"
   value       = module.api_gateway.api_endpoint
@@ -292,4 +509,19 @@ output "api_endpoint" {
 output "api_id" {
   description = "API Gateway ID"
   value       = module.api_gateway.api_id
+}
+
+output "goals_table_name" {
+  description = "Goals DynamoDB table name"
+  value       = module.goals_service.goals_table_name
+}
+
+output "goal_aggregations_table_name" {
+  description = "Goal aggregations DynamoDB table name"
+  value       = module.goals_service.goal_aggregations_table_name
+}
+
+output "goal_attachments_bucket_name" {
+  description = "Goal attachments S3 bucket name"
+  value       = module.goals_service.goal_attachments_bucket_name
 }

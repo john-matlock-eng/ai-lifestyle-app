@@ -1,5 +1,47 @@
 # Frontend Current Tasks - Goal Creation Wizard Fixed!
 
+## 🚨 BLOCKER: Goals API Endpoints Not Deployed
+**Status**: ⚠️ Blocked
+**Date**: 2025-01-07
+**Severity**: HIGH
+
+### Issue Description
+Frontend is receiving 404 errors when trying to access goals endpoints:
+```
+https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com/goals 
+net::ERR_FAILED 404 (Not Found)
+```
+
+### Root Cause Analysis
+After investigating the backend's Terraform configuration (`backend/terraform/main.tf`), the goals API routes are **NOT deployed** to API Gateway. 
+
+#### What's Missing:
+The API Gateway configuration only includes auth and user endpoints, but is missing ALL goals endpoints:
+- `GET /goals` - List user goals
+- `POST /goals` - Create new goal
+- `GET /goals/{goalId}` - Get goal details
+- `PUT /goals/{goalId}` - Update goal
+- `DELETE /goals/{goalId}` - Archive goal
+- `GET /goals/{goalId}/activities` - List goal activities
+- `POST /goals/{goalId}/activities` - Log activity
+- `GET /goals/{goalId}/progress` - Get progress
+
+#### What Exists:
+- ✅ Goals infrastructure is created (DynamoDB tables, S3 buckets)
+- ✅ Goals service module exists in `terraform/services/goals/`
+- ❌ API Gateway routes are NOT configured
+- ❌ Lambda handlers for goals endpoints are NOT referenced
+
+### Impact
+- Frontend goal creation wizard is complete but cannot save goals
+- Users cannot create, view, or track goals
+- Core app functionality is blocked
+
+### Action Required from Backend Team
+Please add the goals routes to the API Gateway configuration in `backend/terraform/main.tf`. All routes are defined in the OpenAPI contract (`contract/openapi.yaml`) under the Goals section.
+
+---
+
 ## 🔧 Goal Creation Wizard Enhancement
 **Status**: ✅ Complete
 **Date**: 2025-01-07
@@ -63,7 +105,7 @@ The goal creation wizard was using a generic placeholder `TargetStep` component 
 5. **Milestone Goals**: Includes progress bar and current value tracking
 
 ### Next Steps
-1. Test all 5 goal patterns with real data
+1. ~~Test all 5 goal patterns with real data~~ **BLOCKED - API not deployed**
 2. Add success notifications after goal creation
 3. Consider adding goal templates/presets
 4. Implement draft saving functionality
@@ -121,10 +163,10 @@ The goal creation wizard was using a generic placeholder `TargetStep` component 
 
 #### 1. Backend Coordination Required 🤝
 The backend team needs to:
-- Share the API Gateway URL
-- Provide Cognito User Pool ID and Client ID
-- Configure CORS to allow CloudFront domains
-- Ensure API is accessible from CloudFront
+- ~~Share the API Gateway URL~~ ✅ Done
+- ~~Provide Cognito User Pool ID and Client ID~~ ✅ Done
+- ~~Configure CORS to allow CloudFront domains~~ ✅ Done
+- **Deploy goals API endpoints** ❌ Missing!
 
 #### 2. Update Configuration
 Once you have the backend values:
@@ -186,16 +228,16 @@ Add to your repository:
    - Goal templates/presets
 
 #### Ready for Testing 🧪
-Once deployed with backend integration:
-- Full authentication flow
+Once goals API is deployed:
+- Full goal creation flow
 - Goal CRUD operations
 - Real-time progress tracking
 - Cross-device access
 
 ---
 
-**Status**: Frontend infrastructure ready! ESLint errors fixed ✅
-**Blockers**: Need backend API URL and Cognito configuration
-**Next Focus**: Goal detail page enhancements and activity logging improvements
+**Status**: Frontend ready but blocked by missing backend endpoints
+**Blockers**: Goals API endpoints not deployed in API Gateway
+**Next Focus**: Waiting for backend team to deploy goals endpoints
 
 **Updated**: 2025-01-07 by Frontend Agent
