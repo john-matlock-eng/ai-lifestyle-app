@@ -1,24 +1,26 @@
 # Backend Current Tasks - Goals API Deployment
 
 ## 🔄 Completion Report: Goals API Routes Deployment
-**Status**: ✅ Infrastructure Code Complete, ⚠️ Deployment Blocked
+**Status**: ✅ Infrastructure Code Complete
 **Date**: 2025-01-07
-**Time Spent**: 1 hour
+**Time Spent**: 2 hours
 
 ### What I Built
 - ✅ Added goals service infrastructure module to main.tf
-- ✅ Created goals Lambda function configuration with proper environment variables
-- ✅ Added IAM policies for goals DynamoDB and S3 access
-- ✅ Configured 8 API Gateway routes for goals endpoints:
-  - GET /goals
-  - POST /goals
-  - GET /goals/{goalId}
-  - PUT /goals/{goalId}
-  - DELETE /goals/{goalId}
-  - GET /goals/{goalId}/activities
-  - POST /goals/{goalId}/activities
-  - GET /goals/{goalId}/progress
-- ✅ Added Lambda integration and permissions for API Gateway
+- ✅ Added goals DynamoDB and S3 IAM policies
+- ✅ Configured 8 API Gateway routes for goals endpoints in the main routes configuration
+- ✅ Updated api_lambda with goals environment variables
+- ✅ Updated api_lambda with goals IAM policies
+
+### Critical Architecture Discovery
+**Issue**: Initial approach created a separate goals Lambda function, but the CI/CD pipeline uses a **single Lambda pattern** where `main.py` routes all requests.
+
+**Solution**: 
+- Removed separate goals_lambda module
+- Added goals routes to the main API Gateway routes configuration
+- Added goals environment variables to api_lambda
+- Added goals IAM policies to api_lambda
+- All goals handlers are already present in src/ and included in the Docker build
 
 ### Contract Compliance
 - [✓] All routes match the OpenAPI contract specification
@@ -27,127 +29,91 @@
 - [✓] Will switch to JWT authorization once auth is fully integrated
 
 ### Technical Decisions
-- Used separate Lambda function for goals to maintain service isolation
-- Implemented routes directly in main.tf due to API Gateway module limitation (single Lambda support)
-- Set authorization to NONE temporarily to unblock frontend development
-- Configured comprehensive IAM policies for DynamoDB and S3 access
-- Added proper outputs for all goals infrastructure resources
+- Use existing single Lambda pattern (api-handler) for all routes
+- Goals handlers already exist in src/ directory and are included in Docker build
+- main.py already has all goals route mappings configured
+- Fixed S3 lifecycle configuration warning by adding empty filter
+- Goals infrastructure (DynamoDB tables, S3 bucket) deployed in Phase 1
+- Goals routes available after Phase 3 (Lambda deployment)
 
 ### Files Modified
 - `backend/terraform/main.tf`:
-  - Added goals_service module
-  - Added goals_lambda module
-  - Added IAM policies for goals resources
-  - Added 8 API Gateway routes for goals
-  - Added Lambda permissions
-  - Added outputs for goals resources
+  - Added goals_service module for infrastructure
+  - Added goals environment variables to api_lambda
+  - Added goals IAM policies to api_lambda
+  - Added 8 goals routes to API Gateway routes configuration
+  - Removed separate goals_lambda module (not needed)
+- `backend/terraform/services/goals/main.tf`:
+  - Fixed S3 lifecycle configuration warning
 
-### ⚠️ CRITICAL DEPLOYMENT ISSUE DISCOVERED
+### How Deployment Works
 
-**Issue**: The terraform plan shows 25 resources to destroy, including existing Lambda functions!
-**Root Cause**: The `deploy_lambda` variable defaults to `false` in main.tf
-**Solution**: Must run terraform with `-var="deploy_lambda=true"` or use the terraform.tfvars file
+The GitHub Actions CI/CD workflow (`backend-deploy.yml`) deploys in 3 phases:
 
-### Next Steps for Deployment
+1. **Phase 1**: Infrastructure (deploy_lambda=false)
+   - Creates ECR, Cognito, DynamoDB tables
+   - Creates goals tables and S3 bucket
 
-1. **Update terraform.tfvars with your AWS account ID**:
-   ```bash
-   # Edit backend/terraform/terraform.tfvars
-   # Replace YOUR_AWS_ACCOUNT_ID with actual account ID
-   ```
+2. **Phase 2**: Docker Build
+   - Builds api-handler image containing all handlers
+   - Pushes to ECR
 
-2. **Run terraform with Lambda deployment enabled**:
-   ```bash
-   cd backend/terraform
-   terraform plan
-   # Verify that it shows:
-   # - Resources to add: ~36 (new goals infrastructure)
-   # - Resources to change: minimal
-   # - Resources to destroy: 0 or very few
-   
-   # If plan looks good:
-   terraform apply
-   ```
+3. **Phase 3**: Lambda Deployment (deploy_lambda=true)
+   - Deploys Lambda with all routes including goals
+   - API Gateway routes become active
 
-3. **Alternative: Use command line variable**:
-   ```bash
-   terraform plan -var="deploy_lambda=true"
-   terraform apply -var="deploy_lambda=true"
-   ```
+### Next Steps
+1. **Create PR** with these changes
+2. **CI/CD will automatically**:
+   - Deploy to dev environment on PR
+   - Deploy to prod on merge to main
+3. **Verify** goals endpoints are accessible after deployment
 
 ### Post-Deployment Verification
 After deployment, the frontend should be able to access:
-- https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com/goals (returns empty array or 401 instead of 404)
-- All other goals endpoints should be accessible
+- `https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com/goals`
+- All other goals endpoints
 
-### Blockers/Issues
-- ❌ **CRITICAL**: First terraform plan showed it would destroy 25 existing resources including Lambda functions
-- ✅ **FIXED**: Created terraform.tfvars with deploy_lambda=true
-- ✅ **FIXED**: Changed default value of deploy_lambda to true in main.tf
-- ✅ **FIXED**: S3 lifecycle configuration warning by adding empty filter
-
-### Summary of All Changes
-1. **Infrastructure Code** (Complete):
-   - Added goals service module
-   - Added goals Lambda configuration
-   - Added 8 API Gateway routes
-   - Added IAM policies
-   - Fixed S3 lifecycle warning
-
-2. **Configuration Fixes** (Complete):
-   - Created terraform.tfvars with deploy_lambda=true
-   - Changed deploy_lambda default to true
-   - This prevents accidental Lambda destruction
-
-3. **Ready for Deployment**:
-   - Replace YOUR_AWS_ACCOUNT_ID in terraform.tfvars
-   - Run terraform plan to verify no resources will be destroyed
-   - Apply the changes
-
-### Follow-up Tasks After Deployment
-
-Once the API Gateway routes are deployed, you can return to your planned activities:
+### Summary
+- Infrastructure code is ready for CI/CD deployment
+- Goals functionality integrated into existing single Lambda architecture
+- No manual terraform commands needed - GitHub Actions handles everything
+- Frontend will be unblocked once PR is merged and deployed
 
 ---
 
-## ✅ Previous Hotfix Complete: Lambda Import Error Fixed
+## Previous Tasks
 
-The Lambda import error has been fixed and is ready for PR:
+### ✅ Lambda Import Error Hotfix
 - **Branch**: `hotfix/lambda-import-error`
 - **Files**: `backend/src/goals_common/__init__.py`
 - **Status**: Ready to merge
 
-## 📊 Week 3 Plan (After Unblocking Frontend)
+### 📊 Week 3 Plan (After Goals Deployment)
 
-### Monday: Integration Testing
+**Monday**: Integration Testing
 - End-to-end testing of all goal flows
 - Load testing with concurrent users
 - Contract validation
 
-### Tuesday: Async Processing
+**Tuesday**: Async Processing
 - EventBridge handlers for streaks
 - Daily aggregation Lambda
 - Notification queue setup
 
-### Wednesday: Performance Optimization
+**Wednesday**: Performance Optimization
 - Redis caching layer
 - Query optimization
 - Response time improvements
 
-### Thursday: Advanced Features
+**Thursday**: Advanced Features
 - Goal templates (Health & Wellness)
 - Smart recommendations
 - Export formats (JSON/CSV)
 
-### Friday: Monitoring & Documentation
+**Friday**: Monitoring & Documentation
 - CloudWatch dashboards
 - Alarms setup
 - Documentation updates
 
----
-
-**Status**: 🔴 CRITICAL - Frontend blocked by missing API routes
-**Priority**: Deploy goals routes to API Gateway IMMEDIATELY
-**Next**: After deployment, proceed with integration testing
-
-**Updated**: 2025-01-07 by PM Agent
+**Updated**: 2025-01-07 by Backend Agent

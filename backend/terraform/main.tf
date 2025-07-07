@@ -48,7 +48,7 @@ variable "aws_region" {
 variable "deploy_lambda" {
   description = "Whether to deploy Lambda functions (set to false for initial deployment)"
   type        = bool
-  default     = true  # Changed to true to prevent accidental Lambda destruction
+  default     = false  # Keep false for phased deployment in CI/CD
 }
 
 variable "api_handler_image_tag" {
@@ -144,43 +144,23 @@ module "api_lambda" {
     COGNITO_USER_POOL_ID = module.cognito.user_pool_id
     COGNITO_CLIENT_ID    = module.cognito.user_pool_client_id
     USERS_TABLE_NAME     = module.users_table.table_name
+    # Goals environment variables
+    GOALS_TABLE_NAME            = module.goals_service.goals_table_name
+    GOAL_AGGREGATIONS_TABLE_NAME = module.goals_service.goal_aggregations_table_name
+    GOAL_ATTACHMENTS_BUCKET     = module.goals_service.goal_attachments_bucket_name
     CORS_ORIGIN          = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
   }
 
   additional_policies = [
     module.users_table.access_policy_arn,
-    aws_iam_policy.cognito_access.arn
-  ]
-}
-
-# Goals Lambda Function
-module "goals_lambda" {
-  count  = var.deploy_lambda ? 1 : 0
-  source = "./modules/lambda-ecr"
-
-  function_name = "goals-handler"
-  environment   = var.environment
-  ecr_image_uri = "${module.app_ecr.repository_url}:${var.api_handler_image_tag}"
-  memory_size   = 512
-  timeout       = 30
-
-  environment_variables = {
-    ENVIRONMENT                  = var.environment
-    LOG_LEVEL                    = var.environment == "prod" ? "INFO" : "DEBUG"
-    COGNITO_USER_POOL_ID        = module.cognito.user_pool_id
-    COGNITO_CLIENT_ID           = module.cognito.user_pool_client_id
-    GOALS_TABLE_NAME            = module.goals_service.goals_table_name
-    GOAL_AGGREGATIONS_TABLE_NAME = module.goals_service.goal_aggregations_table_name
-    GOAL_ATTACHMENTS_BUCKET     = module.goals_service.goal_attachments_bucket_name
-    CORS_ORIGIN                 = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
-  }
-
-  additional_policies = [
+    aws_iam_policy.cognito_access.arn,
     aws_iam_policy.goals_dynamodb_access.arn,
-    aws_iam_policy.goals_s3_access.arn,
-    aws_iam_policy.cognito_access.arn
+    aws_iam_policy.goals_s3_access.arn
   ]
 }
+
+# Goals Lambda Function - REMOVED: Using single Lambda pattern
+# The api_lambda handles all routes including goals via main.py
 
 # API Gateway
 module "api_gateway" {
@@ -251,6 +231,32 @@ module "api_gateway" {
     "POST /auth/mfa/disable" = {
       authorization_type = "NONE"  # TODO: Change to JWT
     }
+    
+    # Goals endpoints - handled by main Lambda
+    "GET /goals" = {
+      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+    }
+    "POST /goals" = {
+      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+    }
+    "GET /goals/{goalId}" = {
+      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+    }
+    "PUT /goals/{goalId}" = {
+      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+    }
+    "DELETE /goals/{goalId}" = {
+      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+    }
+    "GET /goals/{goalId}/activities" = {
+      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+    }
+    "POST /goals/{goalId}/activities" = {
+      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+    }
+    "GET /goals/{goalId}/progress" = {
+      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+    }
   }
   
   # JWT authorizer configuration (for future use)
@@ -263,110 +269,6 @@ module "api_gateway" {
   }
   
   depends_on = [module.api_lambda]
-}
-
-# Goals Lambda integration for API Gateway
-resource "aws_apigatewayv2_integration" "goals" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id = module.api_gateway.api_id
-  
-  integration_type       = "AWS_PROXY"
-  integration_uri        = module.goals_lambda[0].invoke_arn
-  payload_format_version = "2.0"
-  timeout_milliseconds   = 29000
-}
-
-# Goals Routes - CRITICAL FOR FRONTEND
-resource "aws_apigatewayv2_route" "list_goals" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id    = module.api_gateway.api_id
-  route_key = "GET /goals"
-  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
-  
-  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
-}
-
-resource "aws_apigatewayv2_route" "create_goal" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id    = module.api_gateway.api_id
-  route_key = "POST /goals"
-  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
-  
-  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
-}
-
-resource "aws_apigatewayv2_route" "get_goal" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id    = module.api_gateway.api_id
-  route_key = "GET /goals/{goalId}"
-  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
-  
-  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
-}
-
-resource "aws_apigatewayv2_route" "update_goal" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id    = module.api_gateway.api_id
-  route_key = "PUT /goals/{goalId}"
-  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
-  
-  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
-}
-
-resource "aws_apigatewayv2_route" "delete_goal" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id    = module.api_gateway.api_id
-  route_key = "DELETE /goals/{goalId}"
-  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
-  
-  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
-}
-
-resource "aws_apigatewayv2_route" "list_goal_activities" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id    = module.api_gateway.api_id
-  route_key = "GET /goals/{goalId}/activities"
-  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
-  
-  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
-}
-
-resource "aws_apigatewayv2_route" "create_goal_activity" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id    = module.api_gateway.api_id
-  route_key = "POST /goals/{goalId}/activities"
-  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
-  
-  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
-}
-
-resource "aws_apigatewayv2_route" "get_goal_progress" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  api_id    = module.api_gateway.api_id
-  route_key = "GET /goals/{goalId}/progress"
-  target    = "integrations/${aws_apigatewayv2_integration.goals[0].id}"
-  
-  authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
-}
-
-# Lambda permission for API Gateway to invoke Goals Lambda
-resource "aws_lambda_permission" "goals_api_gateway" {
-  count = var.deploy_lambda && length(module.goals_lambda) > 0 ? 1 : 0
-  
-  statement_id  = "AllowAPIGatewayInvokeGoals"
-  action        = "lambda:InvokeFunction"
-  function_name = module.goals_lambda[0].function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${module.api_gateway.execution_arn}/*/*"
 }
 
 # IAM Policy for Cognito access
@@ -489,16 +391,6 @@ output "cognito_client_id" {
 output "api_lambda_arn" {
   description = "API Lambda function ARN"
   value       = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_arn : "Not deployed"
-}
-
-output "goals_lambda_arn" {
-  description = "Goals Lambda function ARN"
-  value       = var.deploy_lambda && length(module.goals_lambda) > 0 ? module.goals_lambda[0].function_arn : "Not deployed"
-}
-
-output "goals_lambda_name" {
-  description = "Goals Lambda function name"
-  value       = var.deploy_lambda && length(module.goals_lambda) > 0 ? module.goals_lambda[0].function_name : "Not deployed"
 }
 
 output "api_endpoint" {
