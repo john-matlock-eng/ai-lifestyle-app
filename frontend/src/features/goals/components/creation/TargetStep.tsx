@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { GoalPattern, GoalTarget } from '../../types/api.types';
 import { getDefaultsByPattern } from '../../types/ui.types';
 import Button from '../../../../components/common/Button';
-import { Target, TrendingUp, Flame, Trophy, Shield, Calendar } from 'lucide-react';
+import { Target, Flame, Trophy, Shield, Calendar } from 'lucide-react';
 import { METRIC_UNITS, MetricType } from '../../types/goal.types';
 
 interface TargetStepProps {
@@ -75,7 +75,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
                 </label>
                 <select
                   value={target.period}
-                  onChange={(e) => updateTarget({ period: e.target.value as any })}
+                  onChange={(e) => updateTarget({ period: e.target.value as 'day' | 'week' | 'month' | 'quarter' | 'year' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="day">Day</option>
@@ -196,7 +196,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               </label>
               <select
                 value={target.period}
-                onChange={(e) => updateTarget({ period: e.target.value as any })}
+                onChange={(e) => updateTarget({ period: e.target.value as 'day' | 'week' | 'month' | 'quarter' | 'year' })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
               >
                 <option value="day">Day</option>
