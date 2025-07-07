@@ -48,7 +48,7 @@ variable "aws_region" {
 variable "deploy_lambda" {
   description = "Whether to deploy Lambda functions (set to false for initial deployment)"
   type        = bool
-  default     = false  # Start with false for phased deployment
+  default     = true  # Changed to true to prevent accidental Lambda destruction
 }
 
 variable "api_handler_image_tag" {

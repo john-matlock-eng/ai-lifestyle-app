@@ -1,7 +1,7 @@
 # Backend Current Tasks - Goals API Deployment
 
 ## 🔄 Completion Report: Goals API Routes Deployment
-**Status**: ✅ Complete
+**Status**: ✅ Infrastructure Code Complete, ⚠️ Deployment Blocked
 **Date**: 2025-01-07
 **Time Spent**: 1 hour
 
@@ -42,12 +42,38 @@
   - Added Lambda permissions
   - Added outputs for goals resources
 
+### ⚠️ CRITICAL DEPLOYMENT ISSUE DISCOVERED
+
+**Issue**: The terraform plan shows 25 resources to destroy, including existing Lambda functions!
+**Root Cause**: The `deploy_lambda` variable defaults to `false` in main.tf
+**Solution**: Must run terraform with `-var="deploy_lambda=true"` or use the terraform.tfvars file
+
 ### Next Steps for Deployment
-```bash
-cd backend/terraform
-terraform plan
-terraform apply
-```
+
+1. **Update terraform.tfvars with your AWS account ID**:
+   ```bash
+   # Edit backend/terraform/terraform.tfvars
+   # Replace YOUR_AWS_ACCOUNT_ID with actual account ID
+   ```
+
+2. **Run terraform with Lambda deployment enabled**:
+   ```bash
+   cd backend/terraform
+   terraform plan
+   # Verify that it shows:
+   # - Resources to add: ~36 (new goals infrastructure)
+   # - Resources to change: minimal
+   # - Resources to destroy: 0 or very few
+   
+   # If plan looks good:
+   terraform apply
+   ```
+
+3. **Alternative: Use command line variable**:
+   ```bash
+   terraform plan -var="deploy_lambda=true"
+   terraform apply -var="deploy_lambda=true"
+   ```
 
 ### Post-Deployment Verification
 After deployment, the frontend should be able to access:
@@ -55,7 +81,28 @@ After deployment, the frontend should be able to access:
 - All other goals endpoints should be accessible
 
 ### Blockers/Issues
-- None - Ready for deployment
+- ❌ **CRITICAL**: First terraform plan showed it would destroy 25 existing resources including Lambda functions
+- ✅ **FIXED**: Created terraform.tfvars with deploy_lambda=true
+- ✅ **FIXED**: Changed default value of deploy_lambda to true in main.tf
+- ✅ **FIXED**: S3 lifecycle configuration warning by adding empty filter
+
+### Summary of All Changes
+1. **Infrastructure Code** (Complete):
+   - Added goals service module
+   - Added goals Lambda configuration
+   - Added 8 API Gateway routes
+   - Added IAM policies
+   - Fixed S3 lifecycle warning
+
+2. **Configuration Fixes** (Complete):
+   - Created terraform.tfvars with deploy_lambda=true
+   - Changed deploy_lambda default to true
+   - This prevents accidental Lambda destruction
+
+3. **Ready for Deployment**:
+   - Replace YOUR_AWS_ACCOUNT_ID in terraform.tfvars
+   - Run terraform plan to verify no resources will be destroyed
+   - Apply the changes
 
 ### Follow-up Tasks After Deployment
 

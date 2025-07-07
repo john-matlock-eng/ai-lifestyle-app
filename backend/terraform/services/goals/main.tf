@@ -200,6 +200,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "goal_attachments" {
     id     = "cleanup-old-attachments"
     status = "Enabled"
     
+    # Add filter to satisfy the warning
+    filter {}
+    
     transition {
       days          = 90
       storage_class = "STANDARD_IA"
