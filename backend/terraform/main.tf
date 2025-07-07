@@ -131,7 +131,7 @@ module "api_lambda" {
     COGNITO_USER_POOL_ID = module.cognito.user_pool_id
     COGNITO_CLIENT_ID    = module.cognito.user_pool_client_id
     USERS_TABLE_NAME     = module.users_table.table_name
-    CORS_ORIGIN          = var.environment == "prod" ? "https://ailifestyle.app" : "*"
+    CORS_ORIGIN          = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
   }
 
   additional_policies = [
@@ -151,7 +151,7 @@ module "api_gateway" {
   lambda_function_name = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_name : ""
   lambda_invoke_arn    = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].invoke_arn : ""
   
-  cors_origins = var.environment == "prod" ? ["https://ailifestyle.app"] : ["*"]
+  cors_origins = var.environment == "prod" ? ["https://ailifestyle.app"] : ["https://d3qx4wyq22oaly.cloudfront.net", "http://localhost:3000", "http://localhost:5173"]
   
   # Define all routes
   routes = {

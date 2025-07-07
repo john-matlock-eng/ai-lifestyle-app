@@ -130,6 +130,64 @@ Once deployed with backend integration:
 
 **Updated**: 2025-01-06 by Frontend Agent
 
+## 🔍 Login Error Debugging
+**Status**: 🔄 In Progress
+**Date**: 2025-01-06
+**Time Spent**: 20 minutes
+
+### Issue Identified
+Frontend deployed successfully but getting 400 Bad Request on login:
+- URL: `https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com/auth/login`
+- Error: 400 Bad Request
+
+### Most Likely Causes
+1. **CORS not enabled** on API Gateway (most common)
+2. **Missing stage name** in API URL (e.g., `/dev` or `/v1`)
+3. **Request format mismatch** (email vs username field)
+
+### Debugging Tools Created
+1. **ApiDebugger Component**: `src/components/debug/ApiDebugger.tsx`
+2. **Debug Page**: `src/pages/DebugPage.tsx`
+3. **Test Scripts**:
+   - `test-api.sh` - Bash/Linux testing
+   - `test-api.ps1` - PowerShell testing (Windows)
+   - `quick-test-api.ps1` - Quick PowerShell commands
+4. **Documentation**: 
+   - `DEBUG_LOGIN_ERROR.md` - Comprehensive guide
+   - `LOGIN_ERROR_QUICK_FIX.md` - Quick action items
+   - `POWERSHELL_API_TEST.md` - PowerShell test commands
+
+### Immediate Actions Needed
+1. **Enable CORS in API Gateway**:
+   - Go to API Gateway → /auth/login → Actions → Enable CORS
+   - Deploy the API changes
+
+2. **Verify API URL**:
+   - Check if stage name is needed (e.g., `/dev`)
+   - Update GitHub secret if needed
+
+3. **Test with Debug Tools**:
+   - Add `/debug` route temporarily
+   - Use ApiDebugger to test endpoints
+
+### Next Steps
+Once CORS is enabled and API URL is correct, the login should work!
+
+### 🎆 CORS Fix Applied in Terraform
+**Update**: Backend Terraform updated to allow CloudFront domain
+- Added `https://d3qx4wyq22oaly.cloudfront.net` to allowed origins
+- Updated Lambda CORS_ORIGIN environment variable
+- Ready to deploy with `terraform apply`
+
+**To Deploy**:
+```bash
+cd backend/terraform
+terraform plan
+terraform apply
+```
+
+**Note**: Lambda functions must return CORS headers in responses!
+
 ## 🔐 GitHub Secrets Implementation
 **Status**: ✅ Complete
 **Date**: 2025-01-06
