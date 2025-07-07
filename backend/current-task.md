@@ -1,9 +1,9 @@
 # Backend Current Tasks - 🏗️ ARCHITECTURE: Single Table Design Fix
 
 ## 🔄 Completion Report: Single Table Design Fix
-**Status**: ⚠️ Needs Manual Terraform State Cleanup
+**Status**: 🔄 In Progress - State Cleanup Step 1
 **Date**: 2025-01-07  
-**Time Spent**: 1 hour
+**Time Spent**: 1.5 hours
 
 ### What I Fixed
 - ✅ Removed separate DynamoDB tables from goals service module
@@ -39,6 +39,17 @@
 - ✅ SNS/SQS for notifications (kept)
 - ✅ Monitoring module (kept)
 
+### Terraform State Cleanup - Step 1 Complete
+
+**Just Completed**:
+Commented out all references to goals_service module:
+- ✅ Commented out goals_service module (lines 124-134)
+- ✅ Commented out GOAL_ATTACHMENTS_BUCKET env var (line 150)
+- ✅ Commented out goals_s3_access policy reference (line 158)
+- ✅ Commented out entire goals_s3_access IAM policy (lines 336-360)
+- ✅ Commented out goal_attachments_bucket_name output (lines 410-414)
+- 📄 Created `STATE_CLEANUP_INSTRUCTIONS.md` with detailed steps
+
 ### Terraform State Cleanup Required
 
 **Issue**: The goals tables are still in Terraform state from previous deployment, causing:
@@ -69,11 +80,25 @@ terraform state rm module.goals_service.module.goal_aggregations_table
 3. **Second PR**: Uncomment the goals_service module to restore S3 and event processing
 
 ### Next Steps
-1. **Run state cleanup commands** above
-2. **Create PR** with these changes
-3. **CI/CD will deploy** the corrected infrastructure
-4. **Test** all goals endpoints with single table
-5. **Consider** adding additional GSIs if needed for query patterns
+
+**Step 1 (Current)**: 🏃 Deploy with commented module
+1. **Create PR** with current changes (module commented out)
+2. **CI/CD will apply** - this removes tables from state
+3. **Wait for successful deployment**
+
+**Step 2 (After Step 1 succeeds)**: 🔄 Restore S3 and Event Processing
+1. **Uncomment** all the commented sections:
+   - goals_service module
+   - GOAL_ATTACHMENTS_BUCKET env var
+   - goals_s3_access policy and reference
+   - goal_attachments_bucket_name output
+2. **Create second PR**
+3. **CI/CD will deploy** S3 bucket and event processing (but no tables!)
+
+**Step 3**: ✅ Test
+1. **Verify** goals endpoints work with single table
+2. **Confirm** S3 bucket exists for attachments
+3. **Check** EventBridge rules are created
 
 ### LLM Instructions Updated
 To prevent future violations, I've updated the backend instructions:
