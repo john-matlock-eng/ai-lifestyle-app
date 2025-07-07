@@ -1,12 +1,34 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+
+interface ApiResponse {
+  status: number;
+  headers: Record<string, string>;
+  data: unknown;
+}
+
+interface ApiErrorResponse {
+  message: string;
+  status?: number;
+  statusText?: string;
+  data?: unknown;
+  headers?: Record<string, string>;
+  config?: {
+    url?: string;
+    method?: string;
+    headers?: Record<string, string>;
+    data?: unknown;
+  };
+}
+
+type HttpMethod = 'GET' | 'POST' | 'OPTIONS';
 
 const ApiDebugger: React.FC = () => {
   const [response, setResponse] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
-  const testEndpoint = async (path: string, method: 'GET' | 'POST' = 'GET', data?: any) => {
+  const testEndpoint = async (path: string, method: HttpMethod = 'GET', data?: Record<string, unknown>) => {
     setLoading(true);
     setResponse('');
     setError('');
@@ -28,26 +50,32 @@ const ApiDebugger: React.FC = () => {
 
       const result = await axios(config);
       
-      setResponse(JSON.stringify({
+      const apiResponse: ApiResponse = {
         status: result.status,
-        headers: result.headers,
+        headers: result.headers as Record<string, string>,
         data: result.data
-      }, null, 2));
-    } catch (err: any) {
+      };
+      
+      setResponse(JSON.stringify(apiResponse, null, 2));
+    } catch (err) {
       console.error('API Test Error:', err);
-      setError(JSON.stringify({
-        message: err.message,
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data,
-        headers: err.response?.headers,
+      
+      const axiosError = err as AxiosError;
+      const errorResponse: ApiErrorResponse = {
+        message: axiosError.message,
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data,
+        headers: axiosError.response?.headers as Record<string, string>,
         config: {
-          url: err.config?.url,
-          method: err.config?.method,
-          headers: err.config?.headers,
-          data: err.config?.data
+          url: axiosError.config?.url,
+          method: axiosError.config?.method,
+          headers: axiosError.config?.headers as Record<string, string>,
+          data: axiosError.config?.data
         }
-      }, null, 2));
+      };
+      
+      setError(JSON.stringify(errorResponse, null, 2));
     } finally {
       setLoading(false);
     }
@@ -78,7 +106,7 @@ const ApiDebugger: React.FC = () => {
     },
     {
       name: 'Test OPTIONS (CORS preflight)',
-      action: () => testEndpoint('/auth/login', 'OPTIONS' as any)
+      action: () => testEndpoint('/auth/login', 'OPTIONS')
     }
   ];
 
