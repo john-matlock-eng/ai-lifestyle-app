@@ -3,7 +3,8 @@ import type { GoalPattern, GoalTarget } from '../../types/api.types';
 import { getDefaultsByPattern } from '../../types/ui.types';
 import Button from '../../../../components/common/Button';
 import { Target, Flame, Trophy, Shield, Calendar } from 'lucide-react';
-import { METRIC_UNITS, MetricType } from '../../types/goal.types';
+import type { MetricType } from '../../types/goal.types';
+import { METRIC_UNITS } from '../../types/goal.types';
 
 interface TargetStepProps {
   pattern: GoalPattern;
@@ -17,7 +18,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
   const [metricType, setMetricType] = useState<MetricType>('count');
   const [target, setTarget] = useState<GoalTarget>({
     metric: initialValues?.metric || 'count',
-    value: initialValues?.value || defaults.value || 1,
+    value: initialValues?.value || 1,
     unit: initialValues?.unit || 'times',
     direction: initialValues?.direction || defaults.direction,
     targetType: initialValues?.targetType || defaults.targetType,

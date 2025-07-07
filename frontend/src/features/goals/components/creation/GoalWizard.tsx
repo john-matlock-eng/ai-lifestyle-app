@@ -23,7 +23,7 @@ type GoalFormData = RecurringGoalFormData | TargetGoalFormData | MilestoneGoalFo
 const GoalWizard: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [selectedPattern, setSelectedPattern] = useState<GoalPattern | null>(null);
+  const [selectedPattern, setSelectedPattern] = useState<GoalPattern | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createGoalMutation = useMutation({
@@ -39,7 +39,7 @@ const GoalWizard: React.FC = () => {
   };
 
   const handleBack = () => {
-    setSelectedPattern(null);
+    setSelectedPattern(undefined);
   };
 
   const handleCancel = () => {
