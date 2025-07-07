@@ -27,12 +27,28 @@ Serverless backend for the AI Lifestyle App built with AWS Lambda, API Gateway, 
 - **OpenAPI Contract**: See [../contract/openapi.yaml](../contract/openapi.yaml)
 
 ## Architecture
+- **Pattern**: Single Lambda with internal routing (see [Architecture Guide](./instructions/playbooks/single-lambda-api-pattern.md))
 - **Language**: Python 3.11
 - **Framework**: AWS Lambda with API Gateway
 - **Authentication**: AWS Cognito
 - **Database**: DynamoDB (single-table design)
 - **Infrastructure**: Terraform
-- **CI/CD**: GitHub Actions
+- **CI/CD**: GitHub Actions (see [CI/CD Guide](./instructions/playbooks/cicd-guide-for-llm-agents.md))
+
+## 📚 Documentation for LLM Agents
+
+If you're an LLM working on this codebase, start here:
+
+### Essential Guides
+- **[Quick API Reference](./instructions/playbooks/api-pattern-llm-reference.md)** - Start here for API work
+- **[CI/CD Quick Reference](./instructions/playbooks/cicd-quick-reference.md)** - Deployment cheat sheet
+- **[Common Mistakes](./instructions/playbooks/common-mistakes-llm-guide.md)** - What NOT to do
+
+### Detailed Documentation  
+- **[Architecture Diagram](./instructions/architecture-diagram.md)** - Visual system overview
+- **[Single Lambda Pattern](./instructions/playbooks/single-lambda-api-pattern.md)** - Full architecture guide
+- **[CI/CD Guide](./instructions/playbooks/cicd-guide-for-llm-agents.md)** - Complete deployment process
+- **[System Prompt](./instructions/RECOMMENDED_LLM_SYSTEM_PROMPT.md)** - Recommended LLM instructions
 
 ## Project Structure
 ```

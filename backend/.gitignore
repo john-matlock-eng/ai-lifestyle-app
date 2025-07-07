@@ -11,6 +11,7 @@ venv/
 *.tfstate*
 .terraform.lock.hcl
 *.tfplan
+terraform.tfvars
 
 # Backup files
 *.bak

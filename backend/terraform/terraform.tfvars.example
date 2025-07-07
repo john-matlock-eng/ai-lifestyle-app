@@ -1,0 +1,8 @@
+# Example Terraform variables for local development
+# DO NOT use this file for CI/CD deployments - GitHub Actions handles variables automatically
+
+# For local testing only:
+environment = "dev"
+aws_account_id = "YOUR_AWS_ACCOUNT_ID"  # Replace with actual account ID
+deploy_lambda = true  # Set to true after infrastructure is created
+api_handler_image_tag = "latest"  # Or specific tag like "api-handler-dev-latest"

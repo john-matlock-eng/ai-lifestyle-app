@@ -116,4 +116,38 @@ After deployment, the frontend should be able to access:
 - Alarms setup
 - Documentation updates
 
+## 📝 CI/CD Documentation for LLM Agents Created
+
+### Summary
+Created comprehensive CI/CD documentation specifically for LLM Backend Engineer Agents.
+
+### New Documentation
+1. **CI/CD Guide** (`playbooks/cicd-guide-for-llm-agents.md`)
+   - Complete 3-phase deployment explanation
+   - GitHub Actions workflow details
+   - Troubleshooting guide
+   - ~2,000 words with examples
+
+2. **Quick Reference** (`playbooks/cicd-quick-reference.md`)
+   - One-page cheat sheet
+   - Daily workflow checklist
+   - "Never do these" commands
+   - Quick diagnostic Q&A
+
+### Key Message for LLMs
+**"You write code, CI/CD deploys it. Never run terraform/docker/aws commands."**
+
+### Integration
+- Updated instructions.md with CI/CD section
+- Created summary document
+- Ready for LLM prompt inclusion
+
+### Recommended System Prompt Addition:
+```
+CRITICAL: You are a developer, not a deployer.
+- Read: backend/instructions/playbooks/cicd-quick-reference.md
+- Never run terraform, docker, or aws commands
+- Always deploy by creating PRs - GitHub Actions handles the rest
+```
+
 **Updated**: 2025-01-07 by Backend Agent

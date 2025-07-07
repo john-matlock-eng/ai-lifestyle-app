@@ -60,10 +60,24 @@ graph TD
 
 ## Navigation to Resources
 
+### 📖 CRITICAL: Architecture Pattern
+**MUST READ FIRST**: This application uses a Single Lambda Pattern!
+- **Quick Reference**: `playbooks/api-pattern-llm-reference.md` - Start here for API work
+- **Detailed Guide**: `playbooks/single-lambda-api-pattern.md` - Full architecture explanation
+- **Avoid Mistakes**: `playbooks/common-mistakes-llm-guide.md` - Common pitfalls to avoid
+
+### 🚀 CRITICAL: CI/CD Process
+**YOU DON'T DEPLOY**: GitHub Actions handles ALL deployments!
+- **Quick Reference**: `playbooks/cicd-quick-reference.md` - Your deployment cheatsheet
+- **Detailed Guide**: `playbooks/cicd-guide-for-llm-agents.md` - Complete CI/CD explanation
+- **Key Rule**: You create PRs, CI/CD does the rest
+
 ### 📋 Implementation Playbooks
 | Task | Load This Playbook | When to Use |
 |------|-------------------|-------------|
 | New API endpoint | `playbooks/api-implementation.md` | Starting any new endpoint |
+| Single Lambda pattern | `playbooks/single-lambda-api-pattern.md` | Understanding the architecture |
+| CI/CD deployment | `.github/workflows/backend-deploy.yml` | Understanding deployment process |
 | Database operations | `playbooks/dynamodb-patterns.md` | CRUD operations |
 | External integrations | `playbooks/external-api.md` | Calling third-party services |
 | Testing strategy | `playbooks/testing-pyramid.md` | Writing comprehensive tests |
