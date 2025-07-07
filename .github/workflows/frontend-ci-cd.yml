@@ -105,10 +105,29 @@ jobs:
           echo "frontend_url=$(terraform output -raw frontend_url)" >> $GITHUB_OUTPUT
       
       - name: Generate environment config
-        working-directory: frontend/terraform
+        working-directory: frontend
         run: |
-          chmod +x generate-env.sh
-          ./generate-env.sh dev
+          # Create .env.production from GitHub secrets
+          cat > .env.production << EOF
+          VITE_ENVIRONMENT=dev
+          VITE_APP_NAME=AI Lifestyle App - Development
+          VITE_API_URL=${{ secrets.DEV_API_URL }}
+          VITE_COGNITO_REGION=${{ env.AWS_REGION }}
+          VITE_COGNITO_USER_POOL_ID=${{ secrets.DEV_COGNITO_USER_POOL_ID }}
+          VITE_COGNITO_CLIENT_ID=${{ secrets.DEV_COGNITO_CLIENT_ID }}
+          VITE_ENABLE_MSW=false
+          VITE_DEBUG=false
+          EOF
+          
+          echo "Created .env.production file:"
+          echo "VITE_ENVIRONMENT=dev"
+          echo "VITE_APP_NAME=AI Lifestyle App - Development"
+          echo "VITE_API_URL=***"
+          echo "VITE_COGNITO_REGION=${{ env.AWS_REGION }}"
+          echo "VITE_COGNITO_USER_POOL_ID=***"
+          echo "VITE_COGNITO_CLIENT_ID=***"
+          echo "VITE_ENABLE_MSW=false"
+          echo "VITE_DEBUG=false"
       
       - name: Install dependencies
         run: |
@@ -198,10 +217,29 @@ jobs:
           echo "frontend_url=$(terraform output -raw frontend_url)" >> $GITHUB_OUTPUT
       
       - name: Generate environment config
-        working-directory: frontend/terraform
+        working-directory: frontend
         run: |
-          chmod +x generate-env.sh
-          ./generate-env.sh prod
+          # Create .env.production from GitHub secrets
+          cat > .env.production << EOF
+          VITE_ENVIRONMENT=prod
+          VITE_APP_NAME=AI Lifestyle App
+          VITE_API_URL=${{ secrets.PROD_API_URL }}
+          VITE_COGNITO_REGION=${{ env.AWS_REGION }}
+          VITE_COGNITO_USER_POOL_ID=${{ secrets.PROD_COGNITO_USER_POOL_ID }}
+          VITE_COGNITO_CLIENT_ID=${{ secrets.PROD_COGNITO_CLIENT_ID }}
+          VITE_ENABLE_MSW=false
+          VITE_DEBUG=false
+          EOF
+          
+          echo "Created .env.production file:"
+          echo "VITE_ENVIRONMENT=prod"
+          echo "VITE_APP_NAME=AI Lifestyle App"
+          echo "VITE_API_URL=***"
+          echo "VITE_COGNITO_REGION=${{ env.AWS_REGION }}"
+          echo "VITE_COGNITO_USER_POOL_ID=***"
+          echo "VITE_COGNITO_CLIENT_ID=***"
+          echo "VITE_ENABLE_MSW=false"
+          echo "VITE_DEBUG=false"
       
       - name: Install dependencies
         run: |
