@@ -153,10 +153,13 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   aliases = var.create_custom_domain ? [var.domain_name] : []
 
-  logging_config {
-    include_cookies = false
-    bucket          = var.enable_logging ? aws_s3_bucket.logs[0].bucket_domain_name : null
-    prefix          = var.enable_logging ? "cloudfront/" : null
+  dynamic "logging_config" {
+    for_each = var.enable_logging ? [1] : []
+    content {
+      include_cookies = false
+      bucket          = aws_s3_bucket.logs[0].bucket_domain_name
+      prefix          = "cloudfront/"
+    }
   }
 
   tags = merge(var.tags, {
@@ -194,6 +197,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "logs" {
   rule {
     id     = "delete-old-logs"
     status = "Enabled"
+
+    filter {}
 
     expiration {
       days = 30
