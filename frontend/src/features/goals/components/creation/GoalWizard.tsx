@@ -1,31 +1,30 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import type { GoalPattern, CreateGoalRequest, GoalTarget, GoalSchedule, GoalContext } from '../../types/api.types';
-import { getDefaultsByPattern } from '../../types/ui.types';
+import type { GoalPattern, CreateGoalRequest } from '../../types/api.types';
+import type { 
+  RecurringGoalFormData,
+  TargetGoalFormData,
+  MilestoneGoalFormData,
+  StreakGoalFormData,
+  LimitGoalFormData
+} from '../../types/goal.types';
 import PatternSelector from './PatternSelector';
-import BasicInfoStep from './BasicInfoStep';
-import TargetStep from './TargetStep';
-import ScheduleStep from './ScheduleStep';
-import MotivationStep from './MotivationStep';
-import ReviewStep from './ReviewStep';
-import Button from '../../../../components/common/Button';
+import { RecurringGoalForm } from '../GoalCreator/RecurringGoalForm';
+import { TargetGoalForm } from '../GoalCreator/TargetGoalForm';
+import { MilestoneGoalForm } from '../GoalCreator/MilestoneGoalForm';
+import { StreakGoalForm } from '../GoalCreator/StreakGoalForm';
+import { LimitGoalForm } from '../GoalCreator/LimitGoalForm';
 import { createGoal } from '../../services/goalService';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
-type WizardStep = 'pattern' | 'basic-info' | 'target' | 'schedule' | 'motivation' | 'review';
-
-interface GoalWizardState extends Partial<CreateGoalRequest> {
-  pattern?: GoalPattern;
-}
+type GoalFormData = RecurringGoalFormData | TargetGoalFormData | MilestoneGoalFormData | StreakGoalFormData | LimitGoalFormData;
 
 const GoalWizard: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [currentStep, setCurrentStep] = useState<WizardStep>('pattern');
-  const [wizardState, setWizardState] = useState<GoalWizardState>({});
-
-  const steps: WizardStep[] = ['pattern', 'basic-info', 'target', 'schedule', 'motivation', 'review'];
-  const currentStepIndex = steps.indexOf(currentStep);
+  const [selectedPattern, setSelectedPattern] = useState<GoalPattern | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createGoalMutation = useMutation({
     mutationFn: createGoal,
@@ -35,170 +34,211 @@ const GoalWizard: React.FC = () => {
     },
   });
 
-  const handleNext = () => {
-    if (currentStepIndex < steps.length - 1) {
-      setCurrentStep(steps[currentStepIndex + 1]);
-    }
+  const handlePatternSelect = (pattern: GoalPattern) => {
+    setSelectedPattern(pattern);
   };
 
   const handleBack = () => {
-    if (currentStepIndex > 0) {
-      setCurrentStep(steps[currentStepIndex - 1]);
-    }
+    setSelectedPattern(null);
   };
 
-  const handlePatternSelect = (pattern: GoalPattern) => {
-    const defaults = getDefaultsByPattern(pattern);
-    setWizardState({
-      ...wizardState,
-      goalPattern: pattern,
-      target: {
-        metric: 'count',
-        value: 0,
-        unit: '',
-        direction: defaults.direction,
-        targetType: defaults.targetType,
-        period: defaults.period,
-      },
-    });
-    handleNext();
+  const handleCancel = () => {
+    navigate('/goals');
   };
 
-  const handleBasicInfoComplete = (data: { title: string; description?: string; category: string; icon?: string; color?: string }) => {
-    setWizardState({ ...wizardState, ...data });
-    handleNext();
-  };
-
-  const handleTargetComplete = (target: GoalTarget) => {
-    setWizardState({ ...wizardState, target });
-    handleNext();
-  };
-
-  const handleScheduleComplete = (schedule?: GoalSchedule) => {
-    setWizardState({ ...wizardState, schedule });
-    handleNext();
-  };
-
-  const handleMotivationComplete = (context?: GoalContext) => {
-    setWizardState({ ...wizardState, context });
-    handleNext();
-  };
-
-  const handleSubmit = async () => {
-    if (!wizardState.goalPattern || !wizardState.title || !wizardState.category || !wizardState.target) {
-      return;
-    }
-
-    const goalData: CreateGoalRequest = {
-      title: wizardState.title,
-      description: wizardState.description,
-      category: wizardState.category,
-      icon: wizardState.icon,
-      color: wizardState.color,
-      goalPattern: wizardState.goalPattern,
-      target: wizardState.target,
-      schedule: wizardState.schedule,
-      context: wizardState.context,
+  const transformFormDataToRequest = (formData: GoalFormData): CreateGoalRequest => {
+    // Common fields
+    const baseRequest: Partial<CreateGoalRequest> = {
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      icon: formData.icon,
+      color: formData.color,
+      goalPattern: formData.goalPattern,
     };
 
-    await createGoalMutation.mutateAsync(goalData);
+    // Transform based on goal pattern
+    switch (formData.goalPattern) {
+      case 'recurring': {
+        const data = formData as RecurringGoalFormData;
+        return {
+          ...baseRequest,
+          target: {
+            metric: 'count',
+            value: data.targetValue,
+            unit: data.unit,
+            period: data.period,
+            direction: 'increase',
+            targetType: 'minimum',
+          },
+          schedule: {
+            frequency: data.frequency,
+            daysOfWeek: data.daysOfWeek && data.daysOfWeek.length > 0 ? data.daysOfWeek : undefined,
+            checkInFrequency: 'daily',
+            catchUpAllowed: true,
+          },
+        } as CreateGoalRequest;
+      }
+
+      case 'target': {
+        const data = formData as TargetGoalFormData;
+        return {
+          ...baseRequest,
+          target: {
+            metric: 'custom',
+            value: data.targetValue,
+            unit: data.unit,
+            direction: data.direction,
+            targetType: 'exact',
+            startValue: data.startValue,
+            currentValue: data.startValue,
+            targetDate: data.targetDate.toISOString(),
+          },
+        } as CreateGoalRequest;
+      }
+
+      case 'milestone': {
+        const data = formData as MilestoneGoalFormData;
+        return {
+          ...baseRequest,
+          target: {
+            metric: 'custom',
+            value: data.targetValue,
+            unit: data.unit,
+            direction: 'increase',
+            targetType: 'exact',
+            startValue: data.currentValue || 0,
+            currentValue: data.currentValue || 0,
+            targetDate: data.targetDate?.toISOString(),
+          },
+        } as CreateGoalRequest;
+      }
+
+      case 'streak': {
+        const data = formData as StreakGoalFormData;
+        return {
+          ...baseRequest,
+          target: {
+            metric: 'count',
+            value: data.targetStreak,
+            unit: data.unit || 'days',
+            direction: 'increase',
+            targetType: 'exact',
+          },
+          schedule: {
+            frequency: data.frequency || 'daily',
+            checkInFrequency: data.frequency || 'daily',
+            allowSkipDays: 0,
+            catchUpAllowed: false,
+          },
+        } as CreateGoalRequest;
+      }
+
+      case 'limit': {
+        const data = formData as LimitGoalFormData;
+        return {
+          ...baseRequest,
+          target: {
+            metric: 'custom',
+            value: data.limitValue,
+            unit: data.unit,
+            period: data.period,
+            direction: data.targetType === 'maximum' ? 'decrease' : 'increase',
+            targetType: data.targetType,
+          },
+          schedule: {
+            checkInFrequency: 'daily',
+          },
+        } as CreateGoalRequest;
+      }
+
+      default:
+        throw new Error(`Unknown goal pattern: ${formData.goalPattern}`);
+    }
   };
 
-  const renderStep = () => {
-    switch (currentStep) {
-      case 'pattern':
-        return (
+  const handleFormSubmit = async (formData: GoalFormData) => {
+    setIsSubmitting(true);
+    try {
+      const goalData = transformFormDataToRequest(formData);
+      await createGoalMutation.mutateAsync(goalData);
+    } catch (error) {
+      console.error('Failed to create goal:', error);
+      setIsSubmitting(false);
+    }
+  };
+
+  const renderForm = () => {
+    if (!selectedPattern) {
+      return (
+        <div className="space-y-6">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
+              <Sparkles className="h-8 w-8 text-primary-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your Goal</h1>
+            <p className="text-lg text-gray-600">Choose a pattern that fits your journey</p>
+          </div>
           <PatternSelector
             onSelect={handlePatternSelect}
-            selectedPattern={wizardState.goalPattern}
+            selectedPattern={selectedPattern}
           />
-        );
-      case 'basic-info':
-        return (
-          <BasicInfoStep
-            initialValues={{
-              title: wizardState.title || '',
-              description: wizardState.description,
-              category: wizardState.category || '',
-              icon: wizardState.icon,
-              color: wizardState.color,
-            }}
-            onComplete={handleBasicInfoComplete}
-          />
-        );
+        </div>
+      );
+    }
+
+    // Render the appropriate form based on selected pattern
+    const commonProps = {
+      onSubmit: handleFormSubmit,
+      onCancel: handleBack,
+    };
+
+    switch (selectedPattern) {
+      case 'recurring':
+        return <RecurringGoalForm {...commonProps} />;
       case 'target':
-        return (
-          <TargetStep
-            pattern={wizardState.goalPattern!}
-            initialValues={wizardState.target}
-            onComplete={handleTargetComplete}
-          />
-        );
-      case 'schedule':
-        return (
-          <ScheduleStep
-            pattern={wizardState.goalPattern!}
-            initialValues={wizardState.schedule}
-            onComplete={handleScheduleComplete}
-          />
-        );
-      case 'motivation':
-        return (
-          <MotivationStep
-            initialValues={wizardState.context}
-            onComplete={handleMotivationComplete}
-          />
-        );
-      case 'review':
-        return (
-          <ReviewStep
-            goalData={wizardState as CreateGoalRequest}
-            onSubmit={handleSubmit}
-            isSubmitting={createGoalMutation.isPending}
-          />
-        );
+        return <TargetGoalForm {...commonProps} />;
+      case 'milestone':
+        return <MilestoneGoalForm {...commonProps} />;
+      case 'streak':
+        return <StreakGoalForm {...commonProps} />;
+      case 'limit':
+        return <LimitGoalForm {...commonProps} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold text-gray-900">Create New Goal</h1>
-          <span className="text-sm text-gray-500">
-            Step {currentStepIndex + 1} of {steps.length}
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-primary-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Step Content */}
-      <div className="bg-white rounded-lg shadow p-6">{renderStep()}</div>
-
-      {/* Navigation Buttons */}
-      <div className="mt-6 flex justify-between">
-        <Button
-          variant="outline"
-          onClick={currentStepIndex === 0 ? () => navigate('/goals') : handleBack}
-          disabled={createGoalMutation.isPending}
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Header Navigation */}
+      <div className="mb-6">
+        <button
+          onClick={selectedPattern ? handleBack : handleCancel}
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          disabled={isSubmitting}
         >
-          {currentStepIndex === 0 ? 'Cancel' : 'Back'}
-        </Button>
-
-        {currentStep !== 'pattern' && currentStep !== 'review' && (
-          <Button onClick={handleNext} disabled={createGoalMutation.isPending}>
-            Next
-          </Button>
-        )}
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          {selectedPattern ? 'Choose Different Pattern' : 'Back to Goals'}
+        </button>
       </div>
+
+      {/* Form Content */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="p-6 sm:p-8">
+          {renderForm()}
+        </div>
+      </div>
+
+      {/* Loading Overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
+            <p className="text-gray-700 font-medium">Creating your goal...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
