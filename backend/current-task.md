@@ -50,7 +50,8 @@
 - ✅ Uncommented GOAL_ATTACHMENTS_BUCKET env var
 - ✅ Uncommented goals_s3_access policy and reference  
 - ✅ Uncommented goal_attachments_bucket_name output
-- 🗑️ Deleted temporary STATE_CLEANUP_INSTRUCTIONS.md
+- ✅ Fixed outputs.tf in goals service to remove table references
+- 🗑️ Archived temporary STATE_CLEANUP_INSTRUCTIONS.md
 
 **Result**: Goals infrastructure now includes:
 - ✅ S3 bucket for attachments
@@ -58,55 +59,23 @@
 - ✅ SNS/SQS for notifications
 - ✅ NO DynamoDB tables (uses main table)
 
-### Terraform State Cleanup Required
-
-**Issue**: The goals tables are still in Terraform state from previous deployment, causing:
-```
-Error: all attributes must be indexed. Unused attributes: ["TTL"]
-```
-
-**Solution**: Before creating PR, run these commands locally:
-```bash
-terraform state rm module.goals_service.module.goals_table
-terraform state rm module.goals_service.module.goal_aggregations_table
-```
-
-**Alternative for CI/CD**: If the pipeline is failing:
-
-1. **First PR**: Comment out the goals_service module in main.tf:
-   ```hcl
-   # Temporarily comment out to fix state
-   # module "goals_service" {
-   #   source = "./services/goals"
-   #   ...
-   # }
-   ```
-   Also comment out references to goals_service outputs in IAM policies and Lambda env vars.
-
-2. **Merge and Deploy** - This removes the tables from state
-
-3. **Second PR**: Uncomment the goals_service module to restore S3 and event processing
-
 ### Next Steps
 
-**Step 1 (Current)**: 🏃 Deploy with commented module
-1. **Create PR** with current changes (module commented out)
-2. **CI/CD will apply** - this removes tables from state
-3. **Wait for successful deployment**
+**Deploy and Test**:
+1. **Create PR** with the restored goals_service module
+2. **CI/CD will deploy** S3 bucket and event processing
+3. **Verify** goals endpoints work with single table
+4. **Confirm** S3 bucket exists for attachments
+5. **Check** EventBridge rules are created
 
-**Step 2 (After Step 1 succeeds)**: 🔄 Restore S3 and Event Processing
-1. **Uncomment** all the commented sections:
-   - goals_service module
-   - GOAL_ATTACHMENTS_BUCKET env var
-   - goals_s3_access policy and reference
-   - goal_attachments_bucket_name output
-2. **Create second PR**
-3. **CI/CD will deploy** S3 bucket and event processing (but no tables!)
+### Summary
 
-**Step 3**: ✅ Test
-1. **Verify** goals endpoints work with single table
-2. **Confirm** S3 bucket exists for attachments
-3. **Check** EventBridge rules are created
+The single-table design is now properly implemented:
+- ✅ Goals use the main `users` table with proper key design
+- ✅ S3 bucket available for goal attachments
+- ✅ Event processing infrastructure in place
+- ✅ All repository code updated to use TABLE_NAME
+- ✅ LLM instructions updated to prevent future violations
 
 ### LLM Instructions Updated
 To prevent future violations, I've updated the backend instructions:

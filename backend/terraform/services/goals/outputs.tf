@@ -1,17 +1,6 @@
-# Table Outputs
-output "tables" {
-  description = "DynamoDB table information"
-  value = {
-    goals_table = {
-      name = module.goals_table.table_name
-      arn  = module.goals_table.table_arn
-    }
-    aggregations_table = {
-      name = module.goal_aggregations_table.table_name
-      arn  = module.goal_aggregations_table.table_arn
-    }
-  }
-}
+# Table Outputs - REMOVED
+# Using single-table design with main application table
+# No goals-specific tables are created
 
 # Storage Outputs
 output "storage" {
@@ -57,8 +46,7 @@ output "event_rules" {
 output "lambda_environment" {
   description = "Environment variables for Lambda functions"
   value = {
-    GOALS_TABLE_NAME             = module.goals_table.table_name
-    GOAL_AGGREGATIONS_TABLE_NAME = module.goal_aggregations_table.table_name
+    # Tables are managed via TABLE_NAME env var pointing to main table
     GOAL_ATTACHMENTS_BUCKET      = aws_s3_bucket.goal_attachments.id
     GOAL_NOTIFICATIONS_TOPIC_ARN = aws_sns_topic.goal_notifications.arn
     GOAL_NOTIFICATIONS_QUEUE_URL = aws_sqs_queue.goal_notifications.id
