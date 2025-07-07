@@ -117,17 +117,17 @@ module "users_table" {
 }
 
 # Goals Service Infrastructure
-#module "goals_service" {
-#  source = "./services/goals"#
-#
-#  app_name     = "ai-lifestyle"
-#  environment  = var.environment
-#  aws_region   = var.aws_region
-#  
-#  tags = {
-#    Service = "goals"
-#  }
-#}
+module "goals_service" {
+  source = "./services/goals"
+
+  app_name     = "ai-lifestyle"
+  environment  = var.environment
+  aws_region   = var.aws_region
+  
+  tags = {
+    Service = "goals"
+  }
+}
 
 # Lambda Function for API handling
 module "api_lambda" {
@@ -148,7 +148,7 @@ module "api_lambda" {
     TABLE_NAME      = module.users_table.table_name # Main table for everything!
     MAIN_TABLE_NAME = module.users_table.table_name # Same table
     # Goals environment variables
-    # GOAL_ATTACHMENTS_BUCKET = module.goals_service.goal_attachments_bucket_name  # TEMP: Commented for state cleanup
+    GOAL_ATTACHMENTS_BUCKET = module.goals_service.goal_attachments_bucket_name
     CORS_ORIGIN             = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
   }
 
@@ -156,7 +156,7 @@ module "api_lambda" {
     module.users_table.access_policy_arn,
     aws_iam_policy.cognito_access.arn,
     aws_iam_policy.main_table_dynamodb_access.arn,
-    # aws_iam_policy.goals_s3_access.arn  # TEMP: Commented for state cleanup
+    aws_iam_policy.goals_s3_access.arn
   ]
 }
 
@@ -334,31 +334,30 @@ resource "aws_iam_policy" "main_table_dynamodb_access" {
   })
 }
 
-# TEMP: Commented for state cleanup
-# # IAM Policy for Goals S3 access
-# resource "aws_iam_policy" "goals_s3_access" {
-#   name        = "ai-lifestyle-goals-s3-${var.environment}"
-#   description = "Policy for Lambda to access Goals S3 bucket"
-# 
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "s3:GetObject",
-#           "s3:PutObject",
-#           "s3:DeleteObject",
-#           "s3:ListBucket"
-#         ]
-#         Resource = [
-#           module.goals_service.goal_attachments_bucket_arn,
-#           "${module.goals_service.goal_attachments_bucket_arn}/*"
-#         ]
-#       }
-#     ]
-#   })
-# }
+# IAM Policy for Goals S3 access
+resource "aws_iam_policy" "goals_s3_access" {
+  name        = "ai-lifestyle-goals-s3-${var.environment}"
+  description = "Policy for Lambda to access Goals S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          module.goals_service.goal_attachments_bucket_arn,
+          "${module.goals_service.goal_attachments_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
+}
 
 # Policy ARN will be referenced directly from the resource
 
@@ -408,8 +407,7 @@ output "main_table_name" {
   value       = module.users_table.table_name
 }
 
-# TEMP: Commented for state cleanup
-# output "goal_attachments_bucket_name" {
-#   description = "Goal attachments S3 bucket name"
-#   value       = module.goals_service.goal_attachments_bucket_name
-# }
+output "goal_attachments_bucket_name" {
+  description = "Goal attachments S3 bucket name"
+  value       = module.goals_service.goal_attachments_bucket_name
+}
