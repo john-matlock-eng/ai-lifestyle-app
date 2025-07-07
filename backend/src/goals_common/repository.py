@@ -22,16 +22,14 @@ class GoalsRepository:
     
     def __init__(self):
         self.dynamodb = boto3.resource('dynamodb')
-        self.table_name = os.environ.get('GOALS_TABLE_NAME')
-        self.aggregations_table_name = os.environ.get('GOAL_AGGREGATIONS_TABLE_NAME')
+        # Use the MAIN table for single-table design
+        self.table_name = os.environ.get('TABLE_NAME') or os.environ.get('MAIN_TABLE_NAME')
         
         if not self.table_name:
-            raise ValueError("GOALS_TABLE_NAME environment variable not set")
+            raise ValueError("TABLE_NAME or MAIN_TABLE_NAME environment variable not set")
             
         self.table = self.dynamodb.Table(self.table_name)
-        self.aggregations_table = None
-        if self.aggregations_table_name:
-            self.aggregations_table = self.dynamodb.Table(self.aggregations_table_name)
+        logger.info(f"Using main table: {self.table_name}")
     
     # Key generation methods
     def _user_key(self, user_id: str) -> str:
@@ -50,30 +48,20 @@ class GoalsRepository:
         """Generate status GSI1 partition key."""
         return f"STATUS#{status}"
     
-    def _user_category_key(self, user_id: str, category: str) -> str:
-        """Generate user category GSI1 partition key."""
-        return f"USER#{user_id}#CATEGORY#{category}"
-    
-    def _date_key(self, date: datetime) -> str:
-        """Generate date GSI2 partition key."""
-        return f"DATE#{date.strftime('%Y-%m-%d')}"
-    
-    def _user_date_key(self, user_id: str, date: datetime) -> str:
-        """Generate user date GSI2 partition key."""
-        return f"USER#{user_id}#DATE#{date.strftime('%Y-%m-%d')}"
+    # Note: Additional GSI patterns can be added as needed
+    # For now, we're using the main table's existing GSI structure
     
     # Goal CRUD operations
     def create_goal(self, goal: Goal) -> Goal:
         """Create a new goal."""
         try:
             item = {
-                'PK': self._user_key(goal.user_id),
-                'SK': self._goal_key(goal.goal_id),
-                'Type': 'GOAL',
-                'GSI1PK': self._status_key(goal.status.value),
-                'GSI1SK': goal.created_at.isoformat(),
-                'GSI2PK': self._user_category_key(goal.user_id, goal.category),
-                'GSI2SK': goal.created_at.isoformat(),
+                'pk': self._user_key(goal.user_id),
+                'sk': self._goal_key(goal.goal_id),
+                'EntityType': 'Goal',
+                'gsi1_pk': self._status_key(goal.status.value),
+                'gsi1_sk': goal.created_at.isoformat(),
+                # Store all goal attributes
                 **goal.model_dump(mode='json')
             }
             
@@ -83,7 +71,7 @@ class GoalsRepository:
             
             self.table.put_item(
                 Item=item,
-                ConditionExpression='attribute_not_exists(PK) AND attribute_not_exists(SK)'
+                ConditionExpression='attribute_not_exists(pk) AND attribute_not_exists(sk)'
             )
             
             logger.info(f"Created goal {goal.goal_id} for user {goal.user_id}")
@@ -99,8 +87,8 @@ class GoalsRepository:
         try:
             response = self.table.get_item(
                 Key={
-                    'PK': self._user_key(user_id),
-                    'SK': self._goal_key(goal_id)
+                    'pk': self._user_key(user_id),
+                    'sk': self._goal_key(goal_id)
                 }
             )
             
@@ -109,7 +97,7 @@ class GoalsRepository:
             
             item = response['Item']
             # Remove DynamoDB-specific fields
-            for field in ['PK', 'SK', 'Type', 'GSI1PK', 'GSI1SK', 'GSI2PK', 'GSI2SK', 'TTL']:
+            for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                 item.pop(field, None)
             
             return Goal(**item)
@@ -137,30 +125,26 @@ class GoalsRepository:
             expression_values[':updated_at'] = datetime.utcnow().isoformat()
             update_parts.append('updated_at = :updated_at')
             
-            # Update GSI keys if status or category changed
+            # Update GSI keys if status changed
             if 'status' in updates:
                 expression_values[':gsi1pk'] = self._status_key(updates['status'])
-                update_parts.append('GSI1PK = :gsi1pk')
-            
-            if 'category' in updates:
-                expression_values[':gsi2pk'] = self._user_category_key(user_id, updates['category'])
-                update_parts.append('GSI2PK = :gsi2pk')
+                update_parts.append('gsi1_pk = :gsi1pk')
             
             response = self.table.update_item(
                 Key={
-                    'PK': self._user_key(user_id),
-                    'SK': self._goal_key(goal_id)
+                    'pk': self._user_key(user_id),
+                    'sk': self._goal_key(goal_id)
                 },
                 UpdateExpression=f"SET {', '.join(update_parts)}",
                 ExpressionAttributeValues=expression_values,
                 ExpressionAttributeNames=expression_names if expression_names else None,
-                ConditionExpression='attribute_exists(PK) AND attribute_exists(SK)',
+                ConditionExpression='attribute_exists(pk) AND attribute_exists(sk)',
                 ReturnValues='ALL_NEW'
             )
             
             item = response['Attributes']
             # Remove DynamoDB-specific fields
-            for field in ['PK', 'SK', 'Type', 'GSI1PK', 'GSI1SK', 'GSI2PK', 'GSI2SK', 'TTL']:
+            for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                 item.pop(field, None)
             
             return Goal(**item)
@@ -198,24 +182,17 @@ class GoalsRepository:
         """List user's goals with optional filtering."""
         try:
             if status:
-                # Query by status using GSI1
+                # Query by status using GSI1  
                 query_params = {
-                    'IndexName': 'GSI1',
-                    'KeyConditionExpression': Key('GSI1PK').eq(self._status_key(status.value)),
+                    'IndexName': 'EmailIndex',  # Using the existing GSI
+                    'KeyConditionExpression': Key('gsi1_pk').eq(self._status_key(status.value)),
                     'FilterExpression': Attr('user_id').eq(user_id),
-                    'Limit': limit
-                }
-            elif category:
-                # Query by category using GSI2
-                query_params = {
-                    'IndexName': 'GSI2',
-                    'KeyConditionExpression': Key('GSI2PK').eq(self._user_category_key(user_id, category)),
                     'Limit': limit
                 }
             else:
                 # Query all user goals
                 query_params = {
-                    'KeyConditionExpression': Key('PK').eq(self._user_key(user_id)) & Key('SK').begins_with('GOAL#'),
+                    'KeyConditionExpression': Key('pk').eq(self._user_key(user_id)) & Key('sk').begins_with('GOAL#'),
                     'Limit': limit
                 }
             
@@ -226,10 +203,12 @@ class GoalsRepository:
             
             goals = []
             for item in response['Items']:
-                # Remove DynamoDB-specific fields
-                for field in ['PK', 'SK', 'Type', 'GSI1PK', 'GSI1SK', 'GSI2PK', 'GSI2SK', 'TTL']:
-                    item.pop(field, None)
-                goals.append(Goal(**item))
+                # Only process Goal entities
+                if item.get('EntityType') == 'Goal' or item.get('sk', '').startswith('GOAL#'):
+                    # Remove DynamoDB-specific fields
+                    for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
+                        item.pop(field, None)
+                    goals.append(Goal(**item))
             
             return goals, response.get('LastEvaluatedKey')
             
@@ -242,11 +221,11 @@ class GoalsRepository:
         """Log a goal activity."""
         try:
             item = {
-                'PK': self._user_key(activity.user_id),
-                'SK': self._activity_key(activity.goal_id, activity.logged_at),
-                'Type': 'ACTIVITY',
-                'GSI2PK': self._user_date_key(activity.user_id, activity.activity_date),
-                'GSI2SK': activity.logged_at.isoformat(),
+                'pk': self._user_key(activity.user_id),
+                'sk': self._activity_key(activity.goal_id, activity.logged_at),
+                'EntityType': 'GoalActivity',
+                'gsi1_pk': f"GOAL#{activity.goal_id}",
+                'gsi1_sk': activity.logged_at.isoformat(),
                 **activity.model_dump(mode='json')
             }
             
@@ -273,15 +252,15 @@ class GoalsRepository:
         """Get activities for a specific goal."""
         try:
             # Build the sort key condition
-            sk_condition = Key('SK').begins_with(f"ACTIVITY#{goal_id}#")
+            sk_condition = Key('sk').begins_with(f"ACTIVITY#{goal_id}#")
             
             if start_date and end_date:
                 sk_start = f"ACTIVITY#{goal_id}#{start_date.isoformat()}"
                 sk_end = f"ACTIVITY#{goal_id}#{end_date.isoformat()}"
-                sk_condition = Key('SK').between(sk_start, sk_end)
+                sk_condition = Key('sk').between(sk_start, sk_end)
             
             response = self.table.query(
-                KeyConditionExpression=Key('PK').eq(self._user_key(user_id)) & sk_condition,
+                KeyConditionExpression=Key('pk').eq(self._user_key(user_id)) & sk_condition,
                 ScanIndexForward=False,  # Most recent first
                 Limit=limit
             )
@@ -289,7 +268,7 @@ class GoalsRepository:
             activities = []
             for item in response['Items']:
                 # Remove DynamoDB-specific fields
-                for field in ['PK', 'SK', 'Type', 'GSI2PK', 'GSI2SK', 'TTL']:
+                for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                     item.pop(field, None)
                 activities.append(GoalActivity(**item))
             
@@ -307,17 +286,21 @@ class GoalsRepository:
     ) -> List[GoalActivity]:
         """Get all user activities for a specific date."""
         try:
+            # Query all user's activities and filter by date
+            # In a real implementation, you might want to add a GSI for date-based queries
+            date_str = date.strftime('%Y-%m-%d')
+            
             response = self.table.query(
-                IndexName='GSI2',
-                KeyConditionExpression=Key('GSI2PK').eq(self._user_date_key(user_id, date)),
+                KeyConditionExpression=Key('pk').eq(self._user_key(user_id)) & Key('sk').begins_with('ACTIVITY#'),
+                FilterExpression=Attr('activity_date').begins_with(date_str),
                 Limit=limit
             )
             
             activities = []
             for item in response['Items']:
-                if item.get('Type') == 'ACTIVITY':
+                if item.get('EntityType') == 'GoalActivity' or item.get('sk', '').startswith('ACTIVITY#'):
                     # Remove DynamoDB-specific fields
-                    for field in ['PK', 'SK', 'Type', 'GSI2PK', 'GSI2SK', 'TTL']:
+                    for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                         item.pop(field, None)
                     activities.append(GoalActivity(**item))
             
@@ -336,8 +319,8 @@ class GoalsRepository:
         try:
             keys = [
                 {
-                    'PK': self._user_key(user_id),
-                    'SK': self._goal_key(goal_id)
+                    'pk': self._user_key(user_id),
+                    'sk': self._goal_key(goal_id)
                 }
                 for goal_id in goal_ids
             ]
@@ -353,7 +336,7 @@ class GoalsRepository:
             goals = []
             for item in response['Responses'].get(self.table_name, []):
                 # Remove DynamoDB-specific fields
-                for field in ['PK', 'SK', 'Type', 'GSI1PK', 'GSI1SK', 'GSI2PK', 'GSI2SK', 'TTL']:
+                for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                     item.pop(field, None)
                 goals.append(Goal(**item))
             

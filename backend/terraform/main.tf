@@ -144,9 +144,10 @@ module "api_lambda" {
     COGNITO_USER_POOL_ID = module.cognito.user_pool_id
     COGNITO_CLIENT_ID    = module.cognito.user_pool_client_id
     USERS_TABLE_NAME     = module.users_table.table_name
+    # Single table for all entities
+    TABLE_NAME           = module.users_table.table_name  # Main table for everything!
+    MAIN_TABLE_NAME      = module.users_table.table_name  # Same table
     # Goals environment variables
-    GOALS_TABLE_NAME            = module.goals_service.goals_table_name
-    GOAL_AGGREGATIONS_TABLE_NAME = module.goals_service.goal_aggregations_table_name
     GOAL_ATTACHMENTS_BUCKET     = module.goals_service.goal_attachments_bucket_name
     CORS_ORIGIN          = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
   }
@@ -154,7 +155,7 @@ module "api_lambda" {
   additional_policies = [
     module.users_table.access_policy_arn,
     aws_iam_policy.cognito_access.arn,
-    aws_iam_policy.goals_dynamodb_access.arn,
+    aws_iam_policy.main_table_dynamodb_access.arn,
     aws_iam_policy.goals_s3_access.arn
   ]
 }
@@ -299,10 +300,10 @@ resource "aws_iam_policy" "cognito_access" {
   })
 }
 
-# IAM Policy for Goals DynamoDB access
-resource "aws_iam_policy" "goals_dynamodb_access" {
-  name        = "ai-lifestyle-goals-dynamodb-${var.environment}"
-  description = "Policy for Lambda to access Goals DynamoDB tables"
+# IAM Policy for Main Table DynamoDB access (replaces goals-specific policy)
+resource "aws_iam_policy" "main_table_dynamodb_access" {
+  name        = "ai-lifestyle-main-table-${var.environment}"
+  description = "Policy for Lambda to access main DynamoDB table"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -325,10 +326,8 @@ resource "aws_iam_policy" "goals_dynamodb_access" {
           "dynamodb:ListStreams"
         ]
         Resource = [
-          module.goals_service.goals_table_arn,
-          "${module.goals_service.goals_table_arn}/*",
-          module.goals_service.goal_aggregations_table_arn,
-          "${module.goals_service.goal_aggregations_table_arn}/*"
+          module.users_table.table_arn,
+          "${module.users_table.table_arn}/*"
         ]
       }
     ]
@@ -403,14 +402,9 @@ output "api_id" {
   value       = module.api_gateway.api_id
 }
 
-output "goals_table_name" {
-  description = "Goals DynamoDB table name"
-  value       = module.goals_service.goals_table_name
-}
-
-output "goal_aggregations_table_name" {
-  description = "Goal aggregations DynamoDB table name"
-  value       = module.goals_service.goal_aggregations_table_name
+output "main_table_name" {
+  description = "Main DynamoDB table name (used for all entities)"
+  value       = module.users_table.table_name
 }
 
 output "goal_attachments_bucket_name" {

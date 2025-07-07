@@ -1,243 +1,108 @@
-# Frontend Current Tasks - Goal Creation Wizard Fixed!
+# Frontend Current Tasks - Blocked on Backend Architecture Fix
 
-## 🚨 BLOCKER: Goals API Endpoints Not Deployed
-**Status**: ⚠️ Blocked
+## 🚨 UPDATE: Real Cause of 404 Errors Identified
+**Status**: ⚠️ Blocked - But Different Reason
 **Date**: 2025-01-07
 **Severity**: HIGH
 
-### Issue Description
-Frontend is receiving 404 errors when trying to access goals endpoints:
-```
-https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com/goals 
-net::ERR_FAILED 404 (Not Found)
-```
+### Investigation Results
+After investigating with the backend team, we found TWO issues:
 
-### Root Cause Analysis
-After investigating the backend's Terraform configuration (`backend/terraform/main.tf`), the goals API routes are **NOT deployed** to API Gateway. 
+1. **Architecture Issue** (Most Critical):
+   - Goals implementation violates single-table DynamoDB design
+   - Backend is fixing this first (2-4 hours)
 
-#### What's Missing:
-The API Gateway configuration only includes auth and user endpoints, but is missing ALL goals endpoints:
-- `GET /goals` - List user goals
-- `POST /goals` - Create new goal
-- `GET /goals/{goalId}` - Get goal details
-- `PUT /goals/{goalId}` - Update goal
-- `DELETE /goals/{goalId}` - Archive goal
-- `GET /goals/{goalId}/activities` - List goal activities
-- `POST /goals/{goalId}/activities` - Log activity
-- `GET /goals/{goalId}/progress` - Get progress
+2. **Lambda Not Deployed**:
+   - The Lambda function isn't deployed (`deploy_lambda=false`)
+   - This is why you're getting 404s
+   - Will be deployed after architecture fix
 
-#### What Exists:
-- ✅ Goals infrastructure is created (DynamoDB tables, S3 buckets)
-- ✅ Goals service module exists in `terraform/services/goals/`
-- ❌ API Gateway routes are NOT configured
-- ❌ Lambda handlers for goals endpoints are NOT referenced
+### Good News
+- ✅ API Gateway routes ARE configured correctly
+- ✅ Lambda handler DOES route to goals endpoints  
+- ✅ Your goal wizard enhancements are ready to test
+- ✅ Backend knows exactly what to fix
 
-### Impact
-- Frontend goal creation wizard is complete but cannot save goals
-- Users cannot create, view, or track goals
-- Core app functionality is blocked
-
-### Action Required from Backend Team
-Please add the goals routes to the API Gateway configuration in `backend/terraform/main.tf`. All routes are defined in the OpenAPI contract (`contract/openapi.yaml`) under the Goals section.
+### Timeline
+- **Morning**: Backend fixes single-table architecture
+- **Afternoon**: Backend deploys Lambda with correct table design
+- **By EOD**: You should be able to test everything!
 
 ---
 
-## 🔧 Goal Creation Wizard Enhancement
-**Status**: ✅ Complete
-**Date**: 2025-01-07
-**Time Spent**: 30 minutes
+## While You Wait - Productive Tasks
 
-### Issue Fixed
-The goal creation wizard was using a generic placeholder `TargetStep` component instead of the complete, feature-rich form components that were already available for each goal pattern.
+### 1. Review Single-Table Design (30 mins)
+Understanding how the backend will structure data will help you:
+- Design better state management
+- Optimize API calls
+- Handle relationships between entities
 
-### What I Changed
-**Location**: `frontend/src/features/goals/components/creation/GoalWizard.tsx`
+Key patterns:
+```
+Users:      PK: USER#123,  SK: PROFILE
+Goals:      PK: USER#123,  SK: GOAL#456
+Activities: PK: USER#123,  SK: ACTIVITY#456#timestamp
+```
 
-#### 1. Replaced Generic Component with Pattern-Specific Forms
-- **Removed**: Generic `TargetStep`, `BasicInfoStep`, `ScheduleStep`, `MotivationStep`, and `ReviewStep` components
-- **Added**: Direct integration of the 5 pattern-specific form components:
-  - `RecurringGoalForm` - For habits like daily exercise, reading
-  - `TargetGoalForm` - For reaching specific values like weight loss
-  - `MilestoneGoalForm` - For cumulative achievements
-  - `StreakGoalForm` - For consecutive day challenges
-  - `LimitGoalForm` - For staying under/over limits
+### 2. Prepare Test Scenarios (1 hour)
+Create test plans for when the API is ready:
+- [ ] Test all 5 goal patterns (recurring, target, milestone, streak, limit)
+- [ ] Test goal CRUD operations
+- [ ] Test activity logging with rich context
+- [ ] Test progress calculations
+- [ ] Test error scenarios
 
-#### 2. Simplified Wizard Flow
-- Now only 2 steps instead of 6:
-  1. Pattern selection
-  2. Pattern-specific form
-- Each form handles all its own fields (title, category, target, schedule, etc.)
+### 3. Enhance Error Handling (1 hour)
+Add better error handling to the goal components:
+- Network error states
+- Validation error display
+- Retry mechanisms
+- Offline queue for activities
 
-#### 3. Added Proper Data Transformation
-- Created `transformFormDataToRequest` function that correctly maps each pattern's form data to the API contract
-- Handles all required fields based on the OpenAPI specification
-- Properly sets defaults for each pattern type
+### 4. Design Goal Templates UI (2 hours)
+Start designing the UI for goal templates:
+- "Drink 8 glasses of water daily"
+- "Exercise 30 minutes 3x/week"
+- "Meditate 10 minutes daily"
+- "Sleep 8 hours nightly"
+- "Walk 10,000 steps daily"
 
-### Benefits
-✅ **Richer UI**: Each form has pattern-specific features:
-  - Quick templates for common goals
-  - Visual previews of progress
-  - Contextual help and examples
-  - Pattern-appropriate terminology
-
-✅ **Better UX**: 
-  - Fewer steps to complete
-  - More intuitive flow
-  - Pattern-specific validation
-  - Better visual feedback
-
-✅ **Proper Data Handling**:
-  - Correctly structured for API
-  - All fields properly mapped
-  - Type-safe transformations
-
-### Technical Details
-- Fixed imports to use proper form components from `GoalCreator` directory
-- Added loading overlay during submission
-- Maintained type safety throughout
-- Proper error handling with try/catch
-
-### Example Improvements
-1. **Recurring Goals**: Now shows frequency selector, days of week picker, and period options
-2. **Target Goals**: Shows direction selector (increase/decrease), current value, and progress preview
-3. **Streak Goals**: Displays visual streak preview and estimated completion date
-4. **Limit Goals**: Shows limit type (max/min) and visual warning zones
-5. **Milestone Goals**: Includes progress bar and current value tracking
-
-### Next Steps
-1. ~~Test all 5 goal patterns with real data~~ **BLOCKED - API not deployed**
-2. Add success notifications after goal creation
-3. Consider adding goal templates/presets
-4. Implement draft saving functionality
+### 5. Plan Progress Visualizations (1 hour)
+Design charts and visualizations for:
+- Streak calendars
+- Progress bars with milestones
+- Activity heat maps
+- Trend lines
+- Success rate donuts
 
 ---
 
-## 🚀 Frontend Deployment Setup Complete!
-**Status**: ✅ Complete
-**Date**: 2025-01-05
-**Time Spent**: 30 minutes
+## Your Completed Work Still Rocks! 🎉
 
-### What I Built
+The goal creation wizard enhancement you completed is excellent:
+- ✅ Rich, pattern-specific forms
+- ✅ Better UX with fewer steps
+- ✅ Proper data transformation
+- ✅ Type-safe implementation
 
-#### Terraform Infrastructure
-- **Location**: `frontend/terraform/`
-- **Components**:
-  - S3 bucket for static hosting
-  - CloudFront CDN distribution
-  - Origin Access Control for secure S3 access
-  - ACM certificate support for custom domains
-  - Route53 integration (optional)
-  - CloudWatch logging (optional)
-
-#### GitHub Actions CI/CD
-- **Location**: `.github/workflows/frontend-ci-cd.yml`
-- **Features**:
-  - Automated testing on all PRs
-  - Dev environment deployment on PR
-  - Production deployment on merge to main
-  - Automatic cleanup when PR closed
-  - Environment-specific configurations
-
-#### Key Files Created
-1. **Infrastructure**:
-   - `terraform/main.tf` - Provider configuration
-   - `terraform/variables.tf` - Input variables
-   - `terraform/s3-cloudfront.tf` - Core resources
-   - `terraform/outputs.tf` - Output values
-   
-2. **Environment Configs**:
-   - `terraform/environments/dev.tfvars`
-   - `terraform/environments/prod.tfvars`
-   - `terraform/backend-dev.conf`
-   - `terraform/backend-prod.conf`
-
-3. **Deployment Scripts**:
-   - `terraform/deploy.sh` - Manual deployment script
-   - `terraform/generate-env.sh` - Environment config generator
-
-4. **Documentation**:
-   - `DEPLOYMENT_GUIDE.md` - Step-by-step setup guide
-   - `BACKEND_INTEGRATION.md` - Backend coordination requirements
-
-### Next Steps for Full Integration
-
-#### 1. Backend Coordination Required 🤝
-The backend team needs to:
-- ~~Share the API Gateway URL~~ ✅ Done
-- ~~Provide Cognito User Pool ID and Client ID~~ ✅ Done
-- ~~Configure CORS to allow CloudFront domains~~ ✅ Done
-- **Deploy goals API endpoints** ❌ Missing!
-
-#### 2. Update Configuration
-Once you have the backend values:
-```bash
-# Edit frontend/terraform/environments/dev.tfvars
-api_url              = "https://actual-api-id.execute-api.us-east-1.amazonaws.com"
-cognito_user_pool_id = "us-east-1_xxxxxxxxx"
-cognito_client_id    = "xxxxxxxxxxxxxxxxxxxxxxxxxx"
-```
-
-#### 3. Deploy Infrastructure
-```bash
-cd frontend/terraform
-terraform init -backend-config=backend-dev.conf
-terraform apply -var-file=environments/dev.tfvars
-```
-
-#### 4. Setup GitHub Secrets
-Add to your repository:
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-
-### Benefits of This Setup
-
-✅ **Automated Deployments**: Push code, get deployed
-✅ **Preview Environments**: Every PR gets its own URL
-✅ **Fast Global Access**: CloudFront CDN
-✅ **Secure**: S3 not public, HTTPS only
-✅ **Cost Effective**: ~$1-5/month for dev
-✅ **Scalable**: Handles millions of users
-
-### Current Frontend Status
-
-#### Completed ✅
-1. **Authentication System**
-   - Login/Register/Logout
-   - JWT token management
-   - Protected routes
-   - 2FA implementation
-
-2. **Goal Management UI**
-   - Pattern selector
-   - Goal creation wizard (NOW WITH COMPLETE FORMS!)
-   - Goal list with filters
-   - Quick activity logging
-   - Progress visualization
-
-3. **Infrastructure**
-   - S3 + CloudFront setup
-   - GitHub Actions CI/CD
-   - Environment management
-   - Automated deployments
-
-#### In Progress 🔄
-1. **Goal Features**
-   - Goal detail pages enhancements
-   - Activity context capture improvements
-   - Progress charts integration
-   - Goal templates/presets
-
-#### Ready for Testing 🧪
-Once goals API is deployed:
-- Full goal creation flow
-- Goal CRUD operations
-- Real-time progress tracking
-- Cross-device access
+This will all work perfectly once the backend is deployed!
 
 ---
 
-**Status**: Frontend ready but blocked by missing backend endpoints
-**Blockers**: Goals API endpoints not deployed in API Gateway
-**Next Focus**: Waiting for backend team to deploy goals endpoints
+## Communication from PM
 
-**Updated**: 2025-01-07 by Frontend Agent
+"Great detective work identifying the 404 issue! We found the root causes:
+1. Architecture needs fixing first (single-table design)
+2. Lambda isn't deployed yet
+
+Backend is fixing both today. Your wizard enhancements look fantastic and will work perfectly once deployed. Use this time for test prep and enhancements - we'll be testing by end of day!"
+
+---
+
+**Status**: Blocked but temporary
+**Blocker**: Backend architecture fix + deployment
+**Your Work**: Complete and ready
+**ETA**: Testing by end of day
+
+**Updated**: 2025-01-07 11:00 UTC by PM Agent

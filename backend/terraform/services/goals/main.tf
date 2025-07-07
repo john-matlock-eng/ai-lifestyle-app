@@ -13,149 +13,12 @@ locals {
   tags = merge(local.default_tags, var.tags)
 }
 
-# Goals DynamoDB Table
-# Single-table design to support all goal patterns
-module "goals_table" {
-  source = "../../modules/dynamodb"
-  
-  table_name  = "${var.app_name}-goals"
-  environment = var.environment
-  
-  # Billing configuration
-  billing_mode = "PAY_PER_REQUEST" # Start with on-demand
-  
-  # Primary key design:
-  # PK: USER#<userId>
-  # SK: GOAL#<goalId> | ACTIVITY#<goalId>#<timestamp>
-  hash_key = {
-    name = "PK"
-    type = "S"
-  }
-  
-  range_key = {
-    name = "SK"
-    type = "S"
-  }
-  
-  # Additional attributes for indexes
-  attributes = [
-    {
-      name = "GSI1PK"  # For querying by status/category
-      type = "S"
-    },
-    {
-      name = "GSI1SK"  # For sorting by created date
-      type = "S"
-    },
-    {
-      name = "GSI2PK"  # For querying activities by date
-      type = "S"
-    },
-    {
-      name = "GSI2SK"  # For sorting activities
-      type = "S"
-    },
-    {
-      name = "TTL"     # For automatic cleanup of old activities
-      type = "N"
-    }
-  ]
-  
-  # Global Secondary Indexes
-  global_secondary_indexes = [
-    {
-      name            = "GSI1"
-      hash_key        = "GSI1PK"
-      range_key       = "GSI1SK"
-      projection_type = "ALL"
-      # Example queries:
-      # - All active goals: GSI1PK="STATUS#ACTIVE"
-      # - User's goals by category: GSI1PK="USER#<userId>#CATEGORY#<category>"
-    },
-    {
-      name            = "GSI2"
-      hash_key        = "GSI2PK"
-      range_key       = "GSI2SK"
-      projection_type = "ALL"
-      # Example queries:
-      # - Activities by date: GSI2PK="DATE#2024-01-15"
-      # - User activities by date: GSI2PK="USER#<userId>#DATE#2024-01-15"
-    }
-  ]
-  
-  # Enable TTL for automatic cleanup
-  ttl_attribute = "TTL"
-  
-  # Enable streams for real-time updates
-  stream_enabled   = true
-  stream_view_type = "NEW_AND_OLD_IMAGES"
-  
-  # Enable point-in-time recovery
-  point_in_time_recovery = true
-  
-  # Enable encryption
-  server_side_encryption = {
-    enabled = true
-  }
-  
-  # Deletion protection for production
-  deletion_protection = var.environment == "prod" ? true : false
-  
-  tags = local.tags
-}
-
-# Goal Progress Aggregations Table
-# For pre-calculated statistics and trends
-module "goal_aggregations_table" {
-  source = "../../modules/dynamodb"
-  
-  table_name  = "${var.app_name}-goal-aggregations"
-  environment = var.environment
-  
-  billing_mode = "PAY_PER_REQUEST"
-  
-  # PK: USER#<userId>#GOAL#<goalId>
-  # SK: PERIOD#<period> (e.g., DAY#2024-01-15, WEEK#2024-W03, MONTH#2024-01)
-  hash_key = {
-    name = "PK"
-    type = "S"
-  }
-  
-  range_key = {
-    name = "SK"
-    type = "S"
-  }
-  
-  attributes = [
-    {
-      name = "GSI1PK"
-      type = "S"
-    },
-    {
-      name = "GSI1SK"
-      type = "S"
-    }
-  ]
-  
-  global_secondary_indexes = [
-    {
-      name            = "GSI1"
-      hash_key        = "GSI1PK"
-      range_key       = "GSI1SK"
-      projection_type = "ALL"
-      # For cross-goal analytics
-      # GSI1PK="USER#<userId>#PERIOD#DAY#2024-01-15"
-    }
-  ]
-  
-  # Short TTL for aggregations (90 days)
-  ttl_attribute = "TTL"
-  
-  # Enable point-in-time recovery
-  point_in_time_recovery = true
-  
-  tags = local.tags
-}
+# REMOVED: DynamoDB tables for goals
+# Using single-table design with the main application table instead
+# Goals are stored in the main table with:
+# - PK: USER#<userId>
+# - SK: GOAL#<goalId> or ACTIVITY#<goalId>#<timestamp>
+# See terraform/main.tf for the main table configuration
 
 # S3 Bucket for activity attachments (images, etc.)
 resource "aws_s3_bucket" "goal_attachments" {
@@ -339,25 +202,7 @@ module "monitoring" {
 }
 
 # Outputs for Lambda functions
-output "goals_table_name" {
-  value       = module.goals_table.table_name
-  description = "Name of the goals DynamoDB table"
-}
-
-output "goals_table_arn" {
-  value       = module.goals_table.table_arn
-  description = "ARN of the goals DynamoDB table"
-}
-
-output "goal_aggregations_table_name" {
-  value       = module.goal_aggregations_table.table_name
-  description = "Name of the goal aggregations DynamoDB table"
-}
-
-output "goal_aggregations_table_arn" {
-  value       = module.goal_aggregations_table.table_arn
-  description = "ARN of the goal aggregations DynamoDB table"
-}
+# REMOVED: Table outputs since we're using the main application table
 
 output "goal_attachments_bucket_name" {
   value       = aws_s3_bucket.goal_attachments.id

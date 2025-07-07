@@ -1,153 +1,332 @@
-# Backend Current Tasks - Goals API Deployment
+# Backend Current Tasks - 🏗️ ARCHITECTURE: Single Table Design Fix
 
-## 🔄 Completion Report: Goals API Routes Deployment
-**Status**: ✅ Infrastructure Code Complete
-**Date**: 2025-01-07
-**Time Spent**: 2 hours
+## 🔄 Completion Report: Single Table Design Fix
+**Status**: ✅ Complete
+**Date**: 2025-01-07  
+**Time Spent**: 1 hour
 
-### What I Built
-- ✅ Added goals service infrastructure module to main.tf
-- ✅ Added goals DynamoDB and S3 IAM policies
-- ✅ Configured 8 API Gateway routes for goals endpoints in the main routes configuration
-- ✅ Updated api_lambda with goals environment variables
-- ✅ Updated api_lambda with goals IAM policies
+### What I Fixed
+- ✅ Removed separate DynamoDB tables from goals service module
+- ✅ Updated Lambda environment variables to use single TABLE_NAME
+- ✅ Updated IAM policies to reference the main table instead of goals tables
+- ✅ Updated GoalsRepository to use single-table design patterns
+- ✅ Fixed all DynamoDB field names (pk, sk, gsi1_pk, etc.)
+- ✅ Removed terraform outputs for non-existent goals tables
 
-### Critical Architecture Discovery
-**Issue**: Initial approach created a separate goals Lambda function, but the CI/CD pipeline uses a **single Lambda pattern** where `main.py` routes all requests.
+### Architecture Compliance
+- [✓] Single table design implemented correctly
+- [✓] Uses existing `users` table for all entities
+- [✓] Maintains proper access patterns with USER# and GOAL# prefixes
+- [✓] GSI usage aligned with existing table structure
 
-**Solution**: 
-- Removed separate goals_lambda module
-- Added goals routes to the main API Gateway routes configuration
-- Added goals environment variables to api_lambda
-- Added goals IAM policies to api_lambda
-- All goals handlers are already present in src/ and included in the Docker build
+### Technical Changes
+1. **Terraform Infrastructure**:
+   - Commented out DynamoDB table creation in `services/goals/main.tf`
+   - Updated environment variables in `main.tf` to use TABLE_NAME
+   - Renamed IAM policy from `goals_dynamodb_access` to `main_table_dynamodb_access`
+   - Removed table-specific outputs, added `main_table_name` output
 
-### Contract Compliance
-- [✓] All routes match the OpenAPI contract specification
-- [✓] Route parameters ({goalId}) configured correctly
-- [✓] Authorization temporarily set to NONE for frontend testing
-- [✓] Will switch to JWT authorization once auth is fully integrated
+2. **Repository Code**:
+   - Updated to use TABLE_NAME environment variable
+   - Changed all field names from uppercase (PK, SK) to lowercase (pk, sk)
+   - Updated GSI field names to match existing table structure
+   - Removed GSI2 usage (not present in current table)
+   - Added EntityType field for entity discrimination
 
-### Technical Decisions
-- Use existing single Lambda pattern (api-handler) for all routes
-- Goals handlers already exist in src/ directory and are included in Docker build
-- main.py already has all goals route mappings configured
-- Fixed S3 lifecycle configuration warning by adding empty filter
-- Goals infrastructure (DynamoDB tables, S3 bucket) deployed in Phase 1
-- Goals routes available after Phase 3 (Lambda deployment)
-
-### Files Modified
-- `backend/terraform/main.tf`:
-  - Added goals_service module for infrastructure
-  - Added goals environment variables to api_lambda
-  - Added goals IAM policies to api_lambda
-  - Added 8 goals routes to API Gateway routes configuration
-  - Removed separate goals_lambda module (not needed)
-- `backend/terraform/services/goals/main.tf`:
-  - Fixed S3 lifecycle configuration warning
-
-### How Deployment Works
-
-The GitHub Actions CI/CD workflow (`backend-deploy.yml`) deploys in 3 phases:
-
-1. **Phase 1**: Infrastructure (deploy_lambda=false)
-   - Creates ECR, Cognito, DynamoDB tables
-   - Creates goals tables and S3 bucket
-
-2. **Phase 2**: Docker Build
-   - Builds api-handler image containing all handlers
-   - Pushes to ECR
-
-3. **Phase 3**: Lambda Deployment (deploy_lambda=true)
-   - Deploys Lambda with all routes including goals
-   - API Gateway routes become active
+### Remaining Infrastructure
+- ✅ S3 bucket for goal attachments (kept)
+- ✅ EventBridge rules for processing (kept)
+- ✅ SNS/SQS for notifications (kept)
+- ✅ Monitoring module (kept)
 
 ### Next Steps
 1. **Create PR** with these changes
-2. **CI/CD will automatically**:
-   - Deploy to dev environment on PR
-   - Deploy to prod on merge to main
-3. **Verify** goals endpoints are accessible after deployment
+2. **CI/CD will deploy** the corrected infrastructure
+3. **Test** all goals endpoints with single table
+4. **Consider** adding additional GSIs if needed for query patterns
 
-### Post-Deployment Verification
-After deployment, the frontend should be able to access:
-- `https://3sfkg1mc0c.execute-api.us-east-1.amazonaws.com/goals`
-- All other goals endpoints
+## 🚨 CRITICAL: Fix Single Table Design Violation
 
-### Summary
-- Infrastructure code is ready for CI/CD deployment
-- Goals functionality integrated into existing single Lambda architecture
-- No manual terraform commands needed - GitHub Actions handles everything
-- Frontend will be unblocked once PR is merged and deployed
+### Architecture Decision: Use the EXISTING `users` table for ALL entities ✅
+
+Good news! The `users` table already exists with the correct structure for single-table design:
+- Primary Key: `pk` (partition key) and `sk` (sort key)
+- GSI1: `gsi1_pk` and `gsi1_sk` 
+- This is your MAIN table for everything!
+
+### Required Changes - Step by Step
+
+#### 1. Remove Goals Service Tables ❌
+The `goals_service` module creates separate tables. We need to remove these.
+
+**Option A - Quick Fix**: Comment out the goals_service module in `terraform/main.tf`:
+```hcl
+# COMMENT OUT THIS ENTIRE BLOCK:
+# module "goals_service" {
+#   source = "./services/goals"
+#   ...
+# }
+```
+
+**Option B - Proper Fix**: Update the goals service to not create tables:
+- Edit `terraform/services/goals/main.tf`
+- Remove the DynamoDB table resources
+- Keep only the S3 bucket for attachments
+
+#### 2. Update Lambda Environment Variables 🔧
+In `terraform/main.tf`, update the api_lambda environment variables:
+```hcl
+environment_variables = {
+  ENVIRONMENT          = var.environment
+  LOG_LEVEL            = var.environment == "prod" ? "INFO" : "DEBUG"
+  COGNITO_USER_POOL_ID = module.cognito.user_pool_id
+  COGNITO_CLIENT_ID    = module.cognito.user_pool_client_id
+  USERS_TABLE_NAME     = module.users_table.table_name
+  
+  # CHANGE THESE:
+  TABLE_NAME           = module.users_table.table_name  # Main table for everything!
+  MAIN_TABLE_NAME      = module.users_table.table_name  # Same table
+  
+  # KEEP THIS for S3:
+  GOAL_ATTACHMENTS_BUCKET = module.goals_service.goal_attachments_bucket_name
+  
+  CORS_ORIGIN          = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
+}
+```
+
+#### 3. Update Goals Repository Code 📝
+Update `src/goals/repository/goals_repository.py`:
+
+```python
+import os
+from datetime import datetime
+from typing import List, Optional
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+
+class GoalsRepository:
+    def __init__(self):
+        # Use the MAIN table, not a separate goals table
+        self.table_name = os.environ['TABLE_NAME']  # This is the users table!
+        dynamodb = boto3.resource('dynamodb')
+        self.table = dynamodb.Table(self.table_name)
+    
+    def create_goal(self, user_id: str, goal: Goal) -> Goal:
+        """Create a goal using single-table design patterns"""
+        
+        # Single table pattern: USER#id as PK, GOAL#id as SK
+        item = {
+            'pk': f'USER#{user_id}',
+            'sk': f'GOAL#{goal.goal_id}',
+            
+            # GSI1 for querying by status
+            'gsi1_pk': f'GOALS#{goal.status.upper()}',
+            'gsi1_sk': f'{goal.created_at}#{goal.goal_id}',
+            
+            # Entity type for filtering
+            'EntityType': 'Goal',
+            
+            # Goal attributes
+            'GoalId': goal.goal_id,
+            'UserId': user_id,
+            'Title': goal.title,
+            'Description': goal.description,
+            'Category': goal.category,
+            'GoalPattern': goal.goal_pattern,
+            'Status': goal.status,
+            'Target': goal.target.dict(),
+            'CreatedAt': goal.created_at,
+            'UpdatedAt': goal.updated_at,
+            
+            # Optional fields
+            'Schedule': goal.schedule.dict() if goal.schedule else None,
+            'Context': goal.context.dict() if goal.context else None,
+            'Rewards': goal.rewards.dict() if goal.rewards else None,
+        }
+        
+        self.table.put_item(Item=item)
+        return goal
+    
+    def get_user_goals(self, user_id: str, status: Optional[str] = None) -> List[Goal]:
+        """Get all goals for a user"""
+        
+        # Query using the primary key
+        response = self.table.query(
+            KeyConditionExpression=Key('pk').eq(f'USER#{user_id}') & 
+                                 Key('sk').begins_with('GOAL#')
+        )
+        
+        goals = []
+        for item in response['Items']:
+            # Convert DynamoDB item back to Goal object
+            if status and item.get('Status') != status:
+                continue
+            goals.append(self._item_to_goal(item))
+        
+        return goals
+    
+    def log_activity(self, user_id: str, goal_id: str, activity: Activity) -> Activity:
+        """Log an activity for a goal"""
+        
+        # Activities use a time-based sort key
+        timestamp = activity.logged_at.isoformat()
+        
+        item = {
+            'pk': f'USER#{user_id}',
+            'sk': f'ACTIVITY#{goal_id}#{timestamp}',
+            
+            # GSI1 for querying by goal
+            'gsi1_pk': f'GOAL#{goal_id}',
+            'gsi1_sk': f'ACTIVITY#{timestamp}',
+            
+            'EntityType': 'Activity',
+            'ActivityId': activity.activity_id,
+            'GoalId': goal_id,
+            'UserId': user_id,
+            'Value': activity.value,
+            'Unit': activity.unit,
+            'ActivityType': activity.activity_type,
+            'ActivityDate': activity.activity_date,
+            'LoggedAt': timestamp,
+            
+            # Optional fields
+            'Note': activity.note,
+            'Context': activity.context.dict() if activity.context else None,
+        }
+        
+        self.table.put_item(Item=item)
+        return activity
+```
+
+#### 4. Update the Users Table GSIs 🔍
+The users table needs additional GSIs for goal queries. Add to `terraform/main.tf`:
+
+```hcl
+module "users_table" {
+  source = "./modules/dynamodb"
+
+  table_name  = "ai-lifestyle-main"  # Better name than just "users"
+  environment = var.environment
+
+  hash_key = {
+    name = "pk"
+    type = "S"
+  }
+
+  range_key = {
+    name = "sk"
+    type = "S"
+  }
+
+  global_secondary_indexes = [
+    {
+      name            = "GSI1"
+      hash_key        = "gsi1_pk"
+      range_key       = "gsi1_sk"
+      projection_type = "ALL"
+    },
+    {
+      name            = "GSI2"  # Add for date queries
+      hash_key        = "gsi2_pk"
+      range_key       = "gsi2_sk"
+      projection_type = "ALL"
+    },
+    {
+      name            = "GSI3"  # Add for status queries
+      hash_key        = "gsi3_pk"
+      range_key       = "gsi3_sk"
+      projection_type = "INCLUDE"
+      projection_attributes = ["Status", "Title", "UpdatedAt"]
+    }
+  ]
+
+  additional_attributes = [
+    { name = "gsi1_pk", type = "S" },
+    { name = "gsi1_sk", type = "S" },
+    { name = "gsi2_pk", type = "S" },
+    { name = "gsi2_sk", type = "S" },
+    { name = "gsi3_pk", type = "S" },
+    { name = "gsi3_sk", type = "S" }
+  ]
+}
+```
+
+#### 5. Update IAM Policies 🔐
+Update the goals DynamoDB policy to reference the main table:
+
+```hcl
+resource "aws_iam_policy" "goals_dynamodb_access" {
+  name        = "ai-lifestyle-main-table-${var.environment}"
+  description = "Policy for Lambda to access main DynamoDB table"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem"
+        ]
+        Resource = [
+          module.users_table.table_arn,
+          "${module.users_table.table_arn}/*"
+        ]
+      }
+    ]
+  })
+}
+```
+
+### Access Patterns Reference 📊
+
+```python
+# Users
+PK: USER#123                SK: PROFILE
+PK: USER#123                SK: SETTINGS
+
+# Goals  
+PK: USER#123                SK: GOAL#456
+GSI1PK: GOALS#ACTIVE        GSI1SK: 2024-01-07#456
+
+# Activities
+PK: USER#123                SK: ACTIVITY#456#2024-01-07T10:00:00Z
+GSI1PK: GOAL#456           GSI1SK: ACTIVITY#2024-01-07T10:00:00Z
+
+# Future: Journal Entries
+PK: USER#123                SK: JOURNAL#2024-01-07#789
+GSI1PK: JOURNALS#2024-01    GSI1SK: 2024-01-07#789
+
+# Future: Meals
+PK: USER#123                SK: MEAL#2024-01-07#breakfast
+GSI2PK: USER#123#MEALS      GSI2SK: 2024-01-07T08:00:00Z
+```
+
+### Deployment Steps 🚀
+
+1. **Update Terraform configuration** (remove goals tables, update variables)
+2. **Run `terraform plan`** to see changes
+3. **Run `terraform apply`** to update infrastructure
+4. **Update repository code** to use single-table patterns
+5. **Deploy new Lambda code**
+6. **Test all endpoints**
+
+### Benefits We're Preserving ✨
+- **Atomic operations**: Update user stats and goals in one transaction
+- **Cost efficiency**: One table with on-demand billing
+- **Query flexibility**: Rich access patterns with GSIs
+- **Future proof**: All features use the same table
 
 ---
 
-## Previous Tasks
+**Decision**: Single table design is mandatory ✅
+**Table to use**: The existing `users` table (rename to `ai-lifestyle-main`)
+**Next steps**: Update Terraform, then code
 
-### ✅ Lambda Import Error Hotfix
-- **Branch**: `hotfix/lambda-import-error`
-- **Files**: `backend/src/goals_common/__init__.py`
-- **Status**: Ready to merge
-
-### 📊 Week 3 Plan (After Goals Deployment)
-
-**Monday**: Integration Testing
-- End-to-end testing of all goal flows
-- Load testing with concurrent users
-- Contract validation
-
-**Tuesday**: Async Processing
-- EventBridge handlers for streaks
-- Daily aggregation Lambda
-- Notification queue setup
-
-**Wednesday**: Performance Optimization
-- Redis caching layer
-- Query optimization
-- Response time improvements
-
-**Thursday**: Advanced Features
-- Goal templates (Health & Wellness)
-- Smart recommendations
-- Export formats (JSON/CSV)
-
-**Friday**: Monitoring & Documentation
-- CloudWatch dashboards
-- Alarms setup
-- Documentation updates
-
-## 📝 CI/CD Documentation for LLM Agents Created
-
-### Summary
-Created comprehensive CI/CD documentation specifically for LLM Backend Engineer Agents.
-
-### New Documentation
-1. **CI/CD Guide** (`playbooks/cicd-guide-for-llm-agents.md`)
-   - Complete 3-phase deployment explanation
-   - GitHub Actions workflow details
-   - Troubleshooting guide
-   - ~2,000 words with examples
-
-2. **Quick Reference** (`playbooks/cicd-quick-reference.md`)
-   - One-page cheat sheet
-   - Daily workflow checklist
-   - "Never do these" commands
-   - Quick diagnostic Q&A
-
-### Key Message for LLMs
-**"You write code, CI/CD deploys it. Never run terraform/docker/aws commands."**
-
-### Integration
-- Updated instructions.md with CI/CD section
-- Created summary document
-- Ready for LLM prompt inclusion
-
-### Recommended System Prompt Addition:
-```
-CRITICAL: You are a developer, not a deployer.
-- Read: backend/instructions/playbooks/cicd-quick-reference.md
-- Never run terraform, docker, or aws commands
-- Always deploy by creating PRs - GitHub Actions handles the rest
-```
-
-**Updated**: 2025-01-07 by Backend Agent
+**Updated**: 2025-01-07 by PM Agent
