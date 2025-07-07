@@ -1,7 +1,7 @@
 # Backend Current Tasks - 🏗️ ARCHITECTURE: Single Table Design Fix
 
 ## 🔄 Completion Report: Single Table Design Fix
-**Status**: ✅ Complete
+**Status**: ⚠️ Needs Manual Terraform State Cleanup
 **Date**: 2025-01-07  
 **Time Spent**: 1 hour
 
@@ -39,11 +39,67 @@
 - ✅ SNS/SQS for notifications (kept)
 - ✅ Monitoring module (kept)
 
+### Terraform State Cleanup Required
+
+**Issue**: The goals tables are still in Terraform state from previous deployment, causing:
+```
+Error: all attributes must be indexed. Unused attributes: ["TTL"]
+```
+
+**Solution**: Before creating PR, run these commands locally:
+```bash
+terraform state rm module.goals_service.module.goals_table
+terraform state rm module.goals_service.module.goal_aggregations_table
+```
+
+**Alternative for CI/CD**: If the pipeline is failing:
+
+1. **First PR**: Comment out the goals_service module in main.tf:
+   ```hcl
+   # Temporarily comment out to fix state
+   # module "goals_service" {
+   #   source = "./services/goals"
+   #   ...
+   # }
+   ```
+   Also comment out references to goals_service outputs in IAM policies and Lambda env vars.
+
+2. **Merge and Deploy** - This removes the tables from state
+
+3. **Second PR**: Uncomment the goals_service module to restore S3 and event processing
+
 ### Next Steps
-1. **Create PR** with these changes
-2. **CI/CD will deploy** the corrected infrastructure
-3. **Test** all goals endpoints with single table
-4. **Consider** adding additional GSIs if needed for query patterns
+1. **Run state cleanup commands** above
+2. **Create PR** with these changes
+3. **CI/CD will deploy** the corrected infrastructure
+4. **Test** all goals endpoints with single table
+5. **Consider** adding additional GSIs if needed for query patterns
+
+### LLM Instructions Updated
+To prevent future violations, I've updated the backend instructions:
+
+1. **Added Critical Section** in `instructions.md`:
+   - Clear single-table design rules
+   - Access pattern examples
+   - Repository implementation guidelines
+   - Infrastructure dos and don'ts
+
+2. **Created New Playbook** `playbooks/dynamodb-single-table-patterns.md`:
+   - Complete guide for single-table design
+   - Common access patterns
+   - Anti-patterns to avoid
+   - Migration checklist
+
+3. **Updated Common Mistakes** `playbooks/common-mistakes-llm-guide.md`:
+   - Added sections on table creation mistakes
+   - Feature-specific environment variable mistakes
+
+4. **Created Pattern Template** `patterns/single-table-repository.md`:
+   - Base repository class for inheritance
+   - Feature repository example
+   - Proper key design patterns
+
+These updates ensure all future LLM agents will follow the single-table design pattern correctly.
 
 ## 🚨 CRITICAL: Fix Single Table Design Violation
 

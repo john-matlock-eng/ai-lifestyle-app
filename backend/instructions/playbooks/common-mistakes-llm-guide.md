@@ -56,6 +56,41 @@ from create_goal.handler import lambda_handler as create_goal_handler
 
 **RIGHT**: Create PR - GitHub Actions handles everything
 
+### 7. 🔴 Creating Separate DynamoDB Tables
+**WRONG**:
+```hcl
+module "feature_table" {
+  source = "../../modules/dynamodb"
+  table_name  = "${var.app_name}-feature"
+  # Creating a new table for each feature
+}
+```
+
+**RIGHT**: Use the SINGLE main table with proper key design:
+```python
+# In repository
+self.table_name = os.environ['TABLE_NAME']  # The ONE table
+
+# Use prefixes in keys
+item = {
+    'pk': f'USER#{user_id}',
+    'sk': f'FEATURE#{item_id}',
+    'EntityType': 'Feature'
+}
+```
+
+### 8. Feature-Specific Table Environment Variables
+**WRONG**:
+```python
+self.table_name = os.environ['GOALS_TABLE_NAME']
+self.table_name = os.environ['MEALS_TABLE_NAME']
+```
+
+**RIGHT**:
+```python
+self.table_name = os.environ['TABLE_NAME']  # Always the same table
+```
+
 ## ✅ Correct Patterns
 
 ### Adding New Endpoint

@@ -48,7 +48,7 @@ variable "aws_region" {
 variable "deploy_lambda" {
   description = "Whether to deploy Lambda functions (set to false for initial deployment)"
   type        = bool
-  default     = false  # Keep false for phased deployment in CI/CD
+  default     = false # Keep false for phased deployment in CI/CD
 }
 
 variable "api_handler_image_tag" {
@@ -117,17 +117,17 @@ module "users_table" {
 }
 
 # Goals Service Infrastructure
-module "goals_service" {
-  source = "./services/goals"
-
-  app_name     = "ai-lifestyle"
-  environment  = var.environment
-  aws_region   = var.aws_region
-  
-  tags = {
-    Service = "goals"
-  }
-}
+#module "goals_service" {
+#  source = "./services/goals"#
+#
+#  app_name     = "ai-lifestyle"
+#  environment  = var.environment
+#  aws_region   = var.aws_region
+#  
+#  tags = {
+#    Service = "goals"
+#  }
+#}
 
 # Lambda Function for API handling
 module "api_lambda" {
@@ -145,11 +145,11 @@ module "api_lambda" {
     COGNITO_CLIENT_ID    = module.cognito.user_pool_client_id
     USERS_TABLE_NAME     = module.users_table.table_name
     # Single table for all entities
-    TABLE_NAME           = module.users_table.table_name  # Main table for everything!
-    MAIN_TABLE_NAME      = module.users_table.table_name  # Same table
+    TABLE_NAME      = module.users_table.table_name # Main table for everything!
+    MAIN_TABLE_NAME = module.users_table.table_name # Same table
     # Goals environment variables
-    GOAL_ATTACHMENTS_BUCKET     = module.goals_service.goal_attachments_bucket_name
-    CORS_ORIGIN          = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
+    GOAL_ATTACHMENTS_BUCKET = module.goals_service.goal_attachments_bucket_name
+    CORS_ORIGIN             = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
   }
 
   additional_policies = [
@@ -166,28 +166,28 @@ module "api_lambda" {
 # API Gateway
 module "api_gateway" {
   source = "./modules/api-gateway"
-  
-  api_name             = "ai-lifestyle"
-  environment          = var.environment
-  description          = "AI Lifestyle App API Gateway"
-  
+
+  api_name    = "ai-lifestyle"
+  environment = var.environment
+  description = "AI Lifestyle App API Gateway"
+
   lambda_function_name = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].function_name : ""
   lambda_invoke_arn    = var.deploy_lambda && length(module.api_lambda) > 0 ? module.api_lambda[0].invoke_arn : ""
-  
+
   cors_origins = var.environment == "prod" ? ["https://ailifestyle.app"] : ["https://d3qx4wyq22oaly.cloudfront.net", "http://localhost:3000", "http://localhost:5173"]
-  
+
   # Define auth and user routes (handled by api_lambda)
   routes = {
     # Health check
     "GET /health" = {
       authorization_type = "NONE"
     }
-    
+
     # Debug endpoint (temporary)
     "GET /debug" = {
       authorization_type = "NONE"
     }
-    
+
     # Authentication endpoints (public)
     "POST /auth/register" = {
       authorization_type = "NONE"
@@ -210,65 +210,65 @@ module "api_gateway" {
     "POST /auth/email/verify" = {
       authorization_type = "NONE"
     }
-    
+
     # User endpoints (will need auth later)
     "GET /users/profile" = {
-      authorization_type = "NONE"  # TODO: Change to JWT
+      authorization_type = "NONE" # TODO: Change to JWT
     }
     "PUT /users/profile" = {
-      authorization_type = "NONE"  # TODO: Change to JWT
+      authorization_type = "NONE" # TODO: Change to JWT
     }
-    
+
     # 2FA endpoints (will need auth later)
     "POST /auth/mfa/setup" = {
-      authorization_type = "NONE"  # TODO: Change to JWT
+      authorization_type = "NONE" # TODO: Change to JWT
     }
     "POST /auth/mfa/verify-setup" = {
-      authorization_type = "NONE"  # TODO: Change to JWT
+      authorization_type = "NONE" # TODO: Change to JWT
     }
     "POST /auth/mfa/verify" = {
       authorization_type = "NONE"
     }
     "POST /auth/mfa/disable" = {
-      authorization_type = "NONE"  # TODO: Change to JWT
+      authorization_type = "NONE" # TODO: Change to JWT
     }
-    
+
     # Goals endpoints - handled by main Lambda
     "GET /goals" = {
-      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
     }
     "POST /goals" = {
-      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
     }
     "GET /goals/{goalId}" = {
-      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
     }
     "PUT /goals/{goalId}" = {
-      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
     }
     "DELETE /goals/{goalId}" = {
-      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
     }
     "GET /goals/{goalId}/activities" = {
-      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
     }
     "POST /goals/{goalId}/activities" = {
-      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
     }
     "GET /goals/{goalId}/progress" = {
-      authorization_type = "NONE"  # TODO: Change to JWT when auth is ready
+      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
     }
   }
-  
+
   # JWT authorizer configuration (for future use)
-  enable_jwt_authorizer = false  # TODO: Enable when ready
-  jwt_issuer           = "https://cognito-idp.${var.aws_region}.amazonaws.com/${module.cognito.user_pool_id}"
-  jwt_audience         = [module.cognito.user_pool_client_id]
-  
+  enable_jwt_authorizer = false # TODO: Enable when ready
+  jwt_issuer            = "https://cognito-idp.${var.aws_region}.amazonaws.com/${module.cognito.user_pool_id}"
+  jwt_audience          = [module.cognito.user_pool_client_id]
+
   tags = {
     Service = "api"
   }
-  
+
   depends_on = [module.api_lambda]
 }
 

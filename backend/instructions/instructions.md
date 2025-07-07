@@ -78,7 +78,7 @@ graph TD
 | New API endpoint | `playbooks/api-implementation.md` | Starting any new endpoint |
 | Single Lambda pattern | `playbooks/single-lambda-api-pattern.md` | Understanding the architecture |
 | CI/CD deployment | `.github/workflows/backend-deploy.yml` | Understanding deployment process |
-| Database operations | `playbooks/dynamodb-patterns.md` | CRUD operations |
+| Database operations | `playbooks/dynamodb-single-table-patterns.md` | CRUD operations |
 | External integrations | `playbooks/external-api.md` | Calling third-party services |
 | Testing strategy | `playbooks/testing-pyramid.md` | Writing comprehensive tests |
 | Error handling | `playbooks/error-handling.md` | Implementing error responses |
@@ -89,7 +89,7 @@ graph TD
 |---------|---------------|----------|
 | Lambda handler | `patterns/lambda-handler.md` | Function entry point |
 | Data validation | `patterns/pydantic-models.md` | Request/response models |
-| Repository pattern | `patterns/repository.md` | Database abstraction |
+| Repository pattern | `patterns/single-table-repository.md` | Database abstraction |
 | Service layer | `patterns/service-layer.md` | Business logic |
 | Error types | `patterns/custom-errors.md` | Domain exceptions |
 
@@ -162,6 +162,71 @@ Update `current-task.md` with:
 ### Next Steps
 - Ready for Frontend integration
 - Requires [specific follow-up]
+```
+
+## 🗄️ CRITICAL: DynamoDB Single-Table Design
+
+**THIS APPLICATION USES A SINGLE DYNAMODB TABLE FOR ALL ENTITIES**
+
+### The Main Table
+- **Table Name**: Available via `TABLE_NAME` or `MAIN_TABLE_NAME` environment variable
+- **Structure**: 
+  - Partition Key: `pk` (lowercase)
+  - Sort Key: `sk` (lowercase)
+  - GSI1: `gsi1_pk` and `gsi1_sk` (EmailIndex)
+  - Additional attributes can be added as needed
+
+### Access Patterns
+```python
+# Users
+PK: USER#123                SK: PROFILE
+PK: USER#123                SK: SETTINGS
+
+# Goals  
+PK: USER#123                SK: GOAL#456
+GSI1PK: GOALS#ACTIVE        GSI1SK: 2024-01-07#456
+
+# Activities
+PK: USER#123                SK: ACTIVITY#456#2024-01-07T10:00:00Z
+GSI1PK: GOAL#456           GSI1SK: ACTIVITY#2024-01-07T10:00:00Z
+
+# Future: Meals
+PK: USER#123                SK: MEAL#2024-01-07#breakfast
+
+# Future: Journal Entries
+PK: USER#123                SK: JOURNAL#2024-01-07#789
+```
+
+### Repository Pattern Rules
+1. **NEVER create separate DynamoDB tables** for features
+2. **ALWAYS use the main table** with proper key design
+3. **Use EntityType field** to distinguish between entities
+4. **Use prefixes** in keys (USER#, GOAL#, ACTIVITY#, etc.)
+5. **Environment variable**: Use `TABLE_NAME` not feature-specific names
+
+### Infrastructure Rules
+- **DO NOT** create DynamoDB tables in service modules
+- **DO** use the existing main table for all entities
+- **DO** create S3 buckets, SQS queues, etc. as needed
+- **DO NOT** add table-specific environment variables
+
+### Example Repository Implementation
+```python
+class FeatureRepository:
+    def __init__(self):
+        # CORRECT: Use the main table
+        self.table_name = os.environ['TABLE_NAME']
+        # WRONG: self.table_name = os.environ['FEATURE_TABLE_NAME']
+        
+    def create_item(self, user_id: str, item_id: str, data: dict):
+        return {
+            'pk': f'USER#{user_id}',
+            'sk': f'FEATURE#{item_id}',
+            'EntityType': 'Feature',
+            'gsi1_pk': f'FEATURE#ACTIVE',
+            'gsi1_sk': datetime.utcnow().isoformat(),
+            **data
+        }
 ```
 
 ## Critical Success Factors
