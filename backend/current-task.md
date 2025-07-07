@@ -51,6 +51,7 @@
 - ✅ Uncommented goals_s3_access policy and reference  
 - ✅ Uncommented goal_attachments_bucket_name output
 - ✅ Fixed outputs.tf in goals service to remove table references
+- ✅ Commented out monitoring module (incompatible with single Lambda pattern)
 - 🗑️ Archived temporary STATE_CLEANUP_INSTRUCTIONS.md
 
 **Result**: Goals infrastructure now includes:
@@ -58,6 +59,7 @@
 - ✅ EventBridge rules for processing
 - ✅ SNS/SQS for notifications
 - ✅ NO DynamoDB tables (uses main table)
+- ⚠️ NO monitoring (needs update for single Lambda pattern)
 
 ### Next Steps
 
@@ -67,6 +69,12 @@
 3. **Verify** goals endpoints work with single table
 4. **Confirm** S3 bucket exists for attachments
 5. **Check** EventBridge rules are created
+
+### Future Improvements
+- **Update Monitoring**: Create a monitoring solution that works with the single Lambda pattern
+  - Monitor the api-handler function with path-based metrics
+  - Track goals operations via CloudWatch Logs Insights
+  - Use custom metrics for business KPIs
 
 ### Summary
 
