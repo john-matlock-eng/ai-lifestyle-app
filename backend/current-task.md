@@ -54,13 +54,35 @@ This fix will resolve the validation errors. The API will now:
 3. Apply proper defaults for optional fields
 4. Return responses with camelCase fields (per contract)
 
-### Additional Fix Applied
+### Additional Fixes Applied
+
+#### Fix 1: AttributeError with camelCase field names
 - **Issue**: AttributeError: 'CreateGoalRequest' object has no attribute 'goalPattern'
 - **Root Cause**: When using `alias_generator=to_camel`, Pydantic converts camelCase JSON to snake_case Python attributes
-- **Solution**: Updated handler.py to use snake_case attributes (`goal_pattern` instead of `goalPattern`)
+- **Solution**: Updated all Python code to use snake_case attributes
 - **Files Fixed**:
   - `src/create_goal/handler.py` - Line 136: Changed `request_data.goalPattern` to `request_data.goal_pattern`
   - `src/create_goal/handler.py` - Line 146: Changed `goal.goalId` to `goal.goal_id`
+
+#### Fix 2: ValidationInfo error in Pydantic v2
+- **Issue**: 'pydantic_core._pydantic_core.ValidationInfo' object has no attribute 'get'
+- **Root Cause**: Using Pydantic v1 validator syntax in v2
+- **Solution**: Updated Goal model to use `@model_validator` for cross-field validation
+- **Files Fixed**:
+  - `src/goals_common/models.py` - Changed `@field_validator('target')` to `@model_validator(mode='after')`
+  - Updated validator to use `self` instead of `values` parameter
+
+#### Fix 3: Service layer field access
+- **Issue**: Service using camelCase field names when accessing model attributes
+- **Root Cause**: Copy-paste from old code or contract
+- **Solution**: Updated all field access to use snake_case
+- **Files Fixed**:
+  - `src/create_goal/service.py`:
+    - Line 83: `goal.goalPattern` → `goal.goal_pattern`
+    - Line 162: `goal.target.targetDate` → `goal.target.target_date`
+    - Line 167: `goal.goalPattern` → `goal.goal_pattern` with enum comparison
+    - Line 180: `goal.userId` → `goal.user_id`
+    - Lines 132-148: Fixed GoalSchedule field names to snake_case
 
 ---
 

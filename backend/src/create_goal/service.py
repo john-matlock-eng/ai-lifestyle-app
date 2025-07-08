@@ -10,7 +10,8 @@ from aws_lambda_powertools import Logger
 from goals_common import (
     Goal, CreateGoalRequest, GoalStatus, GoalProgress,
     GoalsRepository, GoalValidator, GoalContext, GoalRewards,
-    GoalValidationError, GoalQuotaExceededError, GoalError
+    GoalValidationError, GoalQuotaExceededError, GoalError,
+    GoalSchedule, GoalPattern
 )
 
 logger = Logger()
@@ -81,7 +82,7 @@ class CreateGoalService:
             # Save to repository
             created_goal = self.repository.create_goal(goal)
             
-            logger.info(f"Created goal {goal_id} for user {user_id} with pattern {goal.goalPattern}")
+            logger.info(f"Created goal {goal_id} for user {user_id} with pattern {goal.goal_pattern}")
             
             return created_goal
             
@@ -115,7 +116,7 @@ class CreateGoalService:
                 max_allowed=MAX_ACTIVE_GOALS
             )
     
-    def _get_default_schedule(self, goal_pattern: str) -> dict:
+    def _get_default_schedule(self, goal_pattern: GoalPattern) -> GoalSchedule:
         """
         Get default schedule based on goal pattern.
         
@@ -125,26 +126,26 @@ class CreateGoalService:
         Returns:
             Default schedule configuration
         """
-        from goals_common import GoalSchedule, Frequency, GoalPattern
+        from goals_common import Frequency
         
         if goal_pattern == GoalPattern.RECURRING:
             return GoalSchedule(
                 frequency=Frequency.DAILY,
-                checkInFrequency=Frequency.DAILY,
-                allowSkipDays=2,
-                catchUpAllowed=True
+                check_in_frequency=Frequency.DAILY,
+                allow_skip_days=2,
+                catch_up_allowed=True
             )
         elif goal_pattern == GoalPattern.STREAK:
             return GoalSchedule(
                 frequency=Frequency.DAILY,
-                checkInFrequency=Frequency.DAILY,
-                allowSkipDays=0,
-                catchUpAllowed=False
+                check_in_frequency=Frequency.DAILY,
+                allow_skip_days=0,
+                catch_up_allowed=False
             )
         else:
             return GoalSchedule(
-                checkInFrequency=Frequency.WEEKLY,
-                catchUpAllowed=True
+                check_in_frequency=Frequency.WEEKLY,
+                catch_up_allowed=True
             )
     
     def _validate_business_rules(self, goal: Goal) -> None:
@@ -160,11 +161,11 @@ class CreateGoalService:
         errors = []
         
         # Target date must be in the future for new goals
-        if goal.target.targetDate and goal.target.targetDate < datetime.utcnow():
+        if goal.target.target_date and goal.target.target_date < datetime.utcnow():
             errors.append("Target date must be in the future")
         
         # Streak goals must have reasonable targets
-        if goal.goalPattern == "streak" and goal.target.value > 365:
+        if goal.goal_pattern == GoalPattern.STREAK and goal.target.value > 365:
             errors.append("Streak target cannot exceed 365 days")
         
         # Validate category
@@ -178,7 +179,7 @@ class CreateGoalService:
         
         # Check for duplicate active goals with same title
         existing_goals, _ = self.repository.list_user_goals(
-            goal.userId,
+            goal.user_id,
             status=GoalStatus.ACTIVE,
             limit=100
         )

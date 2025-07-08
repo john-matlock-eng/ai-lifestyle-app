@@ -11,7 +11,7 @@ These models support all 5 goal patterns:
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Literal, Union
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict, ValidationInfo
 from pydantic.alias_generators import to_camel
 from decimal import Decimal
 from enum import Enum
@@ -120,13 +120,15 @@ class GoalTarget(BaseModel):
     max_value: Optional[float] = None
     
     @field_validator('period')
-    def validate_period(cls, v, values):
+    @classmethod
+    def validate_period(cls, v):
         """Ensure period is set for recurring and limit goals."""
         # This validator will be called from the parent model
         return v
     
     @field_validator('target_date')
-    def validate_target_date(cls, v, values):
+    @classmethod
+    def validate_target_date(cls, v):
         """Ensure target date is in the future for new goals."""
         if v and v < datetime.utcnow():
             # Allow past dates for imported/historical goals
@@ -150,6 +152,7 @@ class GoalSchedule(BaseModel):
     catch_up_allowed: bool = Field(True, description="Can make up missed days")
     
     @field_validator('days_of_week')
+    @classmethod
     def validate_days(cls, v):
         if v:
             for day in v:
@@ -158,6 +161,7 @@ class GoalSchedule(BaseModel):
         return v
     
     @field_validator('preferred_times')
+    @classmethod
     def validate_times(cls, v):
         if v:
             for time in v:
@@ -293,22 +297,21 @@ class Goal(BaseModel):
     # Feature-specific extensions
     metadata: Dict[str, Any] = Field(default_factory=dict)
     
-    @field_validator('target')
-    def validate_target_for_pattern(cls, v, values):
+    @model_validator(mode='after')
+    def validate_target_for_pattern(self):
         """Ensure target is configured correctly for the goal pattern."""
-        pattern = values.get('goal_pattern')
-        if not pattern:
-            return v
+        if not self.goal_pattern or not self.target:
+            return self
             
-        if pattern in [GoalPattern.RECURRING, GoalPattern.LIMIT]:
-            if not v.period:
-                raise ValueError(f"{pattern} goals require a period")
+        if self.goal_pattern in [GoalPattern.RECURRING, GoalPattern.LIMIT]:
+            if not self.target.period:
+                raise ValueError(f"{self.goal_pattern} goals require a period")
                 
-        if pattern in [GoalPattern.MILESTONE, GoalPattern.TARGET]:
-            if not v.target_date:
-                raise ValueError(f"{pattern} goals require a target date")
+        if self.goal_pattern in [GoalPattern.MILESTONE, GoalPattern.TARGET]:
+            if not self.target.target_date:
+                raise ValueError(f"{self.goal_pattern} goals require a target date")
                 
-        return v
+        return self
     
     def calculate_progress(self) -> float:
         """Calculate progress percentage based on goal pattern."""
