@@ -43,8 +43,8 @@ class GetGoalService:
             raise GoalNotFoundError(goal_id, user_id)
         
         # Verify ownership
-        if goal.userId != user_id:
-            logger.warning(f"User {user_id} attempted to access goal {goal_id} owned by {goal.userId}")
+        if goal.user_id != user_id:
+            logger.warning(f"User {user_id} attempted to access goal {goal_id} owned by {goal.user_id}")
             raise GoalPermissionError("read", goal_id)
         
         # Log access

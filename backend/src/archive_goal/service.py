@@ -40,8 +40,8 @@ class ArchiveGoalService:
             raise GoalNotFoundError(goal_id, user_id)
         
         # Verify ownership
-        if existing_goal.userId != user_id:
-            logger.warning(f"User {user_id} attempted to archive goal {goal_id} owned by {existing_goal.userId}")
+        if existing_goal.user_id != user_id:
+            logger.warning(f"User {user_id} attempted to archive goal {goal_id} owned by {existing_goal.user_id}")
             raise GoalPermissionError("delete", goal_id)
         
         # Check if already archived

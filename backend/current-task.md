@@ -101,7 +101,47 @@ This fix will resolve the validation errors. The API will now:
     - Updated `update_goal` to convert update values
     - Updated `log_activity` to convert activity data
 
-**Note**: This is a DynamoDB-specific requirement. The API still accepts and returns float values per the OpenAPI contract - the conversion only happens at the database layer.
+#### Fix 6: Get Goal Service Field Access
+- **Issue**: AttributeError: 'Goal' object has no attribute 'userId'
+- **Root Cause**: get_goal service was using camelCase field name instead of snake_case
+- **Solution**: Changed `goal.userId` to `goal.user_id`
+- **Files Fixed**:
+  - `src/get_goal/service.py` - Line 46: Fixed field access to use snake_case
+
+#### Fix 7: List Goals Service Field Access
+- **Issue**: Potential AttributeError with camelCase field names
+- **Solution**: Fixed all camelCase field accesses to snake_case
+- **Files Fixed**:
+  - `src/list_goals/service.py`:
+    - Line 122: `g.goalPattern` → `g.goal_pattern`
+    - Lines 140-152: `g.createdAt` → `g.created_at`, `g.updatedAt` → `g.updated_at`
+
+#### Fix 8: Update Goal Service Field Access & Contract Compliance
+- **Issue**: Multiple camelCase field access and category validation issues
+- **Solution**: Fixed field access and removed category validation
+- **Files Fixed**:
+  - `src/update_goal/service.py`:
+    - Line 51: `existing_goal.userId` → `existing_goal.user_id`
+    - Lines 116-122: Fixed target field names to snake_case
+    - Line 173: `existing_goal.goalPattern` → `existing_goal.goal_pattern` with enum
+    - Removed category validation (contract compliance)
+
+#### Fix 9: Archive Goal Service Field Access
+- **Issue**: AttributeError with camelCase field names
+- **Solution**: Fixed field access to use snake_case
+- **Files Fixed**:
+  - `src/archive_goal/service.py` - Line 42: `existing_goal.userId` → `existing_goal.user_id`
+
+### Summary
+
+All fixes address contract compliance and proper implementation patterns:
+1. ✅ CamelCase JSON ↔ snake_case Python field handling
+2. ✅ Pydantic v2 validator syntax
+3. ✅ No validation beyond contract specifications
+4. ✅ DynamoDB float to Decimal conversion
+5. ✅ Consistent field access patterns across all services
+
+The goal creation flow now works end-to-end, accepting any category value per contract and properly handling all data types.
 
 ---
 

@@ -7,7 +7,7 @@ from datetime import datetime
 from aws_lambda_powertools import Logger
 
 from goals_common import (
-    Goal, UpdateGoalRequest, GoalStatus, 
+    Goal, UpdateGoalRequest, GoalStatus, GoalPattern,
     GoalsRepository, GoalValidator,
     GoalNotFoundError, GoalPermissionError, 
     GoalAlreadyCompletedError, GoalValidationError, GoalError
@@ -48,8 +48,8 @@ class UpdateGoalService:
             raise GoalNotFoundError(goal_id, user_id)
         
         # Verify ownership
-        if existing_goal.userId != user_id:
-            logger.warning(f"User {user_id} attempted to update goal {goal_id} owned by {existing_goal.userId}")
+        if existing_goal.user_id != user_id:
+            logger.warning(f"User {user_id} attempted to update goal {goal_id} owned by {existing_goal.user_id}")
             raise GoalPermissionError("update", goal_id)
         
         # Check if goal can be updated
@@ -114,14 +114,14 @@ class UpdateGoalService:
             target_dict = existing_goal.target.model_dump()
             if request.target.value is not None:
                 target_dict['value'] = request.target.value
-            if request.target.targetDate is not None:
-                target_dict['targetDate'] = request.target.targetDate
-            if request.target.currentValue is not None:
-                target_dict['currentValue'] = request.target.currentValue
-            if request.target.minValue is not None:
-                target_dict['minValue'] = request.target.minValue
-            if request.target.maxValue is not None:
-                target_dict['maxValue'] = request.target.maxValue
+            if request.target.target_date is not None:
+                target_dict['target_date'] = request.target.target_date
+            if request.target.current_value is not None:
+                target_dict['current_value'] = request.target.current_value
+            if request.target.min_value is not None:
+                target_dict['min_value'] = request.target.min_value
+            if request.target.max_value is not None:
+                target_dict['max_value'] = request.target.max_value
             updates['target'] = target_dict
         
         if request.schedule is not None:
@@ -170,23 +170,15 @@ class UpdateGoalService:
                 errors.append(f"Cannot change status to {new_status}")
         
         # Target date validation for milestone/target goals
-        if 'target' in updates and 'targetDate' in updates['target']:
-            if existing_goal.goalPattern in ['milestone', 'target']:
-                target_date = updates['target']['targetDate']
+        if 'target' in updates and 'target_date' in updates['target']:
+            if existing_goal.goal_pattern in [GoalPattern.MILESTONE, GoalPattern.TARGET]:
+                target_date = updates['target']['target_date']
                 if isinstance(target_date, str):
                     target_date = datetime.fromisoformat(target_date.replace('Z', '+00:00'))
                 if target_date < datetime.utcnow():
                     errors.append("Target date cannot be in the past")
         
-        # Category validation
-        if 'category' in updates:
-            valid_categories = [
-                'fitness', 'nutrition', 'wellness', 'productivity', 
-                'finance', 'learning', 'creativity', 'relationships',
-                'career', 'habits', 'other'
-            ]
-            if updates['category'].lower() not in valid_categories:
-                errors.append(f"Invalid category. Must be one of: {', '.join(valid_categories)}")
+        # Category validation removed - contract allows any string value
         
         if errors:
             raise GoalValidationError(errors)

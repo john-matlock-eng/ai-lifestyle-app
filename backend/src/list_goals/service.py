@@ -120,7 +120,7 @@ class ListGoalsService:
         
         # Filter by pattern
         if pattern_filter:
-            filtered = [g for g in filtered if g.goalPattern in pattern_filter]
+            filtered = [g for g in filtered if g.goal_pattern in pattern_filter]
         
         # Filter by category
         if category_filter:
@@ -133,17 +133,17 @@ class ListGoalsService:
     def _apply_sorting(self, goals: List[Goal], sort: str) -> List[Goal]:
         """Apply sorting to goal list."""
         if sort == 'created_asc':
-            return sorted(goals, key=lambda g: g.createdAt)
+            return sorted(goals, key=lambda g: g.created_at)
         elif sort == 'created_desc':
-            return sorted(goals, key=lambda g: g.createdAt, reverse=True)
+            return sorted(goals, key=lambda g: g.created_at, reverse=True)
         elif sort == 'updated_asc':
-            return sorted(goals, key=lambda g: g.updatedAt)
+            return sorted(goals, key=lambda g: g.updated_at)
         elif sort == 'updated_desc':
-            return sorted(goals, key=lambda g: g.updatedAt, reverse=True)
+            return sorted(goals, key=lambda g: g.updated_at, reverse=True)
         elif sort == 'title_asc':
             return sorted(goals, key=lambda g: g.title.lower())
         elif sort == 'title_desc':
             return sorted(goals, key=lambda g: g.title.lower(), reverse=True)
         else:
             # Default to updated desc
-            return sorted(goals, key=lambda g: g.updatedAt, reverse=True)
+            return sorted(goals, key=lambda g: g.updated_at, reverse=True)
