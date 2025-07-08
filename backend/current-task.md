@@ -54,6 +54,14 @@ This fix will resolve the validation errors. The API will now:
 3. Apply proper defaults for optional fields
 4. Return responses with camelCase fields (per contract)
 
+### Additional Fix Applied
+- **Issue**: AttributeError: 'CreateGoalRequest' object has no attribute 'goalPattern'
+- **Root Cause**: When using `alias_generator=to_camel`, Pydantic converts camelCase JSON to snake_case Python attributes
+- **Solution**: Updated handler.py to use snake_case attributes (`goal_pattern` instead of `goalPattern`)
+- **Files Fixed**:
+  - `src/create_goal/handler.py` - Line 136: Changed `request_data.goalPattern` to `request_data.goal_pattern`
+  - `src/create_goal/handler.py` - Line 146: Changed `goal.goalId` to `goal.goal_id`
+
 ---
 
 ## 🔄 Previous Report: Single Table Design Fix & JWT Auth

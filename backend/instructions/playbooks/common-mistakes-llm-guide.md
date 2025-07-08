@@ -91,6 +91,29 @@ self.table_name = os.environ['MEALS_TABLE_NAME']
 self.table_name = os.environ['TABLE_NAME']  # Always the same table
 ```
 
+### 9. 🔴 Accessing CamelCase Fields in Pydantic Models
+**WRONG**: When using `alias_generator=to_camel`, trying to access camelCase field names:
+```python
+# models.py
+class CreateGoalRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    goal_pattern: str  # Python field name
+
+# handler.py
+pattern = request_data.goalPattern  # ❌ AttributeError!
+```
+
+**RIGHT**: Always use snake_case in Python code:
+```python
+pattern = request_data.goal_pattern  # ✅ Correct
+# The model handles camelCase ↔ snake_case conversion automatically
+```
+
+**Remember**: 
+- JSON input/output: camelCase (`goalPattern`)
+- Python attributes: snake_case (`goal_pattern`)
+- Use `model_dump_json(by_alias=True)` for camelCase output
+
 ## ✅ Correct Patterns
 
 ### Adding New Endpoint

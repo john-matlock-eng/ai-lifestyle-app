@@ -133,7 +133,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Create goal
         metrics.add_metric(name="GoalCreationAttempts", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name=f"GoalPattern_{request_data.goalPattern.value}", unit=MetricUnit.Count, value=1)
+        metrics.add_metric(name=f"GoalPattern_{request_data.goal_pattern.value}", unit=MetricUnit.Count, value=1)
         
         goal = service.create_goal(user_id, request_data)
         
@@ -144,7 +144,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 201,
             'headers': {
                 'Content-Type': 'application/json',
-                'Location': f"/goals/{goal.goalId}",
+                'Location': f"/goals/{goal.goal_id}",
                 'X-Request-ID': request_id
             },
             'body': goal.model_dump_json(by_alias=True)
