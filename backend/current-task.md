@@ -255,3 +255,50 @@ curl -X POST https://api.ailifestyle.app/v1/goals \
 5. ✅ Fixed timezone handling for date comparisons
 
 All goal-related endpoints should now properly handle the OpenAPI contract's camelCase fields while maintaining Python's snake_case conventions internally.
+
+---
+
+## 🕰️ Timezone Comparison Fix
+**Status**: ✅ Fixed
+**Date**: 2025-01-08
+**Error**: "can't compare offset-naive and offset-aware datetimes"
+
+### Root Cause
+The Pydantic field validator in `GoalTarget` was comparing timezone-aware datetimes from the API (with 'Z' suffix) against timezone-naive datetimes from `datetime.utcnow()`.
+
+### Comprehensive Fix Applied
+1. **Updated Field Validators**: Fixed the `target_date` validator in `GoalTarget` to handle timezone-aware comparisons
+2. **Replaced Deprecated datetime.utcnow()**: Updated all occurrences throughout the codebase:
+   - `datetime.utcnow()` → `datetime.now(timezone.utc)`
+   - Updated in models.py, create_goal/handler.py, log_activity/handler.py
+   - Fixed all Field default_factory lambdas to use timezone-aware datetimes
+
+### Files Updated
+- `goals_common/models.py`: Fixed field validators and default factories
+- `create_goal/handler.py`: Updated all timestamp generations
+- `log_activity/handler.py`: Updated all timestamp generations
+- `create_goal/service.py`: Fixed timezone comparisons
+
+### Testing
+The original request should now work without timezone errors:
+```bash
+curl -X POST https://api.ailifestyle.app/v1/goals \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "something",
+    "category": "health",
+    "goalPattern": "target",
+    "target": {
+      "metric": "custom",
+      "value": 2,
+      "unit": "pounds",
+      "direction": "increase",
+      "targetType": "exact",
+      "targetDate": "2025-10-06T22:04:46.987Z"
+    }
+  }'
+```
+
+### Key Learning
+Always use timezone-aware datetimes when dealing with APIs that send ISO 8601 timestamps with timezone information. The deprecated `datetime.utcnow()` returns timezone-naive datetimes, which cannot be compared with timezone-aware ones.

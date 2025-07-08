@@ -9,7 +9,7 @@ These models support all 5 goal patterns:
 5. Limit Goals - "Keep X below Y"
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any, Literal, Union
 from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict, ValidationInfo
 from pydantic.alias_generators import to_camel
@@ -130,10 +130,20 @@ class GoalTarget(BaseModel):
     @classmethod
     def validate_target_date(cls, v):
         """Ensure target date is in the future for new goals."""
-        if v and v < datetime.utcnow():
-            # Allow past dates for imported/historical goals
-            # But log a warning
-            pass
+        if v:
+            # Make comparison timezone-aware
+            from datetime import timezone
+            current_time = datetime.now(timezone.utc)
+            
+            # Ensure the target date is timezone-aware for comparison
+            if v.tzinfo is None:
+                v = v.replace(tzinfo=timezone.utc)
+            
+            # We just validate the format here, business logic validation happens in service
+            # if v < current_time:
+            #     # Allow past dates for imported/historical goals
+            #     # But log a warning
+            #     pass
         return v
 
 
@@ -290,8 +300,8 @@ class Goal(BaseModel):
     # Status
     status: GoalStatus = GoalStatus.DRAFT
     visibility: Visibility = Visibility.PRIVATE
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
     
     # Feature-specific extensions
@@ -508,7 +518,7 @@ class GoalActivity(BaseModel):
     
     # When & Where
     activity_date: datetime
-    logged_at: datetime = Field(default_factory=datetime.utcnow)
+    logged_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     timezone: str = Field("UTC")
     location: Optional[ActivityLocation] = None
     
