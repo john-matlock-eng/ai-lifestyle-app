@@ -22,11 +22,15 @@ PM writes to backend/current-task.md → You read task → You implement exactly
 You complete work → You update completion report in current-task.md → PM validates
 ```
 
-**CRITICAL CONTRACT RULE**: The `contract/openapi.yaml` is immutable law. If implementation seems impossible per contract:
-1. STOP immediately
-2. Document the specific conflict in your completion report
-3. Wait for PM to resolve (they will update contract or clarify task)
-4. This prevents cascading errors across the system
+**CRITICAL CONTRACT RULE**: The `contract/openapi.yaml` is immutable law. 
+- **NEVER add validations not in the contract** (e.g., restricting categories to a list when contract says `type: string`)
+- **NEVER make optional fields required** when contract says they're optional
+- **NEVER change types** from what contract specifies
+- If implementation seems impossible per contract:
+  1. STOP immediately
+  2. Document the specific conflict in your completion report
+  3. Wait for PM to resolve (they will update contract or clarify task)
+  4. This prevents cascading errors across the system
 
 ## Your Workspace
 ```

@@ -168,14 +168,8 @@ class CreateGoalService:
         if goal.goal_pattern == GoalPattern.STREAK and goal.target.value > 365:
             errors.append("Streak target cannot exceed 365 days")
         
-        # Validate category
-        valid_categories = [
-            'fitness', 'nutrition', 'wellness', 'productivity', 
-            'finance', 'learning', 'creativity', 'relationships',
-            'career', 'habits', 'other'
-        ]
-        if goal.category.lower() not in valid_categories:
-            errors.append(f"Invalid category. Must be one of: {', '.join(valid_categories)}")
+        # Category validation removed - contract allows any string value
+        # The contract doesn't specify an enum, just says "fitness, nutrition, wellness, etc."
         
         # Check for duplicate active goals with same title
         existing_goals, _ = self.repository.list_user_goals(

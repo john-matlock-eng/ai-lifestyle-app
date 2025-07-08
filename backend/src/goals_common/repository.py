@@ -7,6 +7,7 @@ Provides common database access patterns for the Enhanced Goal System.
 import os
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
+from decimal import Decimal
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
@@ -51,10 +52,28 @@ class GoalsRepository:
     # Note: Additional GSI patterns can be added as needed
     # For now, we're using the main table's existing GSI structure
     
+    def _convert_floats_to_decimal(self, data: Any) -> Any:
+        """Convert all float values to Decimal for DynamoDB compatibility."""
+        if isinstance(data, float):
+            # Convert float to Decimal, handling special cases
+            if data == float('inf') or data == float('-inf') or data != data:  # NaN
+                return None  # DynamoDB doesn't support infinity or NaN
+            return Decimal(str(data))
+        elif isinstance(data, dict):
+            return {k: self._convert_floats_to_decimal(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [self._convert_floats_to_decimal(item) for item in data]
+        else:
+            return data
+    
     # Goal CRUD operations
     def create_goal(self, goal: Goal) -> Goal:
         """Create a new goal."""
         try:
+            # Convert goal to dict and handle float->Decimal conversion
+            goal_data = goal.model_dump(mode='json')
+            goal_data = self._convert_floats_to_decimal(goal_data)
+            
             item = {
                 'pk': self._user_key(goal.user_id),
                 'sk': self._goal_key(goal.goal_id),
@@ -62,7 +81,7 @@ class GoalsRepository:
                 'gsi1_pk': self._status_key(goal.status.value),
                 'gsi1_sk': goal.created_at.isoformat(),
                 # Store all goal attributes
-                **goal.model_dump(mode='json')
+                **goal_data
             }
             
             # Add TTL for draft goals (auto-delete after 30 days)
@@ -118,7 +137,7 @@ class GoalsRepository:
                 if key not in ['user_id', 'goal_id', 'created_at']:  # Immutable fields
                     safe_key = f"#{key}"
                     expression_names[safe_key] = key
-                    expression_values[f":{key}"] = value
+                    expression_values[f":{key}"] = self._convert_floats_to_decimal(value)
                     update_parts.append(f"{safe_key} = :{key}")
             
             # Always update the updated_at timestamp
@@ -220,13 +239,17 @@ class GoalsRepository:
     def log_activity(self, activity: GoalActivity) -> GoalActivity:
         """Log a goal activity."""
         try:
+            # Convert activity to dict and handle float->Decimal conversion
+            activity_data = activity.model_dump(mode='json')
+            activity_data = self._convert_floats_to_decimal(activity_data)
+            
             item = {
                 'pk': self._user_key(activity.user_id),
                 'sk': self._activity_key(activity.goal_id, activity.logged_at),
                 'EntityType': 'GoalActivity',
                 'gsi1_pk': f"GOAL#{activity.goal_id}",
                 'gsi1_sk': activity.logged_at.isoformat(),
-                **activity.model_dump(mode='json')
+                **activity_data
             }
             
             # Add TTL for activities (auto-delete after 1 year)

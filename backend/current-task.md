@@ -82,7 +82,26 @@ This fix will resolve the validation errors. The API will now:
     - Line 162: `goal.target.targetDate` → `goal.target.target_date`
     - Line 167: `goal.goalPattern` → `goal.goal_pattern` with enum comparison
     - Line 180: `goal.userId` → `goal.user_id`
-    - Lines 132-148: Fixed GoalSchedule field names to snake_case
+#### Fix 4: Removed Category Validation (Contract Compliance)
+- **Issue**: "Invalid category. Must be one of: fitness, nutrition, wellness..."
+- **Root Cause**: Backend was enforcing category restrictions not specified in the contract
+- **Contract Says**: `category: type: string` - no enum restriction, just examples "fitness, nutrition, wellness, etc."
+- **Solution**: Removed hardcoded category validation to comply with contract
+- **Files Fixed**:
+  - `src/create_goal/service.py` - Removed category validation from `_validate_business_rules`
+
+#### Fix 5: DynamoDB Float to Decimal Conversion
+- **Issue**: "Float types are not supported. Use Decimal types instead."
+- **Root Cause**: DynamoDB doesn't support Python float types, only Decimal for numeric values
+- **Solution**: Added `_convert_floats_to_decimal` helper method in repository
+- **Files Fixed**:
+  - `src/goals_common/repository.py`:
+    - Added `_convert_floats_to_decimal` method to recursively convert floats
+    - Updated `create_goal` to convert data before saving
+    - Updated `update_goal` to convert update values
+    - Updated `log_activity` to convert activity data
+
+**Note**: This is a DynamoDB-specific requirement. The API still accepts and returns float values per the OpenAPI contract - the conversion only happens at the database layer.
 
 ---
 

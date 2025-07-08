@@ -252,6 +252,32 @@ If you accidentally created separate tables:
 6. **Update infrastructure** to remove separate table
 7. **Test thoroughly** before switching traffic
 
+## 🐛 Common DynamoDB Issues
+
+### Float to Decimal Conversion
+DynamoDB doesn't support Python float types. You must convert them to Decimal:
+
+```python
+from decimal import Decimal
+
+def _convert_floats_to_decimal(self, data: Any) -> Any:
+    """Convert all float values to Decimal for DynamoDB."""
+    if isinstance(data, float):
+        return Decimal(str(data))
+    elif isinstance(data, dict):
+        return {k: self._convert_floats_to_decimal(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [self._convert_floats_to_decimal(item) for item in data]
+    else:
+        return data
+
+# Use before saving
+def create_item(self, model: BaseModel):
+    data = model.model_dump(mode='json')
+    data = self._convert_floats_to_decimal(data)  # Convert!
+    self.table.put_item(Item={'pk': '...', **data})
+```
+
 ## 📚 Additional Resources
 
 - [Single Table Design Best Practices](https://www.alexdebrie.com/posts/dynamodb-single-table/)

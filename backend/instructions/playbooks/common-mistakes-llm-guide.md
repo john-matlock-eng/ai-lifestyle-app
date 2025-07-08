@@ -114,6 +114,61 @@ pattern = request_data.goal_pattern  # ✅ Correct
 - Python attributes: snake_case (`goal_pattern`)
 - Use `model_dump_json(by_alias=True)` for camelCase output
 
+### 10. 🔴 Adding Validations Not in Contract
+**WRONG**: Backend adds restrictions beyond what the contract specifies:
+```python
+# Contract says: category: type: string (no enum)
+valid_categories = ['fitness', 'nutrition', 'wellness']
+if category not in valid_categories:
+    raise ValidationError("Invalid category")  # ❌ Contract doesn't restrict!
+```
+
+**RIGHT**: Follow the contract exactly:
+```python
+# Contract says: category: type: string
+# So accept ANY string
+category = request.category  # ✅ Any string is valid per contract
+```
+
+**Remember**: 
+- Contract descriptions like "(fitness, nutrition, wellness, etc.)" are EXAMPLES, not restrictions
+- Only enforce validations explicitly specified in contract (enums, patterns, min/max)
+- When contract says `type: string` with no enum, accept ANY string
+- Contract is LAW - don't add "reasonable" restrictions not specified
+
+### 11. 🔴 Not Converting Floats for DynamoDB
+**WRONG**: Trying to save float values directly to DynamoDB:
+```python
+def create_goal(self, goal: Goal):
+    item = {
+        'pk': f'USER#{user_id}',
+        **goal.model_dump()  # ❌ Contains float values!
+    }
+    self.table.put_item(Item=item)  # Error: Float types are not supported
+```
+
+**RIGHT**: Convert floats to Decimal before saving:
+```python
+from decimal import Decimal
+
+def _convert_floats_to_decimal(self, data):
+    if isinstance(data, float):
+        return Decimal(str(data))
+    elif isinstance(data, dict):
+        return {k: self._convert_floats_to_decimal(v) for k, v in data.items()}
+    # ... handle lists, etc.
+
+def create_goal(self, goal: Goal):
+    goal_data = goal.model_dump(mode='json')
+    goal_data = self._convert_floats_to_decimal(goal_data)  # ✅ Convert!
+    # Now safe to save to DynamoDB
+```
+
+**Remember**: 
+- DynamoDB requires Decimal, not float
+- API contract still uses float - conversion is only at DB layer
+- Pydantic handles Decimal→float on read automatically
+
 ## ✅ Correct Patterns
 
 ### Adding New Endpoint
