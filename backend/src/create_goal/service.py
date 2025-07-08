@@ -3,7 +3,7 @@ Service layer for goal creation business logic.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from aws_lambda_powertools import Logger
 
@@ -66,8 +66,8 @@ class CreateGoalService:
                 rewards=GoalRewards(),  # Default rewards
                 status=request.status if request.status else GoalStatus.ACTIVE,
                 visibility=request.visibility,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
                 metadata={}  # Default empty metadata
             )
             
@@ -161,8 +161,16 @@ class CreateGoalService:
         errors = []
         
         # Target date must be in the future for new goals
-        if goal.target.target_date and goal.target.target_date < datetime.utcnow():
-            errors.append("Target date must be in the future")
+        if goal.target.target_date:
+            # Make both datetimes timezone-aware for comparison
+            from datetime import timezone as tz
+            target_date = goal.target.target_date
+            if target_date.tzinfo is None:
+                target_date = target_date.replace(tzinfo=tz.utc)
+            current_time = datetime.now(tz.utc)
+            
+            if target_date < current_time:
+                errors.append("Target date must be in the future")
         
         # Streak goals must have reasonable targets
         if goal.goal_pattern == GoalPattern.STREAK and goal.target.value > 365:

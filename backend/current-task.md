@@ -207,3 +207,51 @@ The Lambda should now initialize successfully without the NameError. This was a 
 ✅ All contract violations fixed
 ✅ Runtime error resolved
 ✅ Ready for deployment
+
+---
+
+## 🔧 Additional Fixes for Goal Creation
+**Status**: ✅ Fixed
+**Date**: 2025-01-08
+**Issue**: Empty validation_errors array when goal creation fails
+
+### Fixes Applied to create_goal Handler
+1. **Improved Error Handling**: Added better error capture for non-Pydantic exceptions
+2. **Safe Metrics Collection**: Wrapped goal pattern metric in try-catch to prevent runtime errors
+3. **Timezone Handling**: Fixed timezone-aware datetime comparisons in service layer
+4. **Updated Datetime Usage**: Replaced deprecated `datetime.utcnow()` with `datetime.now(timezone.utc)`
+
+### Testing the Fix
+```bash
+# The original request should now work:
+curl -X POST https://api.ailifestyle.app/v1/goals \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "something",
+    "description": "",
+    "category": "health",
+    "icon": "🎯",
+    "color": "#10B981",
+    "goalPattern": "target",
+    "target": {
+      "metric": "custom",
+      "value": 2,
+      "unit": "pounds",
+      "direction": "increase",
+      "targetType": "exact",
+      "startValue": 1,
+      "currentValue": 1,
+      "targetDate": "2025-10-06T22:04:46.987Z"
+    }
+  }'
+```
+
+### Summary of All Fixes
+1. ✅ Fixed camelCase/snake_case field access issues in log_activity
+2. ✅ Fixed forward reference error with ActivityAttachmentRequest
+3. ✅ Fixed enum value access in create_goal handler
+4. ✅ Improved error handling for better debugging
+5. ✅ Fixed timezone handling for date comparisons
+
+All goal-related endpoints should now properly handle the OpenAPI contract's camelCase fields while maintaining Python's snake_case conventions internally.

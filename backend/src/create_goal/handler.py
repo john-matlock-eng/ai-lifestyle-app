@@ -101,7 +101,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             # Validate request against schema
             request_data = CreateGoalRequest(**body)
         except Exception as e:
-            logger.error(f"Request validation failed: {str(e)}")
+            logger.error(f"Request validation failed: {str(e)}", exc_info=True)
             metrics.add_metric(name="InvalidGoalCreationRequests", unit=MetricUnit.Count, value=1)
             
             # Extract validation errors
@@ -112,6 +112,12 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'field': '.'.join(str(x) for x in error['loc']),
                         'message': error['msg']
                     })
+            else:
+                # If it's not a Pydantic error, include the error message
+                validation_errors.append({
+                    'field': 'request',
+                    'message': str(e)
+                })
             
             return {
                 'statusCode': 400,
@@ -133,7 +139,13 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Create goal
         metrics.add_metric(name="GoalCreationAttempts", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name=f"GoalPattern_{request_data.goal_pattern.value}", unit=MetricUnit.Count, value=1)
+        
+        # Add pattern-specific metric safely
+        try:
+            pattern_value = str(request_data.goal_pattern)
+            metrics.add_metric(name=f"GoalPattern_{pattern_value}", unit=MetricUnit.Count, value=1)
+        except Exception as metric_error:
+            logger.warning(f"Failed to record goal pattern metric: {str(metric_error)}")
         
         goal = service.create_goal(user_id, request_data)
         
