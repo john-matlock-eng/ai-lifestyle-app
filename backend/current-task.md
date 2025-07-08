@@ -302,3 +302,53 @@ curl -X POST https://api.ailifestyle.app/v1/goals \
 
 ### Key Learning
 Always use timezone-aware datetimes when dealing with APIs that send ISO 8601 timestamps with timezone information. The deprecated `datetime.utcnow()` returns timezone-naive datetimes, which cannot be compared with timezone-aware ones.
+
+---
+
+## 🕰️ Fix for List Goals Timezone Error
+**Status**: ✅ Fixed
+**Date**: 2025-01-08
+**Error**: "Failed to list goals: can't compare offset-naive and offset-aware datetimes"
+
+### Root Cause
+The same timezone comparison issue was present throughout the codebase in multiple files:
+- `list_goals/handler.py` - Using `datetime.utcnow()`
+- `goals_common/repository.py` - Multiple instances in TTL calculations and timestamps
+- `update_goal/handler.py` - All error responses using naive datetimes
+
+### Comprehensive Fix Applied
+Systematically replaced ALL instances of `datetime.utcnow()` with `datetime.now(timezone.utc)` across:
+
+1. **list_goals/handler.py**: Fixed all timestamp generations in error responses
+2. **goals_common/repository.py**: 
+   - Fixed TTL calculations for draft goals and activities
+   - Fixed update timestamp generation
+   - Fixed archive timestamp
+3. **update_goal/handler.py**: Fixed all error response timestamps
+
+### Summary of All Datetime Fixes
+- ✅ Fixed in `goals_common/models.py` - Field validators and default factories
+- ✅ Fixed in `create_goal/handler.py` - All timestamps
+- ✅ Fixed in `create_goal/service.py` - Datetime comparisons
+- ✅ Fixed in `log_activity/handler.py` - All timestamps
+- ✅ Fixed in `log_activity/service.py` - Date handling
+- ✅ Fixed in `list_goals/handler.py` - All timestamps
+- ✅ Fixed in `goals_common/repository.py` - TTL and timestamp generation
+- ✅ Fixed in `update_goal/handler.py` - All timestamps
+
+### Testing
+All goal endpoints should now work without timezone comparison errors:
+```bash
+# List goals
+curl -X GET https://api.ailifestyle.app/v1/goals \
+  -H "Authorization: Bearer $TOKEN"
+
+# Create goal with timezone-aware date
+curl -X POST https://api.ailifestyle.app/v1/goals \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{...}'
+```
+
+### Key Takeaway
+Always use `datetime.now(timezone.utc)` instead of the deprecated `datetime.utcnow()` to ensure all datetimes are timezone-aware. This prevents comparison errors when working with timezone-aware dates from APIs or databases.

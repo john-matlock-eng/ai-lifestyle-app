@@ -3,7 +3,7 @@ Lambda handler for updating a goal.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
@@ -73,7 +73,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'error': 'UNAUTHORIZED',
                     'message': 'User authentication required',
                     'request_id': request_id,
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 })
             }
         
@@ -93,7 +93,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'error': 'VALIDATION_ERROR',
                     'message': 'Goal ID is required',
                     'request_id': request_id,
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 })
             }
         
@@ -127,7 +127,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'message': 'Validation failed',
                     'validation_errors': validation_errors,
                     'request_id': request_id,
-                    'timestamp': datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).isoformat()
                 })
             }
         
@@ -167,7 +167,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'error': e.error_code,
                 'message': e.message,
                 'request_id': request_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             })
         }
         
@@ -185,7 +185,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'error': 'GOAL_NOT_FOUND',
                 'message': f"Goal {goal_id} not found",
                 'request_id': request_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             })
         }
         
@@ -204,7 +204,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'message': e.message,
                 'details': e.details,
                 'request_id': request_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             })
         }
         
@@ -223,7 +223,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'message': e.message,
                 'details': e.details,
                 'request_id': request_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             })
         }
         
@@ -242,7 +242,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'message': e.message,
                 'details': e.details,
                 'request_id': request_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             })
         }
         
@@ -260,6 +260,6 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'error': 'SYSTEM_ERROR',
                 'message': 'An unexpected error occurred',
                 'request_id': request_id,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             })
         }

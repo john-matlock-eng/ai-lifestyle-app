@@ -6,7 +6,7 @@ Provides common database access patterns for the Enhanced Goal System.
 
 import os
 from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
@@ -86,7 +86,7 @@ class GoalsRepository:
             
             # Add TTL for draft goals (auto-delete after 30 days)
             if goal.status == GoalStatus.DRAFT:
-                item['TTL'] = int((datetime.utcnow() + timedelta(days=30)).timestamp())
+                item['TTL'] = int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp())
             
             self.table.put_item(
                 Item=item,
@@ -141,7 +141,7 @@ class GoalsRepository:
                     update_parts.append(f"{safe_key} = :{key}")
             
             # Always update the updated_at timestamp
-            expression_values[':updated_at'] = datetime.utcnow().isoformat()
+            expression_values[':updated_at'] = datetime.now(timezone.utc).isoformat()
             update_parts.append('updated_at = :updated_at')
             
             # Update GSI keys if status changed
@@ -182,7 +182,7 @@ class GoalsRepository:
                 goal_id, 
                 {
                     'status': GoalStatus.ARCHIVED.value,
-                    'archived_at': datetime.utcnow().isoformat()
+                    'archived_at': datetime.now(timezone.utc).isoformat()
                 }
             ) is not None
             
@@ -253,7 +253,7 @@ class GoalsRepository:
             }
             
             # Add TTL for activities (auto-delete after 1 year)
-            item['TTL'] = int((datetime.utcnow() + timedelta(days=365)).timestamp())
+            item['TTL'] = int((datetime.now(timezone.utc) + timedelta(days=365)).timestamp())
             
             self.table.put_item(Item=item)
             
