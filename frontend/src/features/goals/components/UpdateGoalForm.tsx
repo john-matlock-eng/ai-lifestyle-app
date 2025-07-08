@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import type { Goal, UpdateGoalRequest } from '../types/api.types';
+import type { Goal, UpdateGoalRequest, GoalVisibility } from '../types/api.types';
 import { GOAL_CATEGORIES, GOAL_ICONS } from '../types/ui.types';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
@@ -12,13 +12,28 @@ interface UpdateGoalFormProps {
   isLoading?: boolean;
 }
 
+interface FormData {
+  title?: string;
+  description?: string;
+  category?: string;
+  icon?: string;
+  color?: string;
+  status?: 'active' | 'paused';
+  visibility?: GoalVisibility;
+  targetValue?: number;
+  targetDate?: string;
+  currentValue?: number;
+  minValue?: number;
+  maxValue?: number;
+}
+
 const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
   goal,
   onUpdate,
   onCancel,
   isLoading = false,
 }) => {
-  const [formData, setFormData] = useState<UpdateGoalRequest>({
+  const [formData, setFormData] = useState<FormData>({
     title: goal.title,
     description: goal.description,
     category: goal.category,
@@ -26,13 +41,11 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
     color: goal.color,
     status: goal.status as 'active' | 'paused',
     visibility: goal.visibility,
-    target: {
-      value: goal.target.value,
-      targetDate: goal.target.targetDate,
-      currentValue: goal.target.currentValue,
-      minValue: goal.target.minValue,
-      maxValue: goal.target.maxValue,
-    },
+    targetValue: goal.target.value,
+    targetDate: goal.target.targetDate,
+    currentValue: goal.target.currentValue,
+    minValue: goal.target.minValue,
+    maxValue: goal.target.maxValue,
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -42,23 +55,33 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
     setError(null);
 
     try {
-      // Remove undefined values from the update request
+      // Build the update request from form data
       const cleanedData: UpdateGoalRequest = {};
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          cleanedData[key as keyof UpdateGoalRequest] = value;
-        }
-      });
+      
+      // Basic fields
+      if (formData.title && formData.title !== goal.title) cleanedData.title = formData.title;
+      if (formData.description !== goal.description) cleanedData.description = formData.description;
+      if (formData.category && formData.category !== goal.category) cleanedData.category = formData.category;
+      if (formData.icon !== goal.icon) cleanedData.icon = formData.icon;
+      if (formData.color !== goal.color) cleanedData.color = formData.color;
+      if (formData.status !== goal.status) cleanedData.status = formData.status;
+      if (formData.visibility !== goal.visibility) cleanedData.visibility = formData.visibility;
 
-      // Clean target object
-      if (cleanedData.target) {
-        const cleanedTarget: Partial<UpdateGoalRequest['target']> = {};
-        Object.entries(cleanedData.target).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            cleanedTarget[key as keyof UpdateGoalRequest['target']] = value;
-          }
-        });
-        cleanedData.target = Object.keys(cleanedTarget).length > 0 ? cleanedTarget : undefined;
+      // Build target object if any target fields changed
+      const targetChanged = 
+        formData.targetValue !== goal.target.value ||
+        formData.targetDate !== goal.target.targetDate ||
+        formData.currentValue !== goal.target.currentValue ||
+        formData.minValue !== goal.target.minValue ||
+        formData.maxValue !== goal.target.maxValue;
+        
+      if (targetChanged) {
+        cleanedData.target = {};
+        if (formData.targetValue !== undefined) cleanedData.target.value = formData.targetValue;
+        if (formData.targetDate !== undefined) cleanedData.target.targetDate = formData.targetDate;
+        if (formData.currentValue !== undefined) cleanedData.target.currentValue = formData.currentValue;
+        if (formData.minValue !== undefined) cleanedData.target.minValue = formData.minValue;
+        if (formData.maxValue !== undefined) cleanedData.target.maxValue = formData.maxValue;
       }
 
       await onUpdate(goal.goalId, cleanedData);
@@ -216,10 +239,10 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
                   <Input
                     id="targetValue"
                     type="number"
-                    value={formData.target?.value || goal.target.value}
+                    value={formData.targetValue ?? goal.target.value}
                     onChange={(e) => setFormData({
                       ...formData,
-                      target: { ...formData.target, value: parseFloat(e.target.value) || 0 }
+                      targetValue: parseFloat(e.target.value) || 0
                     })}
                     min={0}
                     step="0.1"
@@ -234,10 +257,10 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
                     <Input
                       id="targetDate"
                       type="date"
-                      value={formData.target?.targetDate || goal.target.targetDate}
+                      value={formData.targetDate || goal.target.targetDate}
                       onChange={(e) => setFormData({
                         ...formData,
-                        target: { ...formData.target, targetDate: e.target.value }
+                        targetDate: e.target.value
                       })}
                       min={new Date().toISOString().split('T')[0]}
                     />
