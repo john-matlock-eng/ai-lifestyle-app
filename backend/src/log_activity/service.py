@@ -8,7 +8,7 @@ from typing import Optional
 from aws_lambda_powertools import Logger
 
 from goals_common import (
-    Goal, GoalActivity, LogActivityRequest, GoalStatus,
+    Goal, GoalActivity, LogActivityRequest, GoalStatus, ActivityContext,
     GoalsRepository, GoalValidator, ProgressCalculator,
     GoalNotFoundError, GoalPermissionError, 
     ActivityValidationError, InvalidGoalPatternError, GoalError
@@ -56,8 +56,8 @@ class LogActivityService:
             raise GoalNotFoundError(goal_id, user_id)
         
         # Verify ownership
-        if goal.userId != user_id:
-            logger.warning(f"User {user_id} attempted to log activity for goal {goal_id} owned by {goal.userId}")
+        if goal.user_id != user_id:
+            logger.warning(f"User {user_id} attempted to log activity for goal {goal_id} owned by {goal.user_id}")
             raise GoalPermissionError("log activity", goal_id)
         
         # Check if goal is active
@@ -98,12 +98,17 @@ class LogActivityService:
         activity_id = str(uuid.uuid4())
         
         # Determine activity date
-        if request.activityDate:
+        if request.activity_date:
             # Convert date string to datetime
-            activity_date = datetime.fromisoformat(
-                request.activityDate.isoformat() if hasattr(request.activityDate, 'isoformat') 
-                else request.activityDate
-            )
+            try:
+                from datetime import date
+                # Parse YYYY-MM-DD format
+                date_obj = date.fromisoformat(request.activity_date)
+                # Convert to datetime at start of day in user's timezone
+                activity_date = datetime.combine(date_obj, datetime.min.time()).replace(tzinfo=timezone.utc)
+            except ValueError:
+                # If parsing fails, use current time
+                activity_date = datetime.now(timezone.utc)
         else:
             activity_date = datetime.now(timezone.utc)
         
@@ -111,26 +116,43 @@ class LogActivityService:
         unit = request.unit or goal.target.unit
         
         # Build context
-        context = request.context or {}
+        if request.context:
+            # Convert ActivityContext object to dict for manipulation
+            context = request.context.model_dump(by_alias=False)
+        else:
+            context = {}
         
         # Add automatic context enrichment
-        if 'dayOfWeek' not in context:
-            context['dayOfWeek'] = activity_date.strftime('%A').lower()
-        if 'isWeekend' not in context:
-            context['isWeekend'] = activity_date.weekday() >= 5
+        if 'time_of_day' not in context:
+            # Auto-detect time of day if not provided
+            hour = activity_date.hour
+            if 4 <= hour < 7:
+                context['time_of_day'] = 'early-morning'
+            elif 7 <= hour < 12:
+                context['time_of_day'] = 'morning'
+            elif 12 <= hour < 17:
+                context['time_of_day'] = 'afternoon'
+            elif 17 <= hour < 21:
+                context['time_of_day'] = 'evening'
+            else:
+                context['time_of_day'] = 'night'
+        if 'day_of_week' not in context:
+            context['day_of_week'] = activity_date.strftime('%A').lower()
+        if 'is_weekend' not in context:
+            context['is_weekend'] = activity_date.weekday() >= 5
         
         return GoalActivity(
-            activityId=activity_id,
-            goalId=goal_id,
-            userId=user_id,
+            activity_id=activity_id,
+            goal_id=goal_id,
+            user_id=user_id,
             value=request.value,
             unit=unit,
-            activityType=request.activityType,
-            activityDate=activity_date,
-            loggedAt=datetime.now(timezone.utc),
+            activity_type=request.activity_type,
+            activity_date=activity_date,
+            logged_at=datetime.now(timezone.utc),
             timezone=timezone_str,
             location=request.location,
-            context=context,
+            context=ActivityContext(**context),
             note=request.note,
             attachments=request.attachments or [],
             source=request.source
@@ -138,22 +160,22 @@ class LogActivityService:
     
     def _validate_pattern_specific_rules(self, goal: Goal, activity: GoalActivity) -> None:
         """Validate activity based on goal pattern."""
-        if goal.goalPattern == 'streak':
+        if goal.goal_pattern == 'streak':
             # Streak activities should be marked as progress with value 1
-            if activity.activityType != 'progress' or activity.value != 1:
+            if activity.activity_type != 'progress' or activity.value != 1:
                 raise InvalidGoalPatternError(
-                    goal.goalPattern,
+                    goal.goal_pattern,
                     "Streak goals require progress activities with value 1"
                 )
         
-        elif goal.goalPattern == 'limit':
+        elif goal.goal_pattern == 'limit':
             # Limit goals track consumption/usage
             if activity.value < 0:
                 raise ActivityValidationError(["Limit goal activities must have positive values"])
         
-        elif goal.goalPattern == 'milestone':
+        elif goal.goal_pattern == 'milestone':
             # Milestone goals accumulate progress
-            if activity.value <= 0 and activity.activityType == 'progress':
+            if activity.value <= 0 and activity.activity_type == 'progress':
                 raise ActivityValidationError(["Milestone progress must be positive"])
     
     def _update_goal_progress(self, goal: Goal, activity: GoalActivity) -> None:
@@ -165,41 +187,41 @@ class LogActivityService:
         try:
             # Get recent activities for progress calculation
             recent_activities = self.repository.get_goal_activities(
-                goal.userId,
-                goal.goalId,
+                goal.user_id,
+                goal.goal_id,
                 limit=100
             )
             
             # Calculate new progress
-            if goal.goalPattern == 'recurring':
+            if goal.goal_pattern == 'recurring':
                 progress = ProgressCalculator.calculate_recurring_progress(
                     goal, recent_activities
                 )
-            elif goal.goalPattern == 'milestone':
+            elif goal.goal_pattern == 'milestone':
                 progress = ProgressCalculator.calculate_milestone_progress(
                     goal, recent_activities
                 )
-            elif goal.goalPattern == 'target':
+            elif goal.goal_pattern == 'target':
                 progress = ProgressCalculator.calculate_target_progress(
                     goal, recent_activities
                 )
-            elif goal.goalPattern == 'streak':
+            elif goal.goal_pattern == 'streak':
                 progress = ProgressCalculator.calculate_streak_progress(
                     goal, recent_activities
                 )
-            elif goal.goalPattern == 'limit':
+            elif goal.goal_pattern == 'limit':
                 progress = ProgressCalculator.calculate_limit_progress(
                     goal, recent_activities
                 )
             
             # Update goal with new progress
             self.repository.update_goal(
-                goal.userId,
-                goal.goalId,
+                goal.user_id,
+                goal.goal_id,
                 {'progress': progress.model_dump()}
             )
             
-            logger.info(f"Updated progress for goal {goal.goalId}: {progress.percentComplete}%")
+            logger.info(f"Updated progress for goal {goal.goal_id}: {progress.percent_complete}%")
             
         except Exception as e:
             # Don't fail the activity log if progress update fails

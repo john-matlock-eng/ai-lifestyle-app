@@ -529,14 +529,23 @@ class LogActivityRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
     
     value: float
-    unit: Optional[str] = None  # Can be inferred from goal
+    unit: str
     activity_type: ActivityType = ActivityType.PROGRESS
     
-    activity_date: Optional[datetime] = None  # Defaults to now
-    timezone: str = "UTC"
+    activity_date: Optional[str] = None  # Date string in YYYY-MM-DD format
     location: Optional[ActivityLocation] = None
     
     context: Optional[ActivityContext] = None
-    note: Optional[str] = Field(None, max_length=1000)
+    note: Optional[str] = Field(None, max_length=500)
+    attachments: Optional[List[ActivityAttachmentRequest]] = None
     
     source: Literal["manual", "device", "integration", "import"] = "manual"
+
+
+class ActivityAttachmentRequest(BaseModel):
+    """Request format for activity attachments."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
+    type: Literal["image", "link", "reference"]
+    url: Optional[str] = None  # Required for link type
+    entity_id: Optional[str] = None  # Required for reference type

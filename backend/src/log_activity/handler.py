@@ -153,7 +153,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Log activity
         metrics.add_metric(name="ActivityLogAttempts", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name=f"ActivityType_{request_data.activityType.value}", unit=MetricUnit.Count, value=1)
+        metrics.add_metric(name=f"ActivityType_{request_data.activity_type.value}", unit=MetricUnit.Count, value=1)
         
         activity = service.log_activity(user_id, goal_id, request_data, timezone_str)
         
