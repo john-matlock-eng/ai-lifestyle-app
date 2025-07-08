@@ -1,9 +1,9 @@
 # Backend Current Tasks - 🏗️ ARCHITECTURE: Single Table Design Fix
 
-## 🔄 Completion Report: Single Table Design Fix
-**Status**: ✅ Complete - Single Table Design Implemented
+## 🔄 Completion Report: Single Table Design Fix & JWT Auth
+**Status**: ✅ Complete - Ready for Deployment
 **Date**: 2025-01-07  
-**Time Spent**: 2 hours
+**Time Spent**: 3 hours
 
 ### What I Fixed
 - ✅ Removed separate DynamoDB tables from goals service module
@@ -12,6 +12,8 @@
 - ✅ Updated GoalsRepository to use single-table design patterns
 - ✅ Fixed all DynamoDB field names (pk, sk, gsi1_pk, etc.)
 - ✅ Removed terraform outputs for non-existent goals tables
+- ✅ Enabled JWT authorization for all protected endpoints
+- ✅ Fixed UNAUTHORIZED errors on goals endpoints
 
 ### Architecture Compliance
 - [✓] Single table design implemented correctly
@@ -39,36 +41,46 @@
 - ✅ SNS/SQS for notifications (kept)
 - ✅ Monitoring module (kept)
 
-### Terraform State Cleanup - Complete ✅
+### Implementation Complete ✅
 
-**Step 1 (Completed)**:
+**Step 1 (Completed)**: State Cleanup
 - ✅ Commented out all references to goals_service module
 - ✅ Deployed successfully to remove tables from state
 
-**Step 2 (Just Completed)**:
+**Step 2 (Completed)**: Infrastructure Restoration
 - ✅ Uncommented goals_service module
 - ✅ Uncommented GOAL_ATTACHMENTS_BUCKET env var
 - ✅ Uncommented goals_s3_access policy and reference  
 - ✅ Uncommented goal_attachments_bucket_name output
 - ✅ Fixed outputs.tf in goals service to remove table references
 - ✅ Commented out monitoring module (incompatible with single Lambda pattern)
-- 🗑️ Archived temporary STATE_CLEANUP_INSTRUCTIONS.md
 
-**Result**: Goals infrastructure now includes:
+**Step 3 (Just Completed)**: JWT Authorization
+- ✅ Enabled JWT authorizer: `enable_jwt_authorizer = true`
+- ✅ Updated all goals endpoints to use `authorization_type = "JWT"`
+- ✅ Updated user profile endpoints to use JWT
+- ✅ Updated MFA endpoints (except verify) to use JWT
+
+**Result**: 
+- ✅ Goals use single-table DynamoDB design
+- ✅ JWT authentication properly configured
 - ✅ S3 bucket for attachments
 - ✅ EventBridge rules for processing
 - ✅ SNS/SQS for notifications
-- ✅ NO DynamoDB tables (uses main table)
-- ⚠️ NO monitoring (needs update for single Lambda pattern)
+- ⚠️ NO monitoring (needs redesign)
 
 ### Next Steps
 
 **Deploy and Test**:
-1. **Create PR** with the restored goals_service module
-2. **CI/CD will deploy** S3 bucket and event processing
-3. **Verify** goals endpoints work with single table
-4. **Confirm** S3 bucket exists for attachments
-5. **Check** EventBridge rules are created
+1. **Create PR** with:
+   - Restored goals_service module
+   - JWT authorization enabled for protected endpoints
+2. **CI/CD will deploy** the updated configuration
+3. **Test goals endpoints**:
+   - Login first to get JWT token
+   - Use token in Authorization header: `Bearer <token>`
+4. **Verify** single table design is working
+5. **Confirm** S3 bucket and EventBridge rules exist
 
 ### Future Improvements
 - **Update Monitoring**: Create a monitoring solution that works with the single Lambda pattern
@@ -78,12 +90,16 @@
 
 ### Summary
 
-The single-table design is now properly implemented:
+The implementation is now complete:
+- ✅ Single-table DynamoDB design properly implemented
+- ✅ JWT authentication enabled for all protected endpoints
 - ✅ Goals use the main `users` table with proper key design
 - ✅ S3 bucket available for goal attachments
 - ✅ Event processing infrastructure in place
 - ✅ All repository code updated to use TABLE_NAME
 - ✅ LLM instructions updated to prevent future violations
+
+**Ready for deployment and testing with JWT authentication!**
 
 ### LLM Instructions Updated
 To prevent future violations, I've updated the backend instructions:

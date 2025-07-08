@@ -211,57 +211,57 @@ module "api_gateway" {
       authorization_type = "NONE"
     }
 
-    # User endpoints (will need auth later)
+    # User endpoints
     "GET /users/profile" = {
-      authorization_type = "NONE" # TODO: Change to JWT
+      authorization_type = "JWT"
     }
     "PUT /users/profile" = {
-      authorization_type = "NONE" # TODO: Change to JWT
+      authorization_type = "JWT"
     }
 
-    # 2FA endpoints (will need auth later)
+    # 2FA endpoints
     "POST /auth/mfa/setup" = {
-      authorization_type = "NONE" # TODO: Change to JWT
+      authorization_type = "JWT"
     }
     "POST /auth/mfa/verify-setup" = {
-      authorization_type = "NONE" # TODO: Change to JWT
+      authorization_type = "JWT"
     }
     "POST /auth/mfa/verify" = {
-      authorization_type = "NONE"
+      authorization_type = "NONE"  # This is part of login flow, no JWT yet
     }
     "POST /auth/mfa/disable" = {
-      authorization_type = "NONE" # TODO: Change to JWT
+      authorization_type = "JWT"
     }
 
     # Goals endpoints - handled by main Lambda
     "GET /goals" = {
-      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
+      authorization_type = "JWT"
     }
     "POST /goals" = {
-      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
+      authorization_type = "JWT"
     }
     "GET /goals/{goalId}" = {
-      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
+      authorization_type = "JWT"
     }
     "PUT /goals/{goalId}" = {
-      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
+      authorization_type = "JWT"
     }
     "DELETE /goals/{goalId}" = {
-      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
+      authorization_type = "JWT"
     }
     "GET /goals/{goalId}/activities" = {
-      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
+      authorization_type = "JWT"
     }
     "POST /goals/{goalId}/activities" = {
-      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
+      authorization_type = "JWT"
     }
     "GET /goals/{goalId}/progress" = {
-      authorization_type = "NONE" # TODO: Change to JWT when auth is ready
+      authorization_type = "JWT"
     }
   }
 
-  # JWT authorizer configuration (for future use)
-  enable_jwt_authorizer = false # TODO: Enable when ready
+  # JWT authorizer configuration
+  enable_jwt_authorizer = true
   jwt_issuer            = "https://cognito-idp.${var.aws_region}.amazonaws.com/${module.cognito.user_pool_id}"
   jwt_audience          = [module.cognito.user_pool_client_id]
 
