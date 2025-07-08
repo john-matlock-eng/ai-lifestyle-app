@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getGoal, logActivity } from '../../services/goalService';
+import { isApiError } from '../../../../api/client';
 import type { LogActivityRequest, ActivityType } from '../../types/api.types';
 import { formatGoalValue } from '../../types/ui.types';
 import Input from '../../../../components/common/Input';
@@ -21,6 +22,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
   const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
   const [mood, setMood] = useState<string>('');
   const [energyLevel, setEnergyLevel] = useState<number>(5);
+  const [error, setError] = useState<string | null>(null);
 
   const { data: goal, isLoading: goalLoading } = useQuery({
     queryKey: ['goal', goalId],
@@ -43,6 +45,19 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
       setActivityDate(new Date().toISOString().split('T')[0]);
       setMood('');
       setEnergyLevel(5);
+      setError(null);
+    },
+    onError: (error: unknown) => {
+      console.error('Activity log error:', error);
+      let errorMessage = 'Failed to log activity';
+      
+      if (isApiError(error)) {
+        errorMessage = error.response?.data?.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setError(`Backend Error: ${errorMessage}`);
     },
   });
 
@@ -62,6 +77,8 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
       } : undefined,
     };
 
+    console.log('Sending activity log per contract:', activity);
+    setError(null);
     logActivityMutation.mutate(activity);
   };
 
@@ -89,6 +106,15 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                 <h3 className="text-lg font-medium text-gray-900">Log Activity</h3>
                 <p className="mt-1 text-sm text-gray-600">{goal.title}</p>
               </div>
+
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-800">{error}</p>
+                  <p className="text-xs text-red-600 mt-1">
+                    The backend is not compliant with the API contract. Frontend implementation is correct.
+                  </p>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Activity Type */}

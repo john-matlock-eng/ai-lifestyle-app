@@ -1,160 +1,128 @@
-# Backend Current Tasks - Supporting Frontend Integration
+# Backend Current Tasks - 🚨 CRITICAL: Fix Contract Violation
 
-## 🚀 DEPLOYMENT COMPLETE!
-**Status**: ✅ Goals API Live and Ready
+## 🚨 CRITICAL BLOCKER: Activity Endpoint Contract Violation
+**Status**: ⚠️ URGENT - Frontend Blocked
 **Date**: 2025-01-08
-**Deployment**: SUCCESS
+**Severity**: CRITICAL - Blocking 60% of frontend tasks
 
-### What's Deployed
-- ✅ All goals endpoints (CRUD + activities)
-- ✅ Single-table DynamoDB design
-- ✅ JWT authentication enabled
-- ✅ Contract-compliant API
-- ✅ S3 bucket for attachments
-- ✅ EventBridge for async processing
+### Issue Description
+The frontend team is blocked because the activity logging endpoint is NOT following the OpenAPI contract:
 
-### API Endpoints Available
-```
-POST   /v1/goals                    - Create goal
-GET    /v1/goals                    - List goals
-GET    /v1/goals/{goalId}           - Get goal details
-PUT    /v1/goals/{goalId}           - Update goal
-DELETE /v1/goals/{goalId}           - Archive goal
-POST   /v1/goals/{goalId}/activities - Log activity
-GET    /v1/goals/{goalId}/activities - List activities
-GET    /v1/goals/{goalId}/progress   - Get progress
+```python
+AttributeError: 'LogActivityRequest' object has no attribute 'activityType'
+File: /var/task/log_activity/handler.py, line 156
 ```
 
-## 🎯 Current Tasks: Support & Monitor
-
-### Task 1: Monitor API Health (ONGOING)
-**Priority**: HIGH
-**Description**: Watch CloudWatch logs for any errors during frontend integration
-
-**What to monitor**:
-- Lambda function errors
-- DynamoDB throttling
-- API Gateway 4xx/5xx responses
-- S3 access issues
-
-**Key Metrics**:
-```bash
-# CloudWatch Logs Insights query for errors
-fields @timestamp, @message
-| filter @message like /ERROR/
-| stats count() by bin(5m)
-```
-
-### Task 2: Support Frontend Team (AS NEEDED)
-**Priority**: HIGH
-**Description**: Be available to help debug any integration issues
-
-**Common issues to watch for**:
-1. **Auth errors**: Ensure JWT token is properly formatted
-2. **Validation errors**: Check request payload matches contract
-3. **Not found errors**: Verify goalId exists and belongs to user
-4. **Permission errors**: Check IAM policies if DynamoDB errors
-
-### Task 3: Performance Optimization (LATER THIS WEEK)
-**Priority**: MEDIUM
-**Description**: After integration testing, optimize slow queries
-
-**Areas to investigate**:
-- Goal listing with multiple filters
-- Activity pagination for goals with many entries
-- Progress calculation for long-term goals
-
-### Task 4: Prepare for Load Testing (FRIDAY)
-**Priority**: MEDIUM
-**Description**: Set up load testing scenarios
-
-**Test scenarios**:
-1. Create 100 goals per user
-2. Log 1000 activities across goals
-3. Concurrent goal updates
-4. Heavy list queries with filters
-
-## 📊 Quick Reference for Frontend
-
-### Authentication
-```bash
-# Frontend should send:
-Authorization: Bearer <jwt_token_from_cognito>
-```
-
-### Example Requests
-
-**Create Goal**:
+### The Problem
+**Contract Specifies (camelCase)**:
 ```json
-POST /v1/goals
-{
-  "title": "Walk 10,000 steps daily",
-  "category": "fitness",
-  "goalPattern": "recurring",
-  "target": {
-    "metric": "count",
-    "value": 10000,
-    "unit": "steps",
-    "period": "day",
-    "direction": "increase"
-  }
-}
-```
-
-**Log Activity**:
-```json
-POST /v1/goals/{goalId}/activities
 {
   "value": 12500,
   "unit": "steps",
-  "activityType": "completed",
-  "context": {
-    "energyLevel": 8,
-    "mood": "energetic"
-  }
+  "activityType": "completed",    // camelCase ✅
+  "activityDate": "2024-01-20",    // camelCase ✅
+  "context": { ... }
 }
 ```
 
-## 🐛 Debugging Tips
+**Your Code Expects (snake_case)**:
+```python
+# This is WRONG - violates contract!
+activity_type = request.activity_type  # Should be activityType
+activity_date = request.activity_date  # Should be activityDate
+```
 
-### If Frontend Gets 403 Forbidden
-1. Check JWT token is included
-2. Verify token hasn't expired
-3. Ensure goalId belongs to authenticated user
+### Required Fix - DO THIS NOW!
 
-### If Frontend Gets 400 Bad Request
-1. Check field names are camelCase (not snake_case)
-2. Verify required fields are present
-3. Check data types match contract
+#### 1. Update Pydantic Models
+In `src/models/activities.py` or wherever `LogActivityRequest` is defined:
 
-### If Frontend Gets 500 Internal Error
-1. Check CloudWatch logs immediately
-2. Look for DynamoDB or S3 errors
-3. Notify PM if infrastructure issue
+```python
+from pydantic import BaseModel, Field
 
-## 📈 Current System Status
+class LogActivityRequest(BaseModel):
+    value: float
+    unit: str
+    activityType: str = Field(alias="activityType")  # Match contract!
+    activityDate: Optional[str] = Field(alias="activityDate", default=None)
+    location: Optional[ActivityLocation] = None
+    context: Optional[ActivityContext] = None
+    note: Optional[str] = None
+    attachments: Optional[List[ActivityAttachmentRequest]] = None
+    source: str = "manual"
+    
+    class Config:
+        # This ensures we accept camelCase from API
+        allow_population_by_field_name = True
+        # But can use snake_case internally if needed
+        by_alias = True
+```
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| API Gateway | ✅ Healthy | All routes configured |
-| Lambda | ✅ Healthy | Latest code deployed |
-| DynamoDB | ✅ Healthy | Single table, on-demand |
-| S3 | ✅ Healthy | Attachments bucket ready |
-| EventBridge | ✅ Healthy | Rules active |
+#### 2. Update Handler Code
+In `log_activity/handler.py`, ensure you're accessing fields correctly:
 
-## 🔔 Alerts & Monitoring
+```python
+# If using aliases, access like this:
+activity_type = request.activityType  # Use the camelCase field name
+activity_date = request.activityDate
 
-**CloudWatch Alarms Set**:
-- Lambda errors > 1% (5 min)
-- API Gateway 5xx > 10 (5 min)
-- DynamoDB throttles > 0
+# OR if you want snake_case internally:
+class LogActivityRequest(BaseModel):
+    value: float
+    unit: str
+    activity_type: str = Field(alias="activityType")  # Maps camelCase to snake_case
+    activity_date: Optional[str] = Field(alias="activityDate", default=None)
+```
 
-**Slack Channel**: #ai-lifestyle-alerts
+#### 3. Check ALL Other Models
+Ensure ALL request/response models match the contract:
+- `CreateGoalRequest` - all fields should be camelCase
+- `UpdateGoalRequest` - all fields should be camelCase
+- `Goal` response model - all fields should be camelCase
+- `GoalActivity` response model - all fields should be camelCase
+
+### Impact of This Blocker
+- ❌ Frontend cannot log activities (Task 3)
+- ❌ Frontend cannot show progress (Task 4) 
+- ❌ Frontend cannot show activity history (Task 5)
+- ❌ 60% of goal features are unusable
+
+### Testing the Fix
+```bash
+# Test with camelCase fields as per contract:
+curl -X POST https://api.ailifestyle.app/v1/goals/{goalId}/activities \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "value": 12500,
+    "unit": "steps",
+    "activityType": "completed",
+    "activityDate": "2024-01-20"
+  }'
+```
+
+### Deployment Steps
+1. Fix the Pydantic models NOW
+2. Test locally with camelCase fields
+3. Deploy immediately:
+   ```bash
+   cd backend
+   ./scripts/deploy.sh
+   ```
+4. Notify frontend team immediately
+
+### Contract is LAW! 📜
+Remember: The OpenAPI contract is the source of truth. Both frontend and backend MUST follow it exactly. If the contract says camelCase, we use camelCase.
+
+### Other Tasks - ON HOLD
+All other optimization and monitoring tasks are ON HOLD until this is fixed.
 
 ---
 
-**Your Role**: Support & Optimize
-**Frontend Status**: Implementing UI
-**Next Sync**: After frontend completes Task 3
+**Priority**: 🔴 CRITICAL - Fix within 1 hour
+**Impact**: Frontend completely blocked on activities
+**Solution**: Update Pydantic models to match contract
 
-**Updated**: 2025-01-08 by PM Agent
+Please fix this immediately and notify the frontend team when deployed.
+
+**Updated**: 2025-01-08 13:30 UTC by PM Agent
