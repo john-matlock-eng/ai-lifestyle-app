@@ -1,6 +1,62 @@
 # Backend Current Tasks - 🏗️ ARCHITECTURE: Single Table Design Fix
 
-## 🔄 Completion Report: Single Table Design Fix & JWT Auth
+## 🔄 Completion Report: Contract Compliance Fix for Goals API
+**Status**: ✅ Complete - Fixed camelCase/snake_case mismatch
+**Date**: 2025-01-08  
+**Time Spent**: 1 hour
+
+### Contract Violation Fixed
+- **Issue**: Validation error showed field names in snake_case (`goal_pattern`, `target.target_type`) while OpenAPI contract specifies camelCase (`goalPattern`, `targetType`)
+- **Root Cause**: Pydantic models were not configured to handle camelCase serialization/deserialization
+- **Solution**: Added `ConfigDict` with `alias_generator=to_camel` to all Goal-related models
+
+### What I Fixed
+- ✅ Updated all Goal models to use camelCase aliases via Pydantic's `alias_generator`
+- ✅ Made `targetType` default to `"exact"` as specified in contract  
+- ✅ Made `schedule` optional in `CreateGoalRequest` to match contract
+- ✅ Made `status` optional in `CreateGoalRequest` (defaults to ACTIVE in service)
+- ✅ Fixed service to not access non-existent fields (`rewards`, `metadata` in request)
+- ✅ Ensured proper field name handling throughout the stack
+
+### Contract Compliance
+- [✓] Request accepts camelCase fields as specified in OpenAPI
+- [✓] Response returns camelCase fields as specified in OpenAPI
+- [✓] Internal Python code uses snake_case (Pythonic)
+- [✓] `targetType` has default value matching contract
+- [✓] All required/optional fields match contract exactly
+
+### Technical Implementation
+```python
+# Added to all API models:
+model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+# This enables:
+# - Input: {"goalPattern": "recurring"} -> goal_pattern internally
+# - Output: goal_pattern -> {"goalPattern": "recurring"} in response
+```
+
+### Files Modified
+1. `src/goals_common/models.py`:
+   - Added ConfigDict to: GoalTarget, GoalSchedule, GoalContext, GoalProgress
+   - Added ConfigDict to: GoalRewards, Goal, CreateGoalRequest, UpdateGoalRequest
+   - Made targetType default to EXACT
+   - Made schedule optional in Goal model
+
+2. `src/create_goal/service.py`:
+   - Fixed Goal construction to use snake_case internally
+   - Removed access to non-existent request fields
+   - Proper default handling for optional fields
+
+### Next Deployment
+This fix will resolve the validation errors. The API will now:
+1. Accept requests with camelCase fields (per contract)
+2. Validate required fields correctly
+3. Apply proper defaults for optional fields
+4. Return responses with camelCase fields (per contract)
+
+---
+
+## 🔄 Previous Report: Single Table Design Fix & JWT Auth
 **Status**: ✅ Complete - Ready for Deployment
 **Date**: 2025-01-07  
 **Time Spent**: 3 hours

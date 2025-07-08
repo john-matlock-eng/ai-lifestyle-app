@@ -50,24 +50,24 @@ class CreateGoalService:
             
             # Build goal object
             goal = Goal(
-                goalId=goal_id,
-                userId=user_id,
+                goal_id=goal_id,
+                user_id=user_id,
                 title=request.title,
                 description=request.description,
                 category=request.category,
                 icon=request.icon,
                 color=request.color,
-                goalPattern=request.goalPattern,
+                goal_pattern=request.goal_pattern,
                 target=request.target,
-                schedule=request.schedule or self._get_default_schedule(request.goalPattern),
+                schedule=request.schedule or self._get_default_schedule(request.goal_pattern),
                 progress=GoalProgress(),  # Initialize empty progress
                 context=request.context or GoalContext(),
-                rewards=request.rewards or GoalRewards(),
+                rewards=GoalRewards(),  # Default rewards
                 status=request.status if request.status else GoalStatus.ACTIVE,
                 visibility=request.visibility,
-                createdAt=datetime.utcnow(),
-                updatedAt=datetime.utcnow(),
-                metadata=request.metadata or {}
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+                metadata={}  # Default empty metadata
             )
             
             # Validate goal configuration

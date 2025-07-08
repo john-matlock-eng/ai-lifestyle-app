@@ -11,7 +11,8 @@ These models support all 5 goal patterns:
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Literal, Union
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic.alias_generators import to_camel
 from decimal import Decimal
 from enum import Enum
 
@@ -96,6 +97,8 @@ class TrendDirection(str, Enum):
 # Target Definition Models
 class GoalTarget(BaseModel):
     """Flexible target definition for all goal patterns."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     metric: MetricType
     value: float = Field(gt=0, description="The goal value")
     unit: str = Field(..., min_length=1, max_length=50, description="Unit of measurement")
@@ -110,7 +113,7 @@ class GoalTarget(BaseModel):
     
     # Goal direction
     direction: Direction
-    target_type: TargetType
+    target_type: TargetType = Field(default=TargetType.EXACT)
     
     # For range targets
     min_value: Optional[float] = None
@@ -135,6 +138,8 @@ class GoalTarget(BaseModel):
 # Schedule Models
 class GoalSchedule(BaseModel):
     """Smart scheduling for goals."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     frequency: Optional[Frequency] = None
     days_of_week: Optional[List[int]] = Field(None, description="0=Monday, 6=Sunday")
     preferred_times: Optional[List[str]] = Field(None, description="HH:MM format")
@@ -168,6 +173,8 @@ class GoalSchedule(BaseModel):
 # Progress Tracking Models
 class PeriodHistory(BaseModel):
     """History entry for a specific period."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     period: str  # e.g., "2024-01-01" for daily, "2024-W01" for weekly
     achieved: bool
     value: float
@@ -176,6 +183,8 @@ class PeriodHistory(BaseModel):
 
 class GoalProgress(BaseModel):
     """Universal progress tracking for all goal patterns."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     # Universal fields
     percent_complete: float = Field(0.0, ge=0, le=100)
     last_activity_date: Optional[datetime] = None
@@ -206,6 +215,8 @@ class GoalProgress(BaseModel):
 # Context Models
 class GoalContext(BaseModel):
     """AI-friendly context for personalization."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     motivation: Optional[str] = Field(None, max_length=500)
     importance_level: int = Field(3, ge=1, le=5)
     
@@ -222,6 +233,8 @@ class GoalContext(BaseModel):
 # Gamification Models
 class MilestoneReward(BaseModel):
     """Reward for reaching a milestone."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     value: float
     reward: str
     unlocked_at: Optional[datetime] = None
@@ -229,6 +242,8 @@ class MilestoneReward(BaseModel):
 
 class GoalRewards(BaseModel):
     """Gamification elements."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     points_per_activity: int = Field(10, ge=0)
     milestone_rewards: List[MilestoneReward] = Field(default_factory=list)
     badges: List[str] = Field(default_factory=list)
@@ -237,6 +252,8 @@ class GoalRewards(BaseModel):
 # Main Goal Model
 class Goal(BaseModel):
     """Enhanced goal model supporting all 5 patterns."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     # Identification
     goal_id: str = Field(..., description="Unique goal identifier")
     user_id: str = Field(..., description="User who owns this goal")
@@ -255,16 +272,16 @@ class Goal(BaseModel):
     target: GoalTarget
     
     # Smart Scheduling
-    schedule: GoalSchedule
+    schedule: Optional[GoalSchedule] = None
     
     # Progress Tracking
     progress: GoalProgress = Field(default_factory=GoalProgress)
     
     # AI-Friendly Context
-    context: GoalContext = Field(default_factory=GoalContext)
+    context: Optional[GoalContext] = Field(default_factory=GoalContext)
     
     # Gamification
-    rewards: GoalRewards = Field(default_factory=GoalRewards)
+    rewards: Optional[GoalRewards] = Field(default_factory=GoalRewards)
     
     # Status
     status: GoalStatus = GoalStatus.DRAFT
@@ -332,6 +349,8 @@ class Goal(BaseModel):
 # Request/Response Models for API
 class CreateGoalRequest(BaseModel):
     """Request to create a new goal."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
     category: str = Field(..., min_length=1, max_length=50)
@@ -340,15 +359,17 @@ class CreateGoalRequest(BaseModel):
     
     goal_pattern: GoalPattern
     target: GoalTarget
-    schedule: GoalSchedule
+    schedule: Optional[GoalSchedule] = None
     context: Optional[GoalContext] = None
     
     visibility: Visibility = Visibility.PRIVATE
-    status: GoalStatus = GoalStatus.ACTIVE
+    status: Optional[GoalStatus] = None
 
 
 class UpdateGoalRequest(BaseModel):
     """Request to update an existing goal."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
     category: Optional[str] = Field(None, min_length=1, max_length=50)
@@ -365,6 +386,8 @@ class UpdateGoalRequest(BaseModel):
 
 class GoalListResponse(BaseModel):
     """Response containing a list of goals."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     goals: List[Goal]
     total: int
     page: int
@@ -409,6 +432,8 @@ class SocialContext(str, Enum):
 
 class WeatherCondition(BaseModel):
     """Weather information."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     condition: str
     temperature: float
     humidity: float
@@ -416,6 +441,8 @@ class WeatherCondition(BaseModel):
 
 class ActivityLocation(BaseModel):
     """Location information for an activity."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     type: LocationType
     city: Optional[str] = None
     coordinates: Optional[List[float]] = Field(None, min_items=2, max_items=2)
@@ -423,6 +450,8 @@ class ActivityLocation(BaseModel):
 
 class ActivityContext(BaseModel):
     """Rich context for AI analysis."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     # Temporal
     time_of_day: TimeOfDay
     day_of_week: str
@@ -454,6 +483,8 @@ class ActivityContext(BaseModel):
 
 class ActivityAttachment(BaseModel):
     """Attachment to an activity."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     type: Literal["image", "link", "reference"]
     url: str
     entity_id: Optional[str] = None
@@ -461,6 +492,8 @@ class ActivityAttachment(BaseModel):
 
 class GoalActivity(BaseModel):
     """Activity logged against a goal."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     activity_id: str
     goal_id: str
     user_id: str
@@ -490,6 +523,8 @@ class GoalActivity(BaseModel):
 
 class LogActivityRequest(BaseModel):
     """Request to log a goal activity."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
     value: float
     unit: Optional[str] = None  # Can be inferred from goal
     activity_type: ActivityType = ActivityType.PROGRESS
