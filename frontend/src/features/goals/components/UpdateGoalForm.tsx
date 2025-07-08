@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import type { Goal, UpdateGoalRequest } from '../types/api.types';
-import type { GoalCategory } from '../types/ui.types';
 import { GOAL_CATEGORIES, GOAL_ICONS } from '../types/ui.types';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
@@ -53,10 +52,10 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
 
       // Clean target object
       if (cleanedData.target) {
-        const cleanedTarget: any = {};
+        const cleanedTarget: Partial<UpdateGoalRequest['target']> = {};
         Object.entries(cleanedData.target).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            cleanedTarget[key] = value;
+            cleanedTarget[key as keyof UpdateGoalRequest['target']] = value;
           }
         });
         cleanedData.target = Object.keys(cleanedTarget).length > 0 ? cleanedTarget : undefined;
@@ -67,8 +66,6 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
       setError(err instanceof Error ? err.message : 'Failed to update goal');
     }
   };
-
-  const selectedCategory = GOAL_CATEGORIES.find(cat => cat.value === formData.category);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

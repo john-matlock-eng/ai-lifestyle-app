@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Goal, GoalStatus, GoalPattern } from '../../features/goals/types/api.types';
+import type { Goal, GoalStatus, GoalPattern, UpdateGoalRequest } from '../../features/goals/types/api.types';
 import { GOAL_PATTERNS, GOAL_CATEGORIES } from '../../features/goals/types/ui.types';
 import { listGoals, updateGoal, archiveGoal } from '../../features/goals/services/goalService';
 import GoalList from '../../features/goals/components/display/GoalList';
@@ -51,7 +51,7 @@ const GoalsPage: React.FC = () => {
 
   // Update goal mutation
   const updateGoalMutation = useMutation({
-    mutationFn: ({ goalId, updates }: { goalId: string; updates: any }) => 
+    mutationFn: ({ goalId, updates }: { goalId: string; updates: UpdateGoalRequest }) => 
       updateGoal(goalId, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] });
