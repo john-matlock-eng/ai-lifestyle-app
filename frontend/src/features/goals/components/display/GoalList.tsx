@@ -7,9 +7,12 @@ interface GoalListProps {
   goals: Goal[];
   isLoading: boolean;
   onQuickLog?: (goalId: string) => void;
+  onEdit?: (goal: Goal) => void;
+  onArchive?: (goalId: string) => void;
+  onStatusChange?: (goalId: string, status: 'active' | 'paused') => void;
 }
 
-const GoalList: React.FC<GoalListProps> = ({ goals, isLoading, onQuickLog }) => {
+const GoalList: React.FC<GoalListProps> = ({ goals, isLoading, onQuickLog, onEdit, onArchive, onStatusChange }) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -42,7 +45,14 @@ const GoalList: React.FC<GoalListProps> = ({ goals, isLoading, onQuickLog }) => 
   return (
     <div className="space-y-4">
       {goals.map((goal) => (
-        <GoalCard key={goal.goalId} goal={goal} onQuickLog={onQuickLog} />
+        <GoalCard 
+          key={goal.goalId} 
+          goal={goal} 
+          onQuickLog={onQuickLog}
+          onEdit={onEdit}
+          onArchive={onArchive}
+          onStatusChange={onStatusChange}
+        />
       ))}
     </div>
   );

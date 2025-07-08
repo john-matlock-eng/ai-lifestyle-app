@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import type { GoalStatus, GoalPattern } from '../../features/goals/types/api.types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Goal, GoalStatus, GoalPattern } from '../../features/goals/types/api.types';
 import { GOAL_PATTERNS, GOAL_CATEGORIES } from '../../features/goals/types/ui.types';
-import { listGoals } from '../../features/goals/services/goalService';
+import { listGoals, updateGoal, archiveGoal } from '../../features/goals/services/goalService';
 import GoalList from '../../features/goals/components/display/GoalList';
+import UpdateGoalForm from '../../features/goals/components/UpdateGoalForm';
 import Button from '../../components/common/Button';
 import QuickLogModal from '../../features/goals/components/logging/QuickLogModal';
 
@@ -13,6 +14,8 @@ const GoalsPage: React.FC = () => {
   const [selectedPatterns, setSelectedPatterns] = useState<GoalPattern[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [quickLogGoalId, setQuickLogGoalId] = useState<string | null>(null);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['goals', { selectedStatuses, selectedPatterns, selectedCategories }],
@@ -44,6 +47,38 @@ const GoalsPage: React.FC = () => {
 
   const handleQuickLog = (goalId: string) => {
     setQuickLogGoalId(goalId);
+  };
+
+  // Update goal mutation
+  const updateGoalMutation = useMutation({
+    mutationFn: ({ goalId, updates }: { goalId: string; updates: any }) => 
+      updateGoal(goalId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      setEditingGoal(null);
+    },
+  });
+
+  // Archive goal mutation
+  const archiveGoalMutation = useMutation({
+    mutationFn: (goalId: string) => archiveGoal(goalId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+    },
+  });
+
+  const handleEdit = (goal: Goal) => {
+    setEditingGoal(goal);
+  };
+
+  const handleArchive = async (goalId: string) => {
+    if (confirm('Are you sure you want to archive this goal?')) {
+      archiveGoalMutation.mutate(goalId);
+    }
+  };
+
+  const handleStatusChange = async (goalId: string, status: 'active' | 'paused') => {
+    updateGoalMutation.mutate({ goalId, updates: { status } });
   };
 
   const statusOptions: { value: GoalStatus; label: string; color: string }[] = [
@@ -176,6 +211,9 @@ const GoalsPage: React.FC = () => {
           goals={data?.goals || []}
           isLoading={isLoading}
           onQuickLog={handleQuickLog}
+          onEdit={handleEdit}
+          onArchive={handleArchive}
+          onStatusChange={handleStatusChange}
         />
       )}
 
@@ -217,6 +255,18 @@ const GoalsPage: React.FC = () => {
           goalId={quickLogGoalId}
           isOpen={!!quickLogGoalId}
           onClose={() => setQuickLogGoalId(null)}
+        />
+      )}
+
+      {/* Edit Goal Modal */}
+      {editingGoal && (
+        <UpdateGoalForm
+          goal={editingGoal}
+          onUpdate={async (goalId, updates) => {
+            await updateGoalMutation.mutateAsync({ goalId, updates });
+          }}
+          onCancel={() => setEditingGoal(null)}
+          isLoading={updateGoalMutation.isPending}
         />
       )}
     </div>

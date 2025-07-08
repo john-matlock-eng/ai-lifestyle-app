@@ -17,6 +17,10 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
   const [value, setValue] = useState('');
   const [note, setNote] = useState('');
   const [activityType, setActivityType] = useState<ActivityType>('progress');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
+  const [mood, setMood] = useState<string>('');
+  const [energyLevel, setEnergyLevel] = useState<number>(5);
 
   const { data: goal, isLoading: goalLoading } = useQuery({
     queryKey: ['goal', goalId],
@@ -35,6 +39,10 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
       setValue('');
       setNote('');
       setActivityType('progress');
+      setShowAdvanced(false);
+      setActivityDate(new Date().toISOString().split('T')[0]);
+      setMood('');
+      setEnergyLevel(5);
     },
   });
 
@@ -47,6 +55,11 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
       unit: goal.target.unit,
       activityType,
       note: note.trim() || undefined,
+      activityDate: activityDate !== new Date().toISOString().split('T')[0] ? activityDate : undefined,
+      context: showAdvanced ? {
+        mood: mood || undefined,
+        energyLevel: energyLevel || undefined,
+      } : undefined,
     };
 
     logActivityMutation.mutate(activity);
@@ -130,6 +143,19 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                   )}
                 </div>
 
+                {/* Date Picker */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={activityDate}
+                    onChange={(e) => setActivityDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+
                 {/* Quick Note */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -143,6 +169,84 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                     placeholder="How did it go?"
                   />
                 </div>
+
+                {/* Advanced Context Toggle */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+                  >
+                    <svg 
+                      className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    {showAdvanced ? 'Hide' : 'Show'} Advanced Options
+                  </button>
+                </div>
+
+                {/* Advanced Context Fields */}
+                {showAdvanced && (
+                  <div className="space-y-4 pt-2 border-t border-gray-200">
+                    {/* Mood */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mood
+                      </label>
+                      <div className="flex gap-2">
+                        {[
+                          { emoji: '😔', label: 'low' },
+                          { emoji: '😐', label: 'neutral' },
+                          { emoji: '😊', label: 'good' },
+                          { emoji: '😄', label: 'great' },
+                          { emoji: '🤩', label: 'amazing' },
+                        ].map((moodOption) => (
+                          <button
+                            key={moodOption.label}
+                            type="button"
+                            onClick={() => setMood(moodOption.label)}
+                            className={`
+                              flex flex-col items-center p-2 rounded-lg border-2 transition-all
+                              ${mood === moodOption.label 
+                                ? 'border-primary-500 bg-primary-50' 
+                                : 'border-gray-200 hover:border-gray-300'
+                              }
+                            `}
+                          >
+                            <span className="text-2xl">{moodOption.emoji}</span>
+                            <span className="text-xs mt-1">{moodOption.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Energy Level */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Energy Level: {energyLevel}/10
+                      </label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={energyLevel}
+                        onChange={(e) => setEnergyLevel(Number(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(energyLevel - 1) * 11.11}%, #E5E7EB ${(energyLevel - 1) * 11.11}%, #E5E7EB 100%)`
+                        }}
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Low</span>
+                        <span>High</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex justify-end space-x-3 pt-2">

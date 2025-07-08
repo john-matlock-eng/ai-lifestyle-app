@@ -148,3 +148,16 @@ export function getTrendIcon(trend: 'improving' | 'stable' | 'declining'): strin
     case 'declining': return '📉';
   }
 }
+
+// Goal icons for customization
+export const GOAL_ICONS = [
+  '🎯', '💪', '🏃', '📚', '💰', '🧘', '🎨', '🌟', '⚡', '🔥',
+  '🚀', '💡', '🏆', '🎪', '🌱', '⏰', '📈', '🎸', '✍️', '🗣️',
+  '🏋️', '🚴', '🏊', '🥗', '💧', '😴', '🧠', '❤️', '🎭', '📷'
+];
+
+export interface GoalCategory {
+  value: string;
+  label: string;
+  icon: string;
+}
