@@ -48,8 +48,8 @@ from .models import (
     CreateGoalRequest,
     UpdateGoalRequest,
     GoalListResponse,
-    LogActivityRequest,
     ActivityAttachmentRequest,
+    LogActivityRequest,
 )
 
 from .repository import GoalsRepository
@@ -111,8 +111,8 @@ __all__ = [
     'CreateGoalRequest',
     'UpdateGoalRequest',
     'GoalListResponse',
-    'LogActivityRequest',
     'ActivityAttachmentRequest',
+    'LogActivityRequest',
     
     # Repository
     'GoalsRepository',

@@ -524,6 +524,15 @@ class GoalActivity(BaseModel):
     device_info: Optional[Dict[str, str]] = None
 
 
+class ActivityAttachmentRequest(BaseModel):
+    """Request format for activity attachments."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
+    type: Literal["image", "link", "reference"]
+    url: Optional[str] = None  # Required for link type
+    entity_id: Optional[str] = None  # Required for reference type
+
+
 class LogActivityRequest(BaseModel):
     """Request to log a goal activity."""
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
@@ -540,12 +549,3 @@ class LogActivityRequest(BaseModel):
     attachments: Optional[List[ActivityAttachmentRequest]] = None
     
     source: Literal["manual", "device", "integration", "import"] = "manual"
-
-
-class ActivityAttachmentRequest(BaseModel):
-    """Request format for activity attachments."""
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
-    
-    type: Literal["image", "link", "reference"]
-    url: Optional[str] = None  # Required for link type
-    entity_id: Optional[str] = None  # Required for reference type
