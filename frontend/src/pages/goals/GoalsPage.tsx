@@ -27,13 +27,19 @@ const GoalsPage: React.FC = () => {
     }
   }, [activeTab]);
 
-  const { data, isLoading, error } = useQuery({
+  // Get all goals once for counting
+  const { data: allGoalsData } = useQuery({
+    queryKey: ['all-goals'],
+    queryFn: () => listGoals({}),
+  });
+
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['goals', { selectedStatuses, selectedPatterns, selectedCategories }],
     queryFn: () =>
       listGoals({
-        status: selectedStatuses,
-        goalPattern: selectedPatterns,
-        category: selectedCategories,
+        status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
+        goalPattern: selectedPatterns.length > 0 ? selectedPatterns : undefined,
+        category: selectedCategories.length > 0 ? selectedCategories : undefined,
       }),
   });
 
@@ -117,9 +123,9 @@ const GoalsPage: React.FC = () => {
             `}
           >
             Active Goals
-            {data && (
+            {allGoalsData && (
               <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
-                {data.goals.filter(g => g.status === 'active' || g.status === 'paused').length}
+                {allGoalsData.goals.filter(g => g.status === 'active' || g.status === 'paused').length}
               </span>
             )}
           </button>
@@ -134,34 +140,12 @@ const GoalsPage: React.FC = () => {
             `}
           >
             Archived
-            {data && (
+            {allGoalsData && (
               <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
-                {data.goals.filter(g => g.status === 'archived' || g.status === 'completed').length}
+                {allGoalsData.goals.filter(g => g.status === 'archived' || g.status === 'completed').length}
               </span>
             )}
           </button>
-        </div>
-      </div>
-
-      {/* Backend Issue Notice */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-yellow-800">
-              Activity Logging Temporarily Unavailable
-            </h3>
-            <div className="mt-2 text-sm text-yellow-700">
-              <p>
-                The backend team is fixing a contract violation in the activity logging endpoint. 
-                You can still create, edit, pause, and archive goals. Progress tracking will be available once the backend is fixed.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -310,8 +294,8 @@ const GoalsPage: React.FC = () => {
 
         {/* Clear Filters */}
         {(selectedPatterns.length > 0 || selectedCategories.length > 0 || 
-          (activeTab === 'active' && (!selectedStatuses.includes('active') || !selectedStatuses.includes('paused'))) ||
-          (activeTab === 'archived' && (!selectedStatuses.includes('archived') || !selectedStatuses.includes('completed')))) && (
+          (activeTab === 'active' && selectedStatuses.length > 0 && (!selectedStatuses.includes('active') && !selectedStatuses.includes('paused'))) ||
+          (activeTab === 'archived' && selectedStatuses.length > 0 && (!selectedStatuses.includes('archived') && !selectedStatuses.includes('completed')))) && (
           <div className="mt-4 pt-4 border-t">
             <button
               onClick={() => {

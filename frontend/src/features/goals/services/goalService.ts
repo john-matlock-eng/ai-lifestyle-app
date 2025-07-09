@@ -20,7 +20,29 @@ class GoalService {
     limit?: number;
     sort?: string;
   }): Promise<GoalListResponse> {
-    const { data } = await apiClient.get<GoalListResponse>('/goals', { params });
+    // Create URLSearchParams to handle array serialization properly
+    const searchParams = new URLSearchParams();
+    
+    if (params?.status) {
+      params.status.forEach(s => searchParams.append('status', s));
+    }
+    if (params?.goalPattern) {
+      params.goalPattern.forEach(p => searchParams.append('goalPattern', p));
+    }
+    if (params?.category) {
+      params.category.forEach(c => searchParams.append('category', c));
+    }
+    if (params?.page !== undefined) {
+      searchParams.append('page', params.page.toString());
+    }
+    if (params?.limit !== undefined) {
+      searchParams.append('limit', params.limit.toString());
+    }
+    if (params?.sort) {
+      searchParams.append('sort', params.sort);
+    }
+    
+    const { data } = await apiClient.get<GoalListResponse>(`/goals?${searchParams.toString()}`);
     return data;
   }
 
