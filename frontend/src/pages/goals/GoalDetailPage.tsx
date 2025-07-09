@@ -9,7 +9,7 @@ import {
   logActivity,
 } from '../../features/goals/services/goalService';
 import type { Goal, GoalActivity, LogActivityRequest } from '../../features/goals/types/api.types';
-import GoalDetail from '../../features/goals/components/GoalDetail';
+import { GoalDetail } from '../../features/goals/components/GoalDetail';
 import Button from '../../components/common/Button';
 
 const GoalDetailPage: React.FC = () => {
@@ -33,9 +33,14 @@ const GoalDetailPage: React.FC = () => {
     enabled: !!goalId,
   });
 
-  const updateStatus = useMutation({
-    mutationFn: (status: 'active' | 'paused' | 'completed' | 'archived') =>
-      updateGoal(goalId!, { status }),
+  const updateStatus = useMutation<void, Error, 'active' | 'paused' | 'completed' | 'archived'>({
+    mutationFn: async (status) => {
+      if (status === 'archived') {
+        await archiveGoal(goalId!);
+        return;
+      }
+      await updateGoal(goalId!, { status: status as 'active' | 'paused' });
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['goal', goalId] }),
   });
 
@@ -75,9 +80,13 @@ const GoalDetailPage: React.FC = () => {
       activities={(activitiesData?.activities as GoalActivity[]) || []}
       onBack={() => navigate('/goals')}
       onEdit={() => navigate(`/goals/${goal.goalId}/edit`)}
-      onUpdateStatus={(status) => updateStatus.mutate(status)}
+      onUpdateStatus={(status: 'active' | 'paused' | 'completed' | 'archived') =>
+        updateStatus.mutate(status)
+      }
       onDelete={() => deleteGoal.mutate()}
-      onLogActivity={(activity) => logMutation.mutate(activity as LogActivityRequest)}
+      onLogActivity={(activity: Partial<GoalActivity>) =>
+        logMutation.mutate(activity as LogActivityRequest)
+      }
     />
   );
 };
