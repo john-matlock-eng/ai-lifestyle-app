@@ -1,6 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { GoalPattern, GoalSchedule } from '../../types/api.types';
 import Button from '../../../../components/common/Button';
+
+const days = [
+  { value: 0, label: 'Sun' },
+  { value: 1, label: 'Mon' },
+  { value: 2, label: 'Tue' },
+  { value: 3, label: 'Wed' },
+  { value: 4, label: 'Thu' },
+  { value: 5, label: 'Fri' },
+  { value: 6, label: 'Sat' },
+];
 
 interface ScheduleStepProps {
   pattern: GoalPattern;
@@ -9,21 +19,34 @@ interface ScheduleStepProps {
 }
 
 const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onComplete }) => {
+  const [schedule, setSchedule] = useState<GoalSchedule>({
+    frequency: initialValues?.frequency || 'daily',
+    daysOfWeek: initialValues?.daysOfWeek || [],
+    preferredTimes: initialValues?.preferredTimes || [],
+    checkInFrequency: initialValues?.checkInFrequency || 'daily',
+    allowSkipDays: initialValues?.allowSkipDays,
+    catchUpAllowed: initialValues?.catchUpAllowed ?? true,
+  });
+
+  const handleDayToggle = (day: number) => {
+    setSchedule((prev) => {
+      const days = prev.daysOfWeek || [];
+      return {
+        ...prev,
+        daysOfWeek: days.includes(day)
+          ? days.filter((d) => d !== day)
+          : [...days, day].sort(),
+      };
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, skip schedule for non-recurring goals
     if (pattern !== 'recurring') {
       onComplete(undefined);
-      return;
+    } else {
+      onComplete(schedule);
     }
-    
-    // TODO: Implement schedule form
-    onComplete({
-      frequency: 'daily',
-      checkInFrequency: 'daily',
-      catchUpAllowed: true,
-      ...initialValues,
-    });
   };
 
   return (
@@ -35,9 +58,101 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
         </p>
       </div>
 
-      {/* Placeholder content */}
-      <div className="text-center py-8 text-gray-500">
-        Schedule configuration coming soon...
+      {pattern === 'recurring' && (
+        <>
+          {/* Frequency */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Frequency
+            </label>
+            <select
+              value={schedule.frequency}
+              onChange={(e) => setSchedule({ ...schedule, frequency: e.target.value as any })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+
+          {/* Days of week */}
+          {schedule.frequency === 'weekly' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Days of Week
+              </label>
+              <div className="flex gap-1">
+                {days.map((d) => (
+                  <button
+                    key={d.value}
+                    type="button"
+                    onClick={() => handleDayToggle(d.value)}
+                    className={`w-8 h-8 rounded-full text-sm transition-colors ${schedule.daysOfWeek?.includes(d.value) ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    aria-label={d.label}
+                  >
+                    {d.label.charAt(0)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Preferred times */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Preferred Times (optional)
+            </label>
+            <input
+              type="time"
+              value={schedule.preferredTimes?.[0] || ''}
+              onChange={(e) => setSchedule({ ...schedule, preferredTimes: e.target.value ? [e.target.value] : [] })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+        </>
+      )}
+
+      {/* Check-in frequency */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Check-in Frequency
+        </label>
+        <select
+          value={schedule.checkInFrequency}
+          onChange={(e) => setSchedule({ ...schedule, checkInFrequency: e.target.value as any })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+        >
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+
+      {/* Allow skip days */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Allow Skip Days
+          </label>
+          <input
+            type="number"
+            min="0"
+            value={schedule.allowSkipDays ?? 0}
+            onChange={(e) => setSchedule({ ...schedule, allowSkipDays: parseInt(e.target.value) || 0 })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          />
+        </div>
+        <div className="flex items-center gap-2 mt-6 md:mt-0">
+          <input
+            id="catchUp"
+            type="checkbox"
+            checked={schedule.catchUpAllowed}
+            onChange={(e) => setSchedule({ ...schedule, catchUpAllowed: e.target.checked })}
+            className="h-4 w-4 text-primary-600 rounded"
+          />
+          <label htmlFor="catchUp" className="text-sm text-gray-700">Allow catch up</label>
+        </div>
       </div>
 
       <div className="flex justify-end">
