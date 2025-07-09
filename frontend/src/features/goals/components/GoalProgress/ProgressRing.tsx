@@ -21,12 +21,12 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   className = '',
   children,
 }) => {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-  
   // Ensure progress is between 0 and 100
   const safeProgress = Math.min(Math.max(progress, 0), 100);
+
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (safeProgress / 100) * circumference;
 
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
