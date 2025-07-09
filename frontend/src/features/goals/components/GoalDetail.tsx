@@ -7,7 +7,9 @@ import {
 import type { Goal, GoalActivity } from '../types/goal.types';
 import { GOAL_PATTERN_COLORS } from '../types/goal.types';
 import { GoalProgressRing } from './GoalProgress/ProgressRing';
+import ProgressCharts from './GoalProgress/ProgressCharts';
 import { StreakCalendar } from './GoalProgress/StreakCalendar';
+import ActivityHistory from './GoalProgress/ActivityHistory';
 import { useEncryption } from '../../../hooks/useEncryption';
 import type { ShareableItem, ShareToken } from '../../../components/encryption';
 import { ShareDialog } from '../../../components/encryption';
@@ -351,6 +353,8 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       </div>
 
       {/* Progress Visualization */}
+      <ProgressCharts goal={goal} activities={activities} progress={goal.progress} />
+
       {goal.goalPattern === 'streak' && streakData && (
         <StreakCalendar
           currentStreak={goal.progress.currentStreak || 0}
@@ -462,6 +466,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           </p>
         )}
       </div>
+
+      {/* Full Activity History */}
+      <ActivityHistory goalId={goal.goalId} className="mt-6" />
 
       {/* Private Notes */}
       {privateNotes && (
