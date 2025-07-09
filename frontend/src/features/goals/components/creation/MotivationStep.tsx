@@ -50,7 +50,12 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
           min="1"
           max="5"
           value={context.importanceLevel}
-          onChange={(e) => setContext({ ...context, importanceLevel: Number(e.target.value) as any })}
+          onChange={(e) =>
+            setContext({
+              ...context,
+              importanceLevel: Number(e.target.value),
+            })
+          }
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
         />
       </div>

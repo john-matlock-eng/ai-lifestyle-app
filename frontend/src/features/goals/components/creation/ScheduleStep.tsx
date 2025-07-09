@@ -67,7 +67,12 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
             </label>
             <select
               value={schedule.frequency}
-              onChange={(e) => setSchedule({ ...schedule, frequency: e.target.value as any })}
+              onChange={(e) =>
+                setSchedule({
+                  ...schedule,
+                  frequency: e.target.value as GoalSchedule['frequency'],
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
             >
               <option value="daily">Daily</option>
@@ -120,7 +125,13 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
         </label>
         <select
           value={schedule.checkInFrequency}
-          onChange={(e) => setSchedule({ ...schedule, checkInFrequency: e.target.value as any })}
+          onChange={(e) =>
+            setSchedule({
+              ...schedule,
+              checkInFrequency:
+                e.target.value as GoalSchedule['checkInFrequency'],
+            })
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
         >
           <option value="daily">Daily</option>
