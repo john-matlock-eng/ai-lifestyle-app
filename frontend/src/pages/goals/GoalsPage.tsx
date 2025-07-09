@@ -10,12 +10,22 @@ import Button from '../../components/common/Button';
 import QuickLogModal from '../../features/goals/components/logging/QuickLogModal';
 
 const GoalsPage: React.FC = () => {
-  const [selectedStatuses, setSelectedStatuses] = useState<GoalStatus[]>(['active']);
+  const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
+  const [selectedStatuses, setSelectedStatuses] = useState<GoalStatus[]>(['active', 'paused']);
   const [selectedPatterns, setSelectedPatterns] = useState<GoalPattern[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [quickLogGoalId, setQuickLogGoalId] = useState<string | null>(null);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const queryClient = useQueryClient();
+
+  // Update selected statuses based on tab
+  React.useEffect(() => {
+    if (activeTab === 'active') {
+      setSelectedStatuses(['active', 'paused']);
+    } else {
+      setSelectedStatuses(['archived', 'completed']);
+    }
+  }, [activeTab]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['goals', { selectedStatuses, selectedPatterns, selectedCategories }],
@@ -106,31 +116,158 @@ const GoalsPage: React.FC = () => {
         </Link>
       </div>
 
+      {/* Tabs */}
+      <div className="bg-white rounded-t-lg shadow-sm border-b border-gray-200">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab('active')}
+            className={`
+              px-6 py-3 font-medium text-sm border-b-2 transition-colors
+              ${activeTab === 'active' 
+                ? 'text-primary-600 border-primary-600' 
+                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
+              }
+            `}
+          >
+            Active Goals
+            {data && (
+              <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+                {data.goals.filter(g => g.status === 'active' || g.status === 'paused').length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('archived')}
+            className={`
+              px-6 py-3 font-medium text-sm border-b-2 transition-colors
+              ${activeTab === 'archived' 
+                ? 'text-primary-600 border-primary-600' 
+                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
+              }
+            `}
+          >
+            Archived
+            {data && (
+              <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+                {data.goals.filter(g => g.status === 'archived' || g.status === 'completed').length}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Backend Issue Notice */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-yellow-800">
+              Activity Logging Temporarily Unavailable
+            </h3>
+            <div className="mt-2 text-sm text-yellow-700">
+              <p>
+                The backend team is fixing a contract violation in the activity logging endpoint. 
+                You can still create, edit, pause, and archive goals. Progress tracking will be available once the backend is fixed.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <div className="bg-white rounded-b-lg shadow-sm p-4 mb-6">
         <div className="space-y-4">
-          {/* Status Filter */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Status</h3>
-            <div className="flex flex-wrap gap-2">
-              {statusOptions.map((status) => (
+          {activeTab === 'active' ? (
+            /* Status Filter for Active Tab */
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Status</h3>
+              <div className="flex flex-wrap gap-2">
                 <button
-                  key={status.value}
-                  onClick={() => handleStatusToggle(status.value)}
+                  onClick={() => {
+                    if (selectedStatuses.includes('active')) {
+                      setSelectedStatuses(selectedStatuses.filter(s => s !== 'active'));
+                    } else {
+                      setSelectedStatuses([...selectedStatuses, 'active']);
+                    }
+                  }}
                   className={`
                     px-3 py-1 rounded-full text-sm font-medium transition-all
-                    ${
-                      selectedStatuses.includes(status.value)
-                        ? status.color
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ${selectedStatuses.includes('active')
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }
                   `}
                 >
-                  {status.label}
+                  Active
                 </button>
-              ))}
+                <button
+                  onClick={() => {
+                    if (selectedStatuses.includes('paused')) {
+                      setSelectedStatuses(selectedStatuses.filter(s => s !== 'paused'));
+                    } else {
+                      setSelectedStatuses([...selectedStatuses, 'paused']);
+                    }
+                  }}
+                  className={`
+                    px-3 py-1 rounded-full text-sm font-medium transition-all
+                    ${selectedStatuses.includes('paused')
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }
+                  `}
+                >
+                  Paused
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Status Filter for Archived Tab */
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Status</h3>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => {
+                    if (selectedStatuses.includes('completed')) {
+                      setSelectedStatuses(selectedStatuses.filter(s => s !== 'completed'));
+                    } else {
+                      setSelectedStatuses([...selectedStatuses, 'completed']);
+                    }
+                  }}
+                  className={`
+                    px-3 py-1 rounded-full text-sm font-medium transition-all
+                    ${selectedStatuses.includes('completed')
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }
+                  `}
+                >
+                  Completed
+                </button>
+                <button
+                  onClick={() => {
+                    if (selectedStatuses.includes('archived')) {
+                      setSelectedStatuses(selectedStatuses.filter(s => s !== 'archived'));
+                    } else {
+                      setSelectedStatuses([...selectedStatuses, 'archived']);
+                    }
+                  }}
+                  className={`
+                    px-3 py-1 rounded-full text-sm font-medium transition-all
+                    ${selectedStatuses.includes('archived')
+                      ? 'bg-gray-100 text-gray-800'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }
+                  `}
+                >
+                  Archived
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Pattern Filter */}
           <div>
@@ -185,11 +322,17 @@ const GoalsPage: React.FC = () => {
         </div>
 
         {/* Clear Filters */}
-        {(selectedPatterns.length > 0 || selectedCategories.length > 0 || selectedStatuses.length !== 1) && (
+        {(selectedPatterns.length > 0 || selectedCategories.length > 0 || 
+          (activeTab === 'active' && (!selectedStatuses.includes('active') || !selectedStatuses.includes('paused'))) ||
+          (activeTab === 'archived' && (!selectedStatuses.includes('archived') || !selectedStatuses.includes('completed')))) && (
           <div className="mt-4 pt-4 border-t">
             <button
               onClick={() => {
-                setSelectedStatuses(['active']);
+                if (activeTab === 'active') {
+                  setSelectedStatuses(['active', 'paused']);
+                } else {
+                  setSelectedStatuses(['archived', 'completed']);
+                }
                 setSelectedPatterns([]);
                 setSelectedCategories([]);
               }}

@@ -504,10 +504,10 @@ class ActivityContext(BaseModel):
     """Rich context for AI analysis."""
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
     
-    # Temporal
-    time_of_day: TimeOfDay
-    day_of_week: str
-    is_weekend: bool
+    # Temporal - Make these optional with defaults
+    time_of_day: Optional[TimeOfDay] = None
+    day_of_week: Optional[str] = None
+    is_weekend: Optional[bool] = None
     is_holiday: bool = False
     
     # Environmental
@@ -562,7 +562,7 @@ class GoalActivity(BaseModel):
     location: Optional[ActivityLocation] = None
     
     # Rich Context for AI
-    context: ActivityContext
+    context: Optional[ActivityContext] = None
     
     # Evidence
     note: Optional[str] = Field(None, max_length=1000)

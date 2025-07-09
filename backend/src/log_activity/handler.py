@@ -112,6 +112,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         # Parse and validate request body
         body = json.loads(event.get('body', '{}'))
         
+        # Log the raw request for debugging
+        logger.info(f"Raw request body: {json.dumps(body)}")
+        
         try:
             # Validate request against schema
             request_data = LogActivityRequest(**body)
@@ -123,10 +126,29 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             validation_errors = []
             if hasattr(e, 'errors'):
                 for error in e.errors():
+                    # Get the field location
+                    loc = error.get('loc', [])
+                    # Convert snake_case to camelCase for API consistency
+                    field_parts = []
+                    for part in loc:
+                        if isinstance(part, str) and '_' in part:
+                            # Convert snake_case to camelCase
+                            parts = part.split('_')
+                            camel_part = parts[0] + ''.join(p.capitalize() for p in parts[1:])
+                            field_parts.append(camel_part)
+                        else:
+                            field_parts.append(str(part))
+                    
                     validation_errors.append({
-                        'field': '.'.join(str(x) for x in error['loc']),
+                        'field': '.'.join(field_parts),
                         'message': error['msg']
                     })
+            else:
+                # If it's not a Pydantic error, include the error message
+                validation_errors.append({
+                    'field': 'request',
+                    'message': str(e)
+                })
             
             return {
                 'statusCode': 400,
@@ -153,7 +175,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Log activity
         metrics.add_metric(name="ActivityLogAttempts", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name=f"ActivityType_{request_data.activity_type.value}", unit=MetricUnit.Count, value=1)
+        metrics.add_metric(name=f"ActivityType_{request_data.activity_type}", unit=MetricUnit.Count, value=1)
         
         activity = service.log_activity(user_id, goal_id, request_data, timezone_str)
         

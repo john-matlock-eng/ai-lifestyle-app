@@ -8,7 +8,7 @@ from typing import Optional
 from aws_lambda_powertools import Logger
 
 from goals_common import (
-    Goal, GoalActivity, LogActivityRequest, GoalStatus, ActivityContext,
+    Goal, GoalActivity, LogActivityRequest, GoalStatus, ActivityContext, TimeOfDay,
     GoalsRepository, GoalValidator, ProgressCalculator,
     GoalNotFoundError, GoalPermissionError, 
     ActivityValidationError, InvalidGoalPatternError, GoalError
@@ -117,29 +117,46 @@ class LogActivityService:
         
         # Build context
         if request.context:
-            # Convert ActivityContext object to dict for manipulation
-            context = request.context.model_dump(by_alias=False)
+            # ActivityContext is already a Pydantic model, use it directly
+            context = request.context
+            # Fill in missing temporal fields if not provided
+            if context.time_of_day is None:
+                hour = activity_date.hour
+                if 4 <= hour < 7:
+                    context.time_of_day = TimeOfDay.EARLY_MORNING
+                elif 7 <= hour < 12:
+                    context.time_of_day = TimeOfDay.MORNING
+                elif 12 <= hour < 17:
+                    context.time_of_day = TimeOfDay.AFTERNOON
+                elif 17 <= hour < 21:
+                    context.time_of_day = TimeOfDay.EVENING
+                else:
+                    context.time_of_day = TimeOfDay.NIGHT
+            
+            if context.day_of_week is None:
+                context.day_of_week = activity_date.strftime('%A').lower()
+            
+            if context.is_weekend is None:
+                context.is_weekend = activity_date.weekday() >= 5
         else:
-            context = {}
-        
-        # Add automatic context enrichment
-        if 'time_of_day' not in context:
-            # Auto-detect time of day if not provided
+            # Create a default context with minimal required fields
             hour = activity_date.hour
             if 4 <= hour < 7:
-                context['time_of_day'] = 'early-morning'
+                time_of_day = TimeOfDay.EARLY_MORNING
             elif 7 <= hour < 12:
-                context['time_of_day'] = 'morning'
+                time_of_day = TimeOfDay.MORNING
             elif 12 <= hour < 17:
-                context['time_of_day'] = 'afternoon'
+                time_of_day = TimeOfDay.AFTERNOON
             elif 17 <= hour < 21:
-                context['time_of_day'] = 'evening'
+                time_of_day = TimeOfDay.EVENING
             else:
-                context['time_of_day'] = 'night'
-        if 'day_of_week' not in context:
-            context['day_of_week'] = activity_date.strftime('%A').lower()
-        if 'is_weekend' not in context:
-            context['is_weekend'] = activity_date.weekday() >= 5
+                time_of_day = TimeOfDay.NIGHT
+                
+            context = ActivityContext(
+                time_of_day=time_of_day,
+                day_of_week=activity_date.strftime('%A').lower(),
+                is_weekend=activity_date.weekday() >= 5
+            )
         
         return GoalActivity(
             activity_id=activity_id,
@@ -152,7 +169,7 @@ class LogActivityService:
             logged_at=datetime.now(timezone.utc),
             timezone=timezone_str,
             location=request.location,
-            context=ActivityContext(**context),
+            context=context,
             note=request.note,
             attachments=request.attachments or [],
             source=request.source

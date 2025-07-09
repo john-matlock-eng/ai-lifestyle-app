@@ -128,7 +128,9 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
         <div className="flex-1">
           {/* Header */}
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">{goal.icon || pattern.icon}</span>
+            <span className="text-2xl">
+              {goal.icon || category?.icon || pattern.icon}
+            </span>
             <Link
               to={`/goals/${goal.goalId}`}
               className="font-semibold text-gray-900 hover:text-primary-600 transition-colors"
@@ -169,31 +171,33 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
         </div>
 
         {/* Quick Actions */}
-        <div className="flex items-start gap-2 ml-4">
+        <div className="flex items-start gap-1 ml-4">
           {goal.status === 'active' && onQuickLog && (
             <Button
               size="sm"
               variant="ghost"
               onClick={() => onQuickLog(goal.goalId)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 hover:bg-primary-50"
+              title="Log progress (currently blocked by backend)"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Log
+              <span className="hidden sm:inline">Log</span>
             </Button>
           )}
-          {onEdit && (
+          {onEdit && goal.status !== 'archived' && (
             <Button
               size="sm"
               variant="ghost"
               onClick={() => onEdit(goal)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 hover:bg-blue-50"
               title="Edit goal"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
+              <span className="hidden sm:inline">Edit</span>
             </Button>
           )}
           {goal.status === 'active' && onStatusChange && (
@@ -201,12 +205,13 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
               size="sm"
               variant="ghost"
               onClick={() => onStatusChange(goal.goalId, 'paused')}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 hover:bg-yellow-50"
               title="Pause goal"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
+              <span className="hidden sm:inline">Pause</span>
             </Button>
           )}
           {goal.status === 'paused' && onStatusChange && (
@@ -214,30 +219,32 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
               size="sm"
               variant="ghost"
               onClick={() => onStatusChange(goal.goalId, 'active')}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 hover:bg-green-50"
               title="Resume goal"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
+              <span className="hidden sm:inline">Resume</span>
             </Button>
           )}
-          {onArchive && (
+          {onArchive && goal.status !== 'archived' && (
             <Button
               size="sm"
               variant="ghost"
               onClick={() => onArchive(goal.goalId)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 hover:bg-red-50"
               title="Archive goal"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
               </svg>
+              <span className="hidden sm:inline">Archive</span>
             </Button>
           )}
           <Link to={`/goals/${goal.goalId}`}>
-            <Button size="sm" variant="ghost">
+            <Button size="sm" variant="ghost" title="View details">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

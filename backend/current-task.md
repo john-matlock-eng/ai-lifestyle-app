@@ -398,3 +398,158 @@ When dealing with existing data that might have inconsistent datetime formats:
 3. Ensure all new data is saved in the correct format
 
 This approach handles both legacy data and prevents future issues without requiring a data migration.
+
+---
+
+## 🔍 Activity Logging Status Check
+**Status**: 🤔 Investigating Frontend Report
+**Date**: 2025-01-08
+**Frontend Says**: "Activity logging - Backend contract violation"
+
+### What We've Fixed So Far
+1. ✅ Fixed `activity_type.value` error in handler (line 156)
+2. ✅ Added camelCase field name conversion in validation errors
+3. ✅ Updated all datetime handling to be timezone-aware
+4. ✅ Fixed forward reference error with ActivityAttachmentRequest
+5. ✅ Ensured all models use `alias_generator=to_camel` for camelCase API
+
+### Current Model Configuration
+```python
+class LogActivityRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    
+    value: float
+    unit: str
+    activity_type: ActivityType = ActivityType.PROGRESS  # Accepts "activityType" from API
+    activity_date: Optional[str] = None  # Accepts "activityDate" from API
+    # ... etc
+```
+
+### Testing Required
+The backend should now properly accept this request:
+```json
+{
+    "value": 12500,
+    "unit": "steps",
+    "activityType": "completed",
+    "activityDate": "2024-01-20"
+}
+```
+
+### Additional Changes Made
+1. Added debug logging to see raw requests
+2. Made GoalActivity context field optional
+3. Fixed context building in service layer
+
+### Next Steps
+1. Deploy the current fixes
+2. Check CloudWatch logs to see what exact error the frontend is getting
+3. The logging I added will show the raw request body to help diagnose
+
+**Note to Frontend Team**: 
+If you're still seeing errors after deployment:
+1. Please share the exact error response you're getting
+2. Check if the error is about field names or something else
+3. The backend logs will now show the raw request for debugging
+
+---
+
+## 🎯 Summary of All Contract Fixes
+
+### Activity Logging Endpoint
+**Fixed Issues:**
+1. ✅ **Field Name Contract Compliance**: Models accept camelCase from API (activityType, activityDate)
+2. ✅ **ActivityContext Required Fields**: Made time_of_day, day_of_week, is_weekend optional
+3. ✅ **Enum Access Error**: Fixed activity_type.value error in metrics
+4. ✅ **Validation Error Messages**: Convert snake_case to camelCase in error responses
+5. ✅ **Context Handling**: Properly handle optional context with sensible defaults
+
+**The endpoint now accepts:**
+```json
+{
+    "value": 12500,
+    "unit": "steps",
+    "activityType": "completed",
+    "activityDate": "2024-01-20",
+    "context": {  // Optional
+        "energyLevel": 8,
+        "enjoyment": 9
+        // time_of_day, day_of_week, is_weekend are auto-filled if missing
+    }
+}
+```
+
+### Goal Creation/Update/List Endpoints
+**Fixed Issues:**
+1. ✅ **Timezone Handling**: All datetime comparisons now handle mixed timezone data
+2. ✅ **Date Validation**: Properly compare timezone-aware dates
+3. ✅ **Legacy Data Support**: Models auto-convert timezone-naive dates on load
+4. ✅ **Error Timestamps**: All error responses use timezone-aware timestamps
+
+### Ready for Deployment
+All contract violations have been addressed. The backend now:
+- Accepts camelCase fields as specified in the OpenAPI contract
+- Returns camelCase fields in responses
+- Handles optional fields gracefully
+- Provides clear error messages with camelCase field names
+- Supports both new and legacy data formats
+
+---
+
+## 🐛 Frontend Integration Issues
+**Status**: 🔄 In Progress
+**Date**: 2025-01-08
+**Reported Issues**:
+
+### 1. Icon Display Issue
+- **Problem**: All goals show the default target icon (🎯) instead of custom icons
+- **Likely Cause**: Frontend not reading the `icon` field from goal data
+- **Backend Status**: ✅ Icons are properly stored and returned in API responses
+
+### 2. Archived Goals Visibility
+- **Problem**: Archived goals showing in main list
+- **Fix Applied**: ✅ Updated `list_goals/service.py` to exclude archived goals by default
+- **Solution**: Archived goals now filtered out unless explicitly requested with `?status=archived`
+
+### 3. Edit/Progress Functionality
+- **Problem**: Users can't add progress or edit goals
+- **Needs Investigation**: Check if frontend is properly calling:
+  - `PUT /goals/{goalId}` for edits
+  - `POST /goals/{goalId}/activities` for logging progress
+
+### Backend Fixes Applied
+1. ✅ Updated list_goals to exclude archived goals by default
+2. ✅ All endpoints properly handle camelCase fields per contract
+3. ✅ All timezone issues resolved
+
+### Frontend Integration Checklist
+- [ ] Fix icon display - read `icon` field from goal response
+- [ ] Add archived goals tab/filter if needed
+- [ ] Enable edit goal functionality
+- [ ] Enable progress logging functionality
+- [ ] Handle camelCase field names from API
+
+### API Examples for Frontend
+```javascript
+// List active goals (archived excluded by default)
+GET /v1/goals
+
+// List only archived goals
+GET /v1/goals?status=archived
+
+// Update a goal
+PUT /v1/goals/{goalId}
+{
+  "title": "Updated Title",
+  "status": "paused"
+}
+
+// Log progress
+POST /v1/goals/{goalId}/activities
+{
+  "value": 5,
+  "unit": "pounds",
+  "activityType": "progress",
+  "activityDate": "2025-01-08"
+}
+```

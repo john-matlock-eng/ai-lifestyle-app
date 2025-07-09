@@ -118,6 +118,9 @@ class ListGoalsService:
         # Filter by status
         if status_filter:
             filtered = [g for g in filtered if g.status in status_filter]
+        else:
+            # By default, exclude archived goals unless explicitly requested
+            filtered = [g for g in filtered if g.status != GoalStatus.ARCHIVED]
         
         # Filter by pattern
         if pattern_filter:
