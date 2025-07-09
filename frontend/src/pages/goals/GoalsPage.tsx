@@ -33,7 +33,7 @@ const GoalsPage: React.FC = () => {
     queryFn: () => listGoals({}),
   });
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['goals', { selectedStatuses, selectedPatterns, selectedCategories }],
     queryFn: () =>
       listGoals({
