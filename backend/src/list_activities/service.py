@@ -57,8 +57,10 @@ class ListActivitiesService:
             logger.warning(f"Goal {goal_id} not found for user {user_id}")
             raise GoalNotFoundError(goal_id, user_id)
         
-        if goal.userId != user_id:
-            logger.warning(f"User {user_id} attempted to list activities for goal {goal_id} owned by {goal.userId}")
+        if goal.user_id != user_id:
+            logger.warning(
+                f"User {user_id} attempted to list activities for goal {goal_id} owned by {goal.user_id}"
+            )
             raise GoalPermissionError("list activities", goal_id)
         
         # Convert dates to datetime if provided
@@ -85,8 +87,8 @@ class ListActivitiesService:
         # Apply activity type filter
         if activity_type_filter:
             filtered_activities = [
-                a for a in all_activities 
-                if a.activityType in activity_type_filter
+                a for a in all_activities
+                if a.activity_type in activity_type_filter
             ]
         else:
             filtered_activities = all_activities
