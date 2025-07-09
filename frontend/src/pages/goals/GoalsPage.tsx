@@ -37,12 +37,6 @@ const GoalsPage: React.FC = () => {
       }),
   });
 
-  const handleStatusToggle = (status: GoalStatus) => {
-    setSelectedStatuses((prev) =>
-      prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]
-    );
-  };
-
   const handlePatternToggle = (pattern: GoalPattern) => {
     setSelectedPatterns((prev) =>
       prev.includes(pattern) ? prev.filter((p) => p !== pattern) : [...prev, pattern]
@@ -90,13 +84,6 @@ const GoalsPage: React.FC = () => {
   const handleStatusChange = async (goalId: string, status: 'active' | 'paused') => {
     updateGoalMutation.mutate({ goalId, updates: { status } });
   };
-
-  const statusOptions: { value: GoalStatus; label: string; color: string }[] = [
-    { value: 'active', label: 'Active', color: 'bg-green-100 text-green-800' },
-    { value: 'paused', label: 'Paused', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'completed', label: 'Completed', color: 'bg-blue-100 text-blue-800' },
-    { value: 'archived', label: 'Archived', color: 'bg-gray-100 text-gray-800' },
-  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
