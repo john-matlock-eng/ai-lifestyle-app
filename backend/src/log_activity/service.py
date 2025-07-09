@@ -82,7 +82,9 @@ class LogActivityService:
         # Update goal progress (async in production)
         self._update_goal_progress(goal, activity)
         
-        logger.info(f"Logged {activity.activityType} activity for goal {goal_id}")
+        logger.info(
+            f"Logged {activity.activity_type} activity for goal {goal_id}"
+        )
         
         return saved_activity
     

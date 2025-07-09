@@ -46,8 +46,10 @@ class GetProgressService:
             raise GoalNotFoundError(goal_id, user_id)
         
         # Verify ownership
-        if goal.userId != user_id:
-            logger.warning(f"User {user_id} attempted to access progress for goal {goal_id} owned by {goal.userId}")
+        if goal.user_id != user_id:
+            logger.warning(
+                f"User {user_id} attempted to access progress for goal {goal_id} owned by {goal.user_id}"
+            )
             raise GoalPermissionError("view progress", goal_id)
         
         # Get activities for the period
@@ -62,7 +64,9 @@ class GetProgressService:
         # Generate insights
         insights = self._generate_insights(goal, activities, progress, statistics)
         
-        logger.info(f"Retrieved progress for goal {goal_id}: {progress.percentComplete}% complete")
+        logger.info(
+            f"Retrieved progress for goal {goal_id}: {progress.percent_complete}% complete"
+        )
         
         return {
             'goalId': goal_id,
@@ -106,15 +110,15 @@ class GetProgressService:
     
     def _calculate_progress(self, goal: Goal, activities: List[GoalActivity]) -> Any:
         """Calculate progress based on goal pattern."""
-        if goal.goalPattern == 'recurring':
+        if goal.goal_pattern == 'recurring':
             return ProgressCalculator.calculate_recurring_progress(goal, activities)
-        elif goal.goalPattern == 'milestone':
+        elif goal.goal_pattern == 'milestone':
             return ProgressCalculator.calculate_milestone_progress(goal, activities)
-        elif goal.goalPattern == 'target':
+        elif goal.goal_pattern == 'target':
             return ProgressCalculator.calculate_target_progress(goal, activities)
-        elif goal.goalPattern == 'streak':
+        elif goal.goal_pattern == 'streak':
             return ProgressCalculator.calculate_streak_progress(goal, activities)
-        elif goal.goalPattern == 'limit':
+        elif goal.goal_pattern == 'limit':
             return ProgressCalculator.calculate_limit_progress(goal, activities)
         else:
             return goal.progress  # Return existing progress
@@ -140,12 +144,14 @@ class GetProgressService:
             return stats
         
         # Count by type
-        type_counts = Counter(a.activityType.value for a in activities)
+        type_counts = Counter(a.activity_type.value for a in activities)
         stats['completedActivities'] = type_counts.get('completed', 0) + type_counts.get('progress', 0)
         stats['skippedActivities'] = type_counts.get('skipped', 0)
         
         # Calculate value statistics
-        progress_activities = [a for a in activities if a.activityType in ['progress', 'completed']]
+        progress_activities = [
+            a for a in activities if a.activity_type in ['progress', 'completed']
+        ]
         if progress_activities:
             values = [a.value for a in progress_activities]
             stats['averageValue'] = sum(values) / len(values)
@@ -155,7 +161,7 @@ class GetProgressService:
         # Calculate consistency (percentage of expected days with activity)
         if period != 'all' and goal.schedule:
             expected_days = self._get_expected_activity_days(goal, period)
-            actual_days = len(set(a.activityDate.date() for a in activities))
+            actual_days = len(set(a.activity_date.date() for a in activities))
             if expected_days > 0:
                 stats['consistency'] = min(100, (actual_days / expected_days) * 100)
         
@@ -238,7 +244,7 @@ class GetProgressService:
         day_values = {}
         
         for activity in activities:
-            day_of_week = activity.activityDate.strftime('%A').lower()
+            day_of_week = activity.activity_date.strftime('%A').lower()
             if day_of_week not in day_values:
                 day_values[day_of_week] = []
             day_values[day_of_week].append(activity.value)
@@ -272,23 +278,23 @@ class GetProgressService:
             )
         
         # Progress-based recommendations
-        if progress.percentComplete < 25 and len(activities) > 10:
+        if progress.percent_complete < 25 and len(activities) > 10:
             recommendations.append(
                 "You're making slow progress. Consider breaking down your goal into smaller milestones."
             )
-        elif progress.percentComplete > 75:
+        elif progress.percent_complete > 75:
             recommendations.append(
                 "You're close to your goal! Stay focused and maintain your current pace."
             )
         
         # Pattern-based recommendations
-        if goal.goalPattern == 'streak' and progress.currentStreak == 0:
+        if goal.goal_pattern == 'streak' and progress.current_streak == 0:
             recommendations.append(
                 "Your streak was broken. Start fresh today - every journey begins with a single step!"
             )
-        elif goal.goalPattern == 'limit' and progress.daysOverLimit > 5:
+        elif goal.goal_pattern == 'limit' and progress.days_over_limit > 5:
             recommendations.append(
-                f"You've exceeded your limit {progress.daysOverLimit} times. Consider adjusting your target or identifying triggers."
+                f"You've exceeded your limit {progress.days_over_limit} times. Consider adjusting your target or identifying triggers."
             )
         
         # Value-based recommendations
@@ -322,7 +328,7 @@ class GetProgressService:
                 return days // 30
         
         # Default to daily for recurring goals
-        if goal.goalPattern in ['recurring', 'streak', 'limit']:
+        if goal.goal_pattern in ['recurring', 'streak', 'limit']:
             return days
         
         return days // 7  # Default to weekly
