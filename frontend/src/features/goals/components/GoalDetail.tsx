@@ -9,6 +9,7 @@ import { GOAL_PATTERN_COLORS } from '../types/goal.types';
 import { GoalProgressRing } from './GoalProgress/ProgressRing';
 import ProgressCharts from './GoalProgress/ProgressCharts';
 import { StreakCalendar } from './GoalProgress/StreakCalendar';
+import ActivityHistory from './GoalProgress/ActivityHistory';
 import { useEncryption } from '../../../hooks/useEncryption';
 import type { ShareableItem, ShareToken } from '../../../components/encryption';
 import { ShareDialog } from '../../../components/encryption';
@@ -465,6 +466,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           </p>
         )}
       </div>
+
+      {/* Full Activity History */}
+      <ActivityHistory goalId={goal.goalId} className="mt-6" />
 
       {/* Private Notes */}
       {privateNotes && (
