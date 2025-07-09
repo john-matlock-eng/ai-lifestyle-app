@@ -3,6 +3,7 @@ Service layer for goal listing business logic.
 """
 
 from typing import List, Optional, Dict, Any
+from datetime import datetime, timezone
 from aws_lambda_powertools import Logger
 
 from goals_common import (
@@ -132,18 +133,24 @@ class ListGoalsService:
     
     def _apply_sorting(self, goals: List[Goal], sort: str) -> List[Goal]:
         """Apply sorting to goal list."""
+        def make_tz_aware(dt: datetime) -> datetime:
+            """Ensure datetime is timezone-aware for comparison."""
+            if dt and dt.tzinfo is None:
+                return dt.replace(tzinfo=timezone.utc)
+            return dt
+        
         if sort == 'created_asc':
-            return sorted(goals, key=lambda g: g.created_at)
+            return sorted(goals, key=lambda g: make_tz_aware(g.created_at))
         elif sort == 'created_desc':
-            return sorted(goals, key=lambda g: g.created_at, reverse=True)
+            return sorted(goals, key=lambda g: make_tz_aware(g.created_at), reverse=True)
         elif sort == 'updated_asc':
-            return sorted(goals, key=lambda g: g.updated_at)
+            return sorted(goals, key=lambda g: make_tz_aware(g.updated_at))
         elif sort == 'updated_desc':
-            return sorted(goals, key=lambda g: g.updated_at, reverse=True)
+            return sorted(goals, key=lambda g: make_tz_aware(g.updated_at), reverse=True)
         elif sort == 'title_asc':
             return sorted(goals, key=lambda g: g.title.lower())
         elif sort == 'title_desc':
             return sorted(goals, key=lambda g: g.title.lower(), reverse=True)
         else:
             # Default to updated desc
-            return sorted(goals, key=lambda g: g.updated_at, reverse=True)
+            return sorted(goals, key=lambda g: make_tz_aware(g.updated_at), reverse=True)

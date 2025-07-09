@@ -352,3 +352,49 @@ curl -X POST https://api.ailifestyle.app/v1/goals \
 
 ### Key Takeaway
 Always use `datetime.now(timezone.utc)` instead of the deprecated `datetime.utcnow()` to ensure all datetimes are timezone-aware. This prevents comparison errors when working with timezone-aware dates from APIs or databases.
+
+---
+
+## 🕰️ Comprehensive Fix for Existing Data Timezone Issues
+**Status**: ✅ Fixed
+**Date**: 2025-01-08
+**Error**: "Failed to list goals: can't compare offset-naive and offset-aware datetimes"
+
+### Root Cause
+The issue was deeper than just the code - existing data in DynamoDB was saved with timezone-naive datetime strings. When these were loaded into Pydantic models and then sorted, Python couldn't compare timezone-naive and timezone-aware datetimes.
+
+### Multi-Layer Fix Applied
+
+#### 1. Model-Level Validators
+Added `ensure_timezone_aware` validators to all models with datetime fields:
+- **Goal Model**: Ensures `created_at`, `updated_at`, `completed_at`, and nested datetime fields are timezone-aware
+- **GoalActivity Model**: Ensures `activity_date` and `logged_at` are timezone-aware
+- **PeriodHistory Model**: Ensures `date` field is timezone-aware
+- **GoalTarget Model**: Already had timezone handling for `target_date`
+
+#### 2. Service-Level Sorting Fix
+Updated `list_goals/service.py` to handle mixed timezone data:
+```python
+def make_tz_aware(dt: datetime) -> datetime:
+    """Ensure datetime is timezone-aware for comparison."""
+    if dt and dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+```
+
+#### 3. Repository-Level Parsing
+Added `_parse_goal` and `_parse_activity` methods to handle DynamoDB data parsing, ensuring Pydantic validators run on all loaded data.
+
+### How It Works
+1. When data is loaded from DynamoDB, the repository calls the appropriate parse method
+2. Pydantic model validators automatically convert timezone-naive datetimes to timezone-aware
+3. Sorting operations in the service layer also handle mixed timezone data defensively
+4. All new data is saved with timezone-aware timestamps
+
+### Key Learning
+When dealing with existing data that might have inconsistent datetime formats:
+1. Add model validators to normalize data on load
+2. Add defensive handling in comparison/sorting operations
+3. Ensure all new data is saved in the correct format
+
+This approach handles both legacy data and prevents future issues without requiring a data migration.

@@ -119,7 +119,8 @@ class GoalsRepository:
             for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                 item.pop(field, None)
             
-            return Goal(**item)
+            # Ensure datetime fields are properly handled
+            return self._parse_goal(item)
             
         except Exception as e:
             logger.error(f"Error getting goal {goal_id}: {str(e)}")
@@ -166,7 +167,7 @@ class GoalsRepository:
             for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                 item.pop(field, None)
             
-            return Goal(**item)
+            return self._parse_goal(item)
             
         except ClientError as e:
             if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
@@ -227,7 +228,7 @@ class GoalsRepository:
                     # Remove DynamoDB-specific fields
                     for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                         item.pop(field, None)
-                    goals.append(Goal(**item))
+                    goals.append(self._parse_goal(item))
             
             return goals, response.get('LastEvaluatedKey')
             
@@ -293,7 +294,7 @@ class GoalsRepository:
                 # Remove DynamoDB-specific fields
                 for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                     item.pop(field, None)
-                activities.append(GoalActivity(**item))
+                activities.append(self._parse_activity(item))
             
             return activities
             
@@ -325,7 +326,7 @@ class GoalsRepository:
                     # Remove DynamoDB-specific fields
                     for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                         item.pop(field, None)
-                    activities.append(GoalActivity(**item))
+                    activities.append(self._parse_activity(item))
             
             return activities
             
@@ -334,6 +335,16 @@ class GoalsRepository:
             raise
     
     # Batch operations
+    def _parse_goal(self, item: Dict[str, Any]) -> Goal:
+        """Parse a goal from DynamoDB item, handling datetime fields."""
+        # Parse the goal - Pydantic model validators will ensure timezone awareness
+        return Goal(**item)
+    
+    def _parse_activity(self, item: Dict[str, Any]) -> GoalActivity:
+        """Parse an activity from DynamoDB item, handling datetime fields."""
+        # Parse the activity - Pydantic model validators will ensure timezone awareness
+        return GoalActivity(**item)
+    
     def batch_get_goals(self, user_id: str, goal_ids: List[str]) -> List[Goal]:
         """Get multiple goals in a single request."""
         if not goal_ids:
@@ -361,7 +372,7 @@ class GoalsRepository:
                 # Remove DynamoDB-specific fields
                 for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                     item.pop(field, None)
-                goals.append(Goal(**item))
+                goals.append(self._parse_goal(item))
             
             return goals
             

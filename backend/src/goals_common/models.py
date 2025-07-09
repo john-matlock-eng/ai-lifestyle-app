@@ -97,7 +97,11 @@ class TrendDirection(str, Enum):
 # Target Definition Models
 class GoalTarget(BaseModel):
     """Flexible target definition for all goal patterns."""
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+    model_config = ConfigDict(
+        populate_by_name=True, 
+        alias_generator=to_camel,
+        json_encoders={datetime: lambda v: v.isoformat() if v else None}
+    )
     
     metric: MetricType
     value: float = Field(gt=0, description="The goal value")
@@ -193,6 +197,13 @@ class PeriodHistory(BaseModel):
     achieved: bool
     value: float
     date: datetime
+    
+    @model_validator(mode='after')
+    def ensure_timezone_aware(self):
+        """Ensure datetime is timezone-aware."""
+        if self.date and self.date.tzinfo is None:
+            self.date = self.date.replace(tzinfo=timezone.utc)
+        return self
 
 
 class GoalProgress(BaseModel):
@@ -321,6 +332,34 @@ class Goal(BaseModel):
             if not self.target.target_date:
                 raise ValueError(f"{self.goal_pattern} goals require a target date")
                 
+        return self
+    
+    @model_validator(mode='after')
+    def ensure_timezone_aware(self):
+        """Ensure all datetime fields are timezone-aware."""
+        # Fix created_at
+        if self.created_at and self.created_at.tzinfo is None:
+            self.created_at = self.created_at.replace(tzinfo=timezone.utc)
+        
+        # Fix updated_at
+        if self.updated_at and self.updated_at.tzinfo is None:
+            self.updated_at = self.updated_at.replace(tzinfo=timezone.utc)
+        
+        # Fix completed_at
+        if self.completed_at and self.completed_at.tzinfo is None:
+            self.completed_at = self.completed_at.replace(tzinfo=timezone.utc)
+        
+        # Fix target dates
+        if self.target and self.target.target_date and self.target.target_date.tzinfo is None:
+            self.target.target_date = self.target.target_date.replace(tzinfo=timezone.utc)
+        
+        # Fix progress dates
+        if self.progress:
+            if self.progress.last_activity_date and self.progress.last_activity_date.tzinfo is None:
+                self.progress.last_activity_date = self.progress.last_activity_date.replace(tzinfo=timezone.utc)
+            if self.progress.projected_completion and self.progress.projected_completion.tzinfo is None:
+                self.progress.projected_completion = self.progress.projected_completion.replace(tzinfo=timezone.utc)
+        
         return self
     
     def calculate_progress(self) -> float:
@@ -532,6 +571,17 @@ class GoalActivity(BaseModel):
     # Integration
     source: Literal["manual", "device", "integration", "import"] = "manual"
     device_info: Optional[Dict[str, str]] = None
+    
+    @model_validator(mode='after')
+    def ensure_timezone_aware(self):
+        """Ensure all datetime fields are timezone-aware."""
+        if self.activity_date and self.activity_date.tzinfo is None:
+            self.activity_date = self.activity_date.replace(tzinfo=timezone.utc)
+        
+        if self.logged_at and self.logged_at.tzinfo is None:
+            self.logged_at = self.logged_at.replace(tzinfo=timezone.utc)
+        
+        return self
 
 
 class ActivityAttachmentRequest(BaseModel):
