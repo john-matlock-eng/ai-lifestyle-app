@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { listActivities } from '../../services/goalService';
-import type { GoalActivity } from '../../types/api.types';
+import type { GoalActivity, GoalActivityListResponse } from '../../types/api.types';
 import { CheckCircle, TrendingUp, XCircle } from 'lucide-react';
 
 interface ActivityHistoryProps {
@@ -13,10 +13,10 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<GoalActivityListResponse, Error>({
     queryKey: ['goal-activity-history', goalId, page],
     queryFn: () => listActivities(goalId, { page, limit }),
-    keepPreviousData: true,
+    placeholderData: (prev) => prev,
   });
 
   const activities = data?.activities || [];

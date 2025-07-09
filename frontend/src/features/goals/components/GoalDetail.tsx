@@ -4,7 +4,7 @@ import {
   Archive, Trash2, Plus, CheckCircle, XCircle, Clock, Target, Trophy,
   Flame, ShieldAlert, BarChart3, Share2
 } from 'lucide-react';
-import type { Goal, GoalActivity } from '../types/goal.types';
+import type { Goal, GoalActivity, GoalStatistics } from '../types/api.types';
 import { GOAL_PATTERN_COLORS } from '../types/goal.types';
 import { GoalProgressRing } from './GoalProgress/ProgressRing';
 import ProgressCharts from './GoalProgress/ProgressCharts';
@@ -92,10 +92,10 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
   const streakData = goal.goalPattern === 'streak' ? {
     completedDates: activities
       .filter(a => a.activityType === 'completed' || a.activityType === 'progress')
-      .map(a => a.activityDate.toISOString().split('T')[0]),
+      .map(a => a.activityDate.split('T')[0]),
     skippedDates: activities
       .filter(a => a.activityType === 'skipped')
-      .map(a => a.activityDate.toISOString().split('T')[0]),
+      .map(a => a.activityDate.split('T')[0]),
   } : null;
 
   // Recent activities
@@ -353,7 +353,16 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       </div>
 
       {/* Progress Visualization */}
-      <ProgressCharts goal={goal} activities={activities} progress={goal.progress} />
+      <ProgressCharts
+        goal={goal}
+        activities={activities}
+          progress={{
+            goalId: goal.goalId,
+            period: 'current',
+            progress: goal.progress,
+            statistics: {} as GoalStatistics,
+          }}
+      />
 
       {goal.goalPattern === 'streak' && streakData && (
         <StreakCalendar
@@ -453,9 +462,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   <p className="text-sm font-medium text-gray-900">
                     {new Date(activity.activityDate).toLocaleDateString()}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    {activity.context.timeOfDay}
-                  </p>
+                    <p className="text-xs text-gray-500">
+                      {activity.context?.timeOfDay}
+                    </p>
                 </div>
               </div>
             ))}
@@ -484,13 +493,13 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       <ShareDialog
         isOpen={showShareDialog}
         onClose={() => setShowShareDialog(false)}
-        items={[{
-          id: goal.goalId,
-          title: goal.title,
-          type: 'goal',
-          createdAt: goal.createdAt.toISOString(),
-          encrypted: !!goal.metadata?.encryptedNotes,
-        }] as ShareableItem[]}
+          items={[{
+            id: goal.goalId,
+            title: goal.title,
+            type: 'goal',
+            createdAt: goal.createdAt,
+            encrypted: !!goal.metadata?.encryptedNotes,
+          }] as ShareableItem[]}
         onShare={handleShare}
       />
     </div>
