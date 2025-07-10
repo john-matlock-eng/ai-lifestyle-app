@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import type { Editor } from '@tiptap/react';
+import type { Transaction } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -70,12 +72,13 @@ const EditorSection: React.FC<EditorSectionProps> = ({
 
   useEffect(() => {
     if (!editor) return;
-    const unsubscribe = editor.on('update', () => {
-      const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
+    const handleUpdate = ({ editor: updatedEditor }: { editor: Editor; transaction: Transaction }) => {
+      const markdown = (updatedEditor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
       onChange?.(markdown);
-    });
+    };
+    editor.on('update', handleUpdate);
     return () => {
-      editor.off('update', unsubscribe);
+      editor.off('update', handleUpdate);
     };
   }, [editor, onChange]);
 
@@ -170,4 +173,3 @@ const EditorSection: React.FC<EditorSectionProps> = ({
 };
 
 export default EditorSection;
-export type { EditorSectionProps };

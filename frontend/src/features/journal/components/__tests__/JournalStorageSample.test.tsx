@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event';
 import JournalStorageSample from '../JournalStorageSample';
 import { indexedDB } from 'fake-indexeddb';
 
-// @ts-expect-error global assignment for test env
-global.indexedDB = indexedDB;
+// assigning indexedDB to global for test environment
+global.indexedDB = indexedDB as unknown as IDBFactory;
 
 describe('JournalStorageSample', () => {
   beforeEach(() => {
