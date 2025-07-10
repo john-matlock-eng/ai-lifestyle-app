@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import JournalEditorWithSections, { JournalTemplate } from '../JournalEditorWithSections';
+import JournalEditorWithSections from '../JournalEditorWithSections';
+import type { JournalTemplate } from '../JournalEditorWithSections';
 
 const template: JournalTemplate = {
   id: 'daily',

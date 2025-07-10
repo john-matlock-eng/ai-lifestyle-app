@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import JournalEditor from './JournalEditor';
-import { JournalEntry, getAllEntries, addEntry, updateEntry, deleteEntry } from '../hooks/useJournalStorage';
+import type { JournalEntry } from '../hooks/useJournalStorage';
+import { getAllEntries, addEntry, updateEntry, deleteEntry } from '../hooks/useJournalStorage';
 import { Button } from '@/components/common';
 
 const JournalStorageSample: React.FC = () => {
