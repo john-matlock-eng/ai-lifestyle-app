@@ -7,6 +7,7 @@ import type { JournalTemplate } from '../../types/template.types';
 const template: JournalTemplate = {
   id: 'daily',
   name: 'Daily',
+  version: 1,
   sections: [
     { id: 'feelings', title: 'Feelings', prompt: 'How do you feel?' },
     { id: 'thoughts', title: 'Thoughts', prompt: 'What are you thinking?' },
