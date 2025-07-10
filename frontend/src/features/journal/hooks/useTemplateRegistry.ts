@@ -19,18 +19,34 @@ const TemplateSchema = z.object({
   sections: z.array(SectionSchema),
 });
 
+const SUPPORTED_VERSION = 1;
+
 export function useTemplateRegistry() {
   const [templates, setTemplates] = useState<JournalTemplate[]>([]);
 
   useEffect(() => {
-    const modules = import.meta.glob('../templates/*.json', { as: 'json' });
-    Promise.all(Object.values(modules).map((load) => load()))
-      .then((loaded) => {
+    const useFetch = (window as unknown as Record<string, unknown>).__USE_FETCH_TEMPLATES__ || !import.meta.env.DEV;
+    async function load() {
+      try {
+        let loaded: unknown[] = [];
+        if (!useFetch) {
+          const modules = import.meta.glob('../templates/*.json', { as: 'json' });
+          loaded = await Promise.all(Object.values(modules).map((l) => l()));
+        } else {
+          const res = await fetch('/templates/registry.json');
+          const registry: string[] = await res.json();
+          loaded = await Promise.all(registry.map((p) => fetch(p).then((r) => r.json())));
+        }
+
         const valid: JournalTemplate[] = [];
         for (const data of loaded) {
           const parsed = TemplateSchema.safeParse(data);
           if (!parsed.success) {
             console.error('Template validation failed', parsed.error);
+            continue;
+          }
+          if (parsed.data.version !== SUPPORTED_VERSION) {
+            console.warn('Unsupported template version', parsed.data.version);
             continue;
           }
           const { sections, ...rest } = parsed.data;
@@ -47,10 +63,12 @@ export function useTemplateRegistry() {
           });
         }
         setTemplates(valid);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('Failed to load templates', err);
-      });
+      }
+    }
+
+    load();
   }, []);
 
   return templates;

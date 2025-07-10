@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/common';
 import EditorSection from './EditorSection';
 import type { JournalTemplate } from '../types/template.types';
@@ -27,6 +27,8 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
   const [content, setContent] = useState<Record<string, string>>(
     Object.fromEntries(template.sections.map((s) => [s.id, initialData[s.id] || '']))
   );
+  const draftBase = useRef(draftId ?? `${template.id}-${Date.now()}`);
+  const [saveCounter, setSaveCounter] = useState(0);
 
   const handleChange = (id: string) => (markdown: string) => {
     setContent((prev) => ({ ...prev, [id]: markdown }));
@@ -49,9 +51,10 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
     }));
 
     template.sections.forEach((s) => {
-      const key = draftId ? `journal-draft-${draftId}-${s.id}` : `journal-draft-${s.id}`;
+      const key = `journal-draft-${draftBase.current}-${s.id}`;
       localStorage.removeItem(key);
     });
+    setSaveCounter((c) => c + 1);
   };
 
   return (
@@ -66,7 +69,8 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
             initialContent={content[section.id]}
             readOnly={readOnly}
             onChange={handleChange(section.id)}
-            draftId={draftId ? `${draftId}-${section.id}` : section.id}
+            draftId={`${draftBase.current}-${section.id}`}
+            saveSignal={saveCounter}
           />
         </div>
       ))}
