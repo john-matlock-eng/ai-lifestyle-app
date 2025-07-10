@@ -8,13 +8,17 @@
       "id": "summary",
       "title": "Summary",
       "type": "paragraph",
-      "placeholder": "What happened today?"
+      "placeholder": "What happened today?",
+      "aiPrompt": "Summarize the key events briefly.",
+      "defaultPrivacy": "ai"
     },
     {
       "id": "mood",
       "title": "Mood",
       "type": "paragraph",
-      "placeholder": "How did you feel overall?"
+      "placeholder": "How did you feel overall?",
+      "aiPrompt": "Describe your feelings in one sentence.",
+      "defaultPrivacy": "private"
     }
   ]
 }

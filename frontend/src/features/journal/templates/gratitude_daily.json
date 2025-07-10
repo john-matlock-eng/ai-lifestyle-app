@@ -8,13 +8,17 @@
       "id": "gratitude_list",
       "title": "Things I'm grateful for",
       "type": "paragraph",
-      "placeholder": "Write at least three items…"
+      "placeholder": "Write at least three items…",
+      "aiPrompt": "Which item had the biggest emotional impact today and why?",
+      "defaultPrivacy": "ai"
     },
     {
       "id": "reflection",
       "title": "Why they matter",
       "type": "paragraph",
-      "placeholder": "Reflect on the meaning behind your gratitude items…"
+      "placeholder": "Reflect on the meaning behind your gratitude items…",
+      "aiPrompt": "Suggest a mindfulness exercise relating to these reflections.",
+      "defaultPrivacy": "private"
     }
   ]
 }

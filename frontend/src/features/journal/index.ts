@@ -3,4 +3,4 @@ export { default as JournalEditorWithSections } from './components/JournalEditor
 export { default as JournalStorageSample } from './components/JournalStorageSample';
 export { default as JournalTemplateDemo } from './components/JournalTemplateDemo';
 export { default as TemplatePicker } from './components/TemplatePicker';
-export type { JournalTemplate } from './components/JournalEditorWithSections';
+export type { JournalTemplate } from './types/template.types';

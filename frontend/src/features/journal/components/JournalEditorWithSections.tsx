@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/common';
 import EditorSection from './EditorSection';
-import type { SectionDefinition } from './EditorSection';
-
-export interface JournalTemplate {
-  id: string;
-  name: string;
-  sections: SectionDefinition[];
-}
+import type { JournalTemplate } from '../types/template.types';
 
 export interface JournalEditorWithSectionsProps {
   template: JournalTemplate;

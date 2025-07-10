@@ -8,12 +8,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import ReactMarkdown from 'react-markdown';
 import { Bold, Italic, Heading, List } from 'lucide-react';
 import { Button } from '@/components/common';
-
-export interface SectionDefinition {
-  id: string;
-  title: string;
-  prompt: string;
-}
+import type { SectionDefinition } from '../types/template.types';
 
 export interface EditorSectionProps {
   section: SectionDefinition;
