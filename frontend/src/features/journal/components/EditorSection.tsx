@@ -7,43 +7,45 @@ import ReactMarkdown from 'react-markdown';
 import { Bold, Italic, Heading, List } from 'lucide-react';
 import { Button } from '@/components/common';
 
-interface JournalEditorProps {
-  initialContent: string;
-  onSave: (markdown: string) => void | Promise<void>;
-  readOnly?: boolean;
-  className?: string;
-  /**
-   * Identifier for draft storage. Allows multiple drafts in parallel.
-   */
-  draftId?: string;
+export interface SectionDefinition {
+  id: string;
+  title: string;
+  prompt: string;
 }
 
-const JournalEditor: React.FC<JournalEditorProps> = ({
-  initialContent,
-  onSave,
+export interface EditorSectionProps {
+  section: SectionDefinition;
+  initialContent?: string;
+  readOnly?: boolean;
+  draftId?: string;
+  onChange?: (markdown: string) => void;
+}
+
+const EditorSection: React.FC<EditorSectionProps> = ({
+  section,
+  initialContent = '',
   readOnly = false,
-  className = '',
   draftId,
+  onChange,
 }) => {
-  const DRAFT_KEY = `journal-draft-${draftId ?? 'default'}`;
+  const DRAFT_KEY = draftId ? `journal-draft-${draftId}` : undefined;
   const editor = useEditor({
     extensions: [
       StarterKit,
       Markdown,
       Placeholder.configure({
-        placeholder: 'Start your journal entry...',
+        placeholder: section.prompt,
       }),
     ],
     content: initialContent,
     editable: !readOnly,
   });
 
-  const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(initialContent);
   const [restoreDraft, setRestoreDraft] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!editor || readOnly) return;
+    if (!editor || readOnly || !DRAFT_KEY) return;
 
     const draft = localStorage.getItem(DRAFT_KEY);
     if (draft && draft !== lastSaved) {
@@ -60,21 +62,23 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [editor, lastSaved, readOnly, DRAFT_KEY]);
+  }, [editor, readOnly, DRAFT_KEY, lastSaved]);
 
   useEffect(() => {
     setLastSaved(initialContent);
   }, [initialContent]);
 
-  const handleSave = async () => {
+  useEffect(() => {
     if (!editor) return;
-    setIsSaving(true);
-    const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
-    await Promise.resolve(onSave(markdown));
-    localStorage.removeItem(DRAFT_KEY);
-    setLastSaved(markdown);
-    setIsSaving(false);
-  };
+    const callback = () => {
+      const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
+      onChange?.(markdown);
+    };
+    editor.on('update', callback);
+    return () => {
+      editor.off('update', callback);
+    };
+  }, [editor, onChange]);
 
   const handleRestore = () => {
     if (!editor || !restoreDraft) return;
@@ -83,31 +87,41 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
   };
 
   const handleDiscard = () => {
-    localStorage.removeItem(DRAFT_KEY);
+    if (DRAFT_KEY) localStorage.removeItem(DRAFT_KEY);
     setRestoreDraft(null);
   };
 
   if (readOnly) {
     return (
-      <div className={`prose max-w-none ${className}`}>
+      <div className="prose max-w-none">
         <ReactMarkdown>{initialContent}</ReactMarkdown>
       </div>
     );
   }
 
-  if (!editor) {
-    return null;
-  }
+  if (!editor) return null;
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className="space-y-2">
       {restoreDraft && (
         <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded p-2 text-sm">
           <span>Unsaved draft found.</span>
           <div className="space-x-2">
-            <Button size="sm" variant="outline" onClick={handleRestore}>Restore</Button>
-            <Button size="sm" variant="ghost" onClick={handleDiscard}>Discard</Button>
+            <Button size="sm" variant="outline" onClick={handleRestore}>
+              Restore
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleDiscard}>
+              Discard
+            </Button>
           </div>
+        </div>
+      )}
+      {section.prompt && (
+        <div className="flex items-start gap-2 bg-gray-50 p-2 rounded text-sm italic">
+          <span role="img" aria-label="prompt">
+            💡
+          </span>
+          <p>{section.prompt}</p>
         </div>
       )}
       <div className="flex gap-2 border-b pb-2">
@@ -152,14 +166,8 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         editor={editor}
         className="border rounded p-4 min-h-[300px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
       />
-      <div className="text-right">
-        <Button type="button" onClick={handleSave} isLoading={isSaving}
-          className="px-4 py-2">
-          Save
-        </Button>
-      </div>
     </div>
   );
 };
 
-export default JournalEditor;
+export default EditorSection;
