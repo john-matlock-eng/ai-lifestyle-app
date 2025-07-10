@@ -30,7 +30,6 @@ describe('JournalEditor', () => {
     expect(screen.getByText('Hello')).toBeInTheDocument();
   });
 
-
   it('restores draft when user chooses restore', async () => {
     const user = userEvent.setup();
     localStorage.setItem('journal-draft-test', '# Saved');

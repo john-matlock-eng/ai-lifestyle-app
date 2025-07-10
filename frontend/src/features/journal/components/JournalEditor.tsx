@@ -41,10 +41,8 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(initialContent);
   const [restoreDraft, setRestoreDraft] = useState<string | null>(null);
-
   useEffect(() => {
     if (!editor || readOnly) return;
-
     const draft = localStorage.getItem(DRAFT_KEY);
     if (draft && draft !== lastSaved) {
       setRestoreDraft(draft);
@@ -65,7 +63,6 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
   useEffect(() => {
     setLastSaved(initialContent);
   }, [initialContent]);
-
   const handleSave = async () => {
     if (!editor) return;
     setIsSaving(true);
