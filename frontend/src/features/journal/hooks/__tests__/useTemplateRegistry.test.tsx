@@ -19,7 +19,8 @@ describe('useTemplateRegistry', () => {
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ foo: 'bar' }) });
 
     const { result } = renderHook(() => useTemplateRegistry());
-    await waitFor(() => result.current.length === 0);
+    await waitFor(() => !result.current.loading);
+    expect(result.current.templates.length).toBe(0);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

@@ -5,14 +5,17 @@ import TemplatePicker from '../TemplatePicker';
 import { JournalTemplate } from '../../types/template.types';
 
 vi.mock('../../hooks/useTemplateRegistry', () => ({
-  useTemplateRegistry: () => [
-    {
-      id: 't1',
-      name: 'Template 1',
-      description: 'Desc',
-      sections: [],
-    } as JournalTemplate,
-  ],
+  useTemplateRegistry: () => ({
+    templates: [
+      {
+        id: 't1',
+        name: 'Template 1',
+        description: 'Desc',
+        sections: [],
+      } as JournalTemplate,
+    ],
+    loading: false,
+  }),
 }));
 
 describe('TemplatePicker', () => {
@@ -22,5 +25,15 @@ describe('TemplatePicker', () => {
     render(<TemplatePicker onSelect={handle} />);
     await user.click(screen.getByText('Template 1'));
     expect(handle).toHaveBeenCalled();
+  });
+
+  it('shows loader when loading', async () => {
+    vi.resetModules();
+    vi.doMock('../../hooks/useTemplateRegistry', () => ({
+      useTemplateRegistry: () => ({ templates: [], loading: true }),
+    }));
+    const { default: TemplatePickerLoaded } = await import('../TemplatePicker');
+    render(<TemplatePickerLoaded onSelect={vi.fn()} />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 });

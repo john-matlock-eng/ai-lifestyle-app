@@ -20,8 +20,7 @@ describe('JournalEditorWithSections', () => {
 
   it('renders sections based on template', () => {
     render(<JournalEditorWithSections template={template} onSave={vi.fn()} />);
-    expect(screen.getByText('1. Feelings')).toBeInTheDocument();
-    expect(screen.getByText('2. Thoughts')).toBeInTheDocument();
+    expect(screen.getAllByRole('textbox').length).toBe(2);
   });
 
   it('calls onSave with structured output', async () => {

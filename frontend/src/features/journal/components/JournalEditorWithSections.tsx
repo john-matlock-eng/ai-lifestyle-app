@@ -59,11 +59,8 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {template.sections.map((section, idx) => (
+      {template.sections.map((section) => (
         <div key={section.id} className="space-y-2">
-          <h2 className="font-semibold text-lg">
-            {idx + 1}. {section.title}
-          </h2>
           <EditorSection
             section={section}
             initialContent={content[section.id]}

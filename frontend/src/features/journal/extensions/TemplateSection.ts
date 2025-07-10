@@ -25,8 +25,13 @@ export const TemplateSection = Node.create<TemplateSectionOptions>({
     ];
   },
 
-  renderHTML({ HTMLAttributes }) {
-    return ['template-section', mergeAttributes(HTMLAttributes), 0];
+  renderHTML({ node, HTMLAttributes }) {
+    return [
+      'template-section',
+      mergeAttributes(HTMLAttributes),
+      ['div', { contenteditable: 'false', 'data-role': 'header' }, node.attrs.title],
+      ['div', { 'data-role': 'content' }, 0],
+    ];
   },
 });
 

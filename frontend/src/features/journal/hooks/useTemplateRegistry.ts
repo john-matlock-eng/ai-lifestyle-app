@@ -23,6 +23,7 @@ const SUPPORTED_VERSION = 1;
 
 export function useTemplateRegistry() {
   const [templates, setTemplates] = useState<JournalTemplate[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const useFetch = (window as unknown as Record<string, unknown>).__USE_FETCH_TEMPLATES__ || !import.meta.env.DEV;
@@ -63,6 +64,7 @@ export function useTemplateRegistry() {
           });
         }
         setTemplates(valid);
+        setLoading(false);
       } catch (err) {
         console.error('Failed to load templates', err);
       }
@@ -71,5 +73,5 @@ export function useTemplateRegistry() {
     load();
   }, []);
 
-  return templates;
+  return { templates, loading };
 }

@@ -7,9 +7,12 @@ interface TemplatePickerProps {
 }
 
 const TemplatePicker: React.FC<TemplatePickerProps> = ({ onSelect }) => {
-  const templates = useTemplateRegistry();
+  const { templates, loading } = useTemplateRegistry();
+  if (loading) {
+    return <div className="p-4" role="status">Loading templates...</div>;
+  }
   if (templates.length === 0) {
-    return <div className="p-4">Loading templates...</div>;
+    return <div className="p-4">No templates found.</div>;
   }
   return (
     <div className="space-y-2">
