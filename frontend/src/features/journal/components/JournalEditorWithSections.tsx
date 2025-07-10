@@ -1,13 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/common';
 import EditorSection from './EditorSection';
-import type { SectionDefinition } from './EditorSection';
-
-export interface JournalTemplate {
-  id: string;
-  name: string;
-  sections: SectionDefinition[];
-}
+import type { JournalTemplate } from '../types/template.types';
 
 export interface JournalEditorWithSectionsProps {
   template: JournalTemplate;
@@ -33,6 +27,8 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
   const [content, setContent] = useState<Record<string, string>>(
     Object.fromEntries(template.sections.map((s) => [s.id, initialData[s.id] || '']))
   );
+  const draftBase = useRef(draftId ?? `${template.id}-${Date.now()}`);
+  const [saveCounter, setSaveCounter] = useState(0);
 
   const handleChange = (id: string) => (markdown: string) => {
     setContent((prev) => ({ ...prev, [id]: markdown }));
@@ -55,24 +51,23 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
     }));
 
     template.sections.forEach((s) => {
-      const key = draftId ? `journal-draft-${draftId}-${s.id}` : `journal-draft-${s.id}`;
+      const key = `journal-draft-${draftBase.current}-${s.id}`;
       localStorage.removeItem(key);
     });
+    setSaveCounter((c) => c + 1);
   };
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {template.sections.map((section, idx) => (
+      {template.sections.map((section) => (
         <div key={section.id} className="space-y-2">
-          <h2 className="font-semibold text-lg">
-            {idx + 1}. {section.title}
-          </h2>
           <EditorSection
             section={section}
             initialContent={content[section.id]}
             readOnly={readOnly}
             onChange={handleChange(section.id)}
-            draftId={draftId ? `${draftId}-${section.id}` : section.id}
+            draftId={`${draftBase.current}-${section.id}`}
+            saveSignal={saveCounter}
           />
         </div>
       ))}

@@ -5,15 +5,12 @@ import type { Transaction } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
+import { Extension } from '@tiptap/core';
 import ReactMarkdown from 'react-markdown';
 import { Bold, Italic, Heading, List } from 'lucide-react';
 import { Button } from '@/components/common';
-
-export interface SectionDefinition {
-  id: string;
-  title: string;
-  prompt: string;
-}
+import type { SectionDefinition } from '../types/template.types';
+import TemplateSection from '../extensions/TemplateSection';
 
 export interface EditorSectionProps {
   section: SectionDefinition;
@@ -21,6 +18,7 @@ export interface EditorSectionProps {
   readOnly?: boolean;
   draftId?: string;
   onChange?: (markdown: string) => void;
+  saveSignal?: number;
 }
 
 const EditorSection: React.FC<EditorSectionProps> = ({
@@ -29,18 +27,49 @@ const EditorSection: React.FC<EditorSectionProps> = ({
   readOnly = false,
   draftId,
   onChange,
+  saveSignal = 0,
 }) => {
   const DRAFT_KEY = draftId ? `journal-draft-${draftId}` : undefined;
+
+  const ExtraShortcuts = Extension.create({
+    addKeyboardShortcuts() {
+      return {
+        'Mod-b': () => this.editor.commands.toggleBold(),
+        'Mod-i': () => this.editor.commands.toggleItalic(),
+        'Mod-Shift-7': () => this.editor.commands.toggleOrderedList(),
+        'Mod-Shift-8': () => this.editor.commands.toggleBulletList(),
+      };
+    },
+  });
   const editor = useEditor({
     extensions: [
+      TemplateSection.configure({ defaultPrivacy: section.defaultPrivacy ?? 'private' }),
       StarterKit,
       Markdown,
       Placeholder.configure({
         placeholder: section.prompt,
       }),
+      ExtraShortcuts,
     ],
     content: initialContent,
     editable: !readOnly,
+    onCreate({ editor }) {
+      const doc = editor.getJSON().content ?? [];
+      editor.commands.setContent({
+        type: 'doc',
+        content: [
+          {
+            type: 'template_section',
+            attrs: {
+              id: section.id,
+              title: section.title,
+              privacy: section.defaultPrivacy ?? 'private',
+            },
+            content: doc,
+          },
+        ],
+      });
+    },
   });
 
   const [lastSaved, setLastSaved] = useState(initialContent);
@@ -69,6 +98,12 @@ const EditorSection: React.FC<EditorSectionProps> = ({
   useEffect(() => {
     setLastSaved(initialContent);
   }, [initialContent]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
+    setLastSaved(markdown);
+  }, [editor, saveSignal]);
 
   useEffect(() => {
     if (!editor) return;
