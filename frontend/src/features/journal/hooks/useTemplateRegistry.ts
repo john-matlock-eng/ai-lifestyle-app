@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import type { JournalTemplate } from '../types/template.types';
+import migrateV1toV2 from '../migrators/v1_to_v2';
 
 const SectionSchema = z.object({
   id: z.string(),
@@ -20,6 +21,9 @@ const TemplateSchema = z.object({
 });
 
 const SUPPORTED_VERSION = 1;
+const MIGRATORS: Record<number, (t: JournalTemplate) => JournalTemplate> = {
+  2: migrateV1toV2,
+};
 
 export function useTemplateRegistry() {
   const [templates, setTemplates] = useState<JournalTemplate[]>([]);
@@ -32,7 +36,7 @@ export function useTemplateRegistry() {
       try {
         let loaded: unknown[] = [];
         if (!useFetch) {
-          const modules = import.meta.glob('../templates/*.json', { as: 'json' });
+          const modules = import.meta.glob('../templates/*.json', { query: '?json' });
           loaded = await Promise.all(Object.values(modules).map((l) => l()));
         } else {
           const res = await fetch('/templates/registry.json');
@@ -55,11 +59,17 @@ export function useTemplateRegistry() {
             console.error('Template validation failed', parsed.error);
             continue;
           }
+          let dataToUse = parsed.data;
           if (parsed.data.version !== SUPPORTED_VERSION) {
-            console.warn('Unsupported template version', parsed.data.version);
-            continue;
+            const migrator = MIGRATORS[parsed.data.version];
+            if (migrator) {
+              dataToUse = migrator(parsed.data);
+            } else {
+              console.warn('Unsupported template version', parsed.data.version);
+              continue;
+            }
           }
-          const { sections, ...rest } = parsed.data;
+          const { sections, ...rest } = dataToUse;
           valid.push({
             ...rest,
             sections: sections.map((s) => ({
@@ -78,13 +88,22 @@ export function useTemplateRegistry() {
         console.error('Failed to load templates', err);
         setError('Failed to load templates');
         try {
-          const modules = import.meta.glob('../templates/*.json', { as: 'json' });
+          const modules = import.meta.glob('../templates/*.json', { query: '?json' });
           const fallback = await Promise.all(Object.values(modules).map((l) => l()));
           const valid: JournalTemplate[] = [];
           for (const data of fallback) {
             const parsed = TemplateSchema.safeParse(data);
-            if (parsed.success && parsed.data.version === SUPPORTED_VERSION) {
-              const { sections, ...rest } = parsed.data;
+            if (parsed.success) {
+              let dataToUse = parsed.data;
+              if (parsed.data.version !== SUPPORTED_VERSION) {
+                const migrator = MIGRATORS[parsed.data.version];
+                if (migrator) {
+                  dataToUse = migrator(parsed.data);
+                } else {
+                  continue;
+                }
+              }
+              const { sections, ...rest } = dataToUse;
               valid.push({
                 ...rest,
                 sections: sections.map((s) => ({

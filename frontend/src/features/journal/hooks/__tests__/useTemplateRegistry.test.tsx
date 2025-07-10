@@ -44,4 +44,17 @@ describe('useTemplateRegistry', () => {
     expect(result.current.templates.length).toBe(0);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it('migrates template when version differs', async () => {
+    const fetchMock = global.fetch as unknown as vi.Mock;
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ['/v2.json'] });
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: 't2', name: 'Two', version: 2, sections: [] }),
+    });
+
+    const { result } = renderHook(() => useTemplateRegistry());
+    await waitFor(() => !result.current.loading);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });
