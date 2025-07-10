@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useTemplateRegistry } from '../useTemplateRegistry';
 
@@ -14,7 +14,7 @@ describe('useTemplateRegistry', () => {
   });
 
   it('skips invalid templates', async () => {
-    const fetchMock = global.fetch as unknown as vi.Mock;
+    const fetchMock = global.fetch as unknown as Mock;
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ['/bad.json'] });
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ foo: 'bar' }) });
 
@@ -25,7 +25,7 @@ describe('useTemplateRegistry', () => {
   });
 
   it('skips template with invalid privacy', async () => {
-    const fetchMock = global.fetch as unknown as vi.Mock;
+    const fetchMock = global.fetch as unknown as Mock;
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ['/bad.json'] });
     fetchMock.mockResolvedValueOnce({
       ok: true,
@@ -46,7 +46,7 @@ describe('useTemplateRegistry', () => {
   });
 
   it('migrates template when version differs', async () => {
-    const fetchMock = global.fetch as unknown as vi.Mock;
+    const fetchMock = global.fetch as unknown as Mock;
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ['/v2.json'] });
     fetchMock.mockResolvedValueOnce({
       ok: true,

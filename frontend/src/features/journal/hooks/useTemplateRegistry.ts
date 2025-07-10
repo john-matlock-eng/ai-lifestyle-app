@@ -20,6 +20,25 @@ const TemplateSchema = z.object({
   sections: z.array(SectionSchema),
 });
 
+type RawTemplate = z.infer<typeof TemplateSchema>;
+
+function convert(raw: RawTemplate): JournalTemplate {
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description,
+    version: raw.version,
+    sections: raw.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      prompt: s.placeholder,
+      type: s.type,
+      defaultPrivacy: s.defaultPrivacy,
+      aiPrompt: s.aiPrompt,
+    })),
+  };
+}
+
 const SUPPORTED_VERSION = 1;
 const MIGRATORS: Record<number, (t: JournalTemplate) => JournalTemplate> = {
   2: migrateV1toV2,
@@ -59,28 +78,17 @@ export function useTemplateRegistry() {
             console.error('Template validation failed', parsed.error);
             continue;
           }
-          let dataToUse = parsed.data;
-          if (parsed.data.version !== SUPPORTED_VERSION) {
-            const migrator = MIGRATORS[parsed.data.version];
+          let template = convert(parsed.data);
+          if (template.version !== SUPPORTED_VERSION) {
+            const migrator = MIGRATORS[template.version];
             if (migrator) {
-              dataToUse = migrator(parsed.data);
+              template = migrator(template);
             } else {
-              console.warn('Unsupported template version', parsed.data.version);
+              console.warn('Unsupported template version', template.version);
               continue;
             }
           }
-          const { sections, ...rest } = dataToUse;
-          valid.push({
-            ...rest,
-            sections: sections.map((s) => ({
-              id: s.id,
-              title: s.title,
-              prompt: s.placeholder,
-              type: s.type,
-              defaultPrivacy: s.defaultPrivacy,
-              aiPrompt: s.aiPrompt,
-            })),
-          });
+          valid.push(template);
         }
         setTemplates(valid);
         setLoading(false);
@@ -94,27 +102,16 @@ export function useTemplateRegistry() {
           for (const data of fallback) {
             const parsed = TemplateSchema.safeParse(data);
             if (parsed.success) {
-              let dataToUse = parsed.data;
-              if (parsed.data.version !== SUPPORTED_VERSION) {
-                const migrator = MIGRATORS[parsed.data.version];
+              let template = convert(parsed.data);
+              if (template.version !== SUPPORTED_VERSION) {
+                const migrator = MIGRATORS[template.version];
                 if (migrator) {
-                  dataToUse = migrator(parsed.data);
+                  template = migrator(template);
                 } else {
                   continue;
                 }
               }
-              const { sections, ...rest } = dataToUse;
-              valid.push({
-                ...rest,
-                sections: sections.map((s) => ({
-                  id: s.id,
-                  title: s.title,
-                  prompt: s.placeholder,
-                  type: s.type,
-                  defaultPrivacy: s.defaultPrivacy,
-                  aiPrompt: s.aiPrompt,
-                })),
-              });
+              valid.push(template);
             }
           }
           setTemplates(valid);
