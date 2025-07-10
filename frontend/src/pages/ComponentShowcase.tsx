@@ -20,7 +20,7 @@ import type {
   GoalPattern,
 } from '../features/goals';
 
-import { JournalEditor } from '../features/journal';
+import { JournalEditor, JournalStorageSample } from '../features/journal';
 
 // Mock data for demonstrations
 const mockGoals: Goal[] = [
@@ -400,6 +400,11 @@ export const ComponentShowcase: React.FC = () => {
                   <h4 className="font-semibold text-gray-700 mb-2">Saved Markdown</h4>
                   <pre className="p-2 bg-gray-100 rounded border text-sm whitespace-pre-wrap">{journalContent}</pre>
                 </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Journal Storage Sample</h3>
+                <JournalStorageSample />
               </div>
             </div>
           )}
