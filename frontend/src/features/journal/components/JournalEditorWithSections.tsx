@@ -1,0 +1,89 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/common';
+import EditorSection, { SectionDefinition } from './EditorSection';
+
+export interface JournalTemplate {
+  id: string;
+  name: string;
+  sections: SectionDefinition[];
+}
+
+export interface JournalEditorWithSectionsProps {
+  template: JournalTemplate;
+  initialData?: Record<string, string>;
+  onSave: (data: {
+    templateId: string;
+    sections: { id: string; title: string; markdown: string }[];
+    markdownExport: string;
+  }) => void | Promise<void>;
+  draftId?: string;
+  readOnly?: boolean;
+  className?: string;
+}
+
+const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
+  template,
+  initialData = {},
+  onSave,
+  draftId,
+  readOnly = false,
+  className = '',
+}) => {
+  const [content, setContent] = useState<Record<string, string>>(
+    Object.fromEntries(template.sections.map((s) => [s.id, initialData[s.id] || '']))
+  );
+
+  const handleChange = (id: string) => (markdown: string) => {
+    setContent((prev) => ({ ...prev, [id]: markdown }));
+  };
+
+  const handleSave = async () => {
+    const sections = template.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      markdown: content[s.id] ?? '',
+    }));
+    const markdownExport = sections
+      .map((s) => `## ${s.title}\n\n${s.markdown}`)
+      .join('\n\n');
+
+    await Promise.resolve(onSave({
+      templateId: template.id,
+      sections,
+      markdownExport,
+    }));
+
+    template.sections.forEach((s) => {
+      const key = draftId ? `journal-draft-${draftId}-${s.id}` : `journal-draft-${s.id}`;
+      localStorage.removeItem(key);
+    });
+  };
+
+  return (
+    <div className={`space-y-6 ${className}`}>
+      {template.sections.map((section, idx) => (
+        <div key={section.id} className="space-y-2">
+          <h2 className="font-semibold text-lg">
+            {idx + 1}. {section.title}
+          </h2>
+          <EditorSection
+            section={section}
+            initialContent={content[section.id]}
+            readOnly={readOnly}
+            onChange={handleChange(section.id)}
+            draftId={draftId ? `${draftId}-${section.id}` : section.id}
+          />
+        </div>
+      ))}
+      {!readOnly && (
+        <div className="text-right">
+          <Button type="button" onClick={handleSave}>
+            Save Entry
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default JournalEditorWithSections;

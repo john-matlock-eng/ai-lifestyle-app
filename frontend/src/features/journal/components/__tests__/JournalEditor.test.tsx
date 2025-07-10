@@ -30,13 +30,24 @@ describe('JournalEditor', () => {
     expect(screen.getByText('Hello')).toBeInTheDocument();
   });
 
-
-  it('restores draft from localStorage if confirmed', () => {
-    localStorage.setItem('journalEditorDraft', '# Saved');
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    render(<JournalEditor initialContent="" onSave={vi.fn()} />);
+  it('restores draft when user chooses restore', async () => {
+    const user = userEvent.setup();
+    localStorage.setItem('journal-draft-test', '# Saved');
+    render(<JournalEditor initialContent="" onSave={vi.fn()} draftId="test" />);
+    expect(screen.getByText('Unsaved draft found.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /restore/i }));
     expect(screen.getByText('Saved')).toBeInTheDocument();
-    expect(window.confirm).toHaveBeenCalledWith('You have an unsaved draft – restore?');
+  });
+
+  it('clears draft after saving', async () => {
+    const user = userEvent.setup();
+    localStorage.setItem('journal-draft-clear', '# Draft');
+    const handleSave = vi.fn();
+    render(<JournalEditor initialContent="" onSave={handleSave} draftId="clear" />);
+    await user.click(screen.getByRole('button', { name: /restore/i }));
+    await user.click(screen.getByRole('button', { name: /save/i }));
+    expect(handleSave).toHaveBeenCalled();
+    expect(localStorage.getItem('journal-draft-clear')).toBeNull();
   });
 
 });
