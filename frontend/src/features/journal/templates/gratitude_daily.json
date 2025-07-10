@@ -1,0 +1,20 @@
+{
+  "id": "gratitude_daily",
+  "name": "Daily Gratitude",
+  "description": "List three things you're grateful for and reflect on why.",
+  "version": 1,
+  "sections": [
+    {
+      "id": "gratitude_list",
+      "title": "Things I'm grateful for",
+      "type": "paragraph",
+      "placeholder": "Write at least three items…"
+    },
+    {
+      "id": "reflection",
+      "title": "Why they matter",
+      "type": "paragraph",
+      "placeholder": "Reflect on the meaning behind your gratitude items…"
+    }
+  ]
+}
