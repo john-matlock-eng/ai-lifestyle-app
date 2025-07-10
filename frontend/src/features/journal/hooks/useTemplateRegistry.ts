@@ -24,6 +24,7 @@ const SUPPORTED_VERSION = 1;
 export function useTemplateRegistry() {
   const [templates, setTemplates] = useState<JournalTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const useFetch = (window as unknown as Record<string, unknown>).__USE_FETCH_TEMPLATES__ || !import.meta.env.DEV;
@@ -35,8 +36,16 @@ export function useTemplateRegistry() {
           loaded = await Promise.all(Object.values(modules).map((l) => l()));
         } else {
           const res = await fetch('/templates/registry.json');
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const registry: string[] = await res.json();
-          loaded = await Promise.all(registry.map((p) => fetch(p).then((r) => r.json())));
+          loaded = await Promise.all(
+            registry.map((p) =>
+              fetch(p).then((r) => {
+                if (!r.ok) throw new Error(p);
+                return r.json();
+              })
+            )
+          );
         }
 
         const valid: JournalTemplate[] = [];
@@ -67,11 +76,39 @@ export function useTemplateRegistry() {
         setLoading(false);
       } catch (err) {
         console.error('Failed to load templates', err);
+        setError('Failed to load templates');
+        try {
+          const modules = import.meta.glob('../templates/*.json', { as: 'json' });
+          const fallback = await Promise.all(Object.values(modules).map((l) => l()));
+          const valid: JournalTemplate[] = [];
+          for (const data of fallback) {
+            const parsed = TemplateSchema.safeParse(data);
+            if (parsed.success && parsed.data.version === SUPPORTED_VERSION) {
+              const { sections, ...rest } = parsed.data;
+              valid.push({
+                ...rest,
+                sections: sections.map((s) => ({
+                  id: s.id,
+                  title: s.title,
+                  prompt: s.placeholder,
+                  type: s.type,
+                  defaultPrivacy: s.defaultPrivacy,
+                  aiPrompt: s.aiPrompt,
+                })),
+              });
+            }
+          }
+          setTemplates(valid);
+          setLoading(false);
+        } catch (e) {
+          console.error('Fallback template load failed', e);
+          setLoading(false);
+        }
       }
     }
 
     load();
   }, []);
 
-  return { templates, loading };
+  return { templates, loading, error };
 }

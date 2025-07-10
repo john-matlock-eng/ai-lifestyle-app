@@ -23,4 +23,25 @@ describe('useTemplateRegistry', () => {
     expect(result.current.templates.length).toBe(0);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  it('skips template with invalid privacy', async () => {
+    const fetchMock = global.fetch as unknown as vi.Mock;
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ['/bad.json'] });
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: 't1',
+        name: 'Bad',
+        version: 1,
+        sections: [
+          { id: 's1', title: 'S1', placeholder: 'x', defaultPrivacy: 'invalid' },
+        ],
+      }),
+    });
+
+    const { result } = renderHook(() => useTemplateRegistry());
+    await waitFor(() => !result.current.loading);
+    expect(result.current.templates.length).toBe(0);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });

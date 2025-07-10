@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TemplatePicker from './TemplatePicker';
 import JournalEditor from './JournalEditor';
 import JournalEditorWithSections from './JournalEditorWithSections';
 import type { JournalTemplate } from '../types/template.types';
+import { purgeOldDrafts } from '../utils/drafts';
 
 type SelectionState = { template: JournalTemplate } | 'scratch' | null;
 
 const JournalTemplateDemo: React.FC = () => {
   const [selection, setSelection] = useState<SelectionState>(null);
+
+  useEffect(() => {
+    purgeOldDrafts();
+  }, []);
 
   if (selection === null) {
     return (

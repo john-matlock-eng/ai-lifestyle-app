@@ -15,6 +15,7 @@ vi.mock('../../hooks/useTemplateRegistry', () => ({
       } as JournalTemplate,
     ],
     loading: false,
+    error: null,
   }),
 }));
 
@@ -35,5 +36,15 @@ describe('TemplatePicker', () => {
     const { default: TemplatePickerLoaded } = await import('../TemplatePicker');
     render(<TemplatePickerLoaded onSelect={vi.fn()} />);
     expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('shows error when registry fails', async () => {
+    vi.resetModules();
+    vi.doMock('../../hooks/useTemplateRegistry', () => ({
+      useTemplateRegistry: () => ({ templates: [], loading: false, error: 'err' }),
+    }));
+    const { default: PickerError } = await import('../TemplatePicker');
+    render(<PickerError onSelect={vi.fn()} />);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 });
