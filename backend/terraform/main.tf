@@ -116,6 +116,16 @@ module "users_table" {
   ]
 }
 
+# OpenAI API Key Secret
+module "openai_secret" {
+  source      = "./modules/secrets"
+  environment = var.environment
+
+  tags = {
+    Service = "ai"
+  }
+}
+
 # Goals Service Infrastructure
 module "goals_service" {
   source = "./services/goals"
@@ -256,6 +266,15 @@ module "api_gateway" {
       authorization_type = "JWT"
     }
     "GET /goals/{goalId}/progress" = {
+      authorization_type = "JWT"
+    }
+    "POST /ai/reflect" = {
+      authorization_type = "JWT"
+    }
+    "POST /ai/analyze-mood" = {
+      authorization_type = "JWT"
+    }
+    "POST /ai/summarize-week" = {
       authorization_type = "JWT"
     }
   }
