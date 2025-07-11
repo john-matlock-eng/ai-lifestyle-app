@@ -3,15 +3,15 @@ import React from 'react';
 const LoginPage: React.FC = () => {
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-background text-theme">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h1 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h1 className="mt-6 text-center text-3xl font-extrabold text-theme">
           AI Lifestyle App - Debug Mode
         </h1>
       </div>
 
       <div className="mt-8 w-full max-w-md mx-auto">
-        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+        <div className="bg-surface py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
           <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">
             Login Form Loading Test
           </h2>

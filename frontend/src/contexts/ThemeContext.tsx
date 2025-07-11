@@ -21,8 +21,12 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    document.body.classList.remove('theme-light', 'theme-dark', 'theme-reading');
-    document.body.classList.add(`theme-${theme}`);
+    const root = document.documentElement;
+    root.classList.remove('theme-light', 'theme-dark', 'theme-reading', 'dark');
+    root.classList.add(`theme-${theme}`);
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    }
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 

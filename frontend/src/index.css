@@ -13,19 +13,19 @@
     color: var(--color-text);
   }
 
-  body.theme-light {
+  html.theme-light {
     --color-background: #f9fafb; /* gray-50 */
     --color-surface: #ffffff;
     --color-text: #111827; /* gray-900 */
   }
 
-  body.theme-dark {
+  html.theme-dark {
     --color-background: #1f2937; /* gray-800 */
     --color-surface: #111827; /* gray-900 */
     --color-text: #f3f4f6; /* gray-100 */
   }
 
-  body.theme-reading {
+  html.theme-reading {
     --color-background: #f5f1e6;
     --color-surface: #fdf8e3;
     --color-text: #433418;
@@ -92,6 +92,10 @@
 
   .bg-surface {
     background-color: var(--color-surface);
+  }
+
+  .bg-background {
+    background-color: var(--color-background);
   }
 
   .text-theme {
