@@ -8,7 +8,7 @@ interface ThemeProviderProps {
 }
 
 const THEME_KEY = 'theme-preference';
-const themes: Theme[] = ['light', 'dark', 'serene', 'vibrant'];
+const themes: Theme[] = ['light', 'dark', 'reading'];
 
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>('light');

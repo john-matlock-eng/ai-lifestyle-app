@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
+import { test, expect } from 'vitest';
 import { ThemeProvider, useTheme } from '../../../contexts';
 
 test('toggles dark class on html element', async () => {

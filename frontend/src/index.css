@@ -29,20 +29,12 @@
     --color-accent: #60a5fa;
   }
 
-  html[data-theme="serene"] {
+  html[data-theme="reading"] {
     --color-background: #e3f2fd;
     --color-surface: #ffffff;
     --color-text: #102027;
     --color-muted-text: #62757f;
     --color-accent: #4caf50;
-  }
-
-  html[data-theme="vibrant"] {
-    --color-background: #fff3e0;
-    --color-surface: #ffffff;
-    --color-text: #212121;
-    --color-muted-text: #4b4b4b;
-    --color-accent: #e91e63;
   }
 }
 
