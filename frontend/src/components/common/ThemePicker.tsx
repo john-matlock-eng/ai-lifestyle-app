@@ -1,5 +1,6 @@
 import React from 'react';
-import { useTheme, Theme } from '../../contexts';
+import { useTheme } from '../../contexts';
+import type { Theme } from '../../contexts';
 
 const options: { label: string; value: Theme }[] = [
   { label: 'Light', value: 'light' },
