@@ -73,8 +73,8 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
           <Target className="h-6 w-6 text-green-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Create Target Goal</h3>
-          <p className="text-sm text-gray-600">Set a specific target to reach by a deadline</p>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Create Target Goal</h3>
+          <p className="text-sm text-muted">Set a specific target to reach by a deadline</p>
         </div>
       </div>
 
@@ -89,7 +89,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
           placeholder="e.g., Reach my ideal weight"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
           required
         />
       </div>
@@ -103,7 +103,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
           id="category"
           value={formData.category}
           onChange={(e) => updateFormData({ category: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
           required
         >
           {GOAL_CATEGORIES.map(cat => (
@@ -116,7 +116,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
       {/* Target Configuration */}
       <div className="bg-green-50 rounded-lg p-4 space-y-4">
-        <h4 className="font-medium text-gray-900 flex items-center gap-2">
+        <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
           <Target className="h-4 w-4 text-green-600" />
           Define your target
         </h4>
@@ -133,7 +133,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border-2 transition-colors ${
                 formData.direction === 'increase'
                   ? 'border-green-500 bg-green-50 text-green-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)]'
               }`}
             >
               <TrendingUp className="h-4 w-4" />
@@ -145,7 +145,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border-2 transition-colors ${
                 formData.direction === 'decrease'
                   ? 'border-green-500 bg-green-50 text-green-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)]'
               }`}
             >
               <TrendingDown className="h-4 w-4" />
@@ -166,7 +166,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               value={formData.startValue}
               onChange={(e) => updateFormData({ startValue: parseFloat(e.target.value) || 0 })}
               step="0.1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
@@ -182,7 +182,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               value={formData.targetValue}
               onChange={(e) => updateFormData({ targetValue: parseFloat(e.target.value) || 0 })}
               step="0.1"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
@@ -200,7 +200,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
                   setMetricType(newType);
                   updateFormData({ unit: METRIC_UNITS[newType][0] || '' });
                 }}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="weight">Weight</option>
                 <option value="distance">Distance</option>
@@ -213,7 +213,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
                 id="unit"
                 value={formData.unit}
                 onChange={(e) => updateFormData({ unit: e.target.value })}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 required
               >
                 {availableUnits.map(unit => (
@@ -236,7 +236,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
             value={formData.targetDate.toISOString().split('T')[0]}
             onChange={(e) => updateFormData({ targetDate: new Date(e.target.value) })}
             min={new Date().toISOString().split('T')[0]}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
             required
           />
         </div>
@@ -282,7 +282,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
           onChange={(e) => updateFormData({ description: e.target.value })}
           placeholder="Why is this target important to you?"
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
         />
       </div>
 
@@ -308,7 +308,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               onChange={(e) => setPrivateNotes(e.target.value)}
               placeholder="Your strategy, obstacles to overcome, or personal thoughts (encrypted)..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
             <p className="text-xs text-gray-500 mt-1">
               🔒 These notes will be encrypted and only visible to you
@@ -322,13 +322,13 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
         >
           Create Goal
         </button>

@@ -154,7 +154,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         </div>
       )}
       {section.prompt && (
-        <div className="flex items-start gap-2 bg-gray-50 p-2 rounded text-sm italic">
+        <div className="flex items-start gap-2 bg-[var(--surface-muted)] p-2 rounded text-sm italic">
           <span role="img" aria-label="prompt">
             💡
           </span>

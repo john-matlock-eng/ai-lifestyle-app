@@ -96,8 +96,8 @@ const GoalsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Goals</h1>
-          <p className="mt-1 text-gray-600">Track your progress and stay motivated</p>
+          <h1 className="text-3xl font-bold text-[var(--text)]">My Goals</h1>
+          <p className="mt-1 text-muted">Track your progress and stay motivated</p>
         </div>
         <Link to="/goals/new">
           <Button size="lg" className="flex items-center">
@@ -110,7 +110,7 @@ const GoalsPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-t-lg shadow-sm border-b border-gray-200">
+      <div className="bg-surface rounded-t-lg shadow-sm border-b border-[color:var(--surface-muted)]">
         <div className="flex">
           <button
             onClick={() => setActiveTab('active')}
@@ -118,13 +118,13 @@ const GoalsPage: React.FC = () => {
               px-6 py-3 font-medium text-sm border-b-2 transition-colors
               ${activeTab === 'active' 
                 ? 'text-primary-600 border-primary-600' 
-                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
+                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-[color:var(--surface-muted)]'
               }
             `}
           >
             Active Goals
             {allGoalsData && (
-              <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+              <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-[var(--surface-muted)] text-muted">
                 {allGoalsData.goals.filter(g => g.status === 'active' || g.status === 'paused').length}
               </span>
             )}
@@ -135,13 +135,13 @@ const GoalsPage: React.FC = () => {
               px-6 py-3 font-medium text-sm border-b-2 transition-colors
               ${activeTab === 'archived' 
                 ? 'text-primary-600 border-primary-600' 
-                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
+                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-[color:var(--surface-muted)]'
               }
             `}
           >
             Archived
             {allGoalsData && (
-              <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600">
+              <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-[var(--surface-muted)] text-muted">
                 {allGoalsData.goals.filter(g => g.status === 'archived' || g.status === 'completed').length}
               </span>
             )}
@@ -150,7 +150,7 @@ const GoalsPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-b-lg shadow-sm p-4 mb-6">
+      <div className="bg-surface rounded-b-lg shadow-sm p-4 mb-6">
         <div className="space-y-4">
           {activeTab === 'active' ? (
             /* Status Filter for Active Tab */
@@ -169,7 +169,7 @@ const GoalsPage: React.FC = () => {
                     px-3 py-1 rounded-full text-sm font-medium transition-all
                     ${selectedStatuses.includes('active')
                       ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'
                     }
                   `}
                 >
@@ -187,7 +187,7 @@ const GoalsPage: React.FC = () => {
                     px-3 py-1 rounded-full text-sm font-medium transition-all
                     ${selectedStatuses.includes('paused')
                       ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'
                     }
                   `}
                 >
@@ -212,7 +212,7 @@ const GoalsPage: React.FC = () => {
                     px-3 py-1 rounded-full text-sm font-medium transition-all
                     ${selectedStatuses.includes('completed')
                       ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'
                     }
                   `}
                 >
@@ -229,8 +229,8 @@ const GoalsPage: React.FC = () => {
                   className={`
                     px-3 py-1 rounded-full text-sm font-medium transition-all
                     ${selectedStatuses.includes('archived')
-                      ? 'bg-gray-100 text-gray-800'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-[var(--surface-muted)] text-gray-800'
+                      : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'
                     }
                   `}
                 >
@@ -253,7 +253,7 @@ const GoalsPage: React.FC = () => {
                     ${
                       selectedPatterns.includes(pattern.id)
                         ? 'text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'
                     }
                   `}
                   style={{
@@ -280,7 +280,7 @@ const GoalsPage: React.FC = () => {
                     ${
                       selectedCategories.includes(category.value)
                         ? 'bg-primary-100 text-primary-800'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'
                     }
                   `}
                 >
@@ -334,31 +334,31 @@ const GoalsPage: React.FC = () => {
       {/* Stats Summary */}
       {data && data.goals.length > 0 && (
         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900">
+          <div className="bg-surface rounded-lg shadow-sm p-4 text-center">
+            <div className="text-2xl font-bold text-[var(--text)]">
               {data.goals.filter((g) => g.status === 'active').length}
             </div>
-            <p className="text-sm text-gray-600">Active Goals</p>
+            <p className="text-sm text-muted">Active Goals</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 text-center">
+          <div className="bg-surface rounded-lg shadow-sm p-4 text-center">
             <div className="text-2xl font-bold text-green-600">
               {data.goals.filter((g) => g.progress.percentComplete >= 100).length}
             </div>
-            <p className="text-sm text-gray-600">Achieved</p>
+            <p className="text-sm text-muted">Achieved</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 text-center">
+          <div className="bg-surface rounded-lg shadow-sm p-4 text-center">
             <div className="text-2xl font-bold text-orange-600">
               {Math.max(...data.goals.map((g) => g.progress.currentStreak || 0))}
             </div>
-            <p className="text-sm text-gray-600">Best Streak</p>
+            <p className="text-sm text-muted">Best Streak</p>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 text-center">
+          <div className="bg-surface rounded-lg shadow-sm p-4 text-center">
             <div className="text-2xl font-bold text-primary-600">
               {Math.round(
                 data.goals.reduce((sum, g) => sum + g.progress.successRate, 0) / data.goals.length
               )}%
             </div>
-            <p className="text-sm text-gray-600">Avg Success Rate</p>
+            <p className="text-sm text-muted">Avg Success Rate</p>
           </div>
         </div>
       )}

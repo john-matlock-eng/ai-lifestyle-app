@@ -1,0 +1,37 @@
+/* Theme palettes via CSS variables */
+
+/* Base (default dark theme) variables on :root */
+:root {
+  --bg: #0F172A;           /* dark background */
+  --surface: #1E293B;      /* dark surface */
+  --surface-muted: #334155;/* muted surface */
+  --text: #F1F5F9;         /* light text */
+  --accent: #60A5FA;       /* accent color */
+}
+
+/* Explicit dark attribute (same as root) */
+[data-theme="dark"] {
+  --bg: #0F172A;
+  --surface: #1E293B;
+  --surface-muted: #334155;
+  --text: #F1F5F9;
+  --accent: #60A5FA;
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --bg: #F9FAFC;
+  --surface: #FFFFFF;
+  --surface-muted: #F1F5F9;
+  --text: #111827;
+  --accent: #3B82F6;
+}
+
+/* Reading (solarized-style) theme */
+[data-theme="reading"] {
+  --bg: #FDF6E3;
+  --surface: #FFFDF6;
+  --surface-muted: #E2DDC7;
+  --text: #073642;
+  --accent: #268BD2;
+}

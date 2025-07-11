@@ -95,8 +95,8 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
           <Repeat className="h-6 w-6 text-blue-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Create Recurring Goal</h3>
-          <p className="text-sm text-gray-600">Set up a goal you'll work on regularly</p>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Create Recurring Goal</h3>
+          <p className="text-sm text-muted">Set up a goal you'll work on regularly</p>
         </div>
       </div>
 
@@ -111,7 +111,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
           placeholder="e.g., Exercise regularly"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           required
         />
       </div>
@@ -125,7 +125,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
           id="category"
           value={formData.category}
           onChange={(e) => updateFormData({ category: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           required
         >
           {GOAL_CATEGORIES.map(cat => (
@@ -138,7 +138,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
       {/* Target Configuration */}
       <div className="bg-blue-50 rounded-lg p-4 space-y-4">
-        <h4 className="font-medium text-gray-900 flex items-center gap-2">
+        <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
           <Calendar className="h-4 w-4 text-blue-600" />
           How often do you want to do this?
         </h4>
@@ -155,7 +155,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
               value={formData.targetValue}
               onChange={(e) => updateFormData({ targetValue: parseInt(e.target.value) || 1 })}
               min={1}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
@@ -173,7 +173,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
                   setMetricType(newType);
                   updateFormData({ unit: METRIC_UNITS[newType][0] || '' });
                 }}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="count">Count</option>
                 <option value="duration">Duration</option>
@@ -184,7 +184,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
                 id="unit"
                 value={formData.unit}
                 onChange={(e) => updateFormData({ unit: e.target.value })}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
                 {availableUnits.map(unit => (
@@ -203,7 +203,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
               id="period"
               value={formData.period}
               onChange={(e) => updateFormData({ period: e.target.value as Period })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             >
               {periods.map(period => (
@@ -226,7 +226,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
                 className={`flex-1 text-center py-2 px-4 rounded-lg border-2 cursor-pointer transition-colors ${
                   formData.frequency === freq.value
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)]'
                 }`}
               >
                 <input
@@ -258,7 +258,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
                   className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
                     formData.daysOfWeek?.includes(day.value)
                       ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'
                   }`}
                   aria-label={day.label}
                 >
@@ -289,7 +289,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
           onChange={(e) => updateFormData({ description: e.target.value })}
           placeholder="Add more details about your goal..."
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
 
@@ -315,7 +315,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
               onChange={(e) => setPrivateNotes(e.target.value)}
               placeholder="Your motivation, obstacles, or personal thoughts (encrypted)..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <p className="text-xs text-gray-500 mt-1">
               🔒 These notes will be encrypted and only visible to you
@@ -329,13 +329,13 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
         >
           Create Goal
         </button>

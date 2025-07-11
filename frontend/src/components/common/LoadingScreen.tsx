@@ -2,7 +2,7 @@ import React from 'react';
 
 const LoadingScreen: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--surface-muted)]">
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
           <svg
@@ -26,7 +26,7 @@ const LoadingScreen: React.FC = () => {
             />
           </svg>
         </div>
-        <h2 className="text-lg font-medium text-gray-900">Loading...</h2>
+        <h2 className="text-lg font-medium text-[var(--text)]">Loading...</h2>
         <p className="mt-1 text-sm text-gray-500">Please wait while we get things ready</p>
       </div>
     </div>

@@ -54,8 +54,8 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ initialValues, onComplete
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
-        <p className="text-sm text-gray-600 mb-6">
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Basic Information</h3>
+        <p className="text-sm text-muted mb-6">
           Give your goal a clear name and choose a category to help organize it.
         </p>
       </div>
@@ -78,7 +78,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ initialValues, onComplete
         <textarea
           {...register('description')}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-md focus:ring-primary-500 focus:border-primary-500"
           placeholder="Add more details about your goal..."
         />
         {errors.description && (
@@ -106,7 +106,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ initialValues, onComplete
                 ${
                   selectedCategory === category.value
                     ? 'border-primary-500 bg-primary-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)]'
                 }
               `}
             >
@@ -133,7 +133,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ initialValues, onComplete
               onClick={() => setValue('color', color)}
               className={`
                 w-10 h-10 rounded-full border-2 transition-all
-                ${selectedColor === color ? 'border-gray-900 scale-110' : 'border-gray-300'}
+                ${selectedColor === color ? 'border-gray-900 scale-110' : 'border-[color:var(--surface-muted)]'}
               `}
               style={{ backgroundColor: color }}
               aria-label={`Select ${color} color`}

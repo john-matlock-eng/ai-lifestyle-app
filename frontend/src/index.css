@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "./styles/theme.css";
 
 @layer base {
   :root {
@@ -8,9 +9,24 @@
   }
 
   body {
-    @apply bg-white text-gray-900;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background: var(--bg);
+    color: var(--text);
   }
+
+  input,
+  textarea,
+  select {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--surface-muted);
+  }
+
+  ::placeholder {
+    color: var(--text);
+    opacity: 0.6;
+  }
+
 }
 
 @layer utilities {
@@ -48,8 +64,27 @@
 /* Form input focus styles */
 @layer components {
   .form-input {
-    @apply block w-full rounded-md border-gray-300 shadow-sm 
-           focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+    @apply block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: rgba(0,0,0,0.15);
+  }
+
+  .form-select,
+  .form-textarea {
+    @apply block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: rgba(0,0,0,0.15);
+  }
+
+  [data-theme="dark"] .form-input {
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  [data-theme="dark"] .form-select,
+  [data-theme="dark"] .form-textarea {
+    border-color: rgba(255,255,255,0.2);
   }
   
   .form-input-error {
@@ -69,6 +104,26 @@
     );
     background-size: 1000% 100%;
     animation: shimmer 2s infinite linear;
+  }
+
+  .bg-surface {
+    background-color: var(--surface);
+  }
+
+  .bg-surface-muted {
+    background-color: var(--surface-muted);
+  }
+
+  .bg-background {
+    background-color: var(--bg);
+  }
+
+  .text-theme {
+    color: var(--text);
+  }
+
+  .text-muted {
+    color: color-mix(in srgb, var(--text), transparent 40%);
   }
   
   @keyframes shimmer {

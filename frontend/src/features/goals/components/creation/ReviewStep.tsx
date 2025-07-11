@@ -16,14 +16,14 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ goalData, onSubmit, isSubmittin
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Review Your Goal</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Review Your Goal</h3>
+        <p className="text-sm text-muted">
           Make sure everything looks good before creating your goal.
         </p>
       </div>
 
       {/* Goal Summary */}
-      <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+      <div className="bg-[var(--surface-muted)] rounded-lg p-6 space-y-4">
         {/* Pattern Badge */}
         <div className="flex items-center space-x-3">
           <span className="text-2xl">{pattern.icon}</span>
@@ -37,9 +37,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ goalData, onSubmit, isSubmittin
 
         {/* Title & Description */}
         <div>
-          <h4 className="text-xl font-semibold text-gray-900">{goalData.title}</h4>
+          <h4 className="text-xl font-semibold text-[var(--text)]">{goalData.title}</h4>
           {goalData.description && (
-            <p className="mt-1 text-gray-600">{goalData.description}</p>
+            <p className="mt-1 text-muted">{goalData.description}</p>
           )}
         </div>
 

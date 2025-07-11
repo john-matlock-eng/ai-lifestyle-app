@@ -104,11 +104,11 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
         <div className="flex items-start justify-between mb-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-2 text-muted hover:text-[var(--text)]"
           >
             <ArrowLeft className="h-5 w-5" />
             Back to Goals
@@ -117,20 +117,20 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowActions(!showActions)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-[color:var(--surface-muted)] rounded-lg transition-colors"
               aria-label="Goal actions"
             >
               <MoreVertical className="h-5 w-5 text-gray-500" />
             </button>
             
             {showActions && (
-              <div className="absolute right-0 top-10 z-10 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+              <div className="absolute right-0 top-10 z-10 w-48 bg-[var(--surface)] rounded-lg shadow-lg border border-[color:var(--surface-muted)] py-1">
                 <button
                   onClick={() => {
                     onEdit(goal);
                     setShowActions(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
                 >
                   <Edit2 className="h-4 w-4" />
                   Edit Goal
@@ -141,7 +141,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     setShowShareDialog(true);
                     setShowActions(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
                 >
                   <Share2 className="h-4 w-4" />
                   Share Goal
@@ -153,7 +153,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                       onUpdateStatus('paused');
                       setShowActions(false);
                     }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
                   >
                     <Pause className="h-4 w-4" />
                     Pause Goal
@@ -164,7 +164,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                       onUpdateStatus('active');
                       setShowActions(false);
                     }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
                   >
                     <Play className="h-4 w-4" />
                     Resume Goal
@@ -176,7 +176,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     onUpdateStatus('completed');
                     setShowActions(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
                 >
                   <CheckCircle className="h-4 w-4" />
                   Mark Complete
@@ -187,7 +187,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     onUpdateStatus('archived');
                     setShowActions(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
                 >
                   <Archive className="h-4 w-4" />
                   Archive Goal
@@ -221,9 +221,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           </div>
           
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{goal.title}</h1>
+            <h1 className="text-2xl font-bold text-[var(--text)] mb-2">{goal.title}</h1>
             {goal.description && (
-              <p className="text-gray-600">{goal.description}</p>
+              <p className="text-muted">{goal.description}</p>
             )}
             
             <div className="flex items-center gap-4 mt-3">
@@ -240,7 +240,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                 goal.status === 'active' ? 'bg-green-100 text-green-700' :
                 goal.status === 'completed' ? 'bg-blue-100 text-blue-700' :
                 goal.status === 'paused' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-gray-100 text-gray-700'
+                'bg-[var(--surface-muted)] text-gray-700'
               }`}>
                 {goal.status}
               </span>
@@ -262,7 +262,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
               color={color}
               size={120}
             />
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-muted mt-2">
               {goal.progress.trend} trend
             </p>
           </div>
@@ -270,13 +270,13 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">Quick Actions</h2>
         
         {!showLogForm ? (
           <button
             onClick={() => setShowLogForm(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[var(--surface-muted)] hover:bg-[color:var(--surface-muted)] rounded-lg transition-colors"
             style={{ borderColor: color }}
           >
             <Plus className="h-5 w-5" style={{ color }} />
@@ -296,9 +296,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     onChange={(e) => setActivityValue(parseFloat(e.target.value) || 0)}
                     min={0}
                     step="0.1"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   />
-                  <span className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">
+                  <span className="px-3 py-2 bg-[var(--surface-muted)] border border-[color:var(--surface-muted)] rounded-lg text-muted">
                     {goal.target.unit}
                   </span>
                 </div>
@@ -308,7 +308,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   When
                 </label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <select className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                   <option>Today</option>
                   <option>Yesterday</option>
                   <option>Custom date...</option>
@@ -325,7 +325,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                 onChange={(e) => setActivityNote(e.target.value)}
                 placeholder="How did it go?"
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               />
             </div>
             
@@ -343,7 +343,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   setActivityValue(1);
                   setActivityNote('');
                 }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-900"
+                className="px-4 py-2 text-muted hover:text-[var(--text)]"
               >
                 Cancel
               </button>
@@ -376,28 +376,28 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <BarChart3 className="h-6 w-6 text-gray-600" />
+            <div className="p-2 bg-[var(--surface-muted)] rounded-lg">
+              <BarChart3 className="h-6 w-6 text-muted" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Success Rate</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted">Success Rate</p>
+              <p className="text-2xl font-bold text-[var(--text)]">
                 {goal.progress.successRate}%
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <Clock className="h-6 w-6 text-gray-600" />
+            <div className="p-2 bg-[var(--surface-muted)] rounded-lg">
+              <Clock className="h-6 w-6 text-muted" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Last Activity</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted">Last Activity</p>
+              <p className="text-2xl font-bold text-[var(--text)]">
                 {goal.progress.lastActivityDate 
                   ? new Date(goal.progress.lastActivityDate).toLocaleDateString()
                   : 'Never'}
@@ -406,14 +406,14 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-gray-600" />
+            <div className="p-2 bg-[var(--surface-muted)] rounded-lg">
+              <TrendingUp className="h-6 w-6 text-muted" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Projected Completion</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted">Projected Completion</p>
+              <p className="text-2xl font-bold text-[var(--text)]">
                 {goal.progress.projectedCompletion
                   ? new Date(goal.progress.projectedCompletion).toLocaleDateString()
                   : 'TBD'}
@@ -424,8 +424,8 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       </div>
 
       {/* Recent Activities */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h2>
+      <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">Recent Activities</h2>
         
         {recentActivities.length > 0 ? (
           <div className="space-y-3">
@@ -439,7 +439,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     activity.activityType === 'completed' ? 'bg-green-100' :
                     activity.activityType === 'progress' ? 'bg-blue-100' :
                     activity.activityType === 'skipped' ? 'bg-yellow-100' :
-                    'bg-gray-100'
+                    'bg-[var(--surface-muted)]'
                   }`}>
                     {activity.activityType === 'completed' ? (
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -450,16 +450,16 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-[var(--text)]">
                       {activity.value} {activity.unit}
                     </p>
                     {activity.note && (
-                      <p className="text-sm text-gray-600">{activity.note}</p>
+                      <p className="text-sm text-muted">{activity.note}</p>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-[var(--text)]">
                     {new Date(activity.activityDate).toLocaleDateString()}
                   </p>
                     <p className="text-xs text-gray-500">
@@ -481,11 +481,11 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
 
       {/* Private Notes */}
       {privateNotes && (
-        <div className="bg-gray-50 rounded-lg p-6">
+        <div className="bg-[var(--surface-muted)] rounded-lg p-6">
           <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
             🔒 Private Notes (Encrypted)
           </h3>
-          <p className="text-gray-600 whitespace-pre-wrap">{privateNotes}</p>
+          <p className="text-muted whitespace-pre-wrap">{privateNotes}</p>
         </div>
       )}
 

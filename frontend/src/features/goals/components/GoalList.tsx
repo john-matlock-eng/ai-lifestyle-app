@@ -67,21 +67,21 @@ export const GoalList: React.FC<GoalListProps> = ({
           e.stopPropagation();
           setOpenMenuId(openMenuId === goal.goalId ? null : goal.goalId);
         }}
-        className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+        className="p-1 hover:bg-[color:var(--surface-muted)] rounded-lg transition-colors"
         aria-label="Goal actions"
       >
         <MoreVertical className="h-4 w-4 text-gray-500" />
       </button>
       
       {openMenuId === goal.goalId && (
-        <div className="absolute right-0 top-8 z-10 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+        <div className="absolute right-0 top-8 z-10 w-48 bg-[var(--surface)] rounded-lg shadow-lg border border-[color:var(--surface-muted)] py-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEditGoal(goal);
               setOpenMenuId(null);
             }}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+            className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
           >
             <Edit2 className="h-4 w-4" />
             Edit Goal
@@ -94,7 +94,7 @@ export const GoalList: React.FC<GoalListProps> = ({
                 onUpdateStatus(goal.goalId, 'paused');
                 setOpenMenuId(null);
               }}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
             >
               <Pause className="h-4 w-4" />
               Pause Goal
@@ -106,7 +106,7 @@ export const GoalList: React.FC<GoalListProps> = ({
                 onUpdateStatus(goal.goalId, 'active');
                 setOpenMenuId(null);
               }}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
             >
               <Play className="h-4 w-4" />
               Resume Goal
@@ -119,7 +119,7 @@ export const GoalList: React.FC<GoalListProps> = ({
               onUpdateStatus(goal.goalId, 'archived');
               setOpenMenuId(null);
             }}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+            className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
           >
             <Archive className="h-4 w-4" />
             Archive Goal
@@ -154,19 +154,19 @@ export const GoalList: React.FC<GoalListProps> = ({
         key={goal.goalId}
         onClick={() => onSelectGoal(goal)}
         className={`
-          bg-white rounded-lg border-2 p-4 cursor-pointer transition-all duration-200
-          hover:shadow-lg hover:border-gray-300
+          bg-[var(--surface)] rounded-lg border-2 p-4 cursor-pointer transition-all duration-200
+          hover:shadow-lg hover:border-[color:var(--surface-muted)]
           ${goal.status === 'paused' ? 'opacity-60' : ''}
-          ${goal.status === 'completed' ? 'border-green-300 bg-green-50' : 'border-gray-200'}
+          ${goal.status === 'completed' ? 'border-green-300 bg-green-50' : 'border-[color:var(--surface-muted)]'}
         `}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-3 flex-1">
             <span className="text-2xl">{getGoalIcon(goal.goalPattern)}</span>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 mb-1">{goal.title}</h3>
+              <h3 className="font-semibold text-[var(--text)] mb-1">{goal.title}</h3>
               {goal.description && (
-                <p className="text-sm text-gray-600 line-clamp-1">{goal.description}</p>
+                <p className="text-sm text-muted line-clamp-1">{goal.description}</p>
               )}
               <div className="flex items-center gap-2 mt-2">
                 <span
@@ -201,7 +201,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         <div className="mt-3 pt-3 border-t border-gray-100">
           {goal.goalPattern === 'recurring' && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
+              <span className="text-muted">
                 {goal.progress.currentPeriodValue || 0} / {goal.target.value} {goal.target.unit} this {goal.target.period}
               </span>
               <span className="font-medium" style={{ color }}>
@@ -212,7 +212,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           
           {goal.goalPattern === 'milestone' && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
+              <span className="text-muted">
                 {goal.progress.totalAccumulated || 0} / {goal.target.value} {goal.target.unit}
               </span>
               <span className="font-medium" style={{ color }}>
@@ -223,7 +223,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           
           {goal.goalPattern === 'target' && goal.target.targetDate && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
+              <span className="text-muted">
                 Target: {new Date(goal.target.targetDate).toLocaleDateString()}
               </span>
               <span className="font-medium" style={{ color }}>
@@ -239,7 +239,7 @@ export const GoalList: React.FC<GoalListProps> = ({
                 size="sm"
                 color={color}
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted">
                 Best: {goal.progress.longestStreak || 0} days
               </span>
             </div>
@@ -247,7 +247,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           
           {goal.goalPattern === 'limit' && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
+              <span className="text-muted">
                 Avg: {goal.progress.averageValue?.toFixed(1)} {goal.target.unit}/{goal.target.period}
               </span>
               <span 
@@ -269,10 +269,10 @@ export const GoalList: React.FC<GoalListProps> = ({
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Your Goals</h2>
+        <h2 className="text-2xl font-bold text-[var(--text)]">Your Goals</h2>
         <button
           onClick={onCreateGoal}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
         >
           <Plus className="h-5 w-5" />
           New Goal
@@ -280,7 +280,7 @@ export const GoalList: React.FC<GoalListProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+      <div className="bg-[var(--surface-muted)] rounded-lg p-4 space-y-4">
         <div className="flex items-center gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -289,7 +289,7 @@ export const GoalList: React.FC<GoalListProps> = ({
               placeholder="Search goals..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full pl-10 pr-4 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             />
           </div>
           
@@ -308,7 +308,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="px-3 py-1.5 border border-[color:var(--surface-muted)] rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           >
             <option value="all">All Categories</option>
             {GOAL_CATEGORIES.map(cat => (
@@ -321,7 +321,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           <select
             value={selectedPattern}
             onChange={(e) => setSelectedPattern(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="px-3 py-1.5 border border-[color:var(--surface-muted)] rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           >
             <option value="all">All Patterns</option>
             <option value="recurring">🔄 Recurring</option>
@@ -339,8 +339,8 @@ export const GoalList: React.FC<GoalListProps> = ({
           <div className="text-gray-400 mb-4">
             <Target className="h-12 w-12 mx-auto" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No goals found</h3>
-          <p className="text-gray-600 mb-4">
+          <h3 className="text-lg font-medium text-[var(--text)] mb-2">No goals found</h3>
+          <p className="text-muted mb-4">
             {searchTerm || selectedCategory !== 'all' || selectedPattern !== 'all'
               ? 'Try adjusting your filters'
               : 'Create your first goal to get started'}

@@ -29,12 +29,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
     const inputClasses = clsx(
-      'block w-full rounded-md shadow-sm transition-colors sm:text-sm',
+      'block w-full rounded-md shadow-sm transition-colors sm:text-sm text-[var(--text)]',
       leftIcon && 'pl-10',
       rightIcon && 'pr-10',
       error
         ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500'
-        : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500',
+        : 'border-[color:var(--surface-muted)] focus:border-primary-500 focus:ring-primary-500',
       className
     );
 
