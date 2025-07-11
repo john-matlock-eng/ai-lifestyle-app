@@ -1,0 +1,5 @@
+# Ensure shell scripts have LF line endings on all platforms
+*.sh text eol=lf
+
+# Mark shell scripts as executable
+*.sh linguist-language=Shell

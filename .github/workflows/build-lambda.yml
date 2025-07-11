@@ -1,8 +1,15 @@
-name: Build and Deploy Lambda
+# DEPRECATED - Use deploy-backend-unified.yml instead
+# This workflow is kept for reference but should not be used
+
+name: Build and Deploy Lambda (DEPRECATED)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Only manual trigger for emergency use
     inputs:
+      confirm:
+        description: 'Type DEPRECATED to confirm you want to use this old workflow'
+        required: true
+        type: string
       function_name:
         description: 'Lambda function name'
         required: true
@@ -19,12 +26,6 @@ on:
         options:
           - dev
           - prod
-  push:
-    branches: [main]
-    paths:
-      - 'backend/src/**'
-      - 'backend/requirements.txt'
-      - 'backend/Dockerfile.*'
 
 env:
   AWS_REGION: us-east-1
@@ -35,7 +36,7 @@ permissions:
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy Lambda
+    name: Build and Deploy Lambda ${{ github.event_name == 'pull_request' && '(dev)' || github.event_name == 'push' && '(prod)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -47,6 +48,9 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
             echo "function_name=${{ github.event.inputs.function_name }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "environment=dev" >> $GITHUB_OUTPUT
+            echo "function_name=api-handler" >> $GITHUB_OUTPUT
           else
             echo "environment=prod" >> $GITHUB_OUTPUT
             echo "function_name=api-handler" >> $GITHUB_OUTPUT
@@ -61,19 +65,20 @@ jobs:
 
       - name: Get ECR Repository URL
         id: ecr
-        working-directory: ./backend/terraform
         run: |
-          terraform init \
-            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="key=backend/${{ steps.env.outputs.environment }}/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}" \
-            -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
+          # Simple approach - construct the ECR URL directly
+          ECR_URL="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lifestyle-app-${{ steps.env.outputs.environment }}"
           
-          ECR_URL=$(terraform output -raw ecr_repository_url || echo "")
-          if [ -z "$ECR_URL" ]; then
-            echo "Error: ECR repository not found. Deploy infrastructure first."
+          # Verify the repository exists
+          if aws ecr describe-repositories --repository-names "lifestyle-app-${{ steps.env.outputs.environment }}" 2>/dev/null; then
+            echo "ECR repository found: lifestyle-app-${{ steps.env.outputs.environment }}"
+          else
+            echo "Error: ECR repository lifestyle-app-${{ steps.env.outputs.environment }} does not exist."
+            echo "Please deploy the infrastructure first using the deploy-backend workflow."
             exit 1
           fi
+          
+          echo "Using ECR URL: $ECR_URL"
           echo "ecr_url=$ECR_URL" >> $GITHUB_OUTPUT
 
       - name: Login to Amazon ECR
@@ -90,9 +95,8 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: |
-            ${{ steps.ecr.outputs.ecr_url }}:latest
-            ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-latest
             ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-${{ github.sha }}
+            ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-${{ steps.env.outputs.environment }}-${{ github.sha }}
           build-args: |
             ENVIRONMENT=${{ steps.env.outputs.environment }}
           cache-from: type=gha
@@ -108,7 +112,7 @@ jobs:
             echo "Updating Lambda function $LAMBDA_NAME..."
             aws lambda update-function-code \
               --function-name $LAMBDA_NAME \
-              --image-uri ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-latest
+              --image-uri ${{ steps.ecr.outputs.ecr_url }}:${{ steps.env.outputs.function_name }}-${{ github.sha }}
             
             # Wait for update to complete
             aws lambda wait function-updated \

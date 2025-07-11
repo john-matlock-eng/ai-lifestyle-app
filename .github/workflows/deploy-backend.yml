@@ -1,17 +1,15 @@
-name: Deploy Backend Infrastructure
+# DEPRECATED - Use deploy-backend-unified.yml instead
+# This workflow is kept for reference but should not be used
+
+name: Deploy Backend Infrastructure (DEPRECATED)
 
 on:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/deploy-backend.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:  # Only manual trigger for emergency use
+    inputs:
+      confirm:
+        description: 'Type DEPRECATED to confirm you want to use this old workflow'
+        required: true
+        type: string
 
 env:
   AWS_REGION: us-east-1

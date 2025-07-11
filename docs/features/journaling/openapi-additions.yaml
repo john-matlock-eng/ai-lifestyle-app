@@ -1,0 +1,968 @@
+# Journaling API Contract Addition
+
+## Add to paths section:
+
+```yaml
+  # Journaling Endpoints
+  /journal/entries:
+    post:
+      summary: Create journal entry
+      description: Creates a new journal entry with optional AI analysis
+      operationId: createJournalEntry
+      tags:
+        - Journaling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalEntryRequest'
+      responses:
+        '201':
+          description: Entry created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+        '400':
+          description: Invalid entry data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: Entry content too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Get journal entries
+      description: Returns paginated list of journal entries for the authenticated user
+      operationId: getJournalEntries
+      tags:
+        - Journaling
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: visibility
+          in: query
+          schema:
+            type: string
+            enum: [private, shared, all]
+            default: all
+        - name: goalId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: tags
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: mood
+          in: query
+          schema:
+            type: string
+            enum: [great, good, neutral, difficult, challenging]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Entries retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JournalEntrySummary'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /journal/entries/{entryId}:
+    get:
+      summary: Get single journal entry
+      description: Returns a specific journal entry with full content
+      operationId: getJournalEntry
+      tags:
+        - Journaling
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Entry retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update journal entry
+      description: Updates an existing journal entry
+      operationId: updateJournalEntry
+      tags:
+        - Journaling
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJournalEntryRequest'
+      responses:
+        '200':
+          description: Entry updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+        '400':
+          description: Invalid update data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete journal entry
+      description: Soft deletes a journal entry (recoverable for 30 days)
+      operationId: deleteJournalEntry
+      tags:
+        - Journaling
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Entry deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /journal/goals:
+    post:
+      summary: Create journaling goal
+      description: Creates a new journaling goal with schedule and prompts
+      operationId: createJournalGoal
+      tags:
+        - Journaling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalGoalRequest'
+      responses:
+        '201':
+          description: Goal created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalGoal'
+        '400':
+          description: Invalid goal data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Get journaling goals
+      description: Returns user's journaling goals
+      operationId: getJournalGoals
+      tags:
+        - Journaling
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, paused, completed, archived, all]
+            default: active
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [gratitude, reflection, goals, mood, custom]
+      responses:
+        '200':
+          description: Goals retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JournalGoal'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /journal/ai/generate-prompt:
+    post:
+      summary: Generate AI prompt
+      description: Generates a personalized journaling prompt using AI
+      operationId: generateAiPrompt
+      tags:
+        - Journaling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeneratePromptRequest'
+      responses:
+        '200':
+          description: Prompt generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalPrompt'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /journal/ai/analyze:
+    post:
+      summary: Analyze journal entry
+      description: Analyzes entry for sentiment, themes, and insights
+      operationId: analyzeJournalEntry
+      tags:
+        - Journaling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeEntryRequest'
+      responses:
+        '200':
+          description: Analysis completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryAnalysis'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /journal/stats:
+    get:
+      summary: Get journal statistics
+      description: Returns user's journaling statistics and insights
+      operationId: getJournalStats
+      tags:
+        - Journaling
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year, all]
+            default: month
+        - name: groupBy
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: week
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalStatistics'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+```
+
+## Add to components/schemas section:
+
+```yaml
+    # Journaling Schemas
+    CreateJournalEntryRequest:
+      type: object
+      required:
+        - title
+        - content
+        - contentMarkdown
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: object
+          description: TipTap JSON content
+        contentMarkdown:
+          type: string
+          description: Markdown version of content
+          maxLength: 50000
+        visibility:
+          type: string
+          enum: [private, shared, friends]
+          default: private
+        goalId:
+          type: string
+          format: uuid
+        promptId:
+          type: string
+          format: uuid
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+        mood:
+          type: string
+          enum: [great, good, neutral, difficult, challenging]
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [image, audio]
+              url:
+                type: string
+                format: uri
+
+    UpdateJournalEntryRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: object
+        contentMarkdown:
+          type: string
+          maxLength: 50000
+        visibility:
+          type: string
+          enum: [private, shared, friends]
+        shareSettings:
+          type: object
+          properties:
+            allowComments:
+              type: boolean
+            allowReactions:
+              type: boolean
+            expiresAt:
+              type: string
+              format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+
+    JournalEntry:
+      type: object
+      required:
+        - entryId
+        - userId
+        - title
+        - content
+        - contentMarkdown
+        - visibility
+        - wordCount
+        - createdAt
+        - updatedAt
+      properties:
+        entryId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: object
+        contentMarkdown:
+          type: string
+        visibility:
+          type: string
+          enum: [private, shared, friends]
+        shareSettings:
+          type: object
+          properties:
+            allowComments:
+              type: boolean
+            allowReactions:
+              type: boolean
+            expiresAt:
+              type: string
+              format: date-time
+        goalId:
+          type: string
+          format: uuid
+        promptId:
+          type: string
+          format: uuid
+        tags:
+          type: array
+          items:
+            type: string
+        mood:
+          type: string
+          enum: [great, good, neutral, difficult, challenging]
+        wordCount:
+          type: integer
+        readingTime:
+          type: integer
+          description: Estimated reading time in minutes
+        aiInsights:
+          type: object
+          properties:
+            sentiment:
+              type: number
+              minimum: -1
+              maximum: 1
+            themes:
+              type: array
+              items:
+                type: string
+            suggestions:
+              type: array
+              items:
+                type: string
+            summary:
+              type: string
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [image, audio]
+              url:
+                type: string
+              thumbnailUrl:
+                type: string
+              duration:
+                type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        stats:
+          type: object
+          properties:
+            views:
+              type: integer
+            comments:
+              type: integer
+            reactions:
+              type: integer
+
+    JournalEntrySummary:
+      type: object
+      required:
+        - entryId
+        - title
+        - excerpt
+        - visibility
+        - wordCount
+        - createdAt
+      properties:
+        entryId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        excerpt:
+          type: string
+          maxLength: 200
+        visibility:
+          type: string
+          enum: [private, shared, friends]
+        tags:
+          type: array
+          items:
+            type: string
+        mood:
+          type: string
+          enum: [great, good, neutral, difficult, challenging]
+        wordCount:
+          type: integer
+        hasAiInsights:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateJournalGoalRequest:
+      type: object
+      required:
+        - title
+        - category
+        - frequency
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+        category:
+          type: string
+          enum: [gratitude, reflection, goals, mood, custom]
+        frequency:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [daily, weekly, monthly, custom]
+            daysOfWeek:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 6
+            dayOfMonth:
+              type: integer
+              minimum: 1
+              maximum: 31
+            customCron:
+              type: string
+        reminderTime:
+          type: string
+          pattern: '^([01]?[0-9]|2[0-3]):[0-5][0-9]$'
+        reminderEnabled:
+          type: boolean
+          default: true
+        prompts:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              order:
+                type: integer
+              optional:
+                type: boolean
+        useAiPrompts:
+          type: boolean
+          default: false
+        targetEntries:
+          type: integer
+          minimum: 1
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+
+    JournalGoal:
+      type: object
+      required:
+        - goalId
+        - userId
+        - title
+        - category
+        - frequency
+        - status
+        - createdAt
+      properties:
+        goalId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [gratitude, reflection, goals, mood, custom]
+        frequency:
+          type: object
+        reminderTime:
+          type: string
+        reminderEnabled:
+          type: boolean
+        prompts:
+          type: array
+          items:
+            type: object
+        useAiPrompts:
+          type: boolean
+        targetEntries:
+          type: integer
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        totalEntries:
+          type: integer
+        lastEntryDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [active, paused, completed, archived]
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    GeneratePromptRequest:
+      type: object
+      required:
+        - category
+      properties:
+        category:
+          type: string
+          enum: [gratitude, reflection, goals, mood, custom]
+        context:
+          type: object
+          properties:
+            recentThemes:
+              type: array
+              items:
+                type: string
+            mood:
+              type: string
+            timeOfDay:
+              type: string
+              enum: [morning, afternoon, evening, night]
+        previousPromptIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    JournalPrompt:
+      type: object
+      required:
+        - promptId
+        - title
+        - questions
+      properties:
+        promptId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              type:
+                type: string
+                enum: [open, scale, choice]
+              options:
+                type: array
+                items:
+                  type: string
+              required:
+                type: boolean
+
+    AnalyzeEntryRequest:
+      type: object
+      required:
+        - entryId
+      properties:
+        entryId:
+          type: string
+          format: uuid
+        analysisType:
+          type: array
+          items:
+            type: string
+            enum: [sentiment, themes, suggestions, patterns]
+          default: [sentiment, themes, suggestions]
+
+    EntryAnalysis:
+      type: object
+      properties:
+        sentiment:
+          type: object
+          properties:
+            score:
+              type: number
+              minimum: -1
+              maximum: 1
+            label:
+              type: string
+              enum: [very_negative, negative, neutral, positive, very_positive]
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+        themes:
+          type: array
+          items:
+            type: object
+            properties:
+              theme:
+                type: string
+              confidence:
+                type: number
+        suggestions:
+          type: array
+          items:
+            type: string
+        patterns:
+          type: object
+          properties:
+            moodTrend:
+              type: string
+              enum: [improving, stable, declining]
+            commonThemes:
+              type: array
+              items:
+                type: string
+            writingConsistency:
+              type: string
+              enum: [low, medium, high]
+
+    JournalStatistics:
+      type: object
+      properties:
+        totalEntries:
+          type: integer
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        averageWordCount:
+          type: integer
+        totalWords:
+          type: integer
+        moodDistribution:
+          type: object
+          additionalProperties:
+            type: integer
+        topThemes:
+          type: array
+          items:
+            type: object
+            properties:
+              theme:
+                type: string
+              count:
+                type: integer
+        writingTimes:
+          type: object
+          properties:
+            morning:
+              type: integer
+            afternoon:
+              type: integer
+            evening:
+              type: integer
+            night:
+              type: integer
+        goalsProgress:
+          type: array
+          items:
+            type: object
+            properties:
+              goalId:
+                type: string
+              title:
+                type: string
+              completion:
+                type: number
+                minimum: 0
+                maximum: 1
+              streak:
+                type: integer
+
+    MessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        details:
+          type: object
+
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - pages
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+```
+
+## Add to tags section:
+
+```yaml
+  - name: Journaling
+    description: Personal journaling with AI-powered insights and goal tracking
+```

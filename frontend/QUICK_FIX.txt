@@ -1,0 +1,9 @@
+# Quick fix for React 19 compatibility issues
+
+# Just install the essentials to get the app running:
+npm install --legacy-peer-deps react-router-dom @tanstack/react-query axios zod js-cookie react-hook-form @hookform/resolvers clsx
+
+# The app should now start with:
+npm run dev
+
+# Optional: Install remaining dependencies later with ./install-deps.bat

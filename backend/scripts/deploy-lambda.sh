@@ -19,9 +19,14 @@ fi
 # Get environment from argument or default to dev
 ENVIRONMENT="${1:-dev}"
 FUNCTION_NAME="${2:-api-handler}"
-IMAGE_TAG="${3:-latest}"
+
+# Generate immutable tag based on git commit
+GIT_SHA=$(git rev-parse --short HEAD)
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+IMAGE_TAG="${ENVIRONMENT}-${GIT_SHA}-${TIMESTAMP}"
 
 echo -e "${YELLOW}Deploying Lambda function: $FUNCTION_NAME to $ENVIRONMENT${NC}"
+echo -e "${YELLOW}Using immutable tag: $IMAGE_TAG${NC}"
 
 # Get ECR repository URL from Terraform output
 cd terraform
@@ -46,9 +51,8 @@ echo -e "${YELLOW}Building Docker image for ARM64...${NC}"
 docker buildx create --use --name lambda-builder 2>/dev/null || true
 docker buildx build \
     --platform linux/arm64 \
-    -t $ECR_URL:$IMAGE_TAG \
     -t $ECR_URL:$FUNCTION_NAME-$IMAGE_TAG \
-    -t $ECR_URL:$FUNCTION_NAME-$(git rev-parse --short HEAD) \
+    -t $ECR_URL:$FUNCTION_NAME-$GIT_SHA \
     --push \
     -f Dockerfile.$FUNCTION_NAME \
     .

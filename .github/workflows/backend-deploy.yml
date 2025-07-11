@@ -1,0 +1,197 @@
+name: Backend Deploy
+
+# This is the main deployment workflow for the backend
+# It handles infrastructure, Docker builds, and Lambda deployment in the correct order
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend-unified.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend-unified.yml'
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: 1.9.8
+
+permissions:
+  id-token: write   # Required for OIDC authentication
+  contents: read    # Required for actions/checkout
+  pull-requests: write  # Required for PR comments
+
+jobs:
+  deploy:
+    name: Deploy Backend ${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set Environment
+        id: env
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          else
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/terraform-deployer-ai-lifestyle
+          role-session-name: github-actions-${{ steps.env.outputs.environment }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false  # Important for capturing outputs
+
+      # Phase 1: Deploy base infrastructure (ECR, Cognito, DynamoDB)
+      - name: Terraform Init
+        id: init
+        working-directory: ./backend/terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="key=backend/${{ steps.env.outputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
+
+      - name: Terraform Plan (Base Infrastructure)
+        id: plan_base
+        working-directory: ./backend/terraform
+        run: |
+          terraform plan \
+            -var="environment=${{ steps.env.outputs.environment }}" \
+            -var="aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}" \
+            -var="deploy_lambda=false" \
+            -out=tfplan_base \
+            -input=false
+
+      - name: Terraform Apply (Base Infrastructure)
+        id: apply_base
+        working-directory: ./backend/terraform
+        run: |
+          terraform apply -auto-approve -input=false tfplan_base
+          
+          # Capture outputs for next steps
+          echo "ecr_url=$(terraform output -raw ecr_repository_url)" >> $GITHUB_OUTPUT
+          echo "cognito_user_pool_id=$(terraform output -raw cognito_user_pool_id)" >> $GITHUB_OUTPUT
+          echo "cognito_client_id=$(terraform output -raw cognito_client_id)" >> $GITHUB_OUTPUT
+          echo "users_table_name=$(terraform output -raw dynamodb_table_name)" >> $GITHUB_OUTPUT
+
+      # Phase 2: Build and push Docker images
+      - name: Check ECR Repository
+        run: |
+          echo "Checking ECR repository: ${{ steps.apply_base.outputs.ecr_url }}"
+          aws ecr describe-repositories --repository-names lifestyle-app-${{ steps.env.outputs.environment }} || exit 1
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API Handler image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.api-handler
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ steps.apply_base.outputs.ecr_url }}:api-handler-${{ github.sha }}
+            ${{ steps.apply_base.outputs.ecr_url }}:api-handler-${{ steps.env.outputs.environment }}-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false  # Disable provenance to avoid manifest issues
+
+      - name: Build and push Health Check image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.health-check
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ steps.apply_base.outputs.ecr_url }}:health-check-${{ github.sha }}
+            ${{ steps.apply_base.outputs.ecr_url }}:health-check-${{ steps.env.outputs.environment }}-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false  # Disable provenance to avoid manifest issues
+
+      # Phase 3: Deploy Lambda functions with the pushed images
+      - name: Terraform Plan (Lambda Functions)
+        id: plan_lambda
+        working-directory: ./backend/terraform
+        run: |
+          terraform plan \
+            -var="environment=${{ steps.env.outputs.environment }}" \
+            -var="aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}" \
+            -var="deploy_lambda=true" \
+            -var="api_handler_image_tag=api-handler-${{ steps.env.outputs.environment }}-latest" \
+            -out=tfplan_lambda \
+            -input=false
+
+      - name: Terraform Apply (Lambda Functions)
+        id: apply_lambda
+        working-directory: ./backend/terraform
+        run: |
+          terraform apply -auto-approve -input=false tfplan_lambda
+          
+          # Capture final outputs
+          echo "api_function_arn=$(terraform output -raw api_lambda_arn 2>/dev/null || echo 'Not deployed')" >> $GITHUB_OUTPUT
+
+      # Reporting and PR comments
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### ✅ Backend Deployment Complete
+            
+            **Environment**: \`${{ steps.env.outputs.environment }}\`
+            **ECR Repository**: \`${{ steps.apply_base.outputs.ecr_url }}\`
+            **API Handler Image**: \`api-handler-${{ github.sha }}\`
+            **Health Check Image**: \`health-check-${{ github.sha }}\`
+            
+            **Resources Created/Updated**:
+            - Cognito User Pool: \`${{ steps.apply_base.outputs.cognito_user_pool_id }}\`
+            - DynamoDB Table: \`${{ steps.apply_base.outputs.users_table_name }}\`
+            - Lambda Function: \`${{ steps.apply_lambda.outputs.api_function_arn }}\`
+            
+            The backend has been successfully deployed to the **${{ steps.env.outputs.environment }}** environment.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+      - name: Summary
+        run: |
+          echo "### Backend Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: ${{ steps.env.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ✅ Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**ECR Repository**: ${{ steps.apply_base.outputs.ecr_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Images Pushed**:" >> $GITHUB_STEP_SUMMARY
+          echo "- api-handler-${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- health-check-${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Infrastructure**:" >> $GITHUB_STEP_SUMMARY
+          echo "- Cognito User Pool: ${{ steps.apply_base.outputs.cognito_user_pool_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Users Table: ${{ steps.apply_base.outputs.users_table_name }}" >> $GITHUB_STEP_SUMMARY

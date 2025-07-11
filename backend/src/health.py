@@ -10,11 +10,11 @@ from aws_lambda_powertools.metrics import MetricUnit
 
 logger = Logger()
 tracer = Tracer()
-metrics = Metrics()
+metrics = Metrics(namespace="AILifestyleApp")
 
 # Environment variables
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')
-TABLE_NAME = os.environ.get('TABLE_NAME', 'main-dev')
+USERS_TABLE_NAME = os.environ.get('USERS_TABLE_NAME', f'users-{ENVIRONMENT}')
 
 # AWS clients
 dynamodb = boto3.client('dynamodb')
@@ -24,7 +24,7 @@ dynamodb = boto3.client('dynamodb')
 def check_dynamodb():
     """Check DynamoDB connectivity"""
     try:
-        response = dynamodb.describe_table(TableName=TABLE_NAME)
+        response = dynamodb.describe_table(TableName=USERS_TABLE_NAME)
         return {
             "status": "healthy",
             "table_status": response['Table']['TableStatus'],
@@ -74,7 +74,7 @@ def handler(event, context):
             "dynamodb": dynamodb_status
         },
         "system": system_info,
-        "request_id": context.request_id
+        "request_id": context.aws_request_id
     }
     
     return {
