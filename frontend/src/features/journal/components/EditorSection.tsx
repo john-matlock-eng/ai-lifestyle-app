@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import type { Editor } from '@tiptap/react';
-import type { Transaction } from '@tiptap/pm/state';
+import type { Editor, UseEditorOptions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -81,7 +80,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         return true;
       },
     },
-    onCreate({ editor }) {
+    onCreate({ editor }: { editor: Editor }) {
       const doc = editor.getJSON().content ?? [];
       editor.commands.setContent({
         type: 'doc',
@@ -98,6 +97,8 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         ],
       });
     },
+  } as UseEditorOptions & {
+    keyboardShortcuts: Record<string, () => boolean | void>;
   });
 
   const openLink = useLinkModal(editor);
@@ -144,7 +145,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
 
   useEffect(() => {
     if (!editor) return;
-    const handleUpdate = ({ editor: updatedEditor }: { editor: Editor; transaction: Transaction }) => {
+    const handleUpdate = ({ editor: updatedEditor }: { editor: Editor; transaction: unknown }) => {
       const markdown = (updatedEditor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
       onChange?.(markdown);
     };
