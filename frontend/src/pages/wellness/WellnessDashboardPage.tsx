@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GoalList from '../../features/goals/components/display/GoalList';
 import { useGoals } from '../../features/goals/hooks/useGoals';
@@ -9,8 +9,14 @@ import StatTile from '../../features/wellness/components/StatTile';
 import GoalCardMini from '../../features/wellness/components/GoalCardMini';
 import EmptyGoalsIllustration from '../../features/wellness/components/EmptyGoalsIllustration';
 import AIInsightBanner from '../../features/wellness/components/AIInsightBanner';
-import { CheckCircle, Flame, PercentCircle, TrendingUp } from 'lucide-react';
+import { UtensilsCrossed, Dumbbell, HeartPulse, ListTodo } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import {
+  useTodayMealsCount,
+  useWeekWorkoutsCount,
+  useWellnessScore,
+  useActiveRoutines,
+} from '../../features/wellness/hooks';
 
 const WellnessDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,27 +25,10 @@ const WellnessDashboardPage: React.FC = () => {
 
   const goals = data?.goals || [];
 
-  const stats = useMemo(() => {
-    const active = goals.length;
-    const longestStreak = goals.reduce(
-      (m, g) => Math.max(m, g.progress.currentStreak || 0),
-      0
-    );
-    const avgSuccess =
-      active > 0
-        ? Math.round(
-            goals.reduce((sum, g) => sum + g.progress.successRate, 0) / active
-          )
-        : 0;
-    const avgCompletion =
-      active > 0
-        ? Math.round(
-            goals.reduce((sum, g) => sum + g.progress.percentComplete, 0) /
-              active
-          )
-        : 0;
-    return { active, longestStreak, avgSuccess, avgCompletion };
-  }, [goals]);
+  const { data: meals = 0 } = useTodayMealsCount();
+  const { data: workouts = 0 } = useWeekWorkoutsCount();
+  const { data: wellness = 0 } = useWellnessScore();
+  const { data: routines = 0 } = useActiveRoutines();
 
   const handleQuickLog = (goalId: string) => {
     const goal: Goal | undefined = goals.find((g) => g.goalId === goalId);
@@ -63,20 +52,15 @@ const WellnessDashboardPage: React.FC = () => {
   }, [goals]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <main role="main" aria-labelledby="wellness-dashboard-heading" className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-5xl mx-auto space-y-8">
         <HeroGreeting />
         <AIInsightBanner />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatTile icon={CheckCircle} label="Active Goals" value={stats.active} />
-          <StatTile icon={Flame} label="Longest Streak" value={stats.longestStreak} />
-          <StatTile icon={PercentCircle} label="Avg Success" value={`${stats.avgSuccess}%`} />
-          <StatTile
-            icon={TrendingUp}
-            label="Today"
-            value={`${stats.avgCompletion}%`}
-            progress={stats.avgCompletion}
-          />
+          <StatTile icon={UtensilsCrossed} label="Meals Today" value={meals} />
+          <StatTile icon={Dumbbell} label="Workouts" value={workouts} />
+          <StatTile icon={HeartPulse} label="Wellness Score" value={wellness} percent={wellness} />
+          <StatTile icon={ListTodo} label="Active Routines" value={routines} />
         </div>
         {isLoading ? (
           <GoalList goals={[]} isLoading />
@@ -84,7 +68,8 @@ const WellnessDashboardPage: React.FC = () => {
           <EmptyGoalsIllustration />
         ) : (
           <div className="space-y-3">
-            {goals.map((g) => (
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">Today's Goals</h2>
+            {goals.slice(0, 3).map((g) => (
               <GoalCardMini key={g.goalId} goal={g} onQuickLog={handleQuickLog} />
             ))}
           </div>
@@ -97,7 +82,7 @@ const WellnessDashboardPage: React.FC = () => {
           onClose={() => setQuickLogGoalId(null)}
         />
       )}
-    </div>
+    </main>
   );
 };
 
