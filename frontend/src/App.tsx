@@ -5,7 +5,8 @@ import { store } from './store';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
-import { AuthProvider, ThemeProvider, useTheme, Theme } from './contexts';
+import { AuthProvider, ThemeProvider, useTheme } from './contexts';
+import type { Theme } from './contexts';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';

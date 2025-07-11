@@ -12,7 +12,7 @@ const themes: Theme[] = ['dark', 'light', 'reading'];
 
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem(THEME_KEY) as Theme) || 'dark'
+    () => (localStorage.getItem(THEME_KEY) as Theme) || 'light'
   );
 
   useEffect(() => {
