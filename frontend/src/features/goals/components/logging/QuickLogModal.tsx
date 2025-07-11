@@ -88,14 +88,14 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-gray-500/75" onClick={onClose}></div>
         </div>
 
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
           &#8203;
         </span>
 
-        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+        <div className="inline-block align-bottom bg-surface text-theme rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
           {goalLoading || !goal ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
@@ -103,8 +103,8 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
           ) : (
             <>
               <div className="mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Log Activity</h3>
-                <p className="mt-1 text-sm text-gray-600">{goal.title}</p>
+                <h3 className="text-lg font-medium text-theme">Log Activity</h3>
+                <p className="mt-1 text-sm text-muted">{goal.title}</p>
               </div>
 
               {error && (
@@ -119,7 +119,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Activity Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-theme mb-2">
                     Activity Type
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -133,7 +133,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                           ${
                             activityType === type
                               ? 'bg-primary-100 text-primary-800 border-primary-300'
-                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                              : 'bg-surface text-muted border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                           }
                           border
                         `}
@@ -146,7 +146,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
 
                 {/* Value Input */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-theme mb-1">
                     Value
                   </label>
                   <div className="flex items-center space-x-2">
@@ -160,10 +160,10 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                       step="any"
                       autoFocus
                     />
-                    <span className="text-gray-600">{goal.target.unit}</span>
+                    <span className="text-muted">{goal.target.unit}</span>
                   </div>
                   {goal.target.period && (
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted">
                       Target: {formatGoalValue(goal.target.value, goal.target.unit)} per {goal.target.period}
                     </p>
                   )}
@@ -171,7 +171,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
 
                 {/* Date Picker */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-theme mb-1">
                     Date
                   </label>
                   <Input
@@ -184,7 +184,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
 
                 {/* Quick Note */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-theme mb-1">
                     Note (optional)
                   </label>
                   <textarea
@@ -220,7 +220,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                   <div className="space-y-4 pt-2 border-t border-gray-200">
                     {/* Mood */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme mb-2">
                         Mood
                       </label>
                       <div className="flex gap-2">
@@ -252,7 +252,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
 
                     {/* Energy Level */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-theme mb-2">
                         Energy Level: {energyLevel}/10
                       </label>
                       <input
@@ -266,7 +266,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                           background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(energyLevel - 1) * 11.11}%, #E5E7EB ${(energyLevel - 1) * 11.11}%, #E5E7EB 100%)`
                         }}
                       />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <div className="flex justify-between text-xs text-muted mt-1">
                         <span>Low</span>
                         <span>High</span>
                       </div>

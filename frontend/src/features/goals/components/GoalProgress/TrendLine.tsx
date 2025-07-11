@@ -145,8 +145,8 @@ export const TrendLine: React.FC<TrendLineProps> = ({
     if (active && payload && payload.length > 0) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <p className="text-sm font-medium text-gray-900">{data.date}</p>
+        <div className="bg-[var(--surface)] p-3 rounded-lg shadow-lg border border-gray-200">
+          <p className="text-sm font-medium text-[var(--text)]">{data.date}</p>
           {payload.map((entry, index) => (
             <p key={index} className="text-sm" style={{ color: entry.stroke }}>
               {entry.name}: {entry.value?.toFixed(1)} {unit}
@@ -177,12 +177,12 @@ export const TrendLine: React.FC<TrendLineProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg p-6 ${className}`}>
+    <div className={`bg-[var(--surface)] rounded-lg p-6 ${className}`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Progress Trend</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-[var(--text)] mb-1">Progress Trend</h3>
+          <p className="text-sm text-muted">
             {direction === 'increase' ? 'Increasing' : 'Decreasing'} from {startValue} to {targetValue} {unit}
           </p>
         </div>
@@ -208,7 +208,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
         
         <div className="text-center">
           <p className="text-sm text-gray-500 mb-1">Target</p>
-          <p className="text-xl font-bold text-gray-900">
+          <p className="text-xl font-bold text-[var(--text)]">
             {targetValue} {unit}
           </p>
           <p className="text-xs text-gray-500 mt-1">
@@ -327,11 +327,11 @@ export const TrendLine: React.FC<TrendLineProps> = ({
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-lg">
-              <Calendar className="h-5 w-5 text-gray-600" />
+              <Calendar className="h-5 w-5 text-muted" />
             </div>
             <div>
               <p className="text-xs text-gray-500">Time Elapsed</p>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-[var(--text)]">
                 {daysElapsed} / {daysTotal} days ({Math.round((daysElapsed / daysTotal) * 100)}%)
               </p>
             </div>
@@ -340,14 +340,14 @@ export const TrendLine: React.FC<TrendLineProps> = ({
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-lg">
               {direction === 'increase' ? (
-                <TrendingUp className="h-5 w-5 text-gray-600" />
+                <TrendingUp className="h-5 w-5 text-muted" />
               ) : (
-                <TrendingDown className="h-5 w-5 text-gray-600" />
+                <TrendingDown className="h-5 w-5 text-muted" />
               )}
             </div>
             <div>
               <p className="text-xs text-gray-500">Average Daily Change</p>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-[var(--text)]">
                 {averageChangePerDay >= 0 ? '+' : ''}{averageChangePerDay.toFixed(2)} {unit}/day
               </p>
             </div>

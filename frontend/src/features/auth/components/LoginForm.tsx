@@ -123,12 +123,12 @@ const LoginForm: React.FC = () => {
   if (showMfa && mfaSession) {
     return (
       <div className="w-full max-w-md mx-auto">
-        <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+        <div className="bg-[var(--surface)] py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
           <div className="mb-6">
-            <h2 className="text-center text-3xl font-extrabold text-gray-900">
+            <h2 className="text-center text-3xl font-extrabold text-[var(--text)]">
               Two-Factor Authentication
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
+            <p className="mt-2 text-center text-sm text-muted">
               Enter the 6-digit code from your authenticator app
             </p>
           </div>
@@ -165,12 +165,12 @@ const LoginForm: React.FC = () => {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+      <div className="bg-[var(--surface)] py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
         <div className="mb-6">
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="text-center text-3xl font-extrabold text-[var(--text)]">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-muted">
             Or{' '}
             <Link
               to="/register"
@@ -226,7 +226,7 @@ const LoginForm: React.FC = () => {
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 {...register('rememberMe')}
               />
-              <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-900">
+              <label htmlFor="rememberMe" className="ml-2 block text-sm text-[var(--text)]">
                 Remember me
               </label>
             </div>
@@ -258,7 +258,7 @@ const LoginForm: React.FC = () => {
               <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-[var(--surface)] text-gray-500">Or continue with</span>
             </div>
           </div>
 

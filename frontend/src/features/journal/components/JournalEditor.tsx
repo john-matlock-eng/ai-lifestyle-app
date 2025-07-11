@@ -111,7 +111,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-300' : ''}`}
+          className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${editor.isActive('bold') ? 'bg-gray-300 dark:bg-gray-600' : ''}`}
           aria-label="Toggle bold"
           title="Bold"
         >
@@ -120,7 +120,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-300' : ''}`}
+          className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${editor.isActive('italic') ? 'bg-gray-300 dark:bg-gray-600' : ''}`}
           aria-label="Toggle italic"
           title="Italic"
         >
@@ -129,7 +129,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''}`}
+          className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-300 dark:bg-gray-600' : ''}`}
           aria-label="Toggle heading"
           title="Heading"
         >
@@ -138,7 +138,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-300' : ''}`}
+          className={`p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${editor.isActive('bulletList') ? 'bg-gray-300 dark:bg-gray-600' : ''}`}
           aria-label="Toggle bullet list"
           title="Bullet list"
         >

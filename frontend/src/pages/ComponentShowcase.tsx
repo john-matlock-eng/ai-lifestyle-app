@@ -176,13 +176,13 @@ export const ComponentShowcase: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-theme">
         {/* Navigation */}
-        <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <nav className="bg-surface shadow-sm border-b border-gray-200 sticky top-0 z-40 text-theme">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
               <div className="flex items-center">
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="text-xl font-bold text-[var(--text)]">
                   AI Lifestyle App - Component Showcase
                 </h1>
               </div>
@@ -194,7 +194,7 @@ export const ComponentShowcase: React.FC = () => {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       activeSection === section.id
                         ? 'bg-purple-100 text-purple-700'
-                        : 'text-gray-600 hover:text-gray-900'
+                        : 'text-muted hover:text-[var(--text)]'
                     }`}
                   >
                     {section.label}
@@ -210,10 +210,10 @@ export const ComponentShowcase: React.FC = () => {
           {activeSection === 'overview' && (
             <div className="space-y-8">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl font-bold text-[var(--text)] mb-4">
                   Welcome to the Component Showcase
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-muted mb-6">
                   This is a demonstration of all the UI components built for the AI Lifestyle App.
                   Navigate through the sections above to explore different component categories.
                 </p>
@@ -249,25 +249,25 @@ export const ComponentShowcase: React.FC = () => {
               </div>
               
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">
                   Implementation Status
                 </h3>
                 <div className="grid grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-purple-600">✅</div>
-                    <div className="text-sm text-gray-600">2FA Complete</div>
+                    <div className="text-sm text-muted">2FA Complete</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-blue-600">🔄</div>
-                    <div className="text-sm text-gray-600">Goals In Progress</div>
+                    <div className="text-sm text-muted">Goals In Progress</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-green-600">100%</div>
-                    <div className="text-sm text-gray-600">TypeScript</div>
+                    <div className="text-sm text-muted">TypeScript</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-orange-600">A11y</div>
-                    <div className="text-sm text-gray-600">Accessible</div>
+                    <div className="text-sm text-muted">Accessible</div>
                   </div>
                 </div>
               </div>
@@ -276,11 +276,11 @@ export const ComponentShowcase: React.FC = () => {
 
           {activeSection === 'encryption' && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-gray-900">Encryption Components</h2>
+              <h2 className="text-2xl font-bold text-[var(--text)]">Encryption Components</h2>
               
               {/* Encryption Toggle */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Encryption Toggle</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Encryption Toggle</h3>
                 <EncryptionToggle
                   value={encryptionEnabled}
                   onChange={setEncryptionEnabled}
@@ -290,7 +290,7 @@ export const ComponentShowcase: React.FC = () => {
               
               {/* Encryption Indicators */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Encryption Indicators</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Encryption Indicators</h3>
                 <div className="flex items-center gap-4">
                   <EncryptionIndicator status="encrypted" module="Journal" showLabel />
                   <EncryptionIndicator status="unencrypted" module="Goals" showLabel />
@@ -301,7 +301,7 @@ export const ComponentShowcase: React.FC = () => {
               
               {/* Share Dialog Demo */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Share Dialog</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Share Dialog</h3>
                 <button
                   onClick={() => setShowShareDialog(true)}
                   className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
@@ -326,7 +326,7 @@ export const ComponentShowcase: React.FC = () => {
               
               {/* Key Management */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Management</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Key Management</h3>
                 <KeyManagement
                   hasBackup={false}
                   onBackup={async () => console.log('Backup created')}
@@ -338,11 +338,11 @@ export const ComponentShowcase: React.FC = () => {
 
           {activeSection === 'goal-components' && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-gray-900">Goal Components</h2>
+              <h2 className="text-2xl font-bold text-[var(--text)]">Goal Components</h2>
               
               {/* Pattern Selector */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Pattern Selector</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Pattern Selector</h3>
                 <PatternSelector 
                   onSelect={(pattern) => {
                     console.log('Selected pattern:', pattern);
@@ -354,7 +354,7 @@ export const ComponentShowcase: React.FC = () => {
 
               {/* Goal List */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Goal List</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Goal List</h3>
                 <GoalList 
                   goals={mockGoals}
                   isLoading={false}
@@ -364,7 +364,7 @@ export const ComponentShowcase: React.FC = () => {
 
               {/* Goal Cards */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Goal Cards</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Goal Cards</h3>
                 <div className="space-y-4">
                   {mockGoals.map(goal => (
                     <GoalCard 
@@ -389,10 +389,10 @@ export const ComponentShowcase: React.FC = () => {
 
           {activeSection === 'journal' && (
             <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-gray-900">Journal Components</h2>
+              <h2 className="text-2xl font-bold text-[var(--text)]">Journal Components</h2>
 
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Journal Editor</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Journal Editor</h3>
                 <JournalEditor
                   initialContent={journalContent}
                   onSave={(md) => {
@@ -407,12 +407,12 @@ export const ComponentShowcase: React.FC = () => {
               </div>
 
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Journal Storage Sample</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Journal Storage Sample</h3>
                 <JournalStorageSample />
               </div>
 
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Template Picker Demo</h3>
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Template Picker Demo</h3>
                 <JournalTemplateDemo />
               </div>
             </div>

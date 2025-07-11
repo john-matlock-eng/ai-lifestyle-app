@@ -26,7 +26,7 @@ const LoadingScreen: React.FC = () => {
             />
           </svg>
         </div>
-        <h2 className="text-lg font-medium text-gray-900">Loading...</h2>
+        <h2 className="text-lg font-medium text-[var(--text)]">Loading...</h2>
         <p className="mt-1 text-sm text-gray-500">Please wait while we get things ready</p>
       </div>
     </div>

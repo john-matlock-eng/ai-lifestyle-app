@@ -135,7 +135,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
           &#8203;
         </span>
 
-        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
+        <div className="inline-block align-bottom bg-[var(--surface)] rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
           {goalLoading || !goal ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
@@ -143,8 +143,8 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
           ) : (
             <>
               <div className="mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Log Activity</h3>
-                <p className="mt-1 text-sm text-gray-600">{goal.title}</p>
+                <h3 className="text-lg font-medium text-[var(--text)]">Log Activity</h3>
+                <p className="mt-1 text-sm text-muted">{goal.title}</p>
               </div>
 
               {/* Tab Navigation */}
@@ -192,7 +192,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                             ${
                               activityType === type
                                 ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                : 'bg-[var(--surface)] text-gray-700 border-gray-300 hover:bg-gray-50'
                             }
                             border
                           `}
@@ -233,7 +233,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                       step="any"
                       autoFocus
                     />
-                    <span className="text-gray-600">{goal.target.unit}</span>
+                    <span className="text-muted">{goal.target.unit}</span>
                   </div>
                   {goal.target.period && (
                     <p className="mt-1 text-xs text-gray-500">
@@ -278,7 +278,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 ${
                                   timeOfDay === option.value
                                     ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                                    : 'bg-[var(--surface)] text-muted border-gray-300 hover:bg-gray-50'
                                 }
                                 border
                               `}
@@ -298,7 +298,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 ${
                                   timeOfDay === option.value
                                     ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                                    : 'bg-[var(--surface)] text-muted border-gray-300 hover:bg-gray-50'
                                 }
                                 border
                               `}
@@ -326,7 +326,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 ${
                                   location === option.value
                                     ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                                    : 'bg-[var(--surface)] text-muted border-gray-300 hover:bg-gray-50'
                                 }
                                 border
                               `}
@@ -346,7 +346,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 ${
                                   location === option.value
                                     ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                                    : 'bg-[var(--surface)] text-muted border-gray-300 hover:bg-gray-50'
                                 }
                                 border
                               `}

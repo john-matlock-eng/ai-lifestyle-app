@@ -104,11 +104,11 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-start justify-between mb-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-2 text-muted hover:text-[var(--text)]"
           >
             <ArrowLeft className="h-5 w-5" />
             Back to Goals
@@ -124,7 +124,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
             </button>
             
             {showActions && (
-              <div className="absolute right-0 top-10 z-10 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+              <div className="absolute right-0 top-10 z-10 w-48 bg-[var(--surface)] rounded-lg shadow-lg border border-gray-200 py-1">
                 <button
                   onClick={() => {
                     onEdit(goal);
@@ -221,9 +221,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           </div>
           
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{goal.title}</h1>
+            <h1 className="text-2xl font-bold text-[var(--text)] mb-2">{goal.title}</h1>
             {goal.description && (
-              <p className="text-gray-600">{goal.description}</p>
+              <p className="text-muted">{goal.description}</p>
             )}
             
             <div className="flex items-center gap-4 mt-3">
@@ -262,7 +262,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
               color={color}
               size={120}
             />
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-muted mt-2">
               {goal.progress.trend} trend
             </p>
           </div>
@@ -270,8 +270,8 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">Quick Actions</h2>
         
         {!showLogForm ? (
           <button
@@ -298,7 +298,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     step="0.1"
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   />
-                  <span className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">
+                  <span className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-muted">
                     {goal.target.unit}
                   </span>
                 </div>
@@ -343,7 +343,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   setActivityValue(1);
                   setActivityNote('');
                 }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-900"
+                className="px-4 py-2 text-muted hover:text-[var(--text)]"
               >
                 Cancel
               </button>
@@ -376,28 +376,28 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-lg">
-              <BarChart3 className="h-6 w-6 text-gray-600" />
+              <BarChart3 className="h-6 w-6 text-muted" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Success Rate</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted">Success Rate</p>
+              <p className="text-2xl font-bold text-[var(--text)]">
                 {goal.progress.successRate}%
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-lg">
-              <Clock className="h-6 w-6 text-gray-600" />
+              <Clock className="h-6 w-6 text-muted" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Last Activity</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted">Last Activity</p>
+              <p className="text-2xl font-bold text-[var(--text)]">
                 {goal.progress.lastActivityDate 
                   ? new Date(goal.progress.lastActivityDate).toLocaleDateString()
                   : 'Never'}
@@ -406,14 +406,14 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-gray-600" />
+              <TrendingUp className="h-6 w-6 text-muted" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Projected Completion</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted">Projected Completion</p>
+              <p className="text-2xl font-bold text-[var(--text)]">
                 {goal.progress.projectedCompletion
                   ? new Date(goal.progress.projectedCompletion).toLocaleDateString()
                   : 'TBD'}
@@ -424,8 +424,8 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       </div>
 
       {/* Recent Activities */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h2>
+      <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">Recent Activities</h2>
         
         {recentActivities.length > 0 ? (
           <div className="space-y-3">
@@ -450,16 +450,16 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-[var(--text)]">
                       {activity.value} {activity.unit}
                     </p>
                     {activity.note && (
-                      <p className="text-sm text-gray-600">{activity.note}</p>
+                      <p className="text-sm text-muted">{activity.note}</p>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-[var(--text)]">
                     {new Date(activity.activityDate).toLocaleDateString()}
                   </p>
                     <p className="text-xs text-gray-500">
@@ -485,7 +485,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
             🔒 Private Notes (Encrypted)
           </h3>
-          <p className="text-gray-600 whitespace-pre-wrap">{privateNotes}</p>
+          <p className="text-muted whitespace-pre-wrap">{privateNotes}</p>
         </div>
       )}
 

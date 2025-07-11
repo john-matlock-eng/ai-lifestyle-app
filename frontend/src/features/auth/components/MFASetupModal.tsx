@@ -32,8 +32,8 @@ const SimpleModal: React.FC<{
       
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left shadow-xl">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
+        <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-[var(--surface)] p-6 text-left shadow-xl">
+          <h3 className="text-lg font-medium leading-6 text-[var(--text)] mb-4">
             {title}
           </h3>
           {children}
@@ -160,10 +160,10 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({
         return (
           <>
             <div className="text-center mb-6">
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3 className="text-lg font-medium text-[var(--text)]">
                 Verify Your Setup
               </h3>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-muted">
                 Enter the 6-digit code from your authenticator app to complete setup
               </p>
             </div>

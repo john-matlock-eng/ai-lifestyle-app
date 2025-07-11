@@ -65,8 +65,8 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) => {
     if (active && payload && payload[0]) {
       return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <p className="text-sm font-medium text-gray-900">{payload[0].payload.date}</p>
+        <div className="bg-[var(--surface)] p-3 rounded-lg shadow-lg border border-gray-200">
+          <p className="text-sm font-medium text-[var(--text)]">{payload[0].payload.date}</p>
           <p className="text-sm" style={{ color }}>
             {payload[0].value.toLocaleString()} {unit}
           </p>
@@ -109,12 +109,12 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg p-4 ${className}`}>
+    <div className={`bg-[var(--surface)] rounded-lg p-4 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Progress Over Time</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-[var(--text)]">Progress Over Time</h3>
+          <p className="text-sm text-muted">
             {currentValue.toLocaleString()} / {targetValue.toLocaleString()} {unit}
           </p>
         </div>
@@ -213,7 +213,7 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
       
       {/* Summary */}
       <div className="mt-4 flex items-center justify-between text-sm">
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-muted">
           <Calendar className="h-4 w-4" />
           <span>Started {data[0].date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</span>
         </div>

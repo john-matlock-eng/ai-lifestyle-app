@@ -52,8 +52,8 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule Your Goal</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Schedule Your Goal</h3>
+        <p className="text-sm text-muted">
           When and how often do you want to work on this goal?
         </p>
       </div>
@@ -93,7 +93,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
                     key={d.value}
                     type="button"
                     onClick={() => handleDayToggle(d.value)}
-                    className={`w-8 h-8 rounded-full text-sm transition-colors ${schedule.daysOfWeek?.includes(d.value) ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    className={`w-8 h-8 rounded-full text-sm transition-colors ${schedule.daysOfWeek?.includes(d.value) ? 'bg-primary-600 text-white' : 'bg-gray-100 text-muted hover:bg-gray-200'}`}
                     aria-label={d.label}
                   >
                     {d.label.charAt(0)}

@@ -92,9 +92,9 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Edit Goal</h2>
+      <div className="bg-[var(--surface)] rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-[var(--surface)] border-b border-gray-200 p-6 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-[var(--text)]">Edit Goal</h2>
           <button
             onClick={onCancel}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -113,7 +113,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
 
           {/* Basic Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+            <h3 className="text-lg font-semibold text-[var(--text)]">Basic Information</h3>
             
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -183,7 +183,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
 
           {/* Appearance */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Appearance</h3>
+            <h3 className="text-lg font-semibold text-[var(--text)]">Appearance</h3>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -221,7 +221,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
                   onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                   className="h-10 w-20"
                 />
-                <span className="text-sm text-gray-600">{formData.color || '#6366f1'}</span>
+                <span className="text-sm text-muted">{formData.color || '#6366f1'}</span>
               </div>
             </div>
           </div>
@@ -229,7 +229,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
           {/* Target Value (only for certain goal patterns) */}
           {['target', 'milestone', 'limit'].includes(goal.goalPattern) && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Target</h3>
+              <h3 className="text-lg font-semibold text-[var(--text)]">Target</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -272,7 +272,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
 
           {/* Privacy */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Privacy</h3>
+            <h3 className="text-lg font-semibold text-[var(--text)]">Privacy</h3>
             
             <div>
               <label htmlFor="visibility" className="block text-sm font-medium text-gray-700 mb-1">

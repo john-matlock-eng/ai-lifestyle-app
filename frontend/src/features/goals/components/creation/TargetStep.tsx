@@ -85,7 +85,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
                 </select>
               </div>
             </div>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-muted mt-2">
               Example: Exercise 3 times per week, Read 20 pages per day
             </p>
           </>
@@ -119,7 +119,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
               />
             </div>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-muted mt-2">
               Example: Read 52 books this year, Save $10,000 by December
             </p>
           </>
@@ -141,7 +141,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
                 required
               />
             </div>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-muted mt-2">
               Example: Meditate for 30 consecutive days, Write daily for 100 days
             </p>
           </>
@@ -205,7 +205,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
                 <option value="month">Month</option>
               </select>
             </div>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-muted mt-2">
               Example: Maximum 2 hours social media per day, Spend less than $50 per week on dining out
             </p>
           </>
@@ -223,8 +223,8 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
           <PatternIcon className="h-6 w-6 text-primary-600" />
         </div>
         <div>
-          <h3 className="text-lg font-medium text-gray-900">Set Your Target</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-medium text-[var(--text)]">Set Your Target</h3>
+          <p className="text-sm text-muted">
             Define what you want to achieve with this {pattern} goal
           </p>
         </div>
@@ -272,7 +272,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
 
       {/* Preview */}
       <div className="bg-primary-50 rounded-lg p-4">
-        <h4 className="font-medium text-gray-900 mb-2">Goal Summary</h4>
+        <h4 className="font-medium text-[var(--text)] mb-2">Goal Summary</h4>
         <div className="text-sm text-gray-700">
           {pattern === 'recurring' && (
             <p>Complete {target.value} {target.unit} per {target.period}</p>

@@ -109,8 +109,8 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
           <ShieldAlert className="h-6 w-6 text-red-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Create Limit Goal</h3>
-          <p className="text-sm text-gray-600">Set boundaries to stay within healthy limits</p>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Create Limit Goal</h3>
+          <p className="text-sm text-muted">Set boundaries to stay within healthy limits</p>
         </div>
       </div>
 
@@ -131,8 +131,8 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-lg">{template.icon}</span>
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">{template.title}</div>
-                  <div className="text-xs text-gray-600">
+                  <div className="text-sm font-medium text-[var(--text)]">{template.title}</div>
+                  <div className="text-xs text-muted">
                     Max {template.limitValue} {template.unit}/{template.period}
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
 
       {/* Limit Configuration */}
       <div className="bg-red-50 rounded-lg p-4 space-y-4">
-        <h4 className="font-medium text-gray-900 flex items-center gap-2">
+        <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
           <ShieldAlert className="h-4 w-4 text-red-600" />
           Set your limit
         </h4>
@@ -369,7 +369,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
         >
           Cancel
         </button>

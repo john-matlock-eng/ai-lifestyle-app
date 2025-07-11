@@ -34,8 +34,8 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4 ${className}`}>
-      <h2 className="text-lg font-semibold text-gray-900">Activity History</h2>
+    <div className={`bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-6 space-y-4 ${className}`}>
+      <h2 className="text-lg font-semibold text-[var(--text)]">Activity History</h2>
       {isLoading ? (
         <p className="text-center text-gray-500">Loading...</p>
       ) : error ? (
@@ -64,16 +64,16 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
                   {renderIcon(activity.activityType)}
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-[var(--text)]">
                     {activity.value} {activity.unit}
                   </p>
                   {activity.note && (
-                    <p className="text-sm text-gray-600">{activity.note}</p>
+                    <p className="text-sm text-muted">{activity.note}</p>
                   )}
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-[var(--text)]">
                   {new Date(activity.activityDate).toLocaleDateString()}
                 </p>
                 {activity.context?.timeOfDay && (
@@ -95,7 +95,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
         >
           Previous
         </button>
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-muted">
           Page {page} of {pages}
         </span>
         <button

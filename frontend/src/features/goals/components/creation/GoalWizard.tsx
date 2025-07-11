@@ -176,8 +176,8 @@ const GoalWizard: React.FC = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
               <Sparkles className="h-8 w-8 text-primary-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your Goal</h1>
-            <p className="text-lg text-gray-600">Choose a pattern that fits your journey</p>
+            <h1 className="text-3xl font-bold text-[var(--text)] mb-2">Create Your Goal</h1>
+            <p className="text-lg text-muted">Choose a pattern that fits your journey</p>
           </div>
           <PatternSelector
             onSelect={handlePatternSelect}
@@ -215,7 +215,7 @@ const GoalWizard: React.FC = () => {
       <div className="mb-6">
         <button
           onClick={selectedPattern ? handleBack : handleCancel}
-          className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          className="inline-flex items-center text-muted hover:text-[var(--text)] transition-colors"
           disabled={isSubmitting}
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
@@ -224,7 +224,7 @@ const GoalWizard: React.FC = () => {
       </div>
 
       {/* Form Content */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-gray-200">
         <div className="p-6 sm:p-8">
           {renderForm()}
         </div>
@@ -233,7 +233,7 @@ const GoalWizard: React.FC = () => {
       {/* Loading Overlay */}
       {isSubmitting && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 flex flex-col items-center">
+          <div className="bg-[var(--surface)] rounded-lg p-6 flex flex-col items-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
             <p className="text-gray-700 font-medium">Creating your goal...</p>
           </div>

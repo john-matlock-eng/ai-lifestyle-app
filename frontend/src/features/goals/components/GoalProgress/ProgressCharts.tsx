@@ -316,9 +316,9 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Chart Controls */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Progress Analytics</h2>
+          <h2 className="text-lg font-semibold text-[var(--text)]">Progress Analytics</h2>
           
           <div className="flex flex-wrap items-center gap-3">
             {/* Chart Type Selector */}
@@ -335,8 +335,8 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                   onClick={() => setChartType(type)}
                   className={`p-2 rounded transition-all ${
                     chartType === type
-                      ? 'bg-white shadow-sm text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-[var(--surface)] shadow-sm text-[var(--text)]'
+                      : 'text-muted hover:text-[var(--text)]'
                   }`}
                   title={`${type} chart`}
                 >
@@ -369,7 +369,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                   onChange={(e) => setShowTarget(e.target.checked)}
                   className="rounded text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-gray-600">Show target</span>
+                <span className="text-muted">Show target</span>
               </label>
             )}
           </div>
@@ -393,41 +393,41 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
 
       {/* Statistics Summary */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Total</p>
-          <p className="text-2xl font-bold text-gray-900">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-4">
+          <p className="text-sm text-muted mb-1">Total</p>
+          <p className="text-2xl font-bold text-[var(--text)]">
             {stats.total.toFixed(1)} <span className="text-sm font-normal">{goal.target.unit}</span>
           </p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Average</p>
-          <p className="text-2xl font-bold text-gray-900">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-4">
+          <p className="text-sm text-muted mb-1">Average</p>
+          <p className="text-2xl font-bold text-[var(--text)]">
             {stats.average.toFixed(1)} <span className="text-sm font-normal">{goal.target.unit}</span>
           </p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Best</p>
-          <p className="text-2xl font-bold text-gray-900">
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-4">
+          <p className="text-sm text-muted mb-1">Best</p>
+          <p className="text-2xl font-bold text-[var(--text)]">
             {stats.max.toFixed(1)} <span className="text-sm font-normal">{goal.target.unit}</span>
           </p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Consistency</p>
-          <p className="text-2xl font-bold text-gray-900">{stats.consistency}%</p>
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-4">
+          <p className="text-sm text-muted mb-1">Consistency</p>
+          <p className="text-2xl font-bold text-[var(--text)]">{stats.consistency}%</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <p className="text-sm text-gray-600 mb-1">Trend</p>
+        <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-4">
+          <p className="text-sm text-muted mb-1">Trend</p>
           <div className="flex items-center gap-2">
             {goal.progress.trend === 'improving' ? (
               <TrendingUp className="h-6 w-6 text-green-600" />
             ) : goal.progress.trend === 'declining' ? (
               <TrendingDown className="h-6 w-6 text-red-600" />
             ) : (
-              <Activity className="h-6 w-6 text-gray-600" />
+              <Activity className="h-6 w-6 text-muted" />
             )}
             <span className="text-lg font-semibold capitalize">{goal.progress.trend}</span>
           </div>

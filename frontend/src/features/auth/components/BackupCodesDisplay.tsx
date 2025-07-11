@@ -111,7 +111,7 @@ Use these codes if you lose access to your authenticator app.
           {codes.map((code, index) => (
             <div
               key={index}
-              className="bg-white px-3 py-2 rounded border border-gray-200 font-mono text-sm text-center"
+              className="bg-[var(--surface)] px-3 py-2 rounded border border-gray-200 font-mono text-sm text-center"
             >
               {code}
             </div>

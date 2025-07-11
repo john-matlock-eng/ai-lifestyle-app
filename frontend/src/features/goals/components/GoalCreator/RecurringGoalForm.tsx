@@ -95,8 +95,8 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
           <Repeat className="h-6 w-6 text-blue-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Create Recurring Goal</h3>
-          <p className="text-sm text-gray-600">Set up a goal you'll work on regularly</p>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Create Recurring Goal</h3>
+          <p className="text-sm text-muted">Set up a goal you'll work on regularly</p>
         </div>
       </div>
 
@@ -138,7 +138,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
       {/* Target Configuration */}
       <div className="bg-blue-50 rounded-lg p-4 space-y-4">
-        <h4 className="font-medium text-gray-900 flex items-center gap-2">
+        <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
           <Calendar className="h-4 w-4 text-blue-600" />
           How often do you want to do this?
         </h4>
@@ -258,7 +258,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
                   className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
                     formData.daysOfWeek?.includes(day.value)
                       ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-gray-100 text-muted hover:bg-gray-200'
                   }`}
                   aria-label={day.label}
                 >
@@ -329,7 +329,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
         >
           Cancel
         </button>

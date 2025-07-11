@@ -20,7 +20,7 @@ const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
   return (
     <div className="mt-2">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-sm text-gray-600">Password strength:</span>
+        <span className="text-sm text-muted">Password strength:</span>
         <span className={clsx(
           'text-sm font-medium',
           strength.score === 0 && 'text-red-600',
@@ -51,7 +51,7 @@ const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
       {showFeedback && strength.feedback.length > 0 && (
         <ul className="mt-2 space-y-1">
           {strength.feedback.map((feedback, index) => (
-            <li key={index} className="text-xs text-gray-600 flex items-start">
+            <li key={index} className="text-xs text-muted flex items-start">
               <svg
                 className="h-3 w-3 text-gray-400 mt-0.5 mr-1 flex-shrink-0"
                 fill="currentColor"

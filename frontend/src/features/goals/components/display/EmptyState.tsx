@@ -24,10 +24,10 @@ const EmptyState: React.FC = () => {
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No goals yet</h3>
+        <h3 className="text-lg font-medium text-[var(--text)] mb-2">No goals yet</h3>
 
         {/* Description */}
-        <p className="text-gray-600 mb-6">
+        <p className="text-muted mb-6">
           Start your journey by creating your first goal. Whether it's building a new habit, reaching
           a milestone, or setting limits, we're here to help you succeed.
         </p>
@@ -46,29 +46,29 @@ const EmptyState: React.FC = () => {
         <div className="mt-8 grid grid-cols-2 gap-4 text-left">
           <div className="bg-blue-50 rounded-lg p-4">
             <div className="text-2xl mb-2">🏃‍♂️</div>
-            <h4 className="font-medium text-gray-900 mb-1">Get Active</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-medium text-[var(--text)] mb-1">Get Active</h4>
+            <p className="text-sm text-muted">
               Set a daily step goal or workout routine
             </p>
           </div>
           <div className="bg-purple-50 rounded-lg p-4">
             <div className="text-2xl mb-2">📚</div>
-            <h4 className="font-medium text-gray-900 mb-1">Learn More</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-medium text-[var(--text)] mb-1">Learn More</h4>
+            <p className="text-sm text-muted">
               Read books or practice a new skill daily
             </p>
           </div>
           <div className="bg-green-50 rounded-lg p-4">
             <div className="text-2xl mb-2">🧘‍♀️</div>
-            <h4 className="font-medium text-gray-900 mb-1">Find Balance</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-medium text-[var(--text)] mb-1">Find Balance</h4>
+            <p className="text-sm text-muted">
               Meditate or journal for mental wellness
             </p>
           </div>
           <div className="bg-orange-50 rounded-lg p-4">
             <div className="text-2xl mb-2">💰</div>
-            <h4 className="font-medium text-gray-900 mb-1">Save Smart</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-medium text-[var(--text)] mb-1">Save Smart</h4>
+            <p className="text-sm text-muted">
               Track spending or build savings habits
             </p>
           </div>
