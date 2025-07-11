@@ -13,22 +13,36 @@
     color: var(--color-text);
   }
 
-  html.theme-light {
-    --color-background: #f9fafb; /* gray-50 */
+  html[data-theme="light"] {
+    --color-background: #f9fafb;
     --color-surface: #ffffff;
-    --color-text: #111827; /* gray-900 */
+    --color-text: #111827;
+    --color-muted-text: #6b7280;
+    --color-accent: #3b82f6;
   }
 
-  html.theme-dark {
-    --color-background: #1f2937; /* gray-800 */
-    --color-surface: #111827; /* gray-900 */
-    --color-text: #f3f4f6; /* gray-100 */
+  html[data-theme="dark"] {
+    --color-background: #1f2937;
+    --color-surface: #111827;
+    --color-text: #f3f4f6;
+    --color-muted-text: #9ca3af;
+    --color-accent: #60a5fa;
   }
 
-  html.theme-reading {
-    --color-background: #f5f1e6;
-    --color-surface: #fdf8e3;
-    --color-text: #433418;
+  html[data-theme="serene"] {
+    --color-background: #e3f2fd;
+    --color-surface: #ffffff;
+    --color-text: #102027;
+    --color-muted-text: #62757f;
+    --color-accent: #4caf50;
+  }
+
+  html[data-theme="vibrant"] {
+    --color-background: #fff3e0;
+    --color-surface: #ffffff;
+    --color-text: #212121;
+    --color-muted-text: #4b4b4b;
+    --color-accent: #e91e63;
   }
 }
 
@@ -67,8 +81,10 @@
 /* Form input focus styles */
 @layer components {
   .form-input {
-    @apply block w-full rounded-md border-gray-300 shadow-sm 
-           focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+    @apply block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-muted-text);
   }
   
   .form-input-error {
@@ -100,6 +116,10 @@
 
   .text-theme {
     color: var(--color-text);
+  }
+
+  .text-muted {
+    color: var(--color-muted-text);
   }
   
   @keyframes shimmer {

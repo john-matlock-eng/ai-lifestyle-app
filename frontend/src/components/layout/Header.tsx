@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                 src="/logo.svg"
                 alt="AI Lifestyle App"
               />
-              <span className="ml-2 text-xl font-semibold text-gray-900 hidden sm:block">
+              <span className="ml-2 text-xl font-semibold text-theme hidden sm:block">
                 AI Lifestyle
               </span>
             </Link>
@@ -57,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
               <Link
                 to="/dashboard"
                 className={`${
-                  isActive('/dashboard') ? 'text-gray-900' : 'text-gray-500'
+                  isActive('/dashboard') ? 'text-theme' : 'text-muted'
                 } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Dashboard
@@ -65,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
               <Link
                 to="/goals"
                 className={`${
-                  isActive('/goals') ? 'text-gray-900' : 'text-gray-500'
+                  isActive('/goals') ? 'text-theme' : 'text-muted'
                 } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Goals
@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
               <Link
                 to="/meals"
                 className={`${
-                  isActive('/meals') ? 'text-gray-900' : 'text-gray-500'
+                  isActive('/meals') ? 'text-theme' : 'text-muted'
                 } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Meals
@@ -81,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
               <Link
                 to="/workouts"
                 className={`${
-                  isActive('/workouts') ? 'text-gray-900' : 'text-gray-500'
+                  isActive('/workouts') ? 'text-theme' : 'text-muted'
                 } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Workouts
@@ -89,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
               <Link
                 to="/wellness"
                 className={`${
-                  isActive('/wellness') ? 'text-gray-900' : 'text-gray-500'
+                  isActive('/wellness') ? 'text-theme' : 'text-muted'
                 } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
                 Wellness
@@ -120,7 +120,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                     {user?.firstName?.[0]?.toUpperCase() || 'U'}
                   </span>
                 </div>
-                <span className="hidden md:block ml-2 text-gray-700">
+                <span className="hidden md:block ml-2 text-muted">
                   {user?.firstName} {user?.lastName}
                 </span>
                 <svg
@@ -143,13 +143,13 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
               {isUserMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-surface ring-1 ring-black ring-opacity-5 z-50">
                   <div className="py-1" role="menu" aria-orientation="vertical">
-                    <div className="px-4 py-2 text-sm text-gray-700 border-b">
+                    <div className="px-4 py-2 text-sm text-muted border-b">
                       <div className="font-medium">{user?.firstName} {user?.lastName}</div>
                       <div className="text-gray-500">{user?.email}</div>
                     </div>
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-muted hover:bg-gray-100"
                       role="menuitem"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
@@ -157,7 +157,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                     </Link>
                     <Link
                       to="/settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-muted hover:bg-gray-100"
                       role="menuitem"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
@@ -168,7 +168,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-muted hover:bg-gray-100"
                       role="menuitem"
                     >
                       Sign out

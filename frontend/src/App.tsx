@@ -50,9 +50,9 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <Router>
-          <ThemeProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <Router>
           <AuthProvider>
           <Routes>
             {/* Public Routes */}
@@ -97,10 +97,10 @@ function App() {
           <SessionWarning />
           <DevTools />
           </AuthProvider>
-          </ThemeProvider>
-        </Router>
+          </Router>
+        </QueryClientProvider>
+      </ThemeProvider>
         {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-      </QueryClientProvider>
     </Provider>
   );
 }
