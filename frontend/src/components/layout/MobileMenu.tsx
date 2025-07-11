@@ -26,7 +26,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
       />
 
       {/* Menu Panel */}
-      <div className="fixed inset-y-0 right-0 max-w-xs w-full bg-white shadow-xl z-50 md:hidden">
+      <div className="fixed inset-y-0 right-0 max-w-xs w-full bg-surface shadow-xl z-50 md:hidden">
         <div className="flex items-center justify-between p-4 border-b">
           <div>
             <div className="text-base font-medium text-gray-900">

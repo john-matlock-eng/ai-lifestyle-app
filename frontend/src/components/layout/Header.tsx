@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts';
+import { ThemePicker } from '../common';
 
 interface HeaderProps {
   onMobileMenuToggle: () => void;
@@ -35,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
   };
 
   return (
-    <header className="bg-white shadow">
+    <header className="bg-surface shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Desktop Navigation */}
@@ -140,7 +141,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
 
               {/* Dropdown Menu */}
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-surface ring-1 ring-black ring-opacity-5 z-50">
                   <div className="py-1" role="menu" aria-orientation="vertical">
                     <div className="px-4 py-2 text-sm text-gray-700 border-b">
                       <div className="font-medium">{user?.firstName} {user?.lastName}</div>
@@ -162,6 +163,9 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                     >
                       Settings
                     </Link>
+                    <div className="px-4 py-2">
+                      <ThemePicker />
+                    </div>
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
