@@ -1,4 +1,5 @@
 import type { JournalTemplate } from '../types/template.types';
+import type { JSONContent } from '@tiptap/react';
 
 export interface SectionContent {
   id: string;
@@ -18,4 +19,11 @@ export function filterAiSections(
       .map((s) => s.id)
   );
   return sections.filter((s) => aiIds.has(s.id));
+}
+
+export function filterTemplateSections(doc: JSONContent): JSONContent {
+  return {
+    ...doc,
+    content: (doc.content ?? []).filter((n: JSONContent) => n.type === 'template_section'),
+  };
 }

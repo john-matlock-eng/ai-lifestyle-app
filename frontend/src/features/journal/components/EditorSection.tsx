@@ -8,6 +8,8 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
 import ReactMarkdown from 'react-markdown';
 import { Bold, Italic, Heading, List } from 'lucide-react';
+import ReflectButton from './ReflectButton';
+import useReflect from '../hooks/useReflect';
 import { Button } from '@/components/common';
 import type { SectionDefinition } from '../types/template.types';
 import TemplateSection from '../extensions/TemplateSection';
@@ -70,6 +72,11 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         ],
       });
     },
+  });
+
+  const { reply, collapsed, run, toggle } = useReflect(editor, {
+    id: section.id,
+    aiPrompt: section.aiPrompt,
   });
 
   const [lastSaved, setLastSaved] = useState(initialContent);
@@ -198,11 +205,25 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         >
           <List className="w-4 h-4" />
         </button>
+        <ReflectButton privacy={section.defaultPrivacy ?? 'private'} onClick={run} />
       </div>
       <EditorContent
         editor={editor}
         className="border rounded p-4 min-h-[300px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
       />
+      {reply && (
+        <div className="mt-2 border-l-4 bg-gray-50 p-3 rounded">
+          <button
+            type="button"
+            onClick={toggle}
+            className="text-xs text-gray-500"
+            aria-label={collapsed ? 'Expand' : 'Collapse'}
+          >
+            {collapsed ? '▼' : '▲'}
+          </button>
+          {!collapsed && <div className="mt-1 whitespace-pre-wrap">{reply}</div>}
+        </div>
+      )}
     </div>
   );
 };
