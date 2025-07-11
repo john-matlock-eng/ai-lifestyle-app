@@ -25,7 +25,7 @@ import { ComponentShowcase } from './pages/ComponentShowcase';
 import GoalsPage from './pages/goals/GoalsPage';
 import CreateGoalPage from './pages/goals/CreateGoalPage';
 import GoalDetailPage from './pages/goals/GoalDetailPage';
-import GoalsDashboardPage from './pages/goals/GoalsDashboardPage';
+import WellnessDashboardPage from './pages/wellness/WellnessDashboardPage';
 
 // Components
 import DevTools from './components/common/DevTools';
@@ -86,7 +86,7 @@ function App() {
               
               <Route path="/meals" element={<div>Meals - Coming Soon</div>} />
               <Route path="/workouts" element={<div>Workouts - Coming Soon</div>} />
-              <Route path="/wellness" element={<GoalsDashboardPage />} />
+              <Route path="/wellness" element={<WellnessDashboardPage />} />
             </Route>
 
             {/* Default redirect */}
