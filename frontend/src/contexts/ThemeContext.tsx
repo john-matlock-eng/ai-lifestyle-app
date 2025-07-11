@@ -8,7 +8,7 @@ interface ThemeProviderProps {
 }
 
 const THEME_KEY = 'theme-preference';
-const themes: Theme[] = ['light', 'dark', 'serene', 'vibrant'];
+const themes: Theme[] = ['light', 'dark', 'reading'];
 
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(
@@ -17,7 +17,7 @@ const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('light', 'dark', 'serene', 'vibrant');
+    root.classList.remove('light', 'dark', 'reading');
     root.classList.add(theme);
     root.setAttribute('data-theme', theme);
     localStorage.setItem(THEME_KEY, theme);
