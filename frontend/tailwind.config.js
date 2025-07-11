@@ -43,7 +43,12 @@ export default {
           700: '#388e3c',
           800: '#2e7d32',
           900: '#1b5e20',
-        }
+        },
+        bg: 'var(--bg)',
+        text: 'var(--text)',
+        surface: 'var(--surface)',
+        'surface-muted': 'var(--surface-muted)',
+        accent: 'var(--accent)'
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],

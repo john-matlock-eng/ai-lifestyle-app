@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "./styles/theme.css";
 
 @layer base {
   :root {
@@ -13,26 +14,6 @@
     color: var(--text);
   }
 
-  html.light {
-    --bg: #ffffff;
-    --surface: #f9fafb;
-    --text: #111827;
-    --accent: #3b82f6;
-  }
-
-  html.dark {
-    --bg: #1f2937;
-    --surface: #111827;
-    --text: #f3f4f6;
-    --accent: #60a5fa;
-  }
-
-  html.reading {
-    --bg: #e3f2fd;
-    --surface: #ffffff;
-    --text: #102027;
-    --accent: #4caf50;
-  }
 }
 
 @layer utilities {
@@ -84,12 +65,12 @@
     border-color: rgba(0,0,0,0.15);
   }
 
-  html.dark .form-input {
+  [data-theme="dark"] .form-input {
     border-color: rgba(255,255,255,0.2);
   }
 
-  html.dark .form-select,
-  html.dark .form-textarea {
+  [data-theme="dark"] .form-select,
+  [data-theme="dark"] .form-textarea {
     border-color: rgba(255,255,255,0.2);
   }
   

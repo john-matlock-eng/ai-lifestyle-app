@@ -1,0 +1,55 @@
+/* Theme palettes via CSS variables */
+
+/* Base (default dark theme) variables on :root */
+:root {
+  --bg: #121212;            /* dark background */
+  --text: #FFFFFF;          /* light text on dark */
+  --surface: #1E1E1E;       /* surface containers (cards, modals) */
+  --surface-muted: #2A2A2A; /* slightly variant surface (muted) */
+  --accent: #3AB0FF;        /* accent color (e.g. buttons/highlights) */
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --bg: #F9F9F9;           /* light background */
+  --text: #1A1A1A;         /* dark text on light */
+  --surface: #FFFFFF;      /* white surfaces on light theme */
+  --surface-muted: #F0F0F0;/* light grey muted surface */
+  --accent: #3A76FF;       /* accent (e.g. a blue) on light */
+}
+
+/* Serene theme (cool pastel) overrides */
+[data-theme="serene"] {
+  --bg: #E8F6F8;           /* very light cyan/blue background */
+  --text: #102027;         /* dark gray-blue text for contrast */
+  --surface: #FFFFFF;      /* white or light surface */
+  --surface-muted: #D7ECEE;/* muted light blue surface */
+  --accent: #73B2B8;       /* soft teal accent */
+}
+
+/* Vibrant theme (bold/energetic) overrides */
+[data-theme="vibrant"] {
+  --bg: #FFF4E5;           /* warm off-white background */
+  --text: #221100;         /* nearly black text */
+  --surface: #FFFFFF;      /* white surface */
+  --surface-muted: #FFE8CC;/* light orange muted surface */
+  --accent: #FF6B00;       /* bold orange accent */
+}
+
+/* Midnight theme (OLED black) overrides */
+[data-theme="midnight"] {
+  --bg: #000000;           /* pure black background */
+  --text: #FFFFFF;         /* pure white text */
+  --surface: #0A0A0A;      /* very dark surface */
+  --surface-muted: #151515;/* slightly lighter dark surface */
+  --accent: #3AB0FF;       /* bright blue accent (on black stands out) */
+}
+
+/* Solarized theme (warm, readable) overrides */
+[data-theme="solarized"] {
+  --bg: #FDF6E3;           /* solarized light background (warm yellowish) */
+  --text: #073642;         /* solarized dark text (deep teal) */
+  --surface: #FFFDF6;      /* slightly lighter surface */
+  --surface-muted: #EEE8D5;/* solarized base2 tone for muted surfaces */
+  --accent: #B58900;       /* solarized accent (warm yellow/orange) */
+}
