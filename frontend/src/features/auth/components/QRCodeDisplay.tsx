@@ -19,12 +19,12 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-muted mb-4">
           Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
         </p>
         
         {/* QR Code Image */}
-        <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg">
+        <div className="inline-block p-4 bg-[var(--surface)] border-2 border-gray-200 rounded-lg">
           <img
             src={qrCode}
             alt="2FA QR Code"
@@ -45,17 +45,17 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
         
         {showSecret && (
           <div className="mt-3 p-3 bg-gray-50 rounded-md">
-            <p className="text-xs text-gray-600 mb-2">
+            <p className="text-xs text-muted mb-2">
               Enter this secret key in your authenticator app:
             </p>
             <div className="flex items-center justify-between">
-              <code className="text-sm font-mono bg-white px-3 py-1 rounded border border-gray-200">
+              <code className="text-sm font-mono bg-[var(--surface)] px-3 py-1 rounded border border-gray-200">
                 {secret}
               </code>
               <button
                 type="button"
                 onClick={() => navigator.clipboard.writeText(secret)}
-                className="ml-2 p-1 text-gray-400 hover:text-gray-600"
+                className="ml-2 p-1 text-gray-400 hover:text-muted"
                 title="Copy to clipboard"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

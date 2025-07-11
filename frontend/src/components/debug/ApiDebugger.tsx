@@ -116,7 +116,7 @@ const ApiDebugger: React.FC = () => {
       
       <div className="mb-4 p-4 bg-gray-100 rounded">
         <p className="font-semibold">API URL: {import.meta.env.VITE_API_URL || 'Not configured'}</p>
-        <p className="text-sm text-gray-600">Environment: {import.meta.env.VITE_ENVIRONMENT}</p>
+        <p className="text-sm text-muted">Environment: {import.meta.env.VITE_ENVIRONMENT}</p>
       </div>
 
       <div className="space-y-2 mb-6">

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts';
-import { ThemePicker } from '../common';
+import { ThemeSwitcher } from '../common';
 
 interface HeaderProps {
   onMobileMenuToggle: () => void;
@@ -164,7 +164,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                       Settings
                     </Link>
                     <div className="px-4 py-2">
-                      <ThemePicker />
+                      <ThemeSwitcher />
                     </div>
                     <button
                       onClick={handleLogout}

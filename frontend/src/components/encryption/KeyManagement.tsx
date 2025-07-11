@@ -60,13 +60,13 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-center gap-3 mb-4">
         <Key className="w-6 h-6 text-purple-600" />
-        <h3 className="text-lg font-semibold text-gray-900">Key Management</h3>
+        <h3 className="text-lg font-semibold text-[var(--text)]">Key Management</h3>
       </div>
 
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-muted mb-6">
         Backup your encryption keys to ensure you never lose access to your encrypted data.
         Store your backup in a secure location.
       </p>
@@ -98,10 +98,10 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
           <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${hasBackup ? 'bg-green-500' : 'bg-amber-500'}`} />
             <div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-[var(--text)]">
                 {hasBackup ? 'Backup exists' : 'No backup found'}
               </p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-muted">
                 {hasBackup 
                   ? 'Your keys are backed up securely' 
                   : 'Create a backup to protect your data'
@@ -135,12 +135,12 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
       {/* Restore Dialog */}
       {showRestoreDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-[var(--surface)] rounded-lg p-6 max-w-md w-full mx-4">
+            <h4 className="text-lg font-semibold text-[var(--text)] mb-4">
               Restore from Backup
             </h4>
             
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-muted mb-4">
               Enter your backup key to restore your encryption keys. This will replace
               your current keys.
             </p>

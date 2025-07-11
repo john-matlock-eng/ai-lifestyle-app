@@ -36,7 +36,7 @@ export const SessionWarning: React.FC = () => {
       <div className="flex min-h-full items-center justify-center p-4 text-center">
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={dismissSessionWarning} />
         
-        <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
+        <div className="relative transform overflow-hidden rounded-lg bg-[var(--surface)] px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
           <div>
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
               <svg
@@ -55,13 +55,13 @@ export const SessionWarning: React.FC = () => {
             </div>
             
             <div className="mt-3 text-center sm:mt-5">
-              <h3 className="text-base font-semibold leading-6 text-gray-900">
+              <h3 className="text-base font-semibold leading-6 text-[var(--text)]">
                 Session Expiring Soon
               </h3>
               <div className="mt-2">
                 <p className="text-sm text-gray-500">
                   Your session will expire in{' '}
-                  <span className="font-semibold text-gray-900">{timeRemaining}</span>.
+                  <span className="font-semibold text-[var(--text)]">{timeRemaining}</span>.
                   Would you like to continue working?
                 </p>
               </div>
@@ -80,7 +80,7 @@ export const SessionWarning: React.FC = () => {
               type="button"
               variant="secondary"
               onClick={() => logout('manual')}
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+              className="mt-3 inline-flex w-full justify-center rounded-md bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
             >
               Log Out
             </Button>

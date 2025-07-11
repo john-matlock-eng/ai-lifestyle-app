@@ -78,8 +78,8 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
           <Flame className="h-6 w-6 text-orange-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Create Streak Goal</h3>
-          <p className="text-sm text-gray-600">Build momentum with consecutive daily habits</p>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Create Streak Goal</h3>
+          <p className="text-sm text-muted">Build momentum with consecutive daily habits</p>
         </div>
       </div>
 
@@ -100,8 +100,8 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-lg">{template.icon}</span>
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">{template.title}</div>
-                  <div className="text-xs text-gray-600">
+                  <div className="text-sm font-medium text-[var(--text)]">{template.title}</div>
+                  <div className="text-xs text-muted">
                     {template.targetStreak} {template.unit}
                   </div>
                 </div>
@@ -149,7 +149,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
 
       {/* Streak Configuration */}
       <div className="bg-orange-50 rounded-lg p-4 space-y-4">
-        <h4 className="font-medium text-gray-900 flex items-center gap-2">
+        <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
           <Calendar className="h-4 w-4 text-orange-600" />
           How long do you want your streak to be?
         </h4>
@@ -242,9 +242,9 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
         </div>
 
         {/* Motivation Tips */}
-        <div className="bg-white rounded-lg p-3 border border-orange-200">
-          <h5 className="text-sm font-medium text-gray-900 mb-2">💡 Tips for Success</h5>
-          <ul className="text-xs text-gray-600 space-y-1">
+        <div className="bg-[var(--surface)] rounded-lg p-3 border border-orange-200">
+          <h5 className="text-sm font-medium text-[var(--text)] mb-2">💡 Tips for Success</h5>
+          <ul className="text-xs text-muted space-y-1">
             <li>• Start small - even 1 minute counts!</li>
             <li>• Set a specific time each day</li>
             <li>• Track visually to stay motivated</li>
@@ -304,7 +304,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
         >
           Cancel
         </button>

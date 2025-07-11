@@ -23,8 +23,8 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Your Motivation</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Your Motivation</h3>
+        <p className="text-sm text-muted">
           Understanding why this goal matters will help you stay committed.
         </p>
       </div>

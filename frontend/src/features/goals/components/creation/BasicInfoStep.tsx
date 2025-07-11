@@ -54,8 +54,8 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ initialValues, onComplete
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
-        <p className="text-sm text-gray-600 mb-6">
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Basic Information</h3>
+        <p className="text-sm text-muted mb-6">
           Give your goal a clear name and choose a category to help organize it.
         </p>
       </div>

@@ -12,7 +12,7 @@ const LoginPage: React.FC = () => {
 
       <div className="mt-8 w-full max-w-md mx-auto">
         <div className="bg-surface py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
-          <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-center text-2xl font-bold text-[var(--text)] mb-6">
             Login Form Loading Test
           </h2>
           

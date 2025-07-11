@@ -113,7 +113,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
           </div>
           <div className="flex justify-between text-sm">
             {steps.map((step) => (
-              <span key={step.id} className="text-gray-600">
+              <span key={step.id} className="text-muted">
                 {step.title}
               </span>
             ))}
@@ -121,12 +121,12 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-[var(--surface)] rounded-lg shadow-lg p-8">
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
               <CurrentIcon className="h-8 w-8 text-purple-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-[var(--text)] mb-2">
               {steps[currentStep].title}
             </h2>
           </div>
@@ -135,7 +135,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
           {currentStep === 0 && (
             <div className="space-y-6">
               <div className="text-center space-y-4">
-                <p className="text-gray-600">
+                <p className="text-muted">
                   Protect your personal data with end-to-end encryption.
                   Only you can decrypt your information.
                 </p>
@@ -144,22 +144,22 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="bg-purple-50 rounded-lg p-4">
                   <Shield className="h-8 w-8 text-purple-600 mb-2" />
-                  <h3 className="font-semibold text-gray-900 mb-1">Private & Secure</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-[var(--text)] mb-1">Private & Secure</h3>
+                  <p className="text-sm text-muted">
                     Your data is encrypted locally before storage
                   </p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4">
                   <Lock className="h-8 w-8 text-purple-600 mb-2" />
-                  <h3 className="font-semibold text-gray-900 mb-1">You Control Access</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-[var(--text)] mb-1">You Control Access</h3>
+                  <p className="text-sm text-muted">
                     Share specific data temporarily when needed
                   </p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4">
                   <Key className="h-8 w-8 text-purple-600 mb-2" />
-                  <h3 className="font-semibold text-gray-900 mb-1">Backup Available</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-[var(--text)] mb-1">Backup Available</h3>
+                  <p className="text-sm text-muted">
                     Secure key backup ensures you never lose access
                   </p>
                 </div>
@@ -170,7 +170,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
           {currentStep === 1 && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">
                   Choose what to encrypt
                 </h3>
                 <div className="space-y-3">
@@ -186,8 +186,8 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                         className="h-5 w-5 text-purple-600 rounded border-gray-300 mt-0.5"
                       />
                       <div className="ml-3 flex-1">
-                        <div className="font-medium text-gray-900">{module.name}</div>
-                        <div className="text-sm text-gray-600">{module.description}</div>
+                        <div className="font-medium text-[var(--text)]">{module.name}</div>
+                        <div className="text-sm text-muted">{module.description}</div>
                       </div>
                     </label>
                   ))}
@@ -232,10 +232,10 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                     className="h-5 w-5 text-purple-600 rounded border-gray-300 mt-0.5"
                   />
                   <div className="ml-3">
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-[var(--text)]">
                       Create a backup key (recommended)
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">
+                    <div className="text-sm text-muted mt-1">
                       You'll receive a recovery key to store in a safe place
                     </div>
                   </div>
@@ -259,7 +259,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
               {currentStep > 0 && (
                 <button
                   onClick={handleBack}
-                  className="text-gray-600 hover:text-gray-900"
+                  className="text-muted hover:text-[var(--text)]"
                 >
                   Back
                 </button>
@@ -270,7 +270,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
               {showSkip && currentStep === 0 && onSkip && (
                 <button
                   onClick={onSkip}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-900"
+                  className="px-4 py-2 text-muted hover:text-[var(--text)]"
                 >
                   Skip for now
                 </button>

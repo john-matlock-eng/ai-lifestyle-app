@@ -74,7 +74,7 @@ export const GoalList: React.FC<GoalListProps> = ({
       </button>
       
       {openMenuId === goal.goalId && (
-        <div className="absolute right-0 top-8 z-10 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+        <div className="absolute right-0 top-8 z-10 w-48 bg-[var(--surface)] rounded-lg shadow-lg border border-gray-200 py-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -154,7 +154,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         key={goal.goalId}
         onClick={() => onSelectGoal(goal)}
         className={`
-          bg-white rounded-lg border-2 p-4 cursor-pointer transition-all duration-200
+          bg-[var(--surface)] rounded-lg border-2 p-4 cursor-pointer transition-all duration-200
           hover:shadow-lg hover:border-gray-300
           ${goal.status === 'paused' ? 'opacity-60' : ''}
           ${goal.status === 'completed' ? 'border-green-300 bg-green-50' : 'border-gray-200'}
@@ -164,9 +164,9 @@ export const GoalList: React.FC<GoalListProps> = ({
           <div className="flex items-start gap-3 flex-1">
             <span className="text-2xl">{getGoalIcon(goal.goalPattern)}</span>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 mb-1">{goal.title}</h3>
+              <h3 className="font-semibold text-[var(--text)] mb-1">{goal.title}</h3>
               {goal.description && (
-                <p className="text-sm text-gray-600 line-clamp-1">{goal.description}</p>
+                <p className="text-sm text-muted line-clamp-1">{goal.description}</p>
               )}
               <div className="flex items-center gap-2 mt-2">
                 <span
@@ -201,7 +201,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         <div className="mt-3 pt-3 border-t border-gray-100">
           {goal.goalPattern === 'recurring' && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
+              <span className="text-muted">
                 {goal.progress.currentPeriodValue || 0} / {goal.target.value} {goal.target.unit} this {goal.target.period}
               </span>
               <span className="font-medium" style={{ color }}>
@@ -212,7 +212,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           
           {goal.goalPattern === 'milestone' && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
+              <span className="text-muted">
                 {goal.progress.totalAccumulated || 0} / {goal.target.value} {goal.target.unit}
               </span>
               <span className="font-medium" style={{ color }}>
@@ -223,7 +223,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           
           {goal.goalPattern === 'target' && goal.target.targetDate && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
+              <span className="text-muted">
                 Target: {new Date(goal.target.targetDate).toLocaleDateString()}
               </span>
               <span className="font-medium" style={{ color }}>
@@ -239,7 +239,7 @@ export const GoalList: React.FC<GoalListProps> = ({
                 size="sm"
                 color={color}
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted">
                 Best: {goal.progress.longestStreak || 0} days
               </span>
             </div>
@@ -247,7 +247,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           
           {goal.goalPattern === 'limit' && (
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
+              <span className="text-muted">
                 Avg: {goal.progress.averageValue?.toFixed(1)} {goal.target.unit}/{goal.target.period}
               </span>
               <span 
@@ -269,7 +269,7 @@ export const GoalList: React.FC<GoalListProps> = ({
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Your Goals</h2>
+        <h2 className="text-2xl font-bold text-[var(--text)]">Your Goals</h2>
         <button
           onClick={onCreateGoal}
           className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
@@ -339,8 +339,8 @@ export const GoalList: React.FC<GoalListProps> = ({
           <div className="text-gray-400 mb-4">
             <Target className="h-12 w-12 mx-auto" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No goals found</h3>
-          <p className="text-gray-600 mb-4">
+          <h3 className="text-lg font-medium text-[var(--text)] mb-2">No goals found</h3>
+          <p className="text-muted mb-4">
             {searchTerm || selectedCategory !== 'all' || selectedPattern !== 'all'
               ? 'Try adjusting your filters'
               : 'Create your first goal to get started'}

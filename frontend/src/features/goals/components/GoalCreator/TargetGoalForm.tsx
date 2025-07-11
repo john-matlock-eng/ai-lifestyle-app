@@ -73,8 +73,8 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
           <Target className="h-6 w-6 text-green-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Create Target Goal</h3>
-          <p className="text-sm text-gray-600">Set a specific target to reach by a deadline</p>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Create Target Goal</h3>
+          <p className="text-sm text-muted">Set a specific target to reach by a deadline</p>
         </div>
       </div>
 
@@ -116,7 +116,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
       {/* Target Configuration */}
       <div className="bg-green-50 rounded-lg p-4 space-y-4">
-        <h4 className="font-medium text-gray-900 flex items-center gap-2">
+        <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
           <Target className="h-4 w-4 text-green-600" />
           Define your target
         </h4>
@@ -322,7 +322,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
         >
           Cancel
         </button>

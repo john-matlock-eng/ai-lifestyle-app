@@ -5,10 +5,11 @@ import type { Theme } from '../../contexts';
 const options: { label: string; value: Theme }[] = [
   { label: 'Light', value: 'light' },
   { label: 'Dark', value: 'dark' },
-  { label: 'Reading', value: 'reading' },
+  { label: 'Serene', value: 'serene' },
+  { label: 'Vibrant', value: 'vibrant' },
 ];
 
-const ThemePicker: React.FC = () => {
+const ThemeSwitcher: React.FC = () => {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -26,4 +27,4 @@ const ThemePicker: React.FC = () => {
   );
 };
 
-export default ThemePicker;
+export default ThemeSwitcher;

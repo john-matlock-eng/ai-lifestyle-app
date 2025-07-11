@@ -29,7 +29,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
       <div className="fixed inset-y-0 right-0 max-w-xs w-full bg-surface shadow-xl z-50 md:hidden">
         <div className="flex items-center justify-between p-4 border-b">
           <div>
-            <div className="text-base font-medium text-gray-900">
+            <div className="text-base font-medium text-[var(--text)]">
               {user?.firstName} {user?.lastName}
             </div>
             <div className="text-sm text-gray-500">{user?.email}</div>
@@ -61,7 +61,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/dashboard"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/dashboard') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              isActive('/dashboard') ? 'text-[var(--text)] bg-gray-100' : 'text-gray-500 hover:text-[var(--text)] hover:bg-gray-100'
             }`}
             onClick={onClose}
           >
@@ -70,7 +70,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/goals"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/goals') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              isActive('/goals') ? 'text-[var(--text)] bg-gray-100' : 'text-gray-500 hover:text-[var(--text)] hover:bg-gray-100'
             }`}
             onClick={onClose}
           >
@@ -79,7 +79,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/meals"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/meals') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              isActive('/meals') ? 'text-[var(--text)] bg-gray-100' : 'text-gray-500 hover:text-[var(--text)] hover:bg-gray-100'
             }`}
             onClick={onClose}
           >
@@ -88,7 +88,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/workouts"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/workouts') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              isActive('/workouts') ? 'text-[var(--text)] bg-gray-100' : 'text-gray-500 hover:text-[var(--text)] hover:bg-gray-100'
             }`}
             onClick={onClose}
           >
@@ -97,7 +97,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/wellness"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/wellness') ? 'text-gray-900 bg-gray-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+              isActive('/wellness') ? 'text-[var(--text)] bg-gray-100' : 'text-gray-500 hover:text-[var(--text)] hover:bg-gray-100'
             }`}
             onClick={onClose}
           >
@@ -109,14 +109,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <div className="px-2 space-y-1">
             <Link
               to="/profile"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-[var(--text)] hover:bg-gray-100"
               onClick={onClose}
             >
               Your Profile
             </Link>
             <Link
               to="/settings"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-[var(--text)] hover:bg-gray-100"
               onClick={onClose}
             >
               Settings
@@ -126,7 +126,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                 logout();
                 onClose();
               }}
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-500 hover:text-[var(--text)] hover:bg-gray-100"
             >
               Sign out
             </button>

@@ -138,7 +138,7 @@ const DashboardPage: React.FC = () => {
       <div className="mt-8 bg-surface shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <h3 className="text-lg leading-6 font-medium text-theme">Account Status</h3>
-          <div className="mt-3 max-w-xl text-sm text-gray-600">
+          <div className="mt-3 max-w-xl text-sm text-muted">
             <p>Your account security status and settings.</p>
           </div>
           <div className="mt-5 space-y-3">
@@ -146,7 +146,7 @@ const DashboardPage: React.FC = () => {
               <svg className="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted">
                 Email verified: {user?.emailVerified ? 'Yes' : 'No'}
               </span>
             </div>
@@ -154,7 +154,7 @@ const DashboardPage: React.FC = () => {
               <svg className={`h-5 w-5 ${user?.mfaEnabled ? 'text-green-500' : 'text-gray-400'} mr-2`} fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted">
                 Two-factor authentication: {user?.mfaEnabled ? 'Enabled' : 'Disabled'}
               </span>
             </div>

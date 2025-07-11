@@ -20,14 +20,14 @@ const SetupInstructions: React.FC = () => {
             />
           </svg>
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted">
           Two-factor authentication adds an extra layer of security to your account by requiring a code from your phone in addition to your password.
         </p>
       </div>
 
       {/* Steps */}
       <div className="space-y-4">
-        <h4 className="text-sm font-medium text-gray-900">What you'll need:</h4>
+        <h4 className="text-sm font-medium text-[var(--text)]">What you'll need:</h4>
         
         <div className="space-y-3">
           {/* Step 1 */}
@@ -38,10 +38,10 @@ const SetupInstructions: React.FC = () => {
               </div>
             </div>
             <div className="ml-3">
-              <h5 className="text-sm font-medium text-gray-900">
+              <h5 className="text-sm font-medium text-[var(--text)]">
                 A smartphone with an authenticator app
               </h5>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted mt-1">
                 Install Google Authenticator, Microsoft Authenticator, Authy, or similar
               </p>
             </div>
@@ -55,10 +55,10 @@ const SetupInstructions: React.FC = () => {
               </div>
             </div>
             <div className="ml-3">
-              <h5 className="text-sm font-medium text-gray-900">
+              <h5 className="text-sm font-medium text-[var(--text)]">
                 5 minutes to complete setup
               </h5>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted mt-1">
                 You'll scan a QR code and save backup codes
               </p>
             </div>
@@ -72,10 +72,10 @@ const SetupInstructions: React.FC = () => {
               </div>
             </div>
             <div className="ml-3">
-              <h5 className="text-sm font-medium text-gray-900">
+              <h5 className="text-sm font-medium text-[var(--text)]">
                 A secure place to store backup codes
               </h5>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted mt-1">
                 You'll receive codes to use if you lose your phone
               </p>
             </div>

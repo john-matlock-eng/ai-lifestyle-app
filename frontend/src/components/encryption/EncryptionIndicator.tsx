@@ -99,7 +99,7 @@ export const EncryptionStatusList: React.FC<EncryptionStatusListProps> = ({
             key={module.moduleId}
             className="flex items-center justify-between py-1"
           >
-            <span className="text-sm text-gray-600">{module.moduleName}</span>
+            <span className="text-sm text-muted">{module.moduleName}</span>
             <EncryptionIndicator
               status={module.status}
               size="sm"

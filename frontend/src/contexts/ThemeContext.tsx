@@ -8,23 +8,17 @@ interface ThemeProviderProps {
 }
 
 const THEME_KEY = 'theme-preference';
-const themes: Theme[] = ['light', 'dark', 'reading'];
+const themes: Theme[] = ['light', 'dark', 'serene', 'vibrant'];
 
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>('light');
-
-  useEffect(() => {
-    const stored = localStorage.getItem(THEME_KEY) as Theme | null;
-    if (stored && themes.includes(stored)) {
-      setThemeState(stored);
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setThemeState('dark');
-    }
-  }, []);
+  const [theme, setThemeState] = useState<Theme>(
+    () => (localStorage.getItem(THEME_KEY) as Theme) || 'light'
+  );
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
+    root.classList.remove('light', 'dark', 'serene', 'vibrant');
+    root.classList.add(theme);
     root.setAttribute('data-theme', theme);
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);

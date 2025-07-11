@@ -17,7 +17,7 @@ const GoalList: React.FC<GoalListProps> = ({ goals, isLoading, onQuickLog, onEdi
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-lg shadow-sm border-2 p-4 animate-pulse">
+          <div key={i} className="bg-[var(--surface)] rounded-lg shadow-sm border-2 p-4 animate-pulse">
             <div className="flex items-start justify-between">
               <div className="flex-1 space-y-3">
                 <div className="flex items-center gap-2">
