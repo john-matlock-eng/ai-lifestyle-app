@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../features/auth/contexts/AuthContext';
+import { useAuth } from './index';
 import { getEncryptionService } from '../services/encryption';
 import apiClient from '../api/client';
 import { EncryptionContext, EncryptionContextValue } from './EncryptionContextType';
