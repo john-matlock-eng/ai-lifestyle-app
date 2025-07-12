@@ -141,7 +141,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
   return (
     <div className="space-y-2">
       {restoreDraft && (
-        <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded p-2 text-sm">
+        <div className="flex items-center justify-between bg-warning-bg border border-warning-theme rounded p-2 text-sm text-warning-theme">
           <span>Unsaved draft found.</span>
           <div className="space-x-2">
             <Button size="sm" variant="outline" onClick={handleRestore}>
@@ -154,18 +154,18 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         </div>
       )}
       {section.prompt && (
-        <div className="flex items-start gap-2 bg-[var(--surface-muted)] p-2 rounded text-sm italic">
+        <div className="flex items-start gap-2 bg-surface-muted p-2 rounded text-sm italic text-text-muted">
           <span role="img" aria-label="prompt">
             💡
           </span>
           <p>{section.prompt}</p>
         </div>
       )}
-      <div className="flex gap-2 border-b pb-2">
+      <div className="flex gap-2 border-b border-surface-muted pb-2">
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-300' : ''}`}
+          className={`p-1 rounded hover:bg-button-hover-bg transition-colors ${editor.isActive('bold') ? 'bg-accent text-white' : 'text-text-secondary'}`}
           aria-label="Toggle bold"
           title="Bold"
         >
@@ -174,7 +174,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-300' : ''}`}
+          className={`p-1 rounded hover:bg-button-hover-bg transition-colors ${editor.isActive('italic') ? 'bg-accent text-white' : 'text-text-secondary'}`}
           aria-label="Toggle italic"
           title="Italic"
         >
@@ -183,7 +183,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''}`}
+          className={`p-1 rounded hover:bg-button-hover-bg transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-accent text-white' : 'text-text-secondary'}`}
           aria-label="Toggle heading"
           title="Heading"
         >
@@ -192,7 +192,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-300' : ''}`}
+          className={`p-1 rounded hover:bg-button-hover-bg transition-colors ${editor.isActive('bulletList') ? 'bg-accent text-white' : 'text-text-secondary'}`}
           aria-label="Toggle bullet list"
           title="Bullet list"
         >
@@ -201,7 +201,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
       </div>
       <EditorContent
         editor={editor}
-        className="border rounded p-4 min-h-[300px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+        className="border border-surface-muted bg-surface rounded-lg p-4 min-h-[300px] focus-visible:outline-none focus-visible:shadow-focus transition-all"
       />
     </div>
   );

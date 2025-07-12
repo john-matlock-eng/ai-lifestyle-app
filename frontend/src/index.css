@@ -33,6 +33,37 @@
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Enhanced text utilities */
+  .text-gradient {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Glass morphism utility */
+  .glass {
+    background: var(--surface-glass) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Glow effect */
+  .glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  /* Smooth hover */
+  .hover-lift {
+    transition: var(--transition-base);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
 }
 
 /* Custom scrollbar */
@@ -64,32 +95,42 @@
 /* Form input focus styles */
 @layer components {
   .form-input {
-    @apply block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+    @apply block w-full rounded-md shadow-sm sm:text-sm;
     background-color: var(--surface);
     color: var(--text);
-    border-color: rgba(0,0,0,0.15);
+    border: 1px solid var(--surface-muted);
+    transition: var(--transition-base);
+  }
+  
+  .form-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
   }
 
   .form-select,
   .form-textarea {
-    @apply block w-full rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm;
+    @apply block w-full rounded-md shadow-sm sm:text-sm;
     background-color: var(--surface);
     color: var(--text);
-    border-color: rgba(0,0,0,0.15);
+    border: 1px solid var(--surface-muted);
+    transition: var(--transition-base);
   }
-
-  [data-theme="dark"] .form-input {
-    border-color: rgba(255,255,255,0.2);
-  }
-
-  [data-theme="dark"] .form-select,
-  [data-theme="dark"] .form-textarea {
-    border-color: rgba(255,255,255,0.2);
+  
+  .form-select:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: var(--focus-ring);
   }
   
   .form-input-error {
-    @apply border-red-300 text-red-900 placeholder-red-300 
-           focus:border-red-500 focus:ring-red-500;
+    border-color: var(--error) !important;
+    color: var(--error);
+  }
+  
+  .form-input-error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
   }
 }
 
@@ -98,12 +139,20 @@
   .animate-shimmer {
     background: linear-gradient(
       105deg,
-      theme('colors.gray.100') 40%,
-      theme('colors.gray.200') 50%,
-      theme('colors.gray.100') 60%
+      var(--surface) 40%,
+      var(--surface-hover) 50%,
+      var(--surface) 60%
     );
     background-size: 1000% 100%;
     animation: shimmer 2s infinite linear;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
   }
 
   .bg-surface {
@@ -123,7 +172,23 @@
   }
 
   .text-muted {
-    color: color-mix(in srgb, var(--text), transparent 40%);
+    color: var(--text-muted);
+  }
+  
+  .text-accent {
+    color: var(--accent);
+  }
+  
+  .bg-accent {
+    background: var(--accent);
+  }
+  
+  .bg-gradient {
+    background: var(--bg-gradient);
+  }
+  
+  .border-accent {
+    border-color: var(--accent);
   }
   
   @keyframes shimmer {
@@ -132,6 +197,26 @@
     }
     100% {
       background-position: -1000% 0%;
+    }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: var(--shadow-glow);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 0 60px var(--accent);
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
     }
   }
 }

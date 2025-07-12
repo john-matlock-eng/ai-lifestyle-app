@@ -5,8 +5,7 @@ import { store } from './store';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
-import { AuthProvider, useTheme } from './contexts';
-import type { Theme } from './contexts';
+import { AuthProvider } from './contexts';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
@@ -31,15 +30,9 @@ import GoalDetailPage from './pages/goals/GoalDetailPage';
 // Components
 import DevTools from './components/common/DevTools';
 import { SessionWarning } from './components/SessionWarning';
+import ThemeShowcase from './components/ThemeShowcase';
 
-const cycleOrder: Theme[] = [
-  'dark',
-  'light',
-  'serene',
-  'vibrant',
-  'midnight',
-  'solarized',
-];
+
 
 // Create a client
 const queryClient = new QueryClient({
@@ -59,12 +52,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const { theme, setTheme } = useTheme();
-  const cycleTheme = () => {
-    const index = cycleOrder.indexOf(theme);
-    const next = cycleOrder[(index + 1) % cycleOrder.length];
-    setTheme(next);
-  };
 
   return (
     <Provider store={store}>
@@ -91,6 +78,7 @@ function App() {
             >
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/showcase" element={<ComponentShowcase />} />
+              <Route path="/theme-demo" element={<ThemeShowcase />} />
               <Route path="/profile" element={<div>Profile - Coming Soon</div>} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/security" element={<div>Security Settings - Coming Soon</div>} />
@@ -112,13 +100,6 @@ function App() {
           {/* Global Components */}
           <SessionWarning />
           <DevTools />
-          <button
-            type="button"
-            onClick={cycleTheme}
-            className="fixed bottom-2 right-2 px-3 py-1 rounded bg-accent text-white"
-          >
-            Theme: {theme}
-          </button>
         </AuthProvider>
       </QueryClientProvider>
     {/* <ReactQueryDevtools initialIsOpen={false} /> */}
