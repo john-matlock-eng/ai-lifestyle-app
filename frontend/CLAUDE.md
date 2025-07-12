@@ -45,6 +45,22 @@ make logs FUNCTION=api-handler  # Tail Lambda logs
 make api-url             # Get API Gateway URL
 ```
 
+#### Backend Lambda Functions
+Each API endpoint has its own Lambda function in `backend/src/`:
+- **Journal Operations**:
+  - `create_journal_entry` → `POST /journal`
+  - `list_journal_entries` → `GET /journal`
+  - `get_journal_entry` → `GET /journal/{entryId}`
+  - `update_journal_entry` → `PUT /journal/{entryId}`
+  - `delete_journal_entry` → `DELETE /journal/{entryId}`
+  - `get_journal_stats` → `GET /journal/stats`
+- **Goal Operations**:
+  - `create_goal` → `POST /goals`
+  - `list_goals` → `GET /goals`
+  - `get_goal` → `GET /goals/{goalId}`
+  - `update_goal` → `PUT /goals/{goalId}`
+  - `archive_goal` → `DELETE /goals/{goalId}`
+
 ### Full Stack Development
 ```bash
 # From project root
@@ -131,6 +147,19 @@ Enhanced goal system supports 5 patterns:
 - Error handling includes retry logic and user feedback
 - Bearer token authentication with automatic refresh
 - OpenAPI contract at `contract/openapi.yaml` is source of truth
+
+#### API Route Patterns
+- **IMPORTANT**: API routes do NOT include `/v1` prefix - this is handled by the base URL
+- Use simple resource paths: `/goals`, `/journal`, `/auth/login`, etc.
+- Examples of correct patterns:
+  - `GET /goals` - List goals
+  - `POST /goals` - Create goal
+  - `GET /goals/{id}` - Get specific goal
+  - `PUT /goals/{id}` - Update goal
+  - `DELETE /goals/{id}` - Delete goal
+  - `GET /journal` - List journal entries
+  - `POST /journal` - Create journal entry
+  - `GET /journal/stats` - Get journal statistics
 
 ### Encryption Patterns
 - Encrypt data before sending to server in service layers

@@ -172,7 +172,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 201,
             'headers': {
                 'Content-Type': 'application/json',
-                'Location': f"/journal/entries/{journal_entry.entry_id}",
+                'Location': f"/journal/{journal_entry.entry_id}",
                 'X-Request-ID': request_id
             },
             'body': journal_entry.model_dump_json(by_alias=True)
