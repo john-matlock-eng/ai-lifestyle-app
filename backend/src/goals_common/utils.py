@@ -360,41 +360,53 @@ class ProgressCalculator:
     
     @staticmethod
     def _calculate_trend(period_history: List[PeriodHistory]) -> TrendDirection:
-        """Calculate trend based on recent period history."""
-        if len(period_history) < 3:
+        """Calculate trend based on recent period history using a simple
+        linear regression over the last few values."""
+
+        if len(period_history) < 2:
             return TrendDirection.STABLE
-        
-        # Look at last 3 periods
-        recent = period_history[-3:]
-        success_count = sum(1 for p in recent if p.achieved)
-        
-        if success_count >= 2:
+
+        recent = period_history[-5:]
+        values = [p.value for p in recent]
+        n = len(values)
+        x_vals = list(range(n))
+        avg_x = sum(x_vals) / n
+        avg_y = sum(values) / n
+        numerator = sum((x - avg_x) * (y - avg_y) for x, y in zip(x_vals, values))
+        denominator = sum((x - avg_x) ** 2 for x in x_vals) or 1
+        slope = numerator / denominator
+
+        threshold = abs(avg_y) * 0.01
+
+        if slope > threshold:
             return TrendDirection.IMPROVING
-        elif success_count <= 1:
+        if slope < -threshold:
             return TrendDirection.DECLINING
-        else:
-            return TrendDirection.STABLE
+        return TrendDirection.STABLE
     
     @staticmethod
     def _calculate_value_trend(activities: List[GoalActivity]) -> TrendDirection:
-        """Calculate trend based on activity values."""
-        if len(activities) < 3:
+        """Calculate trend based on activity values using slope analysis."""
+        if len(activities) < 2:
             return TrendDirection.STABLE
-        
-        # Sort by date
+
         sorted_activities = sorted(activities, key=lambda a: a.activity_date)
-        
-        # Compare recent average to older average
-        mid_point = len(sorted_activities) // 2
-        older_avg = sum(a.value for a in sorted_activities[:mid_point]) / mid_point
-        recent_avg = sum(a.value for a in sorted_activities[mid_point:]) / len(sorted_activities[mid_point:])
-        
-        if recent_avg > older_avg * 1.1:  # 10% improvement
+        values = [a.value for a in sorted_activities[-5:]]
+        n = len(values)
+        x_vals = list(range(n))
+        avg_x = sum(x_vals) / n
+        avg_y = sum(values) / n
+        numerator = sum((x - avg_x) * (y - avg_y) for x, y in zip(x_vals, values))
+        denominator = sum((x - avg_x) ** 2 for x in x_vals) or 1
+        slope = numerator / denominator
+
+        threshold = abs(avg_y) * 0.01
+
+        if slope > threshold:
             return TrendDirection.IMPROVING
-        elif recent_avg < older_avg * 0.9:  # 10% decline
+        if slope < -threshold:
             return TrendDirection.DECLINING
-        else:
-            return TrendDirection.STABLE
+        return TrendDirection.STABLE
 
 
 class DateHelper:

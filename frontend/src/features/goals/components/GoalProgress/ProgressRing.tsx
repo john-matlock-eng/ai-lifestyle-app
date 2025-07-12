@@ -125,14 +125,14 @@ export const GoalProgressRing: React.FC<GoalProgressRingProps> = ({
           className="text-xl font-bold"
           style={{ color: progress > 0 ? color : '#E5E7EB' }}
         >
-          {current}
+          {current.toFixed(2)}
         </div>
         <div className="text-xs text-gray-500">
-          of {target} {unit}
+          of {target.toFixed(2)} {unit}
         </div>
         {isOverTarget && goalType !== 'limit' && (
           <div className="text-xs text-green-600 font-medium mt-1">
-            +{current - target}
+            +{(current - target).toFixed(2)}
           </div>
         )}
       </div>

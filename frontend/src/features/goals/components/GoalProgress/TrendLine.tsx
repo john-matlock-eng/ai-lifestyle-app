@@ -11,7 +11,7 @@ import {
   Legend,
   ComposedChart,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Calendar, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calendar, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface TrendDataPoint {
   date: Date;
@@ -65,9 +65,9 @@ export const TrendLine: React.FC<TrendLineProps> = ({
   
   // Calculate if on track
   const expectedProgress = (daysElapsed / daysTotal) * 100;
-  const isOnTrack = direction === 'increase' 
+  const isOnTrack = direction === 'increase'
     ? progressPercentage >= expectedProgress - 10
-    : progressPercentage >= expectedProgress - 10;
+    : progressPercentage <= expectedProgress + 10;
   
   // Calculate projection
   const averageChangePerDay = data.length > 1 
@@ -149,7 +149,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
           <p className="text-sm font-medium text-[var(--text)]">{data.date}</p>
           {payload.map((entry, index) => (
             <p key={index} className="text-sm" style={{ color: entry.stroke }}>
-              {entry.name}: {entry.value?.toFixed(1)} {unit}
+              {entry.name}: {entry.value?.toFixed(2)} {unit}
             </p>
           ))}
         </div>
@@ -199,10 +199,10 @@ export const TrendLine: React.FC<TrendLineProps> = ({
         <div className="text-center">
           <p className="text-sm text-gray-500 mb-1">Current</p>
           <p className="text-xl font-bold" style={{ color }}>
-            {currentValue.toFixed(1)} {unit}
+            {currentValue.toFixed(2)} {unit}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {direction === 'increase' ? '+' : '-'}{Math.abs(currentValue - startValue).toFixed(1)}
+            {direction === 'increase' ? '+' : '-'}{Math.abs(currentValue - startValue).toFixed(2)}
           </p>
         </div>
         
@@ -219,7 +219,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
         <div className="text-center">
           <p className="text-sm text-gray-500 mb-1">Projected</p>
           <p className={`text-xl font-bold ${willMeetTarget ? 'text-green-600' : 'text-red-600'}`}>
-            {projectedValue.toFixed(1)} {unit}
+            {projectedValue.toFixed(2)} {unit}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             {willMeetTarget ? 'Will meet target' : 'May miss target'}
@@ -312,13 +312,24 @@ export const TrendLine: React.FC<TrendLineProps> = ({
           <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
             <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-red-900">Adjustment Needed</p>
+              <p className="text-sm font-medium text-red-900">Let's Recalibrate</p>
               <p className="text-sm text-red-700">
-                At current rate, you'll {direction === 'increase' ? 'only reach' : 'only reduce to'}{' '}
-                {projectedValue.toFixed(1)} {unit} by {targetDate.toLocaleDateString()}.
-                {direction === 'increase' 
-                  ? ` You need to increase by ${((targetValue - currentValue) / daysRemaining).toFixed(1)} ${unit} per day.`
-                  : ` You need to decrease by ${((currentValue - targetValue) / daysRemaining).toFixed(1)} ${unit} per day.`}
+                At this pace you'll {direction === 'increase' ? 'reach' : 'reduce to'} {projectedValue.toFixed(2)} {unit} by {targetDate.toLocaleDateString()}.
+                {direction === 'increase'
+                  ? ` Try boosting your daily change by ${((targetValue - currentValue) / daysRemaining).toFixed(2)} ${unit}.`
+                  : ` Aim to cut back by ${((currentValue - targetValue) / daysRemaining).toFixed(2)} ${unit} each day.`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {willMeetTarget && (
+          <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+            <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-green-900">Great Progress</p>
+              <p className="text-sm text-green-700">
+                You're on track to hit {targetValue.toFixed(2)} {unit} by {targetDate.toLocaleDateString()}. Keep up the momentum!
               </p>
             </div>
           </div>
