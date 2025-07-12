@@ -9,7 +9,7 @@ These models support all 5 goal patterns:
 5. Limit Goals - "Keep X below Y"
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Optional, List, Dict, Any, Literal, Union
 from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict, ValidationInfo
 from pydantic.alias_generators import to_camel
@@ -622,3 +622,23 @@ class LogActivityRequest(BaseModel):
     attachments: Optional[List[ActivityAttachmentRequest]] = None
     
     source: Literal["manual", "device", "integration", "import"] = "manual"
+
+
+class JournalGoalProgress(BaseModel):
+    """Progress details for a journal-linked goal."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+    goal_id: str = Field(..., alias="goalId")
+    title: str
+    percent_complete: float = Field(..., alias="percentComplete")
+    streak: int
+
+
+class JournalStatsResponse(BaseModel):
+    """Aggregated journal statistics."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+    total_entries: int = Field(..., alias="totalEntries")
+    current_streak: int = Field(..., alias="currentStreak")
+    last_entry_date: Optional[date] = Field(None, alias="lastEntryDate")
+    goal_progress: List[JournalGoalProgress] = Field(..., alias="goalProgress")
