@@ -100,7 +100,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
             className="p-2 hover:bg-[color:var(--surface-muted)] rounded-lg transition-colors"
             aria-label="Close"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5 text-muted" />
           </button>
         </div>
 
@@ -116,7 +116,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
             <h3 className="text-lg font-semibold text-[var(--text)]">Basic Information</h3>
             
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="title" className="block text-sm font-medium text-theme mb-1">
                 Goal Title
               </label>
               <Input
@@ -131,7 +131,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-theme mb-1">
                 Description (optional)
               </label>
               <textarea
@@ -147,7 +147,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="category" className="block text-sm font-medium text-theme mb-1">
                   Category
                 </label>
                 <select
@@ -165,7 +165,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
               </div>
 
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="status" className="block text-sm font-medium text-theme mb-1">
                   Status
                 </label>
                 <select
@@ -186,7 +186,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
             <h3 className="text-lg font-semibold text-[var(--text)]">Appearance</h3>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-theme mb-2">
                 Icon
               </label>
               <div className="grid grid-cols-6 gap-2">
@@ -210,7 +210,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
             </div>
 
             <div>
-              <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="color" className="block text-sm font-medium text-theme mb-1">
                 Color
               </label>
               <div className="flex items-center gap-2">
@@ -233,7 +233,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="targetValue" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="targetValue" className="block text-sm font-medium text-theme mb-1">
                     Target Value
                   </label>
                   <Input
@@ -251,7 +251,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
 
                 {goal.target.targetDate && (
                   <div>
-                    <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="targetDate" className="block text-sm font-medium text-theme mb-1">
                       Target Date
                     </label>
                     <Input
@@ -275,7 +275,7 @@ const UpdateGoalForm: React.FC<UpdateGoalFormProps> = ({
             <h3 className="text-lg font-semibold text-[var(--text)]">Privacy</h3>
             
             <div>
-              <label htmlFor="visibility" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="visibility" className="block text-sm font-medium text-theme mb-1">
                 Visibility
               </label>
               <select

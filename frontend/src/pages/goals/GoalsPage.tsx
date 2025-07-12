@@ -118,7 +118,7 @@ const GoalsPage: React.FC = () => {
               px-6 py-3 font-medium text-sm border-b-2 transition-colors
               ${activeTab === 'active' 
                 ? 'text-primary-600 border-primary-600' 
-                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-[color:var(--surface-muted)]'
+                : 'text-muted border-transparent hover:text-theme hover:border-[color:var(--surface-muted)]'
               }
             `}
           >
@@ -135,7 +135,7 @@ const GoalsPage: React.FC = () => {
               px-6 py-3 font-medium text-sm border-b-2 transition-colors
               ${activeTab === 'archived' 
                 ? 'text-primary-600 border-primary-600' 
-                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-[color:var(--surface-muted)]'
+                : 'text-muted border-transparent hover:text-theme hover:border-[color:var(--surface-muted)]'
               }
             `}
           >
@@ -155,7 +155,7 @@ const GoalsPage: React.FC = () => {
           {activeTab === 'active' ? (
             /* Status Filter for Active Tab */
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Status</h3>
+              <h3 className="text-sm font-medium text-theme mb-2">Status</h3>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => {
@@ -198,7 +198,7 @@ const GoalsPage: React.FC = () => {
           ) : (
             /* Status Filter for Archived Tab */
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Status</h3>
+              <h3 className="text-sm font-medium text-theme mb-2">Status</h3>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => {
@@ -229,7 +229,7 @@ const GoalsPage: React.FC = () => {
                   className={`
                     px-3 py-1 rounded-full text-sm font-medium transition-all
                     ${selectedStatuses.includes('archived')
-                      ? 'bg-[var(--surface-muted)] text-gray-800'
+                      ? 'bg-[var(--surface-muted)] text-theme'
                       : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'
                     }
                   `}
@@ -242,7 +242,7 @@ const GoalsPage: React.FC = () => {
 
           {/* Pattern Filter */}
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Goal Type</h3>
+            <h3 className="text-sm font-medium text-theme mb-2">Goal Type</h3>
             <div className="flex flex-wrap gap-2">
               {Object.values(GOAL_PATTERNS).map((pattern) => (
                 <button
@@ -269,7 +269,7 @@ const GoalsPage: React.FC = () => {
 
           {/* Category Filter */}
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Category</h3>
+            <h3 className="text-sm font-medium text-theme mb-2">Category</h3>
             <div className="flex flex-wrap gap-2">
               {GOAL_CATEGORIES.map((category) => (
                 <button

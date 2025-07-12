@@ -62,7 +62,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
         <>
           {/* Frequency */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-theme mb-1">
               Frequency
             </label>
             <select
@@ -84,7 +84,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
           {/* Days of week */}
           {schedule.frequency === 'weekly' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-theme mb-1">
                 Days of Week
               </label>
               <div className="flex gap-1">
@@ -105,7 +105,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
 
           {/* Preferred times */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-theme mb-1">
               Preferred Times (optional)
             </label>
             <input
@@ -120,7 +120,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
 
       {/* Check-in frequency */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-theme mb-1">
           Check-in Frequency
         </label>
         <select
@@ -142,7 +142,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
       {/* Allow skip days */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-theme mb-1">
             Allow Skip Days
           </label>
           <input
@@ -161,7 +161,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
             onChange={(e) => setSchedule({ ...schedule, catchUpAllowed: e.target.checked })}
             className="h-4 w-4 text-primary-600 rounded"
           />
-          <label htmlFor="catchUp" className="text-sm text-gray-700">Allow catch up</label>
+          <label htmlFor="catchUp" className="text-sm text-theme">Allow catch up</label>
         </div>
       </div>
 

@@ -155,7 +155,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                   className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === 'quick'
                       ? 'text-primary-600 border-primary-600'
-                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                      : 'text-muted border-transparent hover:text-theme'
                   }`}
                 >
                   Quick Log
@@ -166,7 +166,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                   className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === 'detailed'
                       ? 'text-primary-600 border-primary-600'
-                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                      : 'text-muted border-transparent hover:text-theme'
                   }`}
                 >
                   Detailed Log
@@ -178,7 +178,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Activity Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-theme mb-2">
                       Activity Type
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -192,7 +192,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                             ${
                               activityType === type
                                 ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                : 'bg-[var(--surface)] text-gray-700 border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]'
+                                : 'bg-[var(--surface)] text-theme border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]'
                             }
                             border
                           `}
@@ -205,7 +205,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
 
                   {/* Date */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-theme mb-1">
                       Date
                     </label>
                     <Input
@@ -219,7 +219,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
 
                 {/* Value Input */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-theme mb-1">
                     Value
                   </label>
                   <div className="flex items-center space-x-2">
@@ -236,7 +236,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                     <span className="text-muted">{goal.target.unit}</span>
                   </div>
                   {goal.target.period && (
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted">
                       Target: {formatGoalValue(goal.target.value, goal.target.unit)} per {goal.target.period}
                     </p>
                   )}
@@ -244,7 +244,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
 
                 {/* Quick Note */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-theme mb-1">
                     Note (optional)
                   </label>
                   <textarea
@@ -263,7 +263,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Time of Day */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme mb-2">
                           <Clock className="inline h-4 w-4 mr-1" />
                           Time of Day
                         </label>
@@ -311,7 +311,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
 
                       {/* Location */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme mb-2">
                           <MapPin className="inline h-4 w-4 mr-1" />
                           Location
                         </label>
@@ -362,7 +362,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Energy Level */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme mb-2">
                           <Battery className="inline h-4 w-4 mr-1" />
                           Energy Level: {energyLevel}/10
                         </label>
@@ -374,7 +374,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                           onChange={(e) => setEnergyLevel(parseInt(e.target.value))}
                           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <div className="flex justify-between text-xs text-muted mt-1">
                           <span>Low</span>
                           <span>High</span>
                         </div>
@@ -382,7 +382,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
 
                       {/* Mood */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-theme mb-2">
                           Mood
                         </label>
                         <div className="flex gap-2">
@@ -412,7 +412,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Duration */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-theme mb-1">
                           Duration (minutes)
                         </label>
                         <Input
@@ -426,7 +426,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
 
                       {/* Difficulty */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-theme mb-1">
                           Difficulty: {difficulty}/5
                         </label>
                         <input
@@ -441,7 +441,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
 
                       {/* Enjoyment */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-theme mb-1">
                           Enjoyment: {enjoyment}/5
                         </label>
                         <input
@@ -459,7 +459,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
 
                 {/* Actions */}
                 <div className="flex justify-between items-center pt-2">
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-muted">
                     {activeTab === 'quick' && (
                       <button
                         type="button"

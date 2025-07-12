@@ -102,7 +102,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
                   <p className="text-sm text-muted mb-2">
                     {config.description}
                   </p>
-                  <p className="text-xs text-gray-500 italic">
+                  <p className="text-xs text-muted italic">
                     "{config.example}"
                   </p>
                 </div>
@@ -118,7 +118,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
         })}
       </div>
 
-      <div className="text-center text-sm text-gray-500">
+      <div className="text-center text-sm text-muted">
         <p>
           💡 <strong>Tip:</strong> Not sure which type to choose? Think about{' '}
           <span className="font-medium">how you'll measure success</span>

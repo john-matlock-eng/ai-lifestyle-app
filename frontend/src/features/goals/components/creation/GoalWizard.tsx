@@ -235,7 +235,7 @@ const GoalWizard: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[var(--surface)] rounded-lg p-6 flex flex-col items-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
-            <p className="text-gray-700 font-medium">Creating your goal...</p>
+            <p className="text-theme font-medium">Creating your goal...</p>
           </div>
         </div>
       )}

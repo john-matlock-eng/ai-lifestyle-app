@@ -30,7 +30,7 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-theme mb-1">
           Why is this goal important to you?
         </label>
         <textarea
@@ -42,7 +42,7 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-theme mb-1">
           Importance Level: {context.importanceLevel}
         </label>
         <input
@@ -61,7 +61,7 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-theme mb-1">
           Obstacles (comma separated)
         </label>
         <input
@@ -73,7 +73,7 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-theme mb-1">
           Success Factors (comma separated)
         </label>
         <input

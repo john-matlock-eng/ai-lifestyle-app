@@ -45,17 +45,17 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ goalData, onSubmit, isSubmittin
 
         {/* Category */}
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-500">Category:</span>
+          <span className="text-sm font-medium text-muted">Category:</span>
           <span className="flex items-center space-x-1">
             <span>{category?.icon}</span>
-            <span className="text-sm text-gray-700">{category?.label}</span>
+            <span className="text-sm text-theme">{category?.label}</span>
           </span>
         </div>
 
         {/* Target */}
         <div>
-          <span className="text-sm font-medium text-gray-500">Target:</span>
-          <p className="text-gray-700">
+          <span className="text-sm font-medium text-muted">Target:</span>
+          <p className="text-theme">
             {goalData.target.value} {goalData.target.unit}
             {goalData.target.period && ` per ${goalData.target.period}`}
           </p>
@@ -64,8 +64,8 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ goalData, onSubmit, isSubmittin
         {/* Motivation */}
         {goalData.context?.motivation && (
           <div>
-            <span className="text-sm font-medium text-gray-500">Motivation:</span>
-            <p className="text-gray-700">{goalData.context.motivation}</p>
+            <span className="text-sm font-medium text-muted">Motivation:</span>
+            <p className="text-theme">{goalData.context.motivation}</p>
           </div>
         )}
       </div>

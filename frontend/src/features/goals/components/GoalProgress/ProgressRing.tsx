@@ -127,7 +127,7 @@ export const GoalProgressRing: React.FC<GoalProgressRingProps> = ({
         >
           {current}
         </div>
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-muted">
           of {target} {unit}
         </div>
         {isOverTarget && goalType !== 'limit' && (

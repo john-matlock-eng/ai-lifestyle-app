@@ -72,7 +72,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ initialValues, onComplete
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-theme mb-1">
           Description (optional)
         </label>
         <textarea
@@ -88,7 +88,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ initialValues, onComplete
 
       {/* Category */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-theme mb-2">
           Category <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -122,7 +122,7 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ initialValues, onComplete
 
       {/* Color */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-theme mb-2">
           Color Theme (optional)
         </label>
         <div className="flex items-center space-x-3">

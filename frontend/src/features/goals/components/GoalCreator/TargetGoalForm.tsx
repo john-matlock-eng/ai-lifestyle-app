@@ -80,7 +80,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
       {/* Goal Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-theme mb-1">
           Goal Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -96,7 +96,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
       {/* Category */}
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="category" className="block text-sm font-medium text-theme mb-1">
           Category <span className="text-red-500">*</span>
         </label>
         <select
@@ -123,7 +123,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
         {/* Direction */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-theme mb-2">
             Goal Direction
           </label>
           <div className="flex gap-2">
@@ -157,7 +157,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Starting Value */}
           <div>
-            <label htmlFor="startValue" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="startValue" className="block text-sm font-medium text-theme mb-1">
               Current Value
             </label>
             <input
@@ -173,7 +173,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
           {/* Target Value */}
           <div>
-            <label htmlFor="targetValue" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="targetValue" className="block text-sm font-medium text-theme mb-1">
               Target Value
             </label>
             <input
@@ -189,7 +189,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
           {/* Unit */}
           <div>
-            <label htmlFor="unit" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="unit" className="block text-sm font-medium text-theme mb-1">
               Unit
             </label>
             <div className="flex gap-2">
@@ -226,7 +226,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
         {/* Target Date */}
         <div>
-          <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="targetDate" className="block text-sm font-medium text-theme mb-1">
             <Calendar className="inline h-4 w-4 mr-1" />
             Target Date <span className="text-red-500">*</span>
           </label>
@@ -273,7 +273,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-theme mb-1">
           Description (optional)
         </label>
         <textarea
@@ -295,10 +295,10 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
             onChange={(e) => setIncludePrivateNotes(e.target.checked)}
             className="h-4 w-4 text-green-600 rounded"
           />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-theme">
             Add private encrypted notes
           </span>
-          <Info className="h-4 w-4 text-gray-400" />
+          <Info className="h-4 w-4 text-muted" />
         </label>
         
         {includePrivateNotes && (
@@ -310,7 +310,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               rows={3}
               className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               🔒 These notes will be encrypted and only visible to you
             </p>
           </div>
@@ -322,7 +322,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
+          className="px-4 py-2 text-theme hover:text-[var(--text)]"
         >
           Cancel
         </button>

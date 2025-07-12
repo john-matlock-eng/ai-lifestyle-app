@@ -116,7 +116,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
 
       {/* Quick Templates */}
       <div className="bg-red-50 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-3">
+        <h4 className="text-sm font-medium text-theme mb-3">
           <TrendingDown className="inline h-4 w-4 mr-1 text-red-600" />
           Common Limits
         </h4>
@@ -144,7 +144,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
 
       {/* Goal Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-theme mb-1">
           Goal Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -160,7 +160,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
 
       {/* Category */}
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="category" className="block text-sm font-medium text-theme mb-1">
           Category <span className="text-red-500">*</span>
         </label>
         <select
@@ -187,7 +187,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
 
         {/* Limit Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-theme mb-2">
             Limit Type
           </label>
           <div className="flex gap-2">
@@ -219,7 +219,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Limit Value */}
           <div>
-            <label htmlFor="limitValue" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="limitValue" className="block text-sm font-medium text-theme mb-1">
               {formData.targetType === 'maximum' ? 'Maximum' : 'Minimum'} Value
             </label>
             <input
@@ -236,7 +236,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
 
           {/* Unit */}
           <div>
-            <label htmlFor="unit" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="unit" className="block text-sm font-medium text-theme mb-1">
               Unit
             </label>
             <div className="flex gap-2">
@@ -271,7 +271,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
 
           {/* Period */}
           <div>
-            <label htmlFor="period" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="period" className="block text-sm font-medium text-theme mb-1">
               Per
             </label>
             <select
@@ -320,7 +320,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-theme mb-1">
           Description (optional)
         </label>
         <textarea
@@ -342,10 +342,10 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
             onChange={(e) => setIncludePrivateNotes(e.target.checked)}
             className="h-4 w-4 text-red-600 rounded"
           />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-theme">
             Add private encrypted notes
           </span>
-          <Info className="h-4 w-4 text-gray-400" />
+          <Info className="h-4 w-4 text-muted" />
         </label>
         
         {includePrivateNotes && (
@@ -357,7 +357,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
               rows={3}
               className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               🔒 These notes will be encrypted and only visible to you
             </p>
           </div>
@@ -369,7 +369,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
+          className="px-4 py-2 text-theme hover:text-[var(--text)]"
         >
           Cancel
         </button>

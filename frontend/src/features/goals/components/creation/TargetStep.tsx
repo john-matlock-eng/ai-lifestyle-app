@@ -58,7 +58,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-theme mb-1">
                   Target per {target.period || 'day'}
                 </label>
                 <input
@@ -71,7 +71,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-theme mb-1">
                   Period
                 </label>
                 <select
@@ -95,7 +95,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
         return (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-theme mb-1">
                 Total target to reach
               </label>
               <input
@@ -108,7 +108,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-theme mb-1">
                 Target date (optional)
               </label>
               <input
@@ -129,7 +129,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
         return (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-theme mb-1">
                 Streak target (consecutive days)
               </label>
               <input
@@ -151,7 +151,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
         return (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-theme mb-1">
                 What do you want to achieve?
               </label>
               <input
@@ -161,7 +161,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-theme mb-1">
                 Target completion date
               </label>
               <input
@@ -179,7 +179,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
         return (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-theme mb-1">
                 Maximum allowed per {target.period || 'day'}
               </label>
               <input
@@ -192,7 +192,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-theme mb-1">
                 Period
               </label>
               <select
@@ -232,7 +232,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
 
       {/* Unit Selection */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-theme mb-1">
           What are you measuring?
         </label>
         <div className="grid grid-cols-2 gap-4">
@@ -273,7 +273,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
       {/* Preview */}
       <div className="bg-primary-50 rounded-lg p-4">
         <h4 className="font-medium text-[var(--text)] mb-2">Goal Summary</h4>
-        <div className="text-sm text-gray-700">
+        <div className="text-sm text-theme">
           {pattern === 'recurring' && (
             <p>Complete {target.value} {target.unit} per {target.period}</p>
           )}

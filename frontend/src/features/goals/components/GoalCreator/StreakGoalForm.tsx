@@ -85,7 +85,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
 
       {/* Quick Templates */}
       <div className="bg-orange-50 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-3">
+        <h4 className="text-sm font-medium text-theme mb-3">
           <Zap className="inline h-4 w-4 mr-1 text-orange-600" />
           Quick Start Templates
         </h4>
@@ -113,7 +113,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
 
       {/* Goal Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-theme mb-1">
           Goal Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -129,7 +129,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
 
       {/* Category */}
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="category" className="block text-sm font-medium text-theme mb-1">
           Category <span className="text-red-500">*</span>
         </label>
         <select
@@ -157,7 +157,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Target Streak */}
           <div>
-            <label htmlFor="targetStreak" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="targetStreak" className="block text-sm font-medium text-theme mb-1">
               Target Streak Length
             </label>
             <div className="flex gap-2">
@@ -184,7 +184,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
 
           {/* Frequency */}
           <div>
-            <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="frequency" className="block text-sm font-medium text-theme mb-1">
               Frequency
             </label>
             <select
@@ -255,7 +255,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-theme mb-1">
           Description (optional)
         </label>
         <textarea
@@ -277,10 +277,10 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
             onChange={(e) => setIncludePrivateNotes(e.target.checked)}
             className="h-4 w-4 text-orange-600 rounded"
           />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-theme">
             Add private encrypted notes
           </span>
-          <Info className="h-4 w-4 text-gray-400" />
+          <Info className="h-4 w-4 text-muted" />
         </label>
         
         {includePrivateNotes && (
@@ -292,7 +292,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
               rows={3}
               className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               🔒 These notes will be encrypted and only visible to you
             </p>
           </div>
@@ -304,7 +304,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
+          className="px-4 py-2 text-theme hover:text-[var(--text)]"
         >
           Cancel
         </button>
