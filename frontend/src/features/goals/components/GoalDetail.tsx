@@ -4,11 +4,13 @@ import {
   Archive, Trash2, Plus, CheckCircle, XCircle, Clock, Target, Trophy,
   Flame, ShieldAlert, BarChart3, Share2
 } from 'lucide-react';
-import type { Goal, GoalActivity, GoalStatistics } from '../types/api.types';
+import type { Goal, GoalActivity, GoalStatistics, GoalProgress } from '../types/api.types';
 import { GOAL_PATTERN_COLORS } from '../types/goal.types';
 import { GoalProgressRing } from './GoalProgress/ProgressRing';
 import ProgressCharts from './GoalProgress/ProgressCharts';
 import { StreakCalendar } from './GoalProgress/StreakCalendar';
+import { MilestoneChart } from './GoalProgress/MilestoneChart';
+import { TrendLine } from './GoalProgress/TrendLine';
 import ActivityHistory from './GoalProgress/ActivityHistory';
 import { useEncryption } from '../../../hooks/useEncryption';
 import type { ShareableItem, ShareToken } from '../../../components/encryption';
@@ -22,12 +24,14 @@ interface GoalDetailProps {
   onUpdateStatus: (status: 'active' | 'paused' | 'completed' | 'archived') => void;
   onDelete: () => void;
   onLogActivity: (activity: Partial<GoalActivity>) => void;
+  progressData?: GoalProgress | null;
   className?: string;
 }
 
 export const GoalDetail: React.FC<GoalDetailProps> = ({
   goal,
   activities,
+  progressData,
   onBack,
   onEdit,
   onUpdateStatus,
@@ -88,6 +92,13 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
   const PatternIcon = getPatternIcon();
   const color = GOAL_PATTERN_COLORS[goal.goalPattern];
 
+  const progressInfo: GoalProgress = progressData ?? {
+    goalId: goal.goalId,
+    period: 'current',
+    progress: goal.progress,
+    statistics: {} as GoalStatistics,
+  };
+
   // Calculate streak data for streak goals
   const streakData = goal.goalPattern === 'streak' ? {
     completedDates: activities
@@ -97,6 +108,21 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       .filter(a => a.activityType === 'skipped')
       .map(a => a.activityDate.split('T')[0]),
   } : null;
+
+  // Data for milestone and target analytics
+  const milestoneData = activities
+    .filter(a => a.activityType === 'progress' || a.activityType === 'completed')
+    .sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime())
+    .reduce<{ date: Date; value: number }[]>((acc, act) => {
+      const last = acc.length > 0 ? acc[acc.length - 1].value : 0;
+      acc.push({ date: new Date(act.activityDate), value: last + act.value });
+      return acc;
+    }, []);
+
+  const trendData = activities
+    .filter(a => a.activityType === 'progress' || a.activityType === 'completed')
+    .sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime())
+    .map(a => ({ date: new Date(a.activityDate), value: a.value }));
 
   // Recent activities
   const recentActivities = activities.slice(0, 5);
@@ -255,7 +281,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           
           <div className="text-center">
             <GoalProgressRing
-              current={goal.progress.currentPeriodValue || goal.progress.totalAccumulated || goal.progress.currentStreak || 0}
+              current={progressInfo.progress.currentPeriodValue || progressInfo.progress.totalAccumulated || progressInfo.progress.currentStreak || 0}
               target={goal.target.value}
               unit={goal.target.unit}
               goalType={goal.goalPattern}
@@ -263,7 +289,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
               size={120}
             />
             <p className="text-sm text-muted mt-2">
-              {goal.progress.trend} trend
+              {progressInfo.progress.trend} trend
             </p>
           </div>
         </div>
@@ -356,18 +382,35 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       <ProgressCharts
         goal={goal}
         activities={activities}
-          progress={{
-            goalId: goal.goalId,
-            period: 'current',
-            progress: goal.progress,
-            statistics: {} as GoalStatistics,
-          }}
+        progress={progressInfo}
       />
+
+      {goal.goalPattern === 'milestone' && milestoneData.length > 0 && (
+        <MilestoneChart
+          data={milestoneData}
+          targetValue={goal.target.value}
+          currentValue={progressInfo.progress.totalAccumulated || 0}
+          unit={goal.target.unit}
+          color={color}
+        />
+      )}
+
+      {goal.goalPattern === 'target' && trendData.length > 0 && goal.target.targetDate && (
+        <TrendLine
+          data={trendData}
+          startValue={goal.target.startValue || 0}
+          targetValue={goal.target.value}
+          targetDate={new Date(goal.target.targetDate)}
+          unit={goal.target.unit}
+          direction={goal.target.direction as 'increase' | 'decrease'}
+          color={color}
+        />
+      )}
 
       {goal.goalPattern === 'streak' && streakData && (
         <StreakCalendar
-          currentStreak={goal.progress.currentStreak || 0}
-          longestStreak={goal.progress.longestStreak || 0}
+          currentStreak={progressInfo.progress.currentStreak || 0}
+          longestStreak={progressInfo.progress.longestStreak || 0}
           completedDates={streakData.completedDates}
           skippedDates={streakData.skippedDates}
           color={color}
@@ -384,7 +427,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
             <div>
               <p className="text-sm text-muted">Success Rate</p>
               <p className="text-2xl font-bold text-[var(--text)]">
-                {goal.progress.successRate}%
+                {progressInfo.progress.successRate}%
               </p>
             </div>
           </div>
@@ -398,8 +441,8 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
             <div>
               <p className="text-sm text-muted">Last Activity</p>
               <p className="text-2xl font-bold text-[var(--text)]">
-                {goal.progress.lastActivityDate 
-                  ? new Date(goal.progress.lastActivityDate).toLocaleDateString()
+                {progressInfo.progress.lastActivityDate
+                  ? new Date(progressInfo.progress.lastActivityDate).toLocaleDateString()
                   : 'Never'}
               </p>
             </div>
@@ -414,8 +457,8 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
             <div>
               <p className="text-sm text-muted">Projected Completion</p>
               <p className="text-2xl font-bold text-[var(--text)]">
-                {goal.progress.projectedCompletion
-                  ? new Date(goal.progress.projectedCompletion).toLocaleDateString()
+                {progressInfo.progress.projectedCompletion
+                  ? new Date(progressInfo.progress.projectedCompletion).toLocaleDateString()
                   : 'TBD'}
               </p>
             </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useGoalProgress } from '../../features/goals/hooks/useGoals';
 import {
   getGoal,
   listActivities,
@@ -33,6 +34,8 @@ const GoalDetailPage: React.FC = () => {
     enabled: !!goalId,
   });
 
+  const { data: progressData, isLoading: progLoading } = useGoalProgress(goalId!, 'current');
+
   const updateStatus = useMutation<void, Error, 'active' | 'paused' | 'completed' | 'archived'>({
     mutationFn: async (status) => {
       if (status === 'archived') {
@@ -57,7 +60,7 @@ const GoalDetailPage: React.FC = () => {
     },
   });
 
-  if (goalLoading || actLoading) {
+  if (goalLoading || actLoading || progLoading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">Loading...</div>
     );
@@ -87,6 +90,7 @@ const GoalDetailPage: React.FC = () => {
       onLogActivity={(activity: Partial<GoalActivity>) =>
         logMutation.mutate(activity as LogActivityRequest)
       }
+      progressData={progressData}
     />
   );
 };
