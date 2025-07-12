@@ -54,12 +54,16 @@ Each API endpoint has its own Lambda function in `backend/src/`:
   - `update_journal_entry` → `PUT /journal/{entryId}`
   - `delete_journal_entry` → `DELETE /journal/{entryId}`
   - `get_journal_stats` → `GET /journal/stats`
+  - **Common module**: `journal_common/` contains shared models and types
 - **Goal Operations**:
   - `create_goal` → `POST /goals`
   - `list_goals` → `GET /goals`
   - `get_goal` → `GET /goals/{goalId}`
   - `update_goal` → `PUT /goals/{goalId}`
   - `archive_goal` → `DELETE /goals/{goalId}`
+  - **Common module**: `goals_common/` contains shared models and types
+
+**IMPORTANT**: When creating new services, ensure the common module's `__init__.py` exports all models from `models.py`
 
 #### Adding New API Routes
 **IMPORTANT**: When creating new API endpoints, you must add them to BOTH places:
