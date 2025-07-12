@@ -115,7 +115,7 @@ function App() {
           <button
             type="button"
             onClick={cycleTheme}
-            className="fixed bottom-2 right-2 px-3 py-1 rounded bg-accent text-white"
+            className="fixed bottom-2 right-2 px-3 py-1 rounded bg-gradient-accent text-white"
           >
             Theme: {theme}
           </button>

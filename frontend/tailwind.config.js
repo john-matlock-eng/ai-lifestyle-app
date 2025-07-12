@@ -48,7 +48,12 @@ export default {
         text: 'var(--text)',
         surface: 'var(--surface)',
         'surface-muted': 'var(--surface-muted)',
-        accent: 'var(--accent)'
+        accent: 'var(--accent)',
+        'accent-2': 'var(--accent-2)'
+      },
+      backgroundImage: {
+        'gradient-theme': 'var(--gradient-bg)',
+        'gradient-accent': 'var(--accent-gradient)'
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
