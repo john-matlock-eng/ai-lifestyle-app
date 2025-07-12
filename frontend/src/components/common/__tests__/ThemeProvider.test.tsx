@@ -4,6 +4,7 @@ import { test, expect } from 'vitest';
 import { ThemeProvider, useTheme } from '../../../contexts';
 
 test('toggles dark class on html element', async () => {
+  localStorage.setItem('theme-preference', 'light');
   const TestComp = () => {
     const { setTheme } = useTheme();
     return <button onClick={() => setTheme('dark')}>switch</button>;

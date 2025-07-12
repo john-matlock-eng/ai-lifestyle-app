@@ -27,8 +27,35 @@
   --accent: #3B82F6;
 }
 
-/* Reading (solarized-style) theme */
-[data-theme="reading"] {
+/* Serene theme */
+[data-theme="serene"] {
+  --bg: #E6F4F1;
+  --surface: #FFFFFF;
+  --surface-muted: #D9EDEB;
+  --text: #084C61;
+  --accent: #2BA98F;
+}
+
+/* Vibrant theme */
+[data-theme="vibrant"] {
+  --bg: #FFF7ED;
+  --surface: #FFFFFF;
+  --surface-muted: #FFE8D9;
+  --text: #371B34;
+  --accent: #FF6363;
+}
+
+/* Midnight theme */
+[data-theme="midnight"] {
+  --bg: #000000;
+  --surface: #0B0F19;
+  --surface-muted: #1F2933;
+  --text: #E5E7EB;
+  --accent: #4FBCFF;
+}
+
+/* Solarized theme */
+[data-theme="solarized"] {
   --bg: #FDF6E3;
   --surface: #FFFDF6;
   --surface-muted: #E2DDC7;

@@ -32,7 +32,14 @@ import GoalDetailPage from './pages/goals/GoalDetailPage';
 import DevTools from './components/common/DevTools';
 import { SessionWarning } from './components/SessionWarning';
 
-const cycleOrder: Theme[] = ['dark', 'light', 'reading'];
+const cycleOrder: Theme[] = [
+  'dark',
+  'light',
+  'serene',
+  'vibrant',
+  'midnight',
+  'solarized',
+];
 
 // Create a client
 const queryClient = new QueryClient({

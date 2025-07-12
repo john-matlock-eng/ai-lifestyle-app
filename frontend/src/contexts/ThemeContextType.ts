@@ -1,6 +1,12 @@
 import { createContext } from 'react';
 
-export type Theme = 'dark' | 'light' | 'reading';
+export type Theme =
+  | 'light'
+  | 'dark'
+  | 'serene'
+  | 'vibrant'
+  | 'midnight'
+  | 'solarized';
 
 export interface ThemeContextValue {
   theme: Theme;
