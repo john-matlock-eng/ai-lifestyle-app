@@ -95,13 +95,13 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             Workouts
           </Link>
           <Link
-            to="/wellness"
+            to="/journal"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/wellness') ? 'text-[var(--text)] bg-[var(--surface-muted)]' : 'text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]'
+              isActive('/journal') ? 'text-[var(--text)] bg-[var(--surface-muted)]' : 'text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]'
             }`}
             onClick={onClose}
           >
-            Wellness
+            Journal
           </Link>
         </nav>
 

@@ -25,6 +25,7 @@ const GoalWizard: React.FC = () => {
   const queryClient = useQueryClient();
   const [selectedPattern, setSelectedPattern] = useState<GoalPattern | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isJournalLinked, setIsJournalLinked] = useState(false);
 
   const createGoalMutation = useMutation({
     mutationFn: createGoal,
@@ -55,6 +56,9 @@ const GoalWizard: React.FC = () => {
       icon: formData.icon,
       color: formData.color,
       goalPattern: formData.goalPattern,
+      metadata: {
+        isJournalLinked,
+      },
     };
 
     // Transform based on goal pattern
@@ -191,6 +195,8 @@ const GoalWizard: React.FC = () => {
     const commonProps = {
       onSubmit: handleFormSubmit,
       onCancel: handleBack,
+      isJournalLinked,
+      setIsJournalLinked,
     };
 
     switch (selectedPattern) {

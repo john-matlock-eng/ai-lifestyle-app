@@ -28,6 +28,11 @@ import GoalsPage from './pages/goals/GoalsPage';
 import CreateGoalPage from './pages/goals/CreateGoalPage';
 import GoalDetailPage from './pages/goals/GoalDetailPage';
 
+// Pages - Journal
+import JournalPage from './pages/journal/JournalPage';
+import CreateJournalPage from './pages/journal/CreateJournalPage';
+import JournalDetailPage from './pages/journal/JournalDetailPage';
+
 // Components
 import DevTools from './components/common/DevTools';
 import { SessionWarning } from './components/SessionWarning';
@@ -102,7 +107,11 @@ function App() {
               
               <Route path="/meals" element={<div>Meals - Coming Soon</div>} />
               <Route path="/workouts" element={<div>Workouts - Coming Soon</div>} />
-              <Route path="/wellness" element={<div>Wellness - Coming Soon</div>} />
+              
+              {/* Journal Routes */}
+              <Route path="/journal" element={<JournalPage />} />
+              <Route path="/journal/new" element={<CreateJournalPage />} />
+              <Route path="/journal/:entryId" element={<JournalDetailPage />} />
             </Route>
 
             {/* Default redirect */}

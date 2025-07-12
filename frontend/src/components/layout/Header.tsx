@@ -87,12 +87,12 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                 Workouts
               </Link>
               <Link
-                to="/wellness"
+                to="/journal"
                 className={`${
-                  isActive('/wellness') ? 'text-theme' : 'text-muted'
+                  isActive('/journal') ? 'text-theme' : 'text-muted'
                 } hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium`}
               >
-                Wellness
+                Journal
               </Link>
               <Link
                 to="/showcase"

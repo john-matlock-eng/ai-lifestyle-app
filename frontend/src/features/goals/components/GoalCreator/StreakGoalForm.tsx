@@ -12,6 +12,8 @@ interface StreakGoalFormProps {
   onSubmit: (data: StreakGoalFormData) => void;
   onCancel: () => void;
   initialData?: Partial<StreakGoalFormData>;
+  isJournalLinked?: boolean;
+  setIsJournalLinked?: (value: boolean) => void;
 }
 
 const commonStreakGoals = [
@@ -27,6 +29,8 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
   onSubmit,
   onCancel,
   initialData = {},
+  isJournalLinked = false,
+  setIsJournalLinked,
 }) => {
   
   const [formData, setFormData] = useState<StreakGoalFormData>({
@@ -298,6 +302,22 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
           </div>
         )}
       </div>
+
+      {/* Journal Linking */}
+      {setIsJournalLinked && (
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="journal-linked"
+            checked={isJournalLinked}
+            onChange={(e) => setIsJournalLinked(e.target.checked)}
+            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+          />
+          <label htmlFor="journal-linked" className="text-sm text-gray-700">
+            Link this goal to journaling
+          </label>
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t">
