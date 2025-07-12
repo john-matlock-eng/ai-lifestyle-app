@@ -65,11 +65,11 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
       case 'completed':
         return `bg-opacity-100 text-white shadow-md transform scale-105`;
       case 'skipped':
-        return 'bg-gray-200 text-gray-500';
+        return 'bg-gray-200 text-muted';
       case 'future':
         return 'bg-[var(--surface-muted)] text-gray-300 cursor-not-allowed';
       default:
-        return 'bg-[var(--surface)] text-gray-400 border border-[color:var(--surface-muted)]';
+        return 'bg-[var(--surface)] text-muted border border-[color:var(--surface-muted)]';
     }
   };
   
@@ -141,11 +141,11 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
           <div className="flex items-center gap-4 mt-1">
             <div className="flex items-center gap-2">
               <Flame className="h-5 w-5" style={{ color }} />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-theme">
                 Current: {currentStreak} days
               </span>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-muted">
               Best: {longestStreak} days
             </div>
           </div>
@@ -160,7 +160,7 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
           >
             <ChevronLeft className="h-5 w-5 text-muted" />
           </button>
-          <span className="text-sm font-medium text-gray-700 min-w-[120px] text-center">
+          <span className="text-sm font-medium text-theme min-w-[120px] text-center">
             {monthNames[month.getMonth()]} {month.getFullYear()}
           </span>
           <button
@@ -176,7 +176,7 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
       {/* Day labels */}
       <div className="grid grid-cols-7 gap-2 mb-2">
         {dayNames.map(day => (
-          <div key={day} className="text-center text-xs font-medium text-gray-500">
+          <div key={day} className="text-center text-xs font-medium text-muted">
             {day}
           </div>
         ))}

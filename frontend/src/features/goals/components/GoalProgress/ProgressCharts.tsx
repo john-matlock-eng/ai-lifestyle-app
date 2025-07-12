@@ -378,9 +378,9 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
         {/* Chart */}
         <div className="relative">
           {activities.length === 0 ? (
-            <div className="h-[300px] flex items-center justify-center text-gray-500">
+            <div className="h-[300px] flex items-center justify-center text-muted">
               <div className="text-center">
-                <Activity className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <Activity className="h-12 w-12 mx-auto mb-3 text-muted" />
                 <p>No activity data to display</p>
                 <p className="text-sm mt-1">Start logging activities to see your progress</p>
               </div>

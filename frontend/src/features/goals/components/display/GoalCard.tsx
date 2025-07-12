@@ -261,7 +261,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
               text-xs px-2 py-1 rounded-full font-medium
               ${goal.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
               ${goal.status === 'paused' ? 'bg-yellow-100 text-yellow-800' : ''}
-              ${goal.status === 'archived' ? 'bg-[var(--surface-muted)] text-gray-800' : ''}
+              ${goal.status === 'archived' ? 'bg-[var(--surface-muted)] text-theme' : ''}
             `}
           >
             {goal.status}

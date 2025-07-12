@@ -10,7 +10,7 @@
 
   body {
     font-feature-settings: "rlig" 1, "calt" 1;
-    background: var(--bg);
+    background: var(--gradient-bg);
     color: var(--text);
   }
 
@@ -115,7 +115,11 @@
   }
 
   .bg-background {
-    background-color: var(--bg);
+    background: var(--gradient-bg);
+  }
+
+  .bg-accent-gradient {
+    background-image: var(--accent-gradient);
   }
 
   .text-theme {
@@ -123,7 +127,7 @@
   }
 
   .text-muted {
-    color: color-mix(in srgb, var(--text), transparent 40%);
+    color: var(--text-muted);
   }
   
   @keyframes shimmer {

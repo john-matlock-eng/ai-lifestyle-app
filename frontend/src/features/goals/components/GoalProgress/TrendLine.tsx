@@ -197,31 +197,31 @@ export const TrendLine: React.FC<TrendLineProps> = ({
       {/* Key Metrics */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center">
-          <p className="text-sm text-gray-500 mb-1">Current</p>
+          <p className="text-sm text-muted mb-1">Current</p>
           <p className="text-xl font-bold" style={{ color }}>
             {currentValue.toFixed(1)} {unit}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             {direction === 'increase' ? '+' : '-'}{Math.abs(currentValue - startValue).toFixed(1)}
           </p>
         </div>
         
         <div className="text-center">
-          <p className="text-sm text-gray-500 mb-1">Target</p>
+          <p className="text-sm text-muted mb-1">Target</p>
           <p className="text-xl font-bold text-[var(--text)]">
             {targetValue} {unit}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             in {daysRemaining} days
           </p>
         </div>
         
         <div className="text-center">
-          <p className="text-sm text-gray-500 mb-1">Projected</p>
+          <p className="text-sm text-muted mb-1">Projected</p>
           <p className={`text-xl font-bold ${willMeetTarget ? 'text-green-600' : 'text-red-600'}`}>
             {projectedValue.toFixed(1)} {unit}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             {willMeetTarget ? 'Will meet target' : 'May miss target'}
           </p>
         </div>
@@ -330,7 +330,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
               <Calendar className="h-5 w-5 text-muted" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Time Elapsed</p>
+              <p className="text-xs text-muted">Time Elapsed</p>
               <p className="text-sm font-medium text-[var(--text)]">
                 {daysElapsed} / {daysTotal} days ({Math.round((daysElapsed / daysTotal) * 100)}%)
               </p>
@@ -346,7 +346,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
               )}
             </div>
             <div>
-              <p className="text-xs text-gray-500">Average Daily Change</p>
+              <p className="text-xs text-muted">Average Daily Change</p>
               <p className="text-sm font-medium text-[var(--text)]">
                 {averageChangePerDay >= 0 ? '+' : ''}{averageChangePerDay.toFixed(2)} {unit}/day
               </p>

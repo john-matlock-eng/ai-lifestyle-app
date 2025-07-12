@@ -102,7 +102,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
       {/* Goal Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-theme mb-1">
           Goal Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -118,7 +118,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
       {/* Category */}
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="category" className="block text-sm font-medium text-theme mb-1">
           Category <span className="text-red-500">*</span>
         </label>
         <select
@@ -146,7 +146,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Target Value */}
           <div>
-            <label htmlFor="targetValue" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="targetValue" className="block text-sm font-medium text-theme mb-1">
               How many
             </label>
             <input
@@ -162,7 +162,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
           {/* Unit */}
           <div>
-            <label htmlFor="unit" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="unit" className="block text-sm font-medium text-theme mb-1">
               Unit
             </label>
             <div className="flex gap-2">
@@ -196,7 +196,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
           {/* Period */}
           <div>
-            <label htmlFor="period" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="period" className="block text-sm font-medium text-theme mb-1">
               Per
             </label>
             <select
@@ -215,7 +215,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
         {/* Frequency */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-theme mb-2">
             <Clock className="inline h-4 w-4 mr-1" />
             Frequency
           </label>
@@ -246,7 +246,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
         {/* Days of Week (for weekly frequency) */}
         {formData.frequency === 'weekly' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme mb-2">
               Which days?
             </label>
             <div className="flex gap-1">
@@ -280,7 +280,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-theme mb-1">
           Description (optional)
         </label>
         <textarea
@@ -302,10 +302,10 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
             onChange={(e) => setIncludePrivateNotes(e.target.checked)}
             className="h-4 w-4 text-blue-600 rounded"
           />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-theme">
             Add private encrypted notes
           </span>
-          <Info className="h-4 w-4 text-gray-400" />
+          <Info className="h-4 w-4 text-muted" />
         </label>
         
         {includePrivateNotes && (
@@ -317,7 +317,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
               rows={3}
               className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted mt-1">
               🔒 These notes will be encrypted and only visible to you
             </p>
           </div>
@@ -329,7 +329,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
+          className="px-4 py-2 text-theme hover:text-[var(--text)]"
         >
           Cancel
         </button>

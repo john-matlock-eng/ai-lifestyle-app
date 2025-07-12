@@ -70,7 +70,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         className="p-1 hover:bg-[color:var(--surface-muted)] rounded-lg transition-colors"
         aria-label="Goal actions"
       >
-        <MoreVertical className="h-4 w-4 text-gray-500" />
+        <MoreVertical className="h-4 w-4 text-muted" />
       </button>
       
       {openMenuId === goal.goalId && (
@@ -272,7 +272,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         <h2 className="text-2xl font-bold text-[var(--text)]">Your Goals</h2>
         <button
           onClick={onCreateGoal}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
+          className="flex items-center gap-2 px-4 py-2 bg-accent-gradient text-white rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
         >
           <Plus className="h-5 w-5" />
           New Goal
@@ -283,7 +283,7 @@ export const GoalList: React.FC<GoalListProps> = ({
       <div className="bg-[var(--surface-muted)] rounded-lg p-4 space-y-4">
         <div className="flex items-center gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted" />
             <input
               type="text"
               placeholder="Search goals..."
@@ -300,7 +300,7 @@ export const GoalList: React.FC<GoalListProps> = ({
               onChange={(e) => setShowActiveOnly(e.target.checked)}
               className="h-4 w-4 text-purple-600 rounded"
             />
-            <span className="text-sm font-medium text-gray-700">Active only</span>
+            <span className="text-sm font-medium text-theme">Active only</span>
           </label>
         </div>
 
@@ -336,7 +336,7 @@ export const GoalList: React.FC<GoalListProps> = ({
       {/* Goals Grid */}
       {filteredGoals.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
+          <div className="text-muted mb-4">
             <Target className="h-12 w-12 mx-auto" />
           </div>
           <h3 className="text-lg font-medium text-[var(--text)] mb-2">No goals found</h3>
@@ -348,7 +348,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           {!searchTerm && selectedCategory === 'all' && selectedPattern === 'all' && (
             <button
               onClick={onCreateGoal}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-accent-gradient text-white rounded-lg hover:opacity-90"
             >
               <Plus className="h-5 w-5" />
               Create Goal
@@ -359,7 +359,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         <div className="space-y-6">
           {Object.entries(groupedGoals).map(([category, categoryGoals]) => (
             <div key={category}>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">{category}</h3>
+              <h3 className="text-lg font-semibold text-theme mb-3">{category}</h3>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {categoryGoals.map(renderGoalCard)}
               </div>

@@ -1,64 +1,80 @@
 /* Theme palettes via CSS variables */
 
-/* Base (default dark theme) variables on :root */
-:root {
-  --bg: #0F172A;           /* dark background */
-  --surface: #1E293B;      /* dark surface */
-  --surface-muted: #334155;/* muted surface */
-  --text: #F1F5F9;         /* light text */
-  --accent: #60A5FA;       /* accent color */
-}
-
-/* Explicit dark attribute (same as root) */
+/* Base & Dark Theme: "Eclipse" */
+:root,
 [data-theme="dark"] {
   --bg: #0F172A;
   --surface: #1E293B;
   --surface-muted: #334155;
   --text: #F1F5F9;
-  --accent: #60A5FA;
+  --text-muted: #94A3B8;
+  --accent: #38BDF8;
+  --accent-2: #818CF8;
+  --gradient-bg: radial-gradient(ellipse at top, #1E293B, #0F172A);
+  --accent-gradient: linear-gradient(to right, var(--accent), var(--accent-2));
 }
 
-/* Light theme overrides */
+/* Light Theme: "Daylight" */
 [data-theme="light"] {
-  --bg: #F9FAFC;
+  --bg: #F8FAFC;
   --surface: #FFFFFF;
   --surface-muted: #F1F5F9;
-  --text: #111827;
-  --accent: #3B82F6;
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --accent: #2563EB;
+  --accent-2: #4F46E5;
+  --gradient-bg: radial-gradient(ellipse at top, #FFFFFF, #F8FAFC);
+  --accent-gradient: linear-gradient(to right, var(--accent), var(--accent-2));
 }
 
-/* Serene theme */
+/* Serene Theme: "Oasis" */
 [data-theme="serene"] {
-  --bg: #E6F4F1;
+  --bg: #F0F9FF;
   --surface: #FFFFFF;
-  --surface-muted: #D9EDEB;
-  --text: #084C61;
-  --accent: #2BA98F;
+  --surface-muted: #E0F2FE;
+  --text: #082F49;
+  --text-muted: #60A5FA;
+  --accent: #0E7490;
+  --accent-2: #16A34A;
+  --gradient-bg: linear-gradient(to top, #F0F9FF, #E0F2FE);
+  --accent-gradient: linear-gradient(to right, var(--accent), var(--accent-2));
 }
 
-/* Vibrant theme */
+/* Vibrant Theme: "Sunset" */
 [data-theme="vibrant"] {
   --bg: #FFF7ED;
   --surface: #FFFFFF;
   --surface-muted: #FFE8D9;
-  --text: #371B34;
-  --accent: #FF6363;
+  --text: #4C1D24;
+  --text-muted: #7F1D1D;
+  --accent: #F97316;
+  --accent-2: #EC4899;
+  --gradient-bg: radial-gradient(ellipse at bottom, #FFEDD5, #FFF7ED);
+  --accent-gradient: linear-gradient(to right, #F97316, #D946EF);
 }
 
-/* Midnight theme */
+/* Midnight Theme: "Neon" */
 [data-theme="midnight"] {
   --bg: #000000;
-  --surface: #0B0F19;
-  --surface-muted: #1F2933;
+  --surface: #111827;
+  --surface-muted: #1F2937;
   --text: #E5E7EB;
-  --accent: #4FBCFF;
+  --text-muted: #6B7280;
+  --accent: #22D3EE;
+  --accent-2: #A78BFA;
+  --gradient-bg: linear-gradient(180deg, #020617 0%, #000000 100%);
+  --accent-gradient: linear-gradient(to right, var(--accent), var(--accent-2));
 }
 
-/* Solarized theme */
+/* Solarized Theme: "Dune" */
 [data-theme="solarized"] {
   --bg: #FDF6E3;
-  --surface: #FFFDF6;
-  --surface-muted: #E2DDC7;
+  --surface: #FEFBF1;
+  --surface-muted: #F3EFE0;
   --text: #073642;
-  --accent: #268BD2;
+  --text-muted: #586E75;
+  --accent: #D33682;
+  --accent-2: #CB4B16;
+  --gradient-bg: radial-gradient(ellipse at top, #FEFBF1, #FDF6E3);
+  --accent-gradient: linear-gradient(to right, var(--accent-2), var(--accent));
 }

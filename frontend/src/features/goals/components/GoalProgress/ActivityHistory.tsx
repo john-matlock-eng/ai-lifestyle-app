@@ -37,11 +37,11 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
     <div className={`bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6 space-y-4 ${className}`}>
       <h2 className="text-lg font-semibold text-[var(--text)]">Activity History</h2>
       {isLoading ? (
-        <p className="text-center text-gray-500">Loading...</p>
+        <p className="text-center text-muted">Loading...</p>
       ) : error ? (
         <p className="text-center text-red-600">Failed to load activities.</p>
       ) : activities.length === 0 ? (
-        <p className="text-center text-gray-500">No activities found.</p>
+        <p className="text-center text-muted">No activities found.</p>
       ) : (
         <div className="space-y-3">
           {activities.map((activity: GoalActivity) => (
@@ -77,7 +77,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
                   {new Date(activity.activityDate).toLocaleDateString()}
                 </p>
                 {activity.context?.timeOfDay && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted">
                     {activity.context.timeOfDay}
                   </p>
                 )}

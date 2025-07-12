@@ -49,11 +49,11 @@ const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPat
 
             {/* Examples */}
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Examples:</p>
-              <ul className="text-sm text-gray-700 space-y-1">
+              <p className="text-xs font-medium text-muted uppercase tracking-wide">Examples:</p>
+              <ul className="text-sm text-theme space-y-1">
                 {pattern.examples.map((example, index) => (
                   <li key={index} className="flex items-start">
-                    <span className="text-gray-400 mr-1">•</span>
+                    <span className="text-muted mr-1">•</span>
                     <span>{example}</span>
                   </li>
                 ))}
