@@ -49,6 +49,7 @@ export interface JournalEntry {
   isEncrypted: boolean;
   isShared: boolean;
   encryptedKey?: string; // Base64 encrypted content key
+  encryptionIv?: string; // Base64 initialization vector
   sharedWith: string[]; // User IDs this entry is shared with
 }
 
@@ -97,6 +98,7 @@ export interface CreateJournalEntryRequest {
   // Privacy Settings
   isEncrypted: boolean;
   encryptedKey?: string; // Required if content is encrypted
+  encryptionIv?: string; // Required if content is encrypted
   isShared?: boolean;
 }
 
@@ -116,6 +118,7 @@ export interface UpdateJournalEntryRequest {
   // Privacy Settings
   isEncrypted?: boolean;
   encryptedKey?: string; // Required if content is encrypted
+  encryptionIv?: string; // Required if content is encrypted
   isShared?: boolean;
 }
 

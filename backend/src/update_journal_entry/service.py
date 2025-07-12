@@ -104,6 +104,9 @@ class UpdateJournalEntryService:
             if request.encrypted_key is not None:
                 updates['encrypted_key'] = request.encrypted_key
             
+            if request.encryption_iv is not None:
+                updates['encryption_iv'] = request.encryption_iv
+            
             # If no updates provided, return existing entry
             if not updates:
                 logger.info(f"No updates provided for journal entry {entry_id}")

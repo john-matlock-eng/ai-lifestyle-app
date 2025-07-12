@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Plus, Search, Calendar, FileText, Edit2 } from 'lucide-react';
+import { Plus, Search, Calendar, FileText, Edit2, Lock } from 'lucide-react';
 import { Button } from '../../components/common';
 import { listEntries, getStats } from '../../api/journal';
 
@@ -123,7 +123,14 @@ const JournalPage: React.FC = () => {
               className="bg-surface rounded-lg p-6 cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => handleEntryClick(entry.entryId)}
             >
-              <h3 className="text-lg font-semibold mb-2 truncate">{entry.title}</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold truncate flex-1">{entry.title}</h3>
+                {entry.isEncrypted && (
+                  <div className="flex-shrink-0 ml-2" title="End-to-End Encrypted">
+                    <Lock className="h-4 w-4 text-blue-600" />
+                  </div>
+                )}
+              </div>
               
               <div className="flex items-center gap-2 text-sm text-muted mb-2">
                 <Calendar className="h-4 w-4" />
@@ -135,7 +142,11 @@ const JournalPage: React.FC = () => {
                 <span>{entry.wordCount} words</span>
               </div>
 
-              <p className="text-muted text-sm mb-4 line-clamp-3">{entry.content}</p>
+              <p className="text-muted text-sm mb-4 line-clamp-3">
+                {entry.isEncrypted 
+                  ? "🔒 This entry is encrypted. Click to view."
+                  : entry.content}
+              </p>
 
               {entry.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">

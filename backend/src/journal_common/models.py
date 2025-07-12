@@ -67,6 +67,7 @@ class JournalEntry(BaseModel):
     is_encrypted: bool = Field(True, description="Whether content is encrypted")
     is_shared: bool = Field(False, description="Whether entry is shared with others")
     encrypted_key: Optional[str] = Field(None, description="Encrypted content key (base64)")
+    encryption_iv: Optional[str] = Field(None, description="Initialization vector for encryption (base64)")
     shared_with: List[str] = Field(default_factory=list, description="User IDs this entry is shared with")
     
     @field_validator('tags')
@@ -200,6 +201,7 @@ class CreateJournalEntryRequest(BaseModel):
     # Privacy Settings
     is_encrypted: bool = Field(True, description="Whether content is encrypted")
     encrypted_key: Optional[str] = Field(None, description="Encrypted content key (base64)")
+    encryption_iv: Optional[str] = Field(None, description="Initialization vector for encryption (base64)")
     is_shared: bool = Field(False, description="Whether entry should be shared")
     
     @field_validator('tags')
@@ -226,6 +228,8 @@ class CreateJournalEntryRequest(BaseModel):
                 raise ValueError("Word count is required for encrypted content")
             if not self.encrypted_key:
                 raise ValueError("Encrypted key is required for encrypted content")
+            if not self.encryption_iv:
+                raise ValueError("Encryption IV is required for encrypted content")
         return self
 
 
@@ -248,6 +252,7 @@ class UpdateJournalEntryRequest(BaseModel):
     # Privacy Settings
     is_encrypted: Optional[bool] = None
     encrypted_key: Optional[str] = Field(None, description="Encrypted content key (base64)")
+    encryption_iv: Optional[str] = Field(None, description="Initialization vector for encryption (base64)")
     is_shared: Optional[bool] = None
     
     @field_validator('tags')

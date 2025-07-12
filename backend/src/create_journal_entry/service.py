@@ -70,6 +70,7 @@ class CreateJournalEntryService:
                 goal_progress=request.goal_progress or [],
                 is_encrypted=request.is_encrypted,
                 encrypted_key=request.encrypted_key,
+                encryption_iv=request.encryption_iv,
                 is_shared=request.is_shared,
                 shared_with=[],  # Empty initially
                 created_at=datetime.now(timezone.utc),

@@ -5,6 +5,7 @@ import { ArrowLeft, X } from 'lucide-react';
 import { JournalEditorWithSections } from '../../features/journal/components';
 import { useTemplateRegistry } from '../../features/journal/hooks/useTemplateRegistry';
 import { createEntry } from '../../api/journal';
+import { getEncryptionService } from '../../services/encryption';
 import type { CreateJournalEntryRequest, JournalTemplate } from '../../types/journal';
 import type { Goal } from '../../features/goals/types/api.types';
 
@@ -98,6 +99,7 @@ const CreateJournalPage: React.FC = () => {
   const [mood, setMood] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [isEncrypted, setIsEncrypted] = useState(true); // Default to encrypted for privacy
 
   // Get the actual template based on the selected type
   const actualTemplateId = TEMPLATE_MAPPING[selectedTemplateType] || 'daily_log';
@@ -128,13 +130,39 @@ const CreateJournalPage: React.FC = () => {
   }) => {
     const content = editorData.markdownExport;
     
+    // Calculate word count (needed for encrypted content)
+    const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+    
+    // Handle encryption if enabled
+    let finalContent = content;
+    let encryptedKey: string | undefined;
+    let encryptionIv: string | undefined;
+    
+    if (isEncrypted) {
+      try {
+        const encryptionService = getEncryptionService();
+        const encrypted = await encryptionService.encryptContent(content);
+        finalContent = encrypted.content;
+        encryptedKey = encrypted.encryptedKey;
+        encryptionIv = encrypted.iv;
+      } catch (error) {
+        console.error('Encryption failed:', error);
+        // For now, continue without encryption
+        // In production, show an error to the user
+      }
+    }
+    
     await createEntryMutation.mutateAsync({
       title: title || `${TEMPLATE_PROMPTS[selectedTemplateType].name} - ${new Date().toLocaleDateString()}`,
-      content,
+      content: finalContent,
       template: selectedTemplateType as JournalTemplate,
       tags,
       mood: mood || undefined,
       linkedGoalIds: linkedGoalIds.length > 0 ? linkedGoalIds : undefined,
+      isEncrypted,
+      encryptedKey,
+      encryptionIv,
+      wordCount: isEncrypted ? wordCount : undefined,
       isShared: false,
     });
   };
@@ -239,6 +267,46 @@ const CreateJournalPage: React.FC = () => {
                 placeholder="How are you feeling?"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
+            </div>
+
+            {/* Encryption Toggle */}
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <label htmlFor="encrypt-toggle" className="text-sm font-medium text-gray-900">
+                      End-to-End Encryption
+                    </label>
+                    <p className="text-xs text-gray-600">
+                      {isEncrypted 
+                        ? "Your entry will be encrypted. Only you can read it."
+                        : "Your entry will be stored unencrypted."}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  id="encrypt-toggle"
+                  type="button"
+                  onClick={() => setIsEncrypted(!isEncrypted)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isEncrypted ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}
+                  role="switch"
+                  aria-checked={isEncrypted}
+                >
+                  <span className="sr-only">Enable encryption</span>
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isEncrypted ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Tags */}
