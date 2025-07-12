@@ -58,6 +58,7 @@ class CreateGoalService:
                 category=request.category,
                 icon=request.icon,
                 color=request.color,
+                module=request.module,
                 goal_pattern=request.goal_pattern,
                 target=request.target,
                 schedule=request.schedule or self._get_default_schedule(request.goal_pattern),

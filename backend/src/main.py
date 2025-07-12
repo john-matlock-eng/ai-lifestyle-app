@@ -24,10 +24,12 @@ from create_goal.handler import lambda_handler as create_goal_handler
 from get_goal.handler import lambda_handler as get_goal_handler
 from list_goals.handler import lambda_handler as list_goals_handler
 from update_goal.handler import lambda_handler as update_goal_handler
+from update_goal_module.handler import lambda_handler as update_goal_module_handler
 from archive_goal.handler import lambda_handler as archive_goal_handler
 from log_activity.handler import lambda_handler as log_activity_handler
 from list_activities.handler import lambda_handler as list_activities_handler
 from get_progress.handler import lambda_handler as get_progress_handler
+from get_journal_stats.handler import lambda_handler as get_journal_stats_handler
 # Future imports:
 # from update_user_profile.handler import lambda_handler as update_user_profile_handler
 
@@ -98,10 +100,12 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "POST /goals": create_goal_handler,
         "GET /goals/{goalId}": get_goal_handler,
         "PUT /goals/{goalId}": update_goal_handler,
+        "PATCH /goals/{goalId}": update_goal_module_handler,
         "DELETE /goals/{goalId}": archive_goal_handler,
         "GET /goals/{goalId}/activities": list_activities_handler,
         "POST /goals/{goalId}/activities": log_activity_handler,
         "GET /goals/{goalId}/progress": get_progress_handler,
+        "GET /journal/stats": get_journal_stats_handler,
         # "PUT /users/profile": update_user_profile_handler,
     }
     
@@ -130,6 +134,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     handler = get_goal_handler
                 elif http_method == 'PUT':
                     handler = update_goal_handler
+                elif http_method == 'PATCH':
+                    handler = update_goal_module_handler
                 elif http_method == 'DELETE':
                     handler = archive_goal_handler
             elif len(path_parts) == 4:
