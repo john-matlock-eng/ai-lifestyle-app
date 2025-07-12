@@ -1,5 +1,5 @@
 """
-Pydantic models for get user profile endpoint.
+Pydantic models for user profile endpoints.
 """
 
 from datetime import datetime
@@ -245,3 +245,57 @@ class DynamoDBUser(BaseModel):
             createdAt=datetime.fromisoformat(self.created_at.replace('Z', '+00:00')),
             updatedAt=datetime.fromisoformat(self.updated_at.replace('Z', '+00:00'))
         )
+
+
+class UpdateUserProfileRequest(BaseModel):
+    """Request model for updating user profile."""
+    firstName: Optional[str] = Field(
+        default=None,
+        description="User's first name"
+    )
+    lastName: Optional[str] = Field(
+        default=None,
+        description="User's last name"
+    )
+    phoneNumber: Optional[str] = Field(
+        default=None,
+        description="User's phone number (E.164 format)",
+        pattern=r'^\+?[1-9]\d{1,14}$'
+    )
+    dateOfBirth: Optional[str] = Field(
+        default=None,
+        description="User's date of birth"
+    )
+    timezone: Optional[str] = Field(
+        default=None,
+        description="User's timezone (IANA format)",
+        example="America/New_York"
+    )
+    preferences: Optional[UserPreferences] = Field(
+        default=None,
+        description="User preferences"
+    )
+    encryptionEnabled: Optional[bool] = Field(
+        default=None,
+        description="Whether encryption is enabled for this user"
+    )
+    encryptionSetupDate: Optional[datetime] = Field(
+        default=None,
+        description="When encryption was first set up"
+    )
+    encryptionKeyId: Optional[str] = Field(
+        default=None,
+        description="Public key ID for user's encryption key"
+    )
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "firstName": "Jane",
+                "lastName": "Doe",
+                "phoneNumber": "+1234567890",
+                "timezone": "America/New_York",
+                "encryptionEnabled": True,
+                "encryptionKeyId": "abc123def456"
+            }
+        }

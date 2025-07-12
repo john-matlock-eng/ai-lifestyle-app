@@ -349,6 +349,13 @@ export class EncryptionService {
   }
 
   /**
+   * Get the public key ID
+   */
+  async getPublicKeyId(): Promise<string | null> {
+    return this.publicKeyId;
+  }
+
+  /**
    * Clear all encryption data (logout)
    */
   async clear(): Promise<void> {
@@ -356,6 +363,16 @@ export class EncryptionService {
     this.personalKeyPair = null;
     this.publicKeyId = null;
     // Note: We don't clear the keyStore here as the user might want to log back in
+  }
+
+  /**
+   * Reset encryption (delete all keys)
+   */
+  async reset(): Promise<void> {
+    await keyStore.clearAll();
+    this.masterKey = null;
+    this.personalKeyPair = null;
+    this.publicKeyId = null;
   }
 }
 

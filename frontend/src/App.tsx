@@ -6,6 +6,7 @@ import { store } from './store';
 
 // Context
 import { AuthProvider } from './contexts';
+import { EncryptionProvider } from './contexts/EncryptionContext';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
@@ -35,6 +36,7 @@ import JournalDetailPage from './pages/journal/JournalDetailPage';
 // Components
 import DevTools from './components/common/DevTools';
 import { SessionWarning } from './components/SessionWarning';
+import { EncryptionUnlockPrompt } from './components/EncryptionUnlockPrompt';
 
 
 
@@ -61,7 +63,8 @@ function App() {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Routes>
+          <EncryptionProvider>
+            <Routes>
             {/* Public Routes */}
             <Route element={<PublicLayout />}>
               <Route path="/login" element={<LoginPage />} />
@@ -106,7 +109,9 @@ function App() {
           
           {/* Global Components */}
           <SessionWarning />
+          <EncryptionUnlockPrompt />
           <DevTools />
+          </EncryptionProvider>
         </AuthProvider>
       </QueryClientProvider>
     {/* <ReactQueryDevtools initialIsOpen={false} /> */}

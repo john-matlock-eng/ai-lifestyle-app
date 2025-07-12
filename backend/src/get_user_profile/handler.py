@@ -9,7 +9,7 @@ from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
-from .models import ErrorResponse
+from user_profile_common import ErrorResponse
 from .service import UserProfileService
 from .repository import UserRepository
 from .cognito_client import CognitoClient

@@ -8,7 +8,7 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from aws_lambda_powertools import Logger, Tracer
 
-from .models import DynamoDBUser
+from user_profile_common import DynamoDBUser
 from .errors import UserNotFoundError, DatabaseError
 
 logger = Logger()
