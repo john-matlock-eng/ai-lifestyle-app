@@ -69,6 +69,10 @@ def parse_query_parameters(event: Dict[str, Any]) -> Dict[str, Any]:
     category_filter = None
     if 'category' in params:
         category_filter = [c.strip() for c in params['category'].split(',') if c.strip()]
+
+    module_filter = params.get('module')
+    if module_filter not in (None, 'journal'):
+        raise ValueError(f"Invalid module value: {module_filter}")
     
     # Parse pagination
     try:
@@ -101,6 +105,7 @@ def parse_query_parameters(event: Dict[str, Any]) -> Dict[str, Any]:
         'status_filter': status_filter,
         'pattern_filter': pattern_filter,
         'category_filter': category_filter,
+        'module_filter': module_filter,
         'page': page,
         'limit': limit,
         'sort': sort

@@ -20,6 +20,7 @@ from .models import (
     TimeOfDay,
     LocationType,
     SocialContext,
+    GoalModule,
     
     # Target and Schedule Models
     GoalTarget,
@@ -48,6 +49,9 @@ from .models import (
     CreateGoalRequest,
     UpdateGoalRequest,
     GoalListResponse,
+    PatchGoalModuleRequest,
+    JournalGoalProgress,
+    JournalStatsResponse,
     ActivityAttachmentRequest,
     LogActivityRequest,
 )
@@ -91,6 +95,7 @@ __all__ = [
     'TimeOfDay',
     'LocationType',
     'SocialContext',
+    'GoalModule',
     
     # Models
     'GoalTarget',
@@ -111,6 +116,9 @@ __all__ = [
     'CreateGoalRequest',
     'UpdateGoalRequest',
     'GoalListResponse',
+    'PatchGoalModuleRequest',
+    'JournalGoalProgress',
+    'JournalStatsResponse',
     'ActivityAttachmentRequest',
     'LogActivityRequest',
     
