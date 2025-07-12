@@ -29,7 +29,7 @@ export interface JournalEntry {
   
   // Core Content
   title: string;
-  content: string;
+  content: string; // May be encrypted
   template: JournalTemplate;
   wordCount: number;
   
@@ -48,6 +48,8 @@ export interface JournalEntry {
   // Privacy & Security
   isEncrypted: boolean;
   isShared: boolean;
+  encryptedKey?: string; // Base64 encrypted content key
+  sharedWith: string[]; // User IDs this entry is shared with
 }
 
 export interface TemplateUsage {
@@ -81,8 +83,9 @@ export interface JournalStats {
 
 export interface CreateJournalEntryRequest {
   title: string;
-  content: string;
+  content: string; // May be encrypted
   template?: JournalTemplate;
+  wordCount?: number; // Required if content is encrypted
   
   tags?: string[];
   mood?: string;
@@ -92,13 +95,16 @@ export interface CreateJournalEntryRequest {
   goalProgress?: GoalProgress[];
   
   // Privacy Settings
+  isEncrypted: boolean;
+  encryptedKey?: string; // Required if content is encrypted
   isShared?: boolean;
 }
 
 export interface UpdateJournalEntryRequest {
   title?: string;
-  content?: string;
+  content?: string; // May be encrypted
   template?: JournalTemplate;
+  wordCount?: number; // Required if content is encrypted
   
   tags?: string[];
   mood?: string;
@@ -108,6 +114,8 @@ export interface UpdateJournalEntryRequest {
   goalProgress?: GoalProgress[];
   
   // Privacy Settings
+  isEncrypted?: boolean;
+  encryptedKey?: string; // Required if content is encrypted
   isShared?: boolean;
 }
 

@@ -62,10 +62,19 @@ class UpdateJournalEntryService:
             if request.content is not None:
                 if not request.content.strip():
                     raise ValueError("Content cannot be empty")
-                if len(request.content) > 50000:
+                if not existing_entry.is_encrypted and len(request.content) > 50000:
                     raise ValueError("Content must not exceed 50,000 characters")
                 updates['content'] = request.content
-                updates['word_count'] = len(request.content.split())
+                
+                # Handle word count for content updates
+                if request.is_encrypted or existing_entry.is_encrypted:
+                    # For encrypted content, use client-provided word count
+                    if request.word_count is None:
+                        raise ValueError("Word count is required when updating encrypted content")
+                    updates['word_count'] = request.word_count
+                else:
+                    # For unencrypted content, calculate word count
+                    updates['word_count'] = len(request.content.split())
             
             if request.template is not None:
                 updates['template'] = request.template
@@ -88,6 +97,12 @@ class UpdateJournalEntryService:
             
             if request.is_shared is not None:
                 updates['is_shared'] = request.is_shared
+            
+            if request.is_encrypted is not None:
+                updates['is_encrypted'] = request.is_encrypted
+            
+            if request.encrypted_key is not None:
+                updates['encrypted_key'] = request.encrypted_key
             
             # If no updates provided, return existing entry
             if not updates:

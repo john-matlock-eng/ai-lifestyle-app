@@ -47,9 +47,9 @@ class JournalEntry(BaseModel):
     
     # Core Content
     title: str = Field(..., min_length=1, max_length=200)
-    content: str = Field(..., description="The journal entry content")
+    content: str = Field(..., description="The journal entry content (may be encrypted)")
     template: JournalTemplate = Field(default=JournalTemplate.BLANK)
-    word_count: int = Field(0, ge=0, description="Calculated word count")
+    word_count: int = Field(0, ge=0, description="Word count (client-provided for encrypted content)")
     
     # Organization
     tags: List[str] = Field(default_factory=list, description="User-defined tags")
@@ -66,6 +66,8 @@ class JournalEntry(BaseModel):
     # Privacy & Security
     is_encrypted: bool = Field(True, description="Whether content is encrypted")
     is_shared: bool = Field(False, description="Whether entry is shared with others")
+    encrypted_key: Optional[str] = Field(None, description="Encrypted content key (base64)")
+    shared_with: List[str] = Field(default_factory=list, description="User IDs this entry is shared with")
     
     @field_validator('tags')
     @classmethod
@@ -86,11 +88,11 @@ class JournalEntry(BaseModel):
     @field_validator('word_count')
     @classmethod
     def validate_word_count(cls, v, values):
-        """Calculate word count from content if not provided."""
-        if v == 0 and 'content' in values.data:
-            # Simple word count calculation
-            content = values.data.get('content', '')
-            v = len(content.split()) if content else 0
+        """Validate word count - must be provided by client for encrypted content."""
+        # For encrypted content, word count must be provided by the client
+        # since the server cannot calculate it from encrypted text
+        if v < 0:
+            raise ValueError("Word count must be non-negative")
         return v
     
     @model_validator(mode='after')
@@ -184,8 +186,9 @@ class CreateJournalEntryRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
     
     title: str = Field(..., min_length=1, max_length=200)
-    content: str = Field(..., description="The journal entry content")
+    content: str = Field(..., description="The journal entry content (may be encrypted)")
     template: JournalTemplate = Field(default=JournalTemplate.BLANK)
+    word_count: Optional[int] = Field(None, ge=0, description="Word count (required if content is encrypted)")
     
     tags: Optional[List[str]] = Field(None, description="User-defined tags")
     mood: Optional[str] = Field(None, max_length=50, description="Mood/emotion tag")
@@ -195,6 +198,8 @@ class CreateJournalEntryRequest(BaseModel):
     goal_progress: Optional[List[GoalProgress]] = Field(None, description="Goal progress updates")
     
     # Privacy Settings
+    is_encrypted: bool = Field(True, description="Whether content is encrypted")
+    encrypted_key: Optional[str] = Field(None, description="Encrypted content key (base64)")
     is_shared: bool = Field(False, description="Whether entry should be shared")
     
     @field_validator('tags')
@@ -212,6 +217,16 @@ class CreateJournalEntryRequest(BaseModel):
                 if len(tag) > 30:
                     raise ValueError("Tag length cannot exceed 30 characters")
         return v
+    
+    @model_validator(mode='after')
+    def validate_encrypted_content(self):
+        """Validate encrypted content has required fields."""
+        if self.is_encrypted:
+            if self.word_count is None:
+                raise ValueError("Word count is required for encrypted content")
+            if not self.encrypted_key:
+                raise ValueError("Encrypted key is required for encrypted content")
+        return self
 
 
 class UpdateJournalEntryRequest(BaseModel):
@@ -219,8 +234,9 @@ class UpdateJournalEntryRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
     
     title: Optional[str] = Field(None, min_length=1, max_length=200)
-    content: Optional[str] = None
+    content: Optional[str] = Field(None, description="The journal entry content (may be encrypted)")
     template: Optional[JournalTemplate] = None
+    word_count: Optional[int] = Field(None, ge=0, description="Word count (required if content is encrypted)")
     
     tags: Optional[List[str]] = None
     mood: Optional[str] = Field(None, max_length=50)
@@ -230,6 +246,8 @@ class UpdateJournalEntryRequest(BaseModel):
     goal_progress: Optional[List[GoalProgress]] = None
     
     # Privacy Settings
+    is_encrypted: Optional[bool] = None
+    encrypted_key: Optional[str] = Field(None, description="Encrypted content key (base64)")
     is_shared: Optional[bool] = None
     
     @field_validator('tags')

@@ -46,8 +46,15 @@ class CreateJournalEntryService:
             # Generate entry ID
             entry_id = str(uuid.uuid4())
             
-            # Calculate word count
-            word_count = len(request.content.split())
+            # Determine word count
+            if request.is_encrypted:
+                # For encrypted content, use client-provided word count
+                if request.word_count is None:
+                    raise ValueError("Word count is required for encrypted content")
+                word_count = request.word_count
+            else:
+                # For unencrypted content, calculate word count
+                word_count = len(request.content.split()) if request.content else 0
             
             # Build journal entry object
             entry = JournalEntry(
@@ -62,7 +69,9 @@ class CreateJournalEntryService:
                 linked_goal_ids=request.linked_goal_ids or [],
                 goal_progress=request.goal_progress or [],
                 is_encrypted=request.is_encrypted,
+                encrypted_key=request.encrypted_key,
                 is_shared=request.is_shared,
+                shared_with=[],  # Empty initially
                 created_at=datetime.now(timezone.utc),
                 updated_at=datetime.now(timezone.utc)
             )
@@ -131,7 +140,8 @@ class CreateJournalEntryService:
         # Content validation
         if not entry.content or not entry.content.strip():
             errors.append("Content is required")
-        elif len(entry.content) > 50000:  # ~10,000 words
+        elif not entry.is_encrypted and len(entry.content) > 50000:  # ~10,000 words
+            # Only validate length for unencrypted content
             errors.append("Content must not exceed 50,000 characters")
         
         # Tags validation
