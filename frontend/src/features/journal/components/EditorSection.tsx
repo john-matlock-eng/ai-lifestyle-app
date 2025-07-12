@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import type { Editor } from '@tiptap/react';
-import type { Transaction } from '@tiptap/pm/state';
+import type { Editor, UseEditorOptions } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Extension } from '@tiptap/core';
 import ReactMarkdown from 'react-markdown';
-import { Bold, Italic, Heading, List } from 'lucide-react';
+import {
+  Bold,
+  Italic,
+  Heading,
+  List,
+  Strikethrough,
+  CheckSquare,
+  Quote,
+  Code,
+  Minus,
+  Link as LinkIcon,
+  Image as ImageIcon,
+} from 'lucide-react';
+import Link from '@tiptap/extension-link';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import Image from '@tiptap/extension-image';
+import useLinkModal from '../hooks/useLinkModal';
 import { Button } from '@/components/common';
 import type { SectionDefinition } from '../types/template.types';
 import TemplateSection from '../extensions/TemplateSection';
@@ -31,29 +46,41 @@ const EditorSection: React.FC<EditorSectionProps> = ({
 }) => {
   const DRAFT_KEY = draftId ? `journal-draft-${draftId}` : undefined;
 
-  const ExtraShortcuts = Extension.create({
-    addKeyboardShortcuts() {
-      return {
-        'Mod-b': () => this.editor.commands.toggleBold(),
-        'Mod-i': () => this.editor.commands.toggleItalic(),
-        'Mod-Shift-7': () => this.editor.commands.toggleOrderedList(),
-        'Mod-Shift-8': () => this.editor.commands.toggleBulletList(),
-      };
-    },
-  });
   const editor = useEditor({
     extensions: [
       TemplateSection.configure({ defaultPrivacy: section.defaultPrivacy ?? 'private' }),
       StarterKit,
+      TaskList,
+      TaskItem,
+      Link,
+      Image,
       Markdown,
       Placeholder.configure({
         placeholder: section.prompt,
       }),
-      ExtraShortcuts,
     ],
     content: initialContent,
     editable: !readOnly,
-    onCreate({ editor }) {
+    keyboardShortcuts: {
+      'Mod-b': () => editor?.commands.toggleBold(),
+      'Mod-i': () => editor?.commands.toggleItalic(),
+      'Mod-Shift-7': () => editor?.commands.toggleOrderedList(),
+      'Mod-Shift-8': () => editor?.commands.toggleBulletList(),
+      'Mod-Shift-x': () => editor?.commands.toggleStrike(),
+      'Mod-Shift-c': () => editor?.commands.toggleTaskList(),
+      'Mod-Shift-b': () => editor?.commands.toggleBlockquote(),
+      'Mod-Shift-k': () => editor?.commands.toggleCodeBlock(),
+      'Mod-Shift-h': () => editor?.commands.setHorizontalRule(),
+      'Mod-k': () => {
+        openLink();
+        return true;
+      },
+      'Mod-Shift-i': () => {
+        insertImage();
+        return true;
+      },
+    },
+    onCreate({ editor }: { editor: Editor }) {
       const doc = editor.getJSON().content ?? [];
       editor.commands.setContent({
         type: 'doc',
@@ -70,7 +97,18 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         ],
       });
     },
+  } as UseEditorOptions & {
+    keyboardShortcuts: Record<string, () => boolean | void>;
   });
+
+  const openLink = useLinkModal(editor);
+  const insertImage = () => {
+    if (!editor) return;
+    const url = window.prompt('Enter image URL');
+    if (url) {
+      editor.chain().focus().insertContent({ type: 'image', attrs: { src: url } }).run();
+    }
+  };
 
   const [lastSaved, setLastSaved] = useState(initialContent);
   const [restoreDraft, setRestoreDraft] = useState<string | null>(null);
@@ -107,7 +145,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
 
   useEffect(() => {
     if (!editor) return;
-    const handleUpdate = ({ editor: updatedEditor }: { editor: Editor; transaction: Transaction }) => {
+    const handleUpdate = ({ editor: updatedEditor }: { editor: Editor; transaction: unknown }) => {
       const markdown = (updatedEditor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
       onChange?.(markdown);
     };
@@ -197,6 +235,69 @@ const EditorSection: React.FC<EditorSectionProps> = ({
           title="Bullet list"
         >
           <List className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('strike') ? 'bg-gray-300' : ''}`}
+          aria-label="Toggle strikethrough"
+          title="Strikethrough"
+        >
+          <Strikethrough className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('taskList') ? 'bg-gray-300' : ''}`}
+          aria-label="Toggle checklist"
+          title="Checklist"
+        >
+          <CheckSquare className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('blockquote') ? 'bg-gray-300' : ''}`}
+          aria-label="Toggle blockquote"
+          title="Blockquote"
+        >
+          <Quote className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('codeBlock') ? 'bg-gray-300' : ''}`}
+          aria-label="Toggle code block"
+          title="Code block"
+        >
+          <Code className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          className="p-1 rounded hover:bg-gray-200"
+          aria-label="Insert horizontal rule"
+          title="Horizontal rule"
+        >
+          <Minus className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={openLink}
+          className={`p-1 rounded hover:bg-gray-200 ${editor.isActive('link') ? 'bg-gray-300' : ''}`}
+          aria-label="Add link"
+          title="Link"
+        >
+          <LinkIcon className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={insertImage}
+          className="p-1 rounded hover:bg-gray-200"
+          aria-label="Insert image"
+          title="Image"
+        >
+          <ImageIcon className="w-4 h-4" />
         </button>
       </div>
       <EditorContent
