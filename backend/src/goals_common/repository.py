@@ -196,6 +196,7 @@ class GoalsRepository:
         user_id: str,
         status: Optional[GoalStatus] = None,
         category: Optional[str] = None,
+        module: Optional[str] = None,
         limit: int = 20,
         last_evaluated_key: Optional[Dict[str, Any]] = None
     ) -> Tuple[List[Goal], Optional[Dict[str, Any]]]:
@@ -228,8 +229,13 @@ class GoalsRepository:
                     # Remove DynamoDB-specific fields
                     for field in ['pk', 'sk', 'EntityType', 'gsi1_pk', 'gsi1_sk', 'TTL']:
                         item.pop(field, None)
-                    goals.append(self._parse_goal(item))
-            
+                    goal = self._parse_goal(item)
+                    if module and goal.module != module:
+                        continue
+                    if category and goal.category != category:
+                        continue
+                    goals.append(goal)
+
             return goals, response.get('LastEvaluatedKey')
             
         except Exception as e:

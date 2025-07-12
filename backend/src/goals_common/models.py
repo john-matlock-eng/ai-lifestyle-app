@@ -87,6 +87,11 @@ class Visibility(str, Enum):
     PUBLIC = "public"
 
 
+class GoalModule(str, Enum):
+    """Supported modules that can link to goals."""
+    JOURNAL = "journal"
+
+
 class TrendDirection(str, Enum):
     """Progress trend direction."""
     IMPROVING = "improving"
@@ -289,6 +294,7 @@ class Goal(BaseModel):
     category: str = Field(..., min_length=1, max_length=50)
     icon: Optional[str] = Field(None, max_length=50)
     color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+    module: Optional[GoalModule] = Field(None, description="Linked module")
     
     # Goal Pattern - THE KEY FIELD
     goal_pattern: GoalPattern
@@ -434,6 +440,13 @@ class UpdateGoalRequest(BaseModel):
     
     visibility: Optional[Visibility] = None
     status: Optional[GoalStatus] = None
+
+
+class PatchGoalModuleRequest(BaseModel):
+    """Request to update goal module flag."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+    module: Optional[GoalModule] = None
 
 
 class GoalListResponse(BaseModel):
