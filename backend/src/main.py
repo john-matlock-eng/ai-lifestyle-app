@@ -28,6 +28,10 @@ from archive_goal.handler import lambda_handler as archive_goal_handler
 from log_activity.handler import lambda_handler as log_activity_handler
 from list_activities.handler import lambda_handler as list_activities_handler
 from get_progress.handler import lambda_handler as get_progress_handler
+# Journal AI endpoints
+from reflect.handler import lambda_handler as reflect_handler
+from analyze_mood.handler import lambda_handler as analyze_mood_handler
+from summarize_week.handler import lambda_handler as summarize_week_handler
 # Future imports:
 # from update_user_profile.handler import lambda_handler as update_user_profile_handler
 
@@ -102,6 +106,10 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "GET /goals/{goalId}/activities": list_activities_handler,
         "POST /goals/{goalId}/activities": log_activity_handler,
         "GET /goals/{goalId}/progress": get_progress_handler,
+        # Journal AI endpoints
+        "POST /ai/reflect": reflect_handler,
+        "POST /ai/analyze-mood": analyze_mood_handler,
+        "POST /ai/summarize-week": summarize_week_handler,
         # "PUT /users/profile": update_user_profile_handler,
     }
     

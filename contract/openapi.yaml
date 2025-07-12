@@ -1016,6 +1016,88 @@ paths:
               schema:
                 $ref: '#/components/schemas/AIServicePublicKey'
 
+  # Journal AI Endpoints
+  /ai/reflect:
+    post:
+      summary: Generate reflection reply
+      description: Generate a reflection response for a journal section
+      operationId: reflectEntrySection
+      tags:
+        - Journal AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalReflectRequest'
+      responses:
+        '200':
+          description: Reflection generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalReflectResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /ai/analyze-mood:
+    post:
+      summary: Analyze mood of entry
+      description: Classify emotions in a journal entry
+      operationId: analyzeMood
+      tags:
+        - Journal AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalAnalyzeMoodRequest'
+      responses:
+        '200':
+          description: Mood analyzed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalAnalyzeMoodResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /ai/summarize-week:
+    post:
+      summary: Summarize weekly journal entries
+      description: Generate a weekly digest summary
+      operationId: summarizeWeek
+      tags:
+        - Journal AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalSummarizeWeekRequest'
+      responses:
+        '200':
+          description: Summary generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalSummarizeWeekResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
   # Core Encryption Service Endpoints
   /encryption/initialize:
     post:
@@ -2906,6 +2988,90 @@ components:
             pages:
               type: integer
 
+    # Journal AI Schemas
+    JournalReflectRequest:
+      type: object
+      required:
+        - entryId
+        - sectionId
+        - text
+        - prompt
+      properties:
+        entryId:
+          type: string
+        sectionId:
+          type: string
+        text:
+          type: string
+        prompt:
+          type: string
+
+    JournalReflectResponse:
+      type: object
+      required:
+        - reply
+      properties:
+        reply:
+          type: string
+
+    JournalAnalyzeMoodRequest:
+      type: object
+      required:
+        - entryId
+        - markdown
+      properties:
+        entryId:
+          type: string
+        markdown:
+          type: string
+
+    JournalAnalyzeMoodResponse:
+      type: object
+      required:
+        - emotions
+      properties:
+        emotions:
+          type: object
+          additionalProperties:
+            type: number
+
+    JournalEntry:
+      type: object
+      required:
+        - id
+        - markdown
+      properties:
+        id:
+          type: string
+        markdown:
+          type: string
+
+    JournalSummarizeWeekRequest:
+      type: object
+      required:
+        - userId
+        - entries
+      properties:
+        userId:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalEntry'
+
+    JournalSummarizeWeekResponse:
+      type: object
+      required:
+        - summary
+        - highlights
+      properties:
+        summary:
+          type: string
+        highlights:
+          type: array
+          items:
+            type: string
+
 tags:
   - name: System
     description: System health and status endpoints
@@ -2927,3 +3093,5 @@ tags:
     description: Wellness tracking and recommendations
   - name: Routines
     description: Daily routine management
+  - name: Journal AI
+    description: AI-powered journaling helpers
