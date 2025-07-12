@@ -19,4 +19,4 @@ export { default as ThemeShowcase } from './ThemeShowcase';
 
 // Other Components
 export { default as ProtectedRoute } from './ProtectedRoute';
-export { default as SessionWarning } from './SessionWarning';
+export { SessionWarning } from './SessionWarning';
