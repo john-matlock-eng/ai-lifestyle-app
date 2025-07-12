@@ -1,11 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts';
+import { EncryptionOnboarding } from '../components/EncryptionOnboarding';
+import { useEncryption } from '../contexts/useEncryption';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const { isEncryptionEnabled } = useEncryption();
+  const [showEncryptionBanner, setShowEncryptionBanner] = useState(true);
+
+  // Check if user has dismissed the banner before
+  useEffect(() => {
+    const dismissed = localStorage.getItem('encryptionBannerDismissed');
+    if (dismissed === 'true') {
+      setShowEncryptionBanner(false);
+    }
+  }, []);
+
+  const handleDismissEncryptionBanner = () => {
+    setShowEncryptionBanner(false);
+    localStorage.setItem('encryptionBannerDismissed', 'true');
+  };
 
   return (
     <div>
+      {/* Encryption Onboarding Banner */}
+      {showEncryptionBanner && !isEncryptionEnabled && (
+        <div className="-mx-4 -mt-6 mb-6 sm:-mx-6 lg:-mx-8">
+          <EncryptionOnboarding 
+            variant="banner" 
+            onDismiss={handleDismissEncryptionBanner} 
+          />
+        </div>
+      )}
+
       <div className="md:flex md:items-center md:justify-between">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gradient sm:text-3xl sm:truncate">

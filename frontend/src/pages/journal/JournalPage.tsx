@@ -1,16 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Plus, Search, Calendar, FileText, Edit2, Lock } from 'lucide-react';
 import { Button } from '../../components/common';
 import { listEntries, getStats } from '../../api/journal';
+import { EncryptionOnboarding } from '../../components/EncryptionOnboarding';
+import { useEncryption } from '../../contexts/useEncryption';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isEncryptionEnabled } = useEncryption();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showEncryptionModal, setShowEncryptionModal] = useState(false);
   const limit = 12;
+
+  // Check if it's the user's first visit to journal page
+  useEffect(() => {
+    const hasSeenEncryptionPrompt = localStorage.getItem('hasSeenJournalEncryptionPrompt');
+    if (!hasSeenEncryptionPrompt && !isEncryptionEnabled) {
+      setShowEncryptionModal(true);
+    }
+  }, [isEncryptionEnabled]);
+
+  const handleDismissEncryptionModal = () => {
+    setShowEncryptionModal(false);
+    localStorage.setItem('hasSeenJournalEncryptionPrompt', 'true');
+  };
 
   // Fetch journal entries
   const { data: entriesData, isLoading: entriesLoading, error: entriesError } = useQuery({
@@ -246,6 +263,14 @@ const JournalPage: React.FC = () => {
         {/* Entries Grid */}
         {renderEntries()}
       </div>
+      
+      {/* Encryption Onboarding Modal */}
+      {showEncryptionModal && (
+        <EncryptionOnboarding 
+          variant="modal" 
+          onDismiss={handleDismissEncryptionModal} 
+        />
+      )}
     </div>
   );
 };
