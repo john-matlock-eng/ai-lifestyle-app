@@ -83,7 +83,7 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                   <Button 
                     type="submit" 
                     disabled={!password || isUnlocking}
-                    loading={isUnlocking}
+                    isLoading={isUnlocking}
                   >
                     Unlock
                   </Button>
@@ -129,7 +129,7 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                   <Button 
                     type="submit" 
                     disabled={!password || isUnlocking}
-                    loading={isUnlocking}
+                    isLoading={isUnlocking}
                   >
                     Set Up Encryption
                   </Button>

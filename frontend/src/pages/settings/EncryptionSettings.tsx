@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Shield, Lock, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { Button } from '../../components/common';
 import { getEncryptionService } from '../../services/encryption';
-import { useAuth } from '../../features/auth/contexts/AuthContext';
+import { useAuth } from '../../contexts';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import apiClient from '../../api/client';
+import type { UserProfile as BaseUserProfile } from '../../features/auth/services/authService';
 
-interface UserProfile {
+interface UserProfile extends BaseUserProfile {
   encryptionEnabled: boolean;
   encryptionSetupDate?: string;
   encryptionKeyId?: string;
@@ -31,7 +32,7 @@ const EncryptionSettings: React.FC = () => {
 
   // Check user profile for encryption status
   const { data: profile, refetch: refetchProfile } = useQuery<UserProfile>({
-    queryKey: ['userProfile', user?.id],
+    queryKey: ['userProfile', user?.userId],
     queryFn: async () => {
       const { data } = await apiClient.get('/users/profile');
       return data;
@@ -88,10 +89,11 @@ const EncryptionSettings: React.FC = () => {
       await encryptionService.initialize(masterPassword);
       
       // Update user profile
+      const keyId = await encryptionService.getPublicKeyId();
       await updateProfileMutation.mutateAsync({
         encryptionEnabled: true,
         encryptionSetupDate: new Date().toISOString(),
-        encryptionKeyId: await encryptionService.getPublicKeyId(),
+        encryptionKeyId: keyId || undefined,
       });
 
       setIsSetup(true);

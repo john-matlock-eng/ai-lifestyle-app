@@ -1,9 +1,18 @@
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from './index';
 import { getEncryptionService } from '../services/encryption';
 import apiClient from '../api/client';
-import { EncryptionContext, EncryptionContextValue } from './EncryptionContextType';
+import { EncryptionContext } from './EncryptionContextType';
+import type { EncryptionContextValue } from './EncryptionContextType';
+import type { UserProfile as BaseUserProfile } from '../features/auth/services/authService';
+
+interface UserProfile extends BaseUserProfile {
+  encryptionEnabled: boolean;
+  encryptionSetupDate?: string;
+  encryptionKeyId?: string;
+}
 
 interface EncryptionProviderProps {
   children: ReactNode;
@@ -16,10 +25,10 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
   const [encryptionKeyId, setEncryptionKeyId] = useState<string | null>(null);
 
   // Fetch user profile to check encryption status
-  const { data: profile } = useQuery({
-    queryKey: ['userProfile', user?.id],
+  const { data: profile } = useQuery<UserProfile>({
+    queryKey: ['userProfile', user?.userId],
     queryFn: async () => {
-      const { data } = await apiClient.get('/users/profile');
+      const { data } = await apiClient.get<UserProfile>('/users/profile');
       return data;
     },
     enabled: !!user,
