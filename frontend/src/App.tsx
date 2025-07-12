@@ -5,8 +5,7 @@ import { store } from './store';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
-import { AuthProvider, useTheme } from './contexts';
-import type { Theme } from './contexts';
+import { AuthProvider } from './contexts';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
@@ -37,14 +36,7 @@ import JournalDetailPage from './pages/journal/JournalDetailPage';
 import DevTools from './components/common/DevTools';
 import { SessionWarning } from './components/SessionWarning';
 
-const cycleOrder: Theme[] = [
-  'dark',
-  'light',
-  'serene',
-  'vibrant',
-  'midnight',
-  'solarized',
-];
+
 
 // Create a client
 const queryClient = new QueryClient({
@@ -64,12 +56,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const { theme, setTheme } = useTheme();
-  const cycleTheme = () => {
-    const index = cycleOrder.indexOf(theme);
-    const next = cycleOrder[(index + 1) % cycleOrder.length];
-    setTheme(next);
-  };
 
   return (
     <Provider store={store}>
@@ -121,13 +107,6 @@ function App() {
           {/* Global Components */}
           <SessionWarning />
           <DevTools />
-          <button
-            type="button"
-            onClick={cycleTheme}
-            className="fixed bottom-2 right-2 px-3 py-1 rounded bg-accent text-white"
-          >
-            Theme: {theme}
-          </button>
         </AuthProvider>
       </QueryClientProvider>
     {/* <ReactQueryDevtools initialIsOpen={false} /> */}

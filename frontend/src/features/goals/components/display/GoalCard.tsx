@@ -23,14 +23,14 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
         return (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted">Today's Progress</span>
+              <span className="text-text-muted">Today's Progress</span>
               <span className="font-medium">
                 {goal.progress.currentPeriodValue || 0} / {formatGoalValue(goal.target.value, goal.target.unit)}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-surface-muted rounded-full h-2">
               <div
-                className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                className="bg-accent h-2 rounded-full transition-all duration-300"
                 style={{
                   width: `${Math.min(
                     ((goal.progress.currentPeriodValue || 0) / goal.target.value) * 100,
@@ -52,14 +52,14 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
                   {goal.progress.currentStreak || 0}
                 </span>
               </div>
-              <p className="text-xs text-muted">Current Streak</p>
+              <p className="text-xs text-text-muted">Current Streak</p>
             </div>
             {goal.progress.longestStreak && goal.progress.longestStreak > 0 && (
               <div className="text-center">
                 <div className="text-lg font-semibold text-theme">
                   {goal.progress.longestStreak}
                 </div>
-                <p className="text-xs text-muted">Best Streak</p>
+                <p className="text-xs text-text-muted">Best Streak</p>
               </div>
             )}
           </div>
@@ -70,18 +70,18 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
         return (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted">Progress</span>
+              <span className="text-text-muted">Progress</span>
               <span className={`font-medium ${progressColor}`}>
                 {goal.progress.percentComplete.toFixed(0)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-surface-muted rounded-full h-2">
               <div
-                className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-accent to-accent-hover h-2 rounded-full transition-all duration-300"
                 style={{ width: `${Math.min(goal.progress.percentComplete, 100)}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-xs text-muted">
+            <div className="flex items-center justify-between text-xs text-text-muted">
               <span>
                 {goal.progress.totalAccumulated || 0} / {formatGoalValue(goal.target.value, goal.target.unit)}
               </span>
@@ -97,13 +97,13 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
         return (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted">Current {goal.target.period}</span>
-              <span className={`font-medium ${isOverLimit ? 'text-red-600' : 'text-green-600'}`}>
+              <span className="text-text-muted">Current {goal.target.period}</span>
+              <span className={`font-medium ${isOverLimit ? 'text-error-theme' : 'text-success-theme'}`}>
                 {goal.progress.currentPeriodValue || 0} / {formatGoalValue(goal.target.value, goal.target.unit)}
               </span>
             </div>
             {goal.progress.daysOverLimit && goal.progress.daysOverLimit > 0 && (
-              <p className="text-xs text-red-600">
+              <p className="text-xs text-error-theme">
                 Over limit for {goal.progress.daysOverLimit} days
               </p>
             )}
@@ -133,12 +133,12 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
             </span>
             <Link
               to={`/goals/${goal.goalId}`}
-              className="font-semibold text-theme hover:text-primary-600 transition-colors"
+              className="font-semibold text-theme hover:text-accent transition-colors"
             >
               {goal.title}
             </Link>
             {category && (
-              <span className="text-xs px-2 py-1 bg-[var(--surface-muted)] text-muted rounded-full">
+              <span className="text-xs px-2 py-1 bg-surface-muted text-text-secondary rounded-full">
                 {category.label}
               </span>
             )}
@@ -146,14 +146,14 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
 
           {/* Description */}
           {goal.description && (
-            <p className="text-sm text-muted mb-3 line-clamp-2">{goal.description}</p>
+            <p className="text-sm text-text-secondary mb-3 line-clamp-2">{goal.description}</p>
           )}
 
           {/* Progress Display */}
           {renderProgressByPattern()}
 
           {/* Stats Row */}
-          <div className="flex items-center gap-4 mt-3 text-sm text-muted">
+          <div className="flex items-center gap-4 mt-3 text-sm text-text-muted">
             <span className="flex items-center gap-1">
               <span className="font-medium">{goal.progress.successRate}%</span>
               <span>success</span>
@@ -175,9 +175,9 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
           {goal.status === 'active' && onQuickLog && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="primary"
               onClick={() => onQuickLog(goal.goalId)}
-              className="flex items-center gap-1 hover:bg-primary-50"
+              className="flex items-center gap-1 font-semibold"
               title="Log progress"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,7 +191,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
               size="sm"
               variant="ghost"
               onClick={() => onEdit(goal)}
-              className="flex items-center gap-1 hover:bg-blue-50"
+              className="flex items-center gap-1"
               title="Edit goal"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -205,7 +205,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
               size="sm"
               variant="ghost"
               onClick={() => onStatusChange(goal.goalId, 'paused')}
-              className="flex items-center gap-1 hover:bg-yellow-50"
+              className="flex items-center gap-1"
               title="Pause goal"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -219,7 +219,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
               size="sm"
               variant="ghost"
               onClick={() => onStatusChange(goal.goalId, 'active')}
-              className="flex items-center gap-1 hover:bg-green-50"
+              className="flex items-center gap-1"
               title="Resume goal"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -234,7 +234,7 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
               size="sm"
               variant="ghost"
               onClick={() => onArchive(goal.goalId)}
-              className="flex items-center gap-1 hover:bg-red-50"
+              className="flex items-center gap-1"
               title="Archive goal"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -259,16 +259,16 @@ const GoalCard: React.FC<GoalCardProps> = ({ goal, onQuickLog, onEdit, onArchive
           <span
             className={`
               text-xs px-2 py-1 rounded-full font-medium
-              ${goal.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
-              ${goal.status === 'paused' ? 'bg-yellow-100 text-yellow-800' : ''}
-              ${goal.status === 'archived' ? 'bg-[var(--surface-muted)] text-gray-800' : ''}
+              ${goal.status === 'completed' ? 'bg-success-bg text-success-theme' : ''}
+              ${goal.status === 'paused' ? 'bg-warning-bg text-warning-theme' : ''}
+              ${goal.status === 'archived' ? 'bg-surface-muted text-text-secondary' : ''}
             `}
           >
             {goal.status}
           </span>
         )}
         {goal.progress.percentComplete >= 100 && goal.status === 'active' && (
-          <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full font-medium">
+          <span className="text-xs px-2 py-1 bg-success-bg text-success-theme rounded-full font-medium">
             🎉 Goal Achieved!
           </span>
         )}
