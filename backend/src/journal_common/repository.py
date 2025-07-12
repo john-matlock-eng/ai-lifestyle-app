@@ -281,6 +281,7 @@ class JournalRepository:
             
             if 'Item' in response:
                 item = response['Item']
+                logger.info(f"Found stats for user {user_id}: {item}")
                 # Remove DynamoDB-specific fields
                 item.pop('pk', None)
                 item.pop('sk', None)
@@ -292,6 +293,7 @@ class JournalRepository:
                 return JournalStats(**item)
             else:
                 # Return default stats if none exist
+                logger.info(f"No stats found for user {user_id}, returning defaults")
                 return JournalStats(
                     total_entries=0,
                     total_words=0,

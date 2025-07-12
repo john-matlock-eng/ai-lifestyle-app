@@ -220,9 +220,38 @@ class CreateJournalEntryService:
             if stats.current_streak > stats.longest_streak:
                 stats.longest_streak = stats.current_streak
             
+            # Update weekly and monthly counts
+            # This is simplified - in production, you'd query for actual counts
+            from datetime import timedelta
+            now = datetime.now(timezone.utc)
+            week_ago = now - timedelta(days=7)
+            month_ago = now - timedelta(days=30)
+            
+            # For now, just increment if this is the first entry or reset if needed
+            if not stats.last_entry_date:
+                stats.entries_this_week = 1
+                stats.entries_this_month = 1
+            else:
+                # Simple logic - in production, query actual entries
+                days_since_last = (now - stats.last_entry_date).days
+                if days_since_last <= 7:
+                    stats.entries_this_week = stats.entries_this_week + 1 if stats.entries_this_week else 1
+                else:
+                    stats.entries_this_week = 1
+                
+                if days_since_last <= 30:
+                    stats.entries_this_month = stats.entries_this_month + 1 if stats.entries_this_month else 1
+                else:
+                    stats.entries_this_month = 1
+            
+            # Log stats before saving
+            logger.info(f"Updating stats for user {user_id}: entries={stats.total_entries}, words={stats.total_words}, week={stats.entries_this_week}, month={stats.entries_this_month}")
+            
             # Save updated stats
             self.repository.update_user_stats(user_id, stats)
             
+            logger.info(f"Successfully updated stats for user {user_id}")
+            
         except Exception as e:
             # Don't fail entry creation if stats update fails
-            logger.error(f"Failed to update user stats: {str(e)}")
+            logger.error(f"Failed to update user stats: {str(e)}", exc_info=True)
