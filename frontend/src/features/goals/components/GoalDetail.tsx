@@ -92,12 +92,14 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
   const PatternIcon = getPatternIcon();
   const color = GOAL_PATTERN_COLORS[goal.goalPattern];
 
-  const progressInfo: GoalProgress = progressData ?? {
-    goalId: goal.goalId,
-    period: 'current',
-    progress: goal.progress,
-    statistics: {} as GoalStatistics,
-  };
+  const progressInfo = React.useMemo<GoalProgress>(() => {
+    return progressData ?? {
+      goalId: goal.goalId,
+      period: 'current',
+      progress: goal.progress,
+      statistics: {} as GoalStatistics,
+    };
+  }, [progressData, goal.goalId, goal.progress]);
 
   const ringCurrent = React.useMemo(() => {
     switch (goal.goalPattern) {
