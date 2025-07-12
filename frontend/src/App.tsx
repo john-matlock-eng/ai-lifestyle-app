@@ -5,7 +5,7 @@ import { store } from './store';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
-import { AuthProvider, ThemeProvider, useTheme } from './contexts';
+import { AuthProvider, useTheme } from './contexts';
 import type { Theme } from './contexts';
 
 // Layouts
@@ -62,8 +62,7 @@ function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <Router>
+        <Router>
           <AuthProvider>
           <Routes>
             {/* Public Routes */}
@@ -115,8 +114,7 @@ function App() {
             Theme: {theme}
           </button>
           </AuthProvider>
-          </Router>
-        </ThemeProvider>
+        </Router>
       </QueryClientProvider>
     {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </Provider>
