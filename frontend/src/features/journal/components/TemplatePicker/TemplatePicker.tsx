@@ -29,7 +29,7 @@ const TemplatePicker: React.FC<TemplatePickerProps> = ({ onSelect }) => {
     <div className="space-y-2">
       <button
         type="button"
-        className="border rounded p-2 w-full text-left hover:bg-gray-50"
+        className="border rounded p-2 w-full text-left hover:bg-[color:var(--surface-muted)]"
         onClick={() => onSelect(null)}
         aria-label="Start from scratch"
       >
@@ -39,7 +39,7 @@ const TemplatePicker: React.FC<TemplatePickerProps> = ({ onSelect }) => {
         <button
           key={t.id}
           type="button"
-          className="border rounded p-2 w-full text-left hover:bg-gray-50"
+          className="border rounded p-2 w-full text-left hover:bg-[color:var(--surface-muted)]"
           onClick={() => onSelect(t)}
           aria-label={`${t.name} template`}
         >

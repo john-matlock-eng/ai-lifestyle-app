@@ -52,8 +52,8 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Schedule Your Goal</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Schedule Your Goal</h3>
+        <p className="text-sm text-muted">
           When and how often do you want to work on this goal?
         </p>
       </div>
@@ -73,7 +73,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
                   frequency: e.target.value as GoalSchedule['frequency'],
                 })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
             >
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -93,7 +93,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
                     key={d.value}
                     type="button"
                     onClick={() => handleDayToggle(d.value)}
-                    className={`w-8 h-8 rounded-full text-sm transition-colors ${schedule.daysOfWeek?.includes(d.value) ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    className={`w-8 h-8 rounded-full text-sm transition-colors ${schedule.daysOfWeek?.includes(d.value) ? 'bg-primary-600 text-white' : 'bg-[var(--surface-muted)] text-muted hover:bg-gray-200'}`}
                     aria-label={d.label}
                   >
                     {d.label.charAt(0)}
@@ -112,7 +112,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
               type="time"
               value={schedule.preferredTimes?.[0] || ''}
               onChange={(e) => setSchedule({ ...schedule, preferredTimes: e.target.value ? [e.target.value] : [] })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </>
@@ -131,7 +131,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
               checkInFrequency: e.target.value as GoalSchedule['checkInFrequency'],
             })
           }
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
         >
           <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
@@ -150,7 +150,7 @@ const ScheduleStep: React.FC<ScheduleStepProps> = ({ pattern, initialValues, onC
             min="0"
             value={schedule.allowSkipDays ?? 0}
             onChange={(e) => setSchedule({ ...schedule, allowSkipDays: parseInt(e.target.value) || 0 })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+            className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div className="flex items-center gap-2 mt-6 md:mt-0">

@@ -106,12 +106,12 @@ Use these codes if you lose access to your authenticator app.
       </div>
 
       {/* Backup Codes Grid */}
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-[var(--surface-muted)] rounded-lg p-4">
         <div className="grid grid-cols-2 gap-3">
           {codes.map((code, index) => (
             <div
               key={index}
-              className="bg-white px-3 py-2 rounded border border-gray-200 font-mono text-sm text-center"
+              className="bg-[var(--surface)] px-3 py-2 rounded border border-[color:var(--surface-muted)] font-mono text-sm text-center"
             >
               {code}
             </div>
@@ -180,7 +180,7 @@ Use these codes if you lose access to your authenticator app.
           <input
             type="checkbox"
             id="confirm-saved"
-            className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
             onChange={() => {
               // Could track this state if needed
             }}

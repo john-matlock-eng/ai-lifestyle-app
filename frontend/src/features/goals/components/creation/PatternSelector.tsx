@@ -11,8 +11,8 @@ const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPat
   return (
     <div className="space-y-4">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">What kind of goal do you want to set?</h2>
-        <p className="mt-2 text-gray-600">Choose the pattern that best fits what you want to achieve</p>
+        <h2 className="text-2xl font-bold text-[var(--text)]">What kind of goal do you want to set?</h2>
+        <p className="mt-2 text-muted">Choose the pattern that best fits what you want to achieve</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -22,11 +22,11 @@ const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPat
             onClick={() => onSelect(pattern.id)}
             className={`
               relative p-6 rounded-lg border-2 transition-all text-left
-              hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2
+              hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]
               ${
                 selectedPattern === pattern.id
                   ? `${pattern.borderColor} ${pattern.bgColor} ring-2 ring-offset-2`
-                  : 'border-gray-200 hover:border-gray-300 bg-white'
+                  : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)] bg-[var(--surface)]'
               }
             `}
             style={{
@@ -38,12 +38,12 @@ const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPat
             <div className="text-4xl mb-3">{pattern.icon}</div>
 
             {/* Pattern Title */}
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            <h3 className="text-lg font-semibold text-[var(--text)] mb-1">
               {pattern.title}
             </h3>
 
             {/* Pattern Description */}
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-muted mb-3">
               {pattern.description}
             </p>
 

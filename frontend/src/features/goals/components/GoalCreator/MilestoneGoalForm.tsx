@@ -64,8 +64,8 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
           <Trophy className="h-6 w-6 text-purple-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Create Milestone Goal</h3>
-          <p className="text-sm text-gray-600">Set a cumulative target to achieve</p>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Create Milestone Goal</h3>
+          <p className="text-sm text-muted">Set a cumulative target to achieve</p>
         </div>
       </div>
 
@@ -80,7 +80,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
           placeholder="e.g., Write my first novel"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           required
         />
       </div>
@@ -94,7 +94,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
           id="category"
           value={formData.category}
           onChange={(e) => updateFormData({ category: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           required
         >
           {GOAL_CATEGORIES.map(cat => (
@@ -107,7 +107,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
 
       {/* Milestone Configuration */}
       <div className="bg-purple-50 rounded-lg p-4 space-y-4">
-        <h4 className="font-medium text-gray-900 flex items-center gap-2">
+        <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-purple-600" />
           What milestone do you want to reach?
         </h4>
@@ -124,7 +124,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               value={formData.targetValue}
               onChange={(e) => updateFormData({ targetValue: parseInt(e.target.value) || 0 })}
               min={1}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               required
             />
           </div>
@@ -142,7 +142,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
                   setMetricType(newType);
                   updateFormData({ unit: METRIC_UNITS[newType][0] || '' });
                 }}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               >
                 <option value="count">Count</option>
                 <option value="amount">Amount</option>
@@ -153,7 +153,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
                 id="unit"
                 value={formData.unit}
                 onChange={(e) => updateFormData({ unit: e.target.value })}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 required
               >
                 {availableUnits.map(unit => (
@@ -175,7 +175,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               onChange={(e) => updateFormData({ currentValue: parseInt(e.target.value) || 0 })}
               min={0}
               max={formData.targetValue}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             />
           </div>
         </div>
@@ -194,7 +194,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               targetDate: e.target.value ? new Date(e.target.value) : undefined 
             })}
             min={new Date().toISOString().split('T')[0]}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           />
           <p className="text-xs text-gray-500 mt-1">
             Add a deadline to help stay motivated
@@ -231,7 +231,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
           onChange={(e) => updateFormData({ description: e.target.value })}
           placeholder="What does achieving this milestone mean to you?"
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
         />
       </div>
 
@@ -257,7 +257,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               onChange={(e) => setPrivateNotes(e.target.value)}
               placeholder="Your motivation, milestones along the way, or personal thoughts (encrypted)..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             />
             <p className="text-xs text-gray-500 mt-1">
               🔒 These notes will be encrypted and only visible to you
@@ -271,13 +271,13 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-gray-900"
+          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+          className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
         >
           Create Goal
         </button>

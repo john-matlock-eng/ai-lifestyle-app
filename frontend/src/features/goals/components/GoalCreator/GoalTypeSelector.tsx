@@ -58,10 +58,10 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-2xl font-bold text-[var(--text)] mb-2">
           What type of goal do you want to set?
         </h2>
-        <p className="text-gray-600">
+        <p className="text-muted">
           Choose the pattern that best fits what you want to achieve
         </p>
       </div>
@@ -73,7 +73,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
             <button
               key={config.pattern}
               onClick={() => onSelectType(config.pattern)}
-              className="group relative bg-white rounded-xl border-2 border-gray-200 p-6 text-left hover:border-gray-300 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              className="group relative bg-[var(--surface)] rounded-xl border-2 border-[color:var(--surface-muted)] p-6 text-left hover:border-[color:var(--surface-muted)] hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)] focus:ring-purple-500"
               aria-label={`Select ${config.title}`}
             >
               {/* Pattern indicator */}
@@ -94,12 +94,12 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
 
                 <div>
                   <h3
-                    className="font-semibold text-gray-900 mb-1"
+                    className="font-semibold text-[var(--text)] mb-1"
                     style={{ color: config.color }}
                   >
                     {config.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-muted mb-2">
                     {config.description}
                   </p>
                   <p className="text-xs text-gray-500 italic">

@@ -116,16 +116,16 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <Share2 className="w-6 h-6 text-purple-600" />
-            <h2 className="text-xl font-semibold text-gray-900">Share Items</h2>
+            <h2 className="text-xl font-semibold text-[var(--text)]">Share Items</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-muted transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -149,7 +149,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
               {items.map(item => (
                 <label
                   key={item.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 bg-[var(--surface-muted)] rounded-lg hover:bg-[color:var(--surface-muted)] cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
@@ -158,10 +158,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
                   />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-[var(--text)]">
                       {item.title}
                     </p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-muted">
                       {item.type} • {new Date(item.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -183,7 +183,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
               value={recipientEmail}
               onChange={(e) => setRecipientEmail(e.target.value)}
               placeholder="recipient@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             />
           </div>
 
@@ -231,7 +231,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
             <select
               value={expiresIn}
               onChange={(e) => setExpiresIn(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             >
               <option value="1h">1 hour</option>
               <option value="24h">24 hours</option>
@@ -256,7 +256,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t bg-gray-50">
+        <div className="flex items-center justify-end gap-3 p-6 border-t bg-[var(--surface-muted)]">
           <button
             onClick={onClose}
             disabled={isSharing}

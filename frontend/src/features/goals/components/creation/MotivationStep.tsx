@@ -23,8 +23,8 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Your Motivation</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Your Motivation</h3>
+        <p className="text-sm text-muted">
           Understanding why this goal matters will help you stay committed.
         </p>
       </div>
@@ -37,7 +37,7 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
           value={context.motivation}
           onChange={(e) => setContext({ ...context, motivation: e.target.value })}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
         />
       </div>
 
@@ -68,7 +68,7 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
           type="text"
           value={context.obstacles?.join(', ') || ''}
           onChange={(e) => setContext({ ...context, obstacles: e.target.value ? e.target.value.split(/,\s*/) : [] })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
         />
       </div>
 
@@ -80,7 +80,7 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
           type="text"
           value={context.successFactors?.join(', ') || ''}
           onChange={(e) => setContext({ ...context, successFactors: e.target.value ? e.target.value.split(/,\s*/) : [] })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
         />
       </div>
 

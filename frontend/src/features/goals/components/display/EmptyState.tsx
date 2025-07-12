@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Button from '../../../../components/common/Button';
+import React from "react";
+import { Link } from "react-router-dom";
+import Button from "../../../../components/common/Button";
 
 const EmptyState: React.FC = () => {
   return (
@@ -24,19 +24,32 @@ const EmptyState: React.FC = () => {
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No goals yet</h3>
+        <h3 className="text-lg font-medium text-[var(--text)] mb-2">
+          No goals yet
+        </h3>
 
         {/* Description */}
-        <p className="text-gray-600 mb-6">
-          Start your journey by creating your first goal. Whether it's building a new habit, reaching
-          a milestone, or setting limits, we're here to help you succeed.
+        <p className="text-muted mb-6">
+          Start your journey by creating your first goal. Whether it's building
+          a new habit, reaching a milestone, or setting limits, we're here to
+          help you succeed.
         </p>
 
         {/* CTA Button */}
         <Link to="/goals/new">
           <Button size="lg" className="inline-flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             Create Your First Goal
           </Button>
@@ -44,31 +57,33 @@ const EmptyState: React.FC = () => {
 
         {/* Inspiration Section */}
         <div className="mt-8 grid grid-cols-2 gap-4 text-left">
-          <div className="bg-blue-50 rounded-lg p-4">
+          <div className="bg-surface-muted rounded-lg p-4">
             <div className="text-2xl mb-2">🏃‍♂️</div>
-            <h4 className="font-medium text-gray-900 mb-1">Get Active</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-medium text-[var(--text)] mb-1">Get Active</h4>
+            <p className="text-sm text-muted">
               Set a daily step goal or workout routine
             </p>
           </div>
-          <div className="bg-purple-50 rounded-lg p-4">
+          <div className="bg-surface-muted rounded-lg p-4">
             <div className="text-2xl mb-2">📚</div>
-            <h4 className="font-medium text-gray-900 mb-1">Learn More</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-medium text-[var(--text)] mb-1">Learn More</h4>
+            <p className="text-sm text-muted">
               Read books or practice a new skill daily
             </p>
           </div>
-          <div className="bg-green-50 rounded-lg p-4">
+          <div className="bg-surface-muted rounded-lg p-4">
             <div className="text-2xl mb-2">🧘‍♀️</div>
-            <h4 className="font-medium text-gray-900 mb-1">Find Balance</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-medium text-[var(--text)] mb-1">
+              Find Balance
+            </h4>
+            <p className="text-sm text-muted">
               Meditate or journal for mental wellness
             </p>
           </div>
-          <div className="bg-orange-50 rounded-lg p-4">
+          <div className="bg-surface-muted rounded-lg p-4">
             <div className="text-2xl mb-2">💰</div>
-            <h4 className="font-medium text-gray-900 mb-1">Save Smart</h4>
-            <p className="text-sm text-gray-600">
+            <h4 className="font-medium text-[var(--text)] mb-1">Save Smart</h4>
+            <p className="text-sm text-muted">
               Track spending or build savings habits
             </p>
           </div>

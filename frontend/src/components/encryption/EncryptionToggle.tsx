@@ -44,7 +44,7 @@ export const EncryptionToggle: React.FC<EncryptionToggleProps> = ({
         <span
           className={`
             ${value ? 'translate-x-6' : 'translate-x-1'}
-            inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+            inline-block h-4 w-4 transform rounded-full bg-[var(--surface)] transition-transform
           `}
         />
       </button>
@@ -56,7 +56,7 @@ export const EncryptionToggle: React.FC<EncryptionToggleProps> = ({
           <ShieldOff className="h-5 w-5 text-gray-400" aria-hidden="true" />
         )}
         
-        <span className={`text-sm font-medium ${value ? 'text-gray-900' : 'text-gray-500'}`}>
+        <span className={`text-sm font-medium ${value ? 'text-[var(--text)]' : 'text-gray-500'}`}>
           {value ? 'Encrypted' : 'Not encrypted'}
         </span>
       </div>
@@ -69,7 +69,7 @@ export const EncryptionToggle: React.FC<EncryptionToggleProps> = ({
             onMouseLeave={() => setShowTooltip(false)}
             onFocus={() => setShowTooltip(true)}
             onBlur={() => setShowTooltip(false)}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded"
+            className="text-gray-400 hover:text-muted focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)] rounded"
             aria-label="Encryption information"
           >
             <Info className="h-4 w-4" />

@@ -84,12 +84,12 @@ const DevTools: React.FC = () => {
 
       {/* Dev Tools Panel */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 bg-white rounded-lg shadow-xl p-4 w-96 max-h-[600px] overflow-y-auto z-50 border border-gray-200">
+        <div className="fixed bottom-20 right-4 bg-[var(--surface)] rounded-lg shadow-xl p-4 w-96 max-h-[600px] overflow-y-auto z-50 border border-[color:var(--surface-muted)]">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Dev Tools</h3>
+            <h3 className="text-lg font-semibold text-[var(--text)]">Dev Tools</h3>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-muted"
             >
               <svg
                 className="w-5 h-5"
@@ -109,7 +109,7 @@ const DevTools: React.FC = () => {
           </div>
 
           {/* MSW Status */}
-          <div className="mb-4 p-3 bg-gray-50 rounded">
+          <div className="mb-4 p-3 bg-[var(--surface-muted)] rounded">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">MSW Status:</span>
               <span
@@ -168,7 +168,7 @@ const DevTools: React.FC = () => {
                     <span className="text-gray-500">MFA Enabled:</span>{' '}
                     <span
                       className={`font-medium ${
-                        user.mfaEnabled ? 'text-green-600' : 'text-gray-600'
+                        user.mfaEnabled ? 'text-green-600' : 'text-muted'
                       }`}
                     >
                       {user.mfaEnabled ? 'Yes' : 'No'}
@@ -185,9 +185,9 @@ const DevTools: React.FC = () => {
               <h4 className="text-sm font-medium text-gray-700 mb-2">Tokens</h4>
               <div className="space-y-2">
                 {/* Access Token */}
-                <div className="p-2 bg-gray-50 rounded">
+                <div className="p-2 bg-[var(--surface-muted)] rounded">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-medium text-gray-600">
+                    <span className="text-xs font-medium text-muted">
                       Access Token
                     </span>
                     <button
@@ -205,9 +205,9 @@ const DevTools: React.FC = () => {
                 </div>
 
                 {/* Refresh Token */}
-                <div className="p-2 bg-gray-50 rounded">
+                <div className="p-2 bg-[var(--surface-muted)] rounded">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-medium text-gray-600">
+                    <span className="text-xs font-medium text-muted">
                       Refresh Token
                     </span>
                     <button
@@ -235,7 +235,7 @@ const DevTools: React.FC = () => {
             <div className="space-y-2">
               <button
                 onClick={() => window.location.reload()}
-                className="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded transition-colors"
+                className="w-full text-left px-3 py-2 text-sm bg-[var(--surface-muted)] hover:bg-[color:var(--surface-muted)] rounded transition-colors"
               >
                 🔄 Reload Page
               </button>
@@ -259,14 +259,14 @@ const DevTools: React.FC = () => {
                     sessionStorage: { ...sessionStorage },
                   });
                 }}
-                className="w-full text-left px-3 py-2 text-sm bg-gray-50 hover:bg-gray-100 rounded transition-colors"
+                className="w-full text-left px-3 py-2 text-sm bg-[var(--surface-muted)] hover:bg-[color:var(--surface-muted)] rounded transition-colors"
               >
                 📋 Log State to Console
               </button>
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-[color:var(--surface-muted)]">
             <p className="text-xs text-gray-500 text-center">
               Development Tools - {import.meta.env.MODE} mode
             </p>

@@ -1,7 +1,8 @@
-import React from 'react';
-import { clsx } from 'clsx';
+import React from "react";
+import { clsx } from "clsx";
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   hint?: string;
@@ -21,21 +22,21 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       rightIcon,
       isRequired,
       id,
-      type = 'text',
+      type = "text",
       ...props
     },
-    ref
+    ref,
   ) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
     const inputClasses = clsx(
-      'block w-full rounded-md shadow-sm transition-colors sm:text-sm',
-      leftIcon && 'pl-10',
-      rightIcon && 'pr-10',
+      "block w-full rounded-md shadow-sm transition-colors sm:text-sm text-[var(--text)] bg-[var(--surface)] placeholder-[color:var(--text)/60%]",
+      leftIcon && "pl-10",
+      rightIcon && "pr-10",
       error
-        ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500'
-        : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500',
-      className
+        ? "border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500"
+        : "border-[color:var(--surface-muted)] focus:border-primary-500 focus:ring-primary-500",
+      className,
     );
 
     return (
@@ -43,7 +44,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-[var(--text)] mb-1"
           >
             {label}
             {isRequired && <span className="text-red-500 ml-1">*</span>}
@@ -78,15 +79,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </p>
         )}
         {error && (
-          <p id={`${inputId}-error`} className="mt-1 text-sm text-red-600" role="alert">
+          <p
+            id={`${inputId}-error`}
+            className="mt-1 text-sm text-red-600"
+            role="alert"
+          >
             {error}
           </p>
         )}
       </div>
     );
-  }
+  },
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 export default Input;

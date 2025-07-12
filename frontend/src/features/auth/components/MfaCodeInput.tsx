@@ -89,9 +89,9 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
               border-2 transition-colors
               ${error 
                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'
+                : 'border-[color:var(--surface-muted)] focus:border-primary-500 focus:ring-primary-500'
               }
-              focus:outline-none focus:ring-2 focus:ring-offset-2
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]
               disabled:opacity-50 disabled:cursor-not-allowed
             `}
             disabled={isLoading}
@@ -109,7 +109,7 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
         <button
           type="submit"
           disabled={code.some(digit => digit === '') || isLoading}
-          className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)] focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Verifying...' : 'Verify'}
         </button>
@@ -118,7 +118,7 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
             type="button"
             onClick={onCancel}
             disabled={isLoading}
-            className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-[color:var(--surface-muted)] text-sm font-medium rounded-md text-gray-700 bg-[var(--surface)] hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)] focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>

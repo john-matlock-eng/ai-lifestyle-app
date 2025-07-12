@@ -1,11 +1,12 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'react-redux';
 import { store } from './store';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
-import { AuthProvider } from './contexts';
+import { AuthProvider, useTheme } from './contexts';
+import type { Theme } from './contexts';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
@@ -20,6 +21,7 @@ import LoginPage from './pages/auth/LoginPage';
 // Pages - App
 import DashboardPage from './pages/DashboardPage';
 import { ComponentShowcase } from './pages/ComponentShowcase';
+import SettingsPage from './pages/SettingsPage';
 
 // Pages - Goals
 import GoalsPage from './pages/goals/GoalsPage';
@@ -29,6 +31,15 @@ import GoalDetailPage from './pages/goals/GoalDetailPage';
 // Components
 import DevTools from './components/common/DevTools';
 import { SessionWarning } from './components/SessionWarning';
+
+const cycleOrder: Theme[] = [
+  'dark',
+  'light',
+  'serene',
+  'vibrant',
+  'midnight',
+  'solarized',
+];
 
 // Create a client
 const queryClient = new QueryClient({
@@ -48,11 +59,17 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const { theme, setTheme } = useTheme();
+  const cycleTheme = () => {
+    const index = cycleOrder.indexOf(theme);
+    const next = cycleOrder[(index + 1) % cycleOrder.length];
+    setTheme(next);
+  };
+
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <Router>
-          <AuthProvider>
+        <AuthProvider>
           <Routes>
             {/* Public Routes */}
             <Route element={<PublicLayout />}>
@@ -75,7 +92,7 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/showcase" element={<ComponentShowcase />} />
               <Route path="/profile" element={<div>Profile - Coming Soon</div>} />
-              <Route path="/settings" element={<div>Settings - Coming Soon</div>} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/security" element={<div>Security Settings - Coming Soon</div>} />
               
               {/* Goals Routes */}
@@ -95,10 +112,16 @@ function App() {
           {/* Global Components */}
           <SessionWarning />
           <DevTools />
-          </AuthProvider>
-        </Router>
-        {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+          <button
+            type="button"
+            onClick={cycleTheme}
+            className="fixed bottom-2 right-2 px-3 py-1 rounded bg-accent text-white"
+          >
+            Theme: {theme}
+          </button>
+        </AuthProvider>
       </QueryClientProvider>
+    {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </Provider>
   );
 }

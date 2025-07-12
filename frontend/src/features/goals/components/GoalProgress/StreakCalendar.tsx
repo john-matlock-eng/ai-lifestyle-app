@@ -67,9 +67,9 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
       case 'skipped':
         return 'bg-gray-200 text-gray-500';
       case 'future':
-        return 'bg-gray-50 text-gray-300 cursor-not-allowed';
+        return 'bg-[var(--surface-muted)] text-gray-300 cursor-not-allowed';
       default:
-        return 'bg-white text-gray-400 border border-gray-200';
+        return 'bg-[var(--surface)] text-gray-400 border border-[color:var(--surface-muted)]';
     }
   };
   
@@ -133,11 +133,11 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
   }
   
   return (
-    <div className={`bg-white rounded-lg p-6 ${className}`}>
+    <div className={`bg-[var(--surface)] rounded-lg p-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Streak Calendar</h3>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Streak Calendar</h3>
           <div className="flex items-center gap-4 mt-1">
             <div className="flex items-center gap-2">
               <Flame className="h-5 w-5" style={{ color }} />
@@ -155,20 +155,20 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={handlePrevMonth}
-            className="p-1 hover:bg-gray-100 rounded"
+            className="p-1 hover:bg-[color:var(--surface-muted)] rounded"
             aria-label="Previous month"
           >
-            <ChevronLeft className="h-5 w-5 text-gray-600" />
+            <ChevronLeft className="h-5 w-5 text-muted" />
           </button>
           <span className="text-sm font-medium text-gray-700 min-w-[120px] text-center">
             {monthNames[month.getMonth()]} {month.getFullYear()}
           </span>
           <button
             onClick={handleNextMonth}
-            className="p-1 hover:bg-gray-100 rounded"
+            className="p-1 hover:bg-[color:var(--surface-muted)] rounded"
             aria-label="Next month"
           >
-            <ChevronRight className="h-5 w-5 text-gray-600" />
+            <ChevronRight className="h-5 w-5 text-muted" />
           </button>
         </div>
       </div>
@@ -194,15 +194,15 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
             className="h-4 w-4 rounded"
             style={{ backgroundColor: color }}
           />
-          <span className="text-gray-600">Completed</span>
+          <span className="text-muted">Completed</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-4 w-4 rounded bg-gray-200" />
-          <span className="text-gray-600">Skipped</span>
+          <span className="text-muted">Skipped</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded border border-gray-200 bg-white" />
-          <span className="text-gray-600">Missed</span>
+          <div className="h-4 w-4 rounded border border-[color:var(--surface-muted)] bg-[var(--surface)]" />
+          <span className="text-muted">Missed</span>
         </div>
       </div>
     </div>
