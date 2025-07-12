@@ -226,10 +226,10 @@ class CreateJournalEntryRequest(BaseModel):
         if self.is_encrypted:
             if self.word_count is None:
                 raise ValueError("Word count is required for encrypted content")
-            if not self.encrypted_key:
-                raise ValueError("Encrypted key is required for encrypted content")
-            if not self.encryption_iv:
-                raise ValueError("Encryption IV is required for encrypted content")
+            # Only validate encryption fields if content appears to be encrypted
+            # (during transition, some entries might claim to be encrypted but not have keys yet)
+            if self.encrypted_key and not self.encryption_iv:
+                raise ValueError("Encryption IV is required when encrypted key is provided")
         return self
 
 

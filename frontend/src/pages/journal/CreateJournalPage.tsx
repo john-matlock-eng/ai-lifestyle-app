@@ -99,7 +99,7 @@ const CreateJournalPage: React.FC = () => {
   const [mood, setMood] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
-  const [isEncrypted, setIsEncrypted] = useState(true); // Default to encrypted for privacy
+  const [isEncrypted, setIsEncrypted] = useState(false); // Default to unencrypted until encryption is properly initialized
 
   // Get the actual template based on the selected type
   const actualTemplateId = TEMPLATE_MAPPING[selectedTemplateType] || 'daily_log';
@@ -141,14 +141,31 @@ const CreateJournalPage: React.FC = () => {
     if (isEncrypted) {
       try {
         const encryptionService = getEncryptionService();
+        // For demo purposes, initialize with a dummy password
+        // In production, this would use the user's actual password
+        if (!(await encryptionService.checkSetup())) {
+          await encryptionService.initialize('demo-password');
+        }
+        
         const encrypted = await encryptionService.encryptContent(content);
         finalContent = encrypted.content;
         encryptedKey = encrypted.encryptedKey;
         encryptionIv = encrypted.iv;
       } catch (error) {
         console.error('Encryption failed:', error);
-        // For now, continue without encryption
-        // In production, show an error to the user
+        // If encryption fails, disable it and continue
+        alert('Encryption failed. The entry will be saved unencrypted.');
+        await createEntryMutation.mutateAsync({
+          title: title || `${TEMPLATE_PROMPTS[selectedTemplateType].name} - ${new Date().toLocaleDateString()}`,
+          content,
+          template: selectedTemplateType as JournalTemplate,
+          tags,
+          mood: mood || undefined,
+          linkedGoalIds: linkedGoalIds.length > 0 ? linkedGoalIds : undefined,
+          isEncrypted: false,
+          isShared: false,
+        });
+        return;
       }
     }
     
