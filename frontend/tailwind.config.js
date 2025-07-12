@@ -44,11 +44,48 @@ export default {
           800: '#2e7d32',
           900: '#1b5e20',
         },
+        // Theme variables
         bg: 'var(--bg)',
+        'bg-gradient': 'var(--bg-gradient)',
         text: 'var(--text)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-muted': 'var(--text-muted)',
+        'text-disabled': 'var(--text-disabled)',
         surface: 'var(--surface)',
+        'surface-hover': 'var(--surface-hover)',
         'surface-muted': 'var(--surface-muted)',
-        accent: 'var(--accent)'
+        'surface-glass': 'var(--surface-glass)',
+        accent: 'var(--accent)',
+        'accent-hover': 'var(--accent-hover)',
+        'button-hover-bg': 'var(--button-hover-bg)',
+        'button-active-bg': 'var(--button-active-bg)',
+        'success-theme': 'var(--success)',
+        'success-bg': 'var(--success-bg)',
+        'warning-theme': 'var(--warning)',
+        'warning-bg': 'var(--warning-bg)',
+        'error-theme': 'var(--error)',
+        'error-bg': 'var(--error-bg)'
+      },
+      boxShadow: {
+        'sm': 'var(--shadow-sm)',
+        'md': 'var(--shadow-md)',
+        'lg': 'var(--shadow-lg)',
+        'glow': 'var(--shadow-glow)',
+        'focus': 'var(--focus-ring)'
+      },
+      backgroundImage: {
+        'accent-gradient': 'var(--accent-gradient)',
+        'bg-gradient': 'var(--bg-gradient)'
+      },
+      transitionProperty: {
+        'base': 'var(--transition-base)',
+        'smooth': 'var(--transition-smooth)'
+      },
+      borderRadius: {
+        'sm': 'var(--radius-sm)',
+        'DEFAULT': 'var(--radius)',
+        'lg': 'var(--radius-lg)',
+        'xl': 'var(--radius-xl)'
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],

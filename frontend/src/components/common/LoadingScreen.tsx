@@ -2,11 +2,11 @@ import React from 'react';
 
 const LoadingScreen: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--surface-muted)]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-bg to-surface">
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
           <svg
-            className="animate-spin h-12 w-12 text-primary-600"
+            className="animate-spin h-12 w-12 text-accent"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -26,8 +26,8 @@ const LoadingScreen: React.FC = () => {
             />
           </svg>
         </div>
-        <h2 className="text-lg font-medium text-[var(--text)]">Loading...</h2>
-        <p className="mt-1 text-sm text-gray-500">Please wait while we get things ready</p>
+        <h2 className="text-lg font-medium text-theme">Loading...</h2>
+        <p className="mt-1 text-sm text-text-muted">Please wait while we get things ready</p>
       </div>
     </div>
   );

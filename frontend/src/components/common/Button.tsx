@@ -29,14 +29,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)] disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none';
 
     const variants = {
-      primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
-      secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-      outline: 'border border-[color:var(--surface-muted)] bg-[var(--surface)] text-gray-700 hover:bg-[color:var(--surface-muted)] focus:ring-primary-500',
-      ghost: 'text-gray-700 hover:bg-[color:var(--surface-muted)] focus:ring-gray-500',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+      primary: 'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] hover:shadow-[var(--shadow-glow)] focus:shadow-[var(--focus-ring)] relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700',
+      secondary: 'bg-[var(--surface-muted)] text-[var(--text)] hover:bg-[var(--surface-hover)] hover:shadow-[var(--shadow-md)] focus:shadow-[var(--focus-ring)]',
+      outline: 'border-2 border-[var(--accent)] bg-transparent text-[var(--accent)] hover:bg-[var(--button-hover-bg)] hover:shadow-[var(--shadow-md)] focus:shadow-[var(--focus-ring)]',
+      ghost: 'text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--button-hover-bg)] focus:shadow-[var(--focus-ring)]',
+      danger: 'bg-[var(--error)] text-white hover:bg-red-700 hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] focus:shadow-[var(--focus-ring)]',
     };
 
     const sizes = {

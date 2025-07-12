@@ -30,12 +30,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
     const inputClasses = clsx(
-      "block w-full rounded-md shadow-sm transition-colors sm:text-sm text-[var(--text)] bg-[var(--surface)] placeholder-[color:var(--text)/60%]",
+      "block w-full rounded-md shadow-sm transition-all duration-200 sm:text-sm text-theme bg-surface placeholder-text-muted",
       leftIcon && "pl-10",
       rightIcon && "pr-10",
       error
-        ? "border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500"
-        : "border-[color:var(--surface-muted)] focus:border-primary-500 focus:ring-primary-500",
+        ? "border-error-theme text-error-theme placeholder-error-theme focus:outline-none focus:shadow-[0_0_0_3px_rgba(239,68,68,0.2)]"
+        : "border-surface-muted focus:outline-none focus:border-accent focus:shadow-focus hover:border-accent/50",
       className,
     );
 
@@ -44,16 +44,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-[var(--text)] mb-1"
+            className="block text-sm font-medium text-theme mb-1"
           >
             {label}
-            {isRequired && <span className="text-red-500 ml-1">*</span>}
+            {isRequired && <span className="text-error-theme ml-1">*</span>}
           </label>
         )}
         <div className="relative">
           {leftIcon && (
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">{leftIcon}</span>
+              <span className="text-text-muted sm:text-sm">{leftIcon}</span>
             </div>
           )}
           <input
@@ -69,19 +69,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
           {rightIcon && (
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <span className="text-gray-500 sm:text-sm">{rightIcon}</span>
+              <span className="text-text-muted sm:text-sm">{rightIcon}</span>
             </div>
           )}
         </div>
         {hint && !error && (
-          <p id={`${inputId}-hint`} className="mt-1 text-sm text-gray-500">
+          <p id={`${inputId}-hint`} className="mt-1 text-sm text-text-muted">
             {hint}
           </p>
         )}
         {error && (
           <p
             id={`${inputId}-error`}
-            className="mt-1 text-sm text-red-600"
+            className="mt-1 text-sm text-error-theme"
             role="alert"
           >
             {error}
