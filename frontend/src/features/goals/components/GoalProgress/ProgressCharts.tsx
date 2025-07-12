@@ -108,10 +108,10 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
   }, [] as { name: string; value: number }[]);
 
   const pieColors = {
-    progress: '#3B82F6',
-    completed: '#10B981',
-    skipped: '#F59E0B',
-    partial: '#8B5CF6',
+    progress: 'var(--primary)',
+    completed: 'var(--success)',
+    skipped: 'var(--warning)',
+    partial: 'var(--accent)',
   };
 
   // Radial bar data for progress
@@ -139,7 +139,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
+                  border: '1px solid var(--surface-muted)',
                   borderRadius: '8px',
                 }}
               />
@@ -157,7 +157,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                 <Line 
                   type="monotone" 
                   dataKey="target" 
-                  stroke="#94A3B8" 
+                  stroke="var(--text-muted)" 
                   strokeDasharray="5 5"
                   strokeWidth={1}
                   dot={false}
@@ -182,7 +182,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
+                  border: '1px solid var(--surface-muted)',
                   borderRadius: '8px',
                 }}
               />
@@ -211,7 +211,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
+                  border: '1px solid var(--surface-muted)',
                   borderRadius: '8px',
                 }}
               />
@@ -228,7 +228,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                 <Line 
                   type="monotone" 
                   dataKey="target" 
-                  stroke="#94A3B8" 
+                  stroke="var(--text-muted)" 
                   strokeDasharray="5 5"
                   strokeWidth={1}
                   dot={false}
@@ -253,7 +253,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                 dataKey="value" 
                 cornerRadius={10} 
                 fill={color}
-                background={{ fill: '#f3f4f6' }}
+                background={{ fill: 'var(--surface-muted)' }}
               />
               <text 
                 x="50%" 
@@ -261,7 +261,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                 textAnchor="middle" 
                 dominantBaseline="middle" 
                 className="text-3xl font-bold"
-                fill="#111827"
+                fill="var(--text)"
               >
                 {progress.progress.percentComplete}%
               </text>
@@ -271,7 +271,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                 dy={30} 
                 textAnchor="middle" 
                 className="text-sm"
-                fill="#6b7280"
+                fill="var(--text-muted)"
               >
                 Complete
               </text>
@@ -296,14 +296,14 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                 {activityTypeData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={pieColors[entry.name as keyof typeof pieColors] || '#94A3B8'} 
+                    fill={pieColors[entry.name as keyof typeof pieColors] || 'var(--text-muted)'} 
                   />
                 ))}
               </Pie>
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
+                  border: '1px solid var(--surface-muted)',
                   borderRadius: '8px',
                 }}
               />
@@ -378,11 +378,11 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
         {/* Chart */}
         <div className="relative">
           {activities.length === 0 ? (
-            <div className="h-[300px] flex items-center justify-center text-gray-500">
+            <div className="h-[300px] flex items-center justify-center text-[var(--text-muted)]">
               <div className="text-center">
-                <Activity className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <Activity className="h-12 w-12 mx-auto mb-3 text-[var(--text-muted)]" />
                 <p>No activity data to display</p>
-                <p className="text-sm mt-1">Start logging activities to see your progress</p>
+                <p className="text-sm mt-1 text-[var(--text-muted)]">Start logging activities to see your progress</p>
               </div>
             </div>
           ) : (
@@ -423,9 +423,9 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
           <p className="text-sm text-muted mb-1">Trend</p>
           <div className="flex items-center gap-2">
             {progress.progress.trend === 'improving' ? (
-              <TrendingUp className="h-6 w-6 text-green-600" />
+              <TrendingUp className="h-6 w-6 text-[var(--success)]" />
             ) : progress.progress.trend === 'declining' ? (
-              <TrendingDown className="h-6 w-6 text-red-600" />
+              <TrendingDown className="h-6 w-6 text-[var(--error)]" />
             ) : (
               <Activity className="h-6 w-6 text-muted" />
             )}
@@ -436,23 +436,23 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
 
       {/* Insights */}
       {progress.insights && (
-        <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+        <div className="bg-[var(--primary)] bg-opacity-10 rounded-lg p-6 border border-[var(--primary)] border-opacity-20">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-[var(--primary)] mt-0.5 flex-shrink-0" />
             <div className="space-y-2">
-              <h3 className="font-medium text-blue-900">Insights & Recommendations</h3>
+              <h3 className="font-medium text-[var(--text)]">Insights & Recommendations</h3>
               {progress.insights.bestTimeOfDay && (
-                <p className="text-sm text-blue-800">
+                <p className="text-sm text-[var(--text-secondary)]">
                   • Your best performance is typically during <strong>{progress.insights.bestTimeOfDay}</strong>
                 </p>
               )}
               {progress.insights.bestDayOfWeek && (
-                <p className="text-sm text-blue-800">
+                <p className="text-sm text-[var(--text-secondary)]">
                   • You're most consistent on <strong>{progress.insights.bestDayOfWeek}s</strong>
                 </p>
               )}
               {progress.insights.recommendations?.map((rec, idx) => (
-                <p key={idx} className="text-sm text-blue-800">• {rec}</p>
+                <p key={idx} className="text-sm text-[var(--text-secondary)]">• {rec}</p>
               ))}
             </div>
           </div>

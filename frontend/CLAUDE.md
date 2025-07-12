@@ -61,6 +61,35 @@ Each API endpoint has its own Lambda function in `backend/src/`:
   - `update_goal` → `PUT /goals/{goalId}`
   - `archive_goal` → `DELETE /goals/{goalId}`
 
+#### Adding New API Routes
+**IMPORTANT**: When creating new API endpoints, you must add them to BOTH places:
+1. **Lambda handler** in `backend/src/` directory
+2. **API Gateway routes** in `backend/terraform/main.tf` under the `routes` section
+
+Example for adding a new journal route:
+```hcl
+# In backend/terraform/main.tf
+"POST /journal/templates" = {
+  authorization_type = "JWT"  # or "NONE" for public endpoints
+}
+```
+
+#### Adding New Services
+When creating a new service (like journal, wellness, etc.):
+1. Create Lambda handlers in `backend/src/`
+2. Add routes to `backend/terraform/main.tf`
+3. Create service infrastructure module in `backend/terraform/services/<service>/`
+4. Include the service module in main terraform:
+   ```hcl
+   module "journal_service" {
+     source = "./services/journal"
+     app_name = "ai-lifestyle"
+     environment = var.environment
+     aws_region = var.aws_region
+   }
+   ```
+5. Add necessary environment variables and IAM policies to Lambda configuration
+
 ### Full Stack Development
 ```bash
 # From project root
@@ -133,6 +162,16 @@ Enhanced goal system supports 5 patterns:
 - **Production**: Manual deployment with approval
 - **Infrastructure**: Terraform manages all AWS resources
 - **Containers**: Lambda functions deployed as container images
+
+#### Deploying New API Routes
+After adding new routes to `backend/terraform/main.tf`:
+1. Commit and push changes
+2. GitHub Actions will run Terraform plan
+3. Review the plan to ensure routes are being added
+4. Terraform apply will update API Gateway with new routes
+5. Lambda functions must be deployed separately via container builds
+
+Note: API Gateway routes can be deployed before the Lambda handlers exist, but will return 5xx errors until the handlers are implemented.
 
 ## Important Development Notes
 

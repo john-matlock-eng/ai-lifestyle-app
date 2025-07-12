@@ -73,7 +73,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
             <button
               key={config.pattern}
               onClick={() => onSelectType(config.pattern)}
-              className="group relative bg-[var(--surface)] rounded-xl border-2 border-[color:var(--surface-muted)] p-6 text-left hover:border-[color:var(--surface-muted)] hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)] focus:ring-purple-500"
+              className="group relative bg-[var(--surface)] rounded-xl border-2 border-[color:var(--surface-muted)] p-6 text-left hover:border-[color:var(--surface-muted)] hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)] focus:ring-[var(--accent)]"
               aria-label={`Select ${config.title}`}
             >
               {/* Pattern indicator */}
@@ -102,7 +102,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
                   <p className="text-sm text-muted mb-2">
                     {config.description}
                   </p>
-                  <p className="text-xs text-gray-500 italic">
+                  <p className="text-xs text-[var(--text-muted)] italic">
                     "{config.example}"
                   </p>
                 </div>
@@ -118,7 +118,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
         })}
       </div>
 
-      <div className="text-center text-sm text-gray-500">
+      <div className="text-center text-sm text-[var(--text-muted)]">
         <p>
           💡 <strong>Tip:</strong> Not sure which type to choose? Think about{' '}
           <span className="font-medium">how you'll measure success</span>

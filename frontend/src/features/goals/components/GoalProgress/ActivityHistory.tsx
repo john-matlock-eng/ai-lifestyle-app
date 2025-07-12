@@ -25,11 +25,11 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
   const renderIcon = (type: string) => {
     switch (type) {
       case 'completed':
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-[var(--success)]" />;
       case 'skipped':
-        return <XCircle className="h-5 w-5 text-yellow-600" />;
+        return <XCircle className="h-5 w-5 text-[var(--warning)]" />;
       default:
-        return <TrendingUp className="h-5 w-5 text-blue-600" />;
+        return <TrendingUp className="h-5 w-5 text-[var(--primary)]" />;
     }
   };
 
@@ -37,27 +37,27 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
     <div className={`bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6 space-y-4 ${className}`}>
       <h2 className="text-lg font-semibold text-[var(--text)]">Activity History</h2>
       {isLoading ? (
-        <p className="text-center text-gray-500">Loading...</p>
+        <p className="text-center text-[var(--text-muted)]">Loading...</p>
       ) : error ? (
-        <p className="text-center text-red-600">Failed to load activities.</p>
+        <p className="text-center text-[var(--error)]">Failed to load activities.</p>
       ) : activities.length === 0 ? (
-        <p className="text-center text-gray-500">No activities found.</p>
+        <p className="text-center text-[var(--text-muted)]">No activities found.</p>
       ) : (
         <div className="space-y-3">
           {activities.map((activity: GoalActivity) => (
             <div
               key={activity.activityId}
-              className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+              className="flex items-center justify-between py-3 border-b border-[var(--surface-muted)] last:border-0"
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`p-2 rounded-lg ${
                     activity.activityType === 'completed'
-                      ? 'bg-green-100'
+                      ? 'bg-[var(--success-bg)]'
                       : activity.activityType === 'progress'
-                      ? 'bg-blue-100'
+                      ? 'bg-[var(--accent-bg)]'
                       : activity.activityType === 'skipped'
-                      ? 'bg-yellow-100'
+                      ? 'bg-[var(--warning-bg)]'
                       : 'bg-[var(--surface-muted)]'
                   }`}
                 >
@@ -77,7 +77,7 @@ const ActivityHistory: React.FC<ActivityHistoryProps> = ({ goalId, className = '
                   {new Date(activity.activityDate).toLocaleDateString()}
                 </p>
                 {activity.context?.timeOfDay && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[var(--text-muted)]">
                     {activity.context.timeOfDay}
                   </p>
                 )}

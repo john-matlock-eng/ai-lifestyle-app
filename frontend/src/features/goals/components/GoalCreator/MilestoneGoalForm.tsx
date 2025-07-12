@@ -64,8 +64,8 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-purple-100 rounded-lg">
-          <Trophy className="h-6 w-6 text-purple-600" />
+        <div className="p-2 bg-[var(--accent-bg)] rounded-lg">
+          <Trophy className="h-6 w-6 text-[var(--accent)]" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-[var(--text)]">Create Milestone Goal</h3>
@@ -75,7 +75,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
 
       {/* Goal Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
           Goal Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -91,7 +91,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
 
       {/* Category */}
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="category" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
           Category <span className="text-red-500">*</span>
         </label>
         <select
@@ -110,16 +110,16 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
       </div>
 
       {/* Milestone Configuration */}
-      <div className="bg-purple-50 rounded-lg p-4 space-y-4">
+      <div className="bg-[var(--surface-muted)] rounded-lg p-4 space-y-4">
         <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-purple-600" />
+          <TrendingUp className="h-4 w-4 text-[var(--accent)]" />
           What milestone do you want to reach?
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Target Value */}
           <div>
-            <label htmlFor="targetValue" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="targetValue" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Target Amount
             </label>
             <input
@@ -128,14 +128,14 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               value={formData.targetValue}
               onChange={(e) => updateFormData({ targetValue: parseInt(e.target.value) || 0 })}
               min={1}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
               required
             />
           </div>
 
           {/* Unit */}
           <div>
-            <label htmlFor="unit" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="unit" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Unit
             </label>
             <div className="flex gap-2">
@@ -169,7 +169,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
 
           {/* Current Progress */}
           <div>
-            <label htmlFor="currentValue" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="currentValue" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Current Progress
             </label>
             <input
@@ -179,14 +179,14 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               onChange={(e) => updateFormData({ currentValue: parseInt(e.target.value) || 0 })}
               min={0}
               max={formData.targetValue}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
             />
           </div>
         </div>
 
         {/* Optional Target Date */}
         <div>
-          <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="targetDate" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
             <Calendar className="inline h-4 w-4 mr-1" />
             Target Date (optional)
           </label>
@@ -200,24 +200,24 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
             min={new Date().toISOString().split('T')[0]}
             className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             Add a deadline to help stay motivated
           </p>
         </div>
 
         {/* Progress Preview */}
-        <div className="bg-purple-100 rounded-lg p-4">
+        <div className="bg-[var(--accent-bg)] rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-purple-900">Starting Progress</span>
-            <span className="text-sm font-bold text-purple-900">{progress}%</span>
+            <span className="text-sm font-medium text-[var(--text)]">Starting Progress</span>
+            <span className="text-sm font-bold text-[var(--text)]">{progress}%</span>
           </div>
-          <div className="w-full bg-purple-200 rounded-full h-2">
+          <div className="w-full bg-[var(--surface-muted)] rounded-full h-2">
             <div 
-              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+              className="bg-[var(--accent)] h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="flex justify-between mt-2 text-xs text-purple-700">
+          <div className="flex justify-between mt-2 text-xs text-[var(--accent)]">
             <span>{formData.currentValue} {formData.unit}</span>
             <span>{formData.targetValue} {formData.unit}</span>
           </div>
@@ -226,7 +226,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
           Description (optional)
         </label>
         <textarea
@@ -246,12 +246,12 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
             type="checkbox"
             checked={includePrivateNotes}
             onChange={(e) => setIncludePrivateNotes(e.target.checked)}
-            className="h-4 w-4 text-purple-600 rounded"
+            className="h-4 w-4 text-[var(--accent)] rounded"
           />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-[var(--text-secondary)]">
             Add private encrypted notes
           </span>
-          <Info className="h-4 w-4 text-gray-400" />
+          <Info className="h-4 w-4 text-[var(--text-muted)]" />
         </label>
         
         {includePrivateNotes && (
@@ -261,9 +261,9 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               onChange={(e) => setPrivateNotes(e.target.value)}
               placeholder="Your motivation, milestones along the way, or personal thoughts (encrypted)..."
               rows={3}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-muted)] mt-1">
               🔒 These notes will be encrypted and only visible to you
             </p>
           </div>
@@ -280,7 +280,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
             onChange={(e) => setIsJournalLinked(e.target.checked)}
             className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
           />
-          <label htmlFor="journal-linked" className="text-sm text-gray-700">
+          <label htmlFor="journal-linked" className="text-sm text-[var(--text-secondary)]">
             Link this goal to journaling
           </label>
         </div>
@@ -291,13 +291,13 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
+          className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text)]"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
+          className="px-6 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
         >
           Create Goal
         </button>

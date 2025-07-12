@@ -188,7 +188,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
         </div>
         
         <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-          isOnTrack ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+          isOnTrack ? 'bg-[var(--success)] bg-opacity-10 text-[var(--success)]' : 'bg-[var(--warning)] bg-opacity-10 text-[var(--warning)]'
         }`}>
           {isOnTrack ? 'On Track' : 'Behind Schedule'}
         </div>
@@ -197,31 +197,31 @@ export const TrendLine: React.FC<TrendLineProps> = ({
       {/* Key Metrics */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center">
-          <p className="text-sm text-gray-500 mb-1">Current</p>
+          <p className="text-sm text-[var(--text-muted)] mb-1">Current</p>
           <p className="text-xl font-bold" style={{ color }}>
             {currentValue.toFixed(2)} {unit}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             {direction === 'increase' ? '+' : '-'}{Math.abs(currentValue - startValue).toFixed(2)}
           </p>
         </div>
         
         <div className="text-center">
-          <p className="text-sm text-gray-500 mb-1">Target</p>
+          <p className="text-sm text-[var(--text-muted)] mb-1">Target</p>
           <p className="text-xl font-bold text-[var(--text)]">
             {targetValue} {unit}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             in {daysRemaining} days
           </p>
         </div>
         
         <div className="text-center">
-          <p className="text-sm text-gray-500 mb-1">Projected</p>
-          <p className={`text-xl font-bold ${willMeetTarget ? 'text-green-600' : 'text-red-600'}`}>
+          <p className="text-sm text-[var(--text-muted)] mb-1">Projected</p>
+          <p className={`text-xl font-bold ${willMeetTarget ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}>
             {projectedValue.toFixed(2)} {unit}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-[var(--text-muted)] mt-1">
             {willMeetTarget ? 'Will meet target' : 'May miss target'}
           </p>
         </div>
@@ -230,15 +230,15 @@ export const TrendLine: React.FC<TrendLineProps> = ({
       {/* Chart */}
       <ResponsiveContainer width="100%" height={height}>
         <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-muted)" />
           <XAxis 
             dataKey="date" 
             tick={{ fontSize: 12 }}
-            stroke="#9CA3AF"
+            stroke="var(--text-muted)"
           />
           <YAxis 
             tick={{ fontSize: 12 }}
-            stroke="#9CA3AF"
+            stroke="var(--text-muted)"
             domain={['dataMin - 5%', 'dataMax + 5%']}
           />
           <Tooltip content={<CustomTooltip />} />
@@ -250,7 +250,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
           {/* Today line */}
           <ReferenceLine 
             x={now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            stroke="#6B7280" 
+            stroke="var(--text-muted)" 
             strokeDasharray="3 3"
             label={{ value: "Today", position: "top", style: { fontSize: 12 } }}
           />
@@ -260,7 +260,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
             x={targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             y={targetValue}
             r={6}
-            fill={willMeetTarget ? color : '#EF4444'}
+            fill={willMeetTarget ? color : 'var(--error)'}
             stroke="white"
             strokeWidth={2}
           />
@@ -269,7 +269,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
           <Line
             type="monotone"
             dataKey="ideal"
-            stroke="#E5E7EB"
+            stroke="var(--surface-muted)"
             strokeWidth={2}
             strokeDasharray="5 5"
             dot={false}
@@ -294,7 +294,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
             <Line
               type="monotone"
               dataKey="projected"
-              stroke={willMeetTarget ? color : '#EF4444'}
+              stroke={willMeetTarget ? color : 'var(--error)'}
               strokeWidth={2}
               strokeDasharray="5 5"
               dot={false}
@@ -309,11 +309,11 @@ export const TrendLine: React.FC<TrendLineProps> = ({
       {/* Insights */}
       <div className="mt-6 space-y-3">
         {!willMeetTarget && (
-          <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+          <div className="flex items-start gap-3 p-3 bg-[var(--error)] bg-opacity-10 rounded-lg">
+            <AlertCircle className="h-5 w-5 text-[var(--error)] mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-red-900">Let's Recalibrate</p>
-              <p className="text-sm text-red-700">
+              <p className="text-sm font-medium text-[var(--text)]">Let's Recalibrate</p>
+              <p className="text-sm text-[var(--text-secondary)]">
                 At this pace you'll {direction === 'increase' ? 'reach' : 'reduce to'} {projectedValue.toFixed(2)} {unit} by {targetDate.toLocaleDateString()}.
                 {direction === 'increase'
                   ? ` Try boosting your daily change by ${((targetValue - currentValue) / daysRemaining).toFixed(2)} ${unit}.`
@@ -324,11 +324,11 @@ export const TrendLine: React.FC<TrendLineProps> = ({
         )}
 
         {willMeetTarget && (
-          <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-            <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+          <div className="flex items-start gap-3 p-3 bg-[var(--success)] bg-opacity-10 rounded-lg">
+            <CheckCircle className="h-5 w-5 text-[var(--success)] mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-green-900">Great Progress</p>
-              <p className="text-sm text-green-700">
+              <p className="text-sm font-medium text-[var(--text)]">Great Progress</p>
+              <p className="text-sm text-[var(--text-secondary)]">
                 You're on track to hit {targetValue.toFixed(2)} {unit} by {targetDate.toLocaleDateString()}. Keep up the momentum!
               </p>
             </div>
@@ -341,7 +341,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
               <Calendar className="h-5 w-5 text-muted" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Time Elapsed</p>
+              <p className="text-xs text-[var(--text-muted)]">Time Elapsed</p>
               <p className="text-sm font-medium text-[var(--text)]">
                 {daysElapsed} / {daysTotal} days ({Math.round((daysElapsed / daysTotal) * 100)}%)
               </p>
@@ -357,7 +357,7 @@ export const TrendLine: React.FC<TrendLineProps> = ({
               )}
             </div>
             <div>
-              <p className="text-xs text-gray-500">Average Daily Change</p>
+              <p className="text-xs text-[var(--text-muted)]">Average Daily Change</p>
               <p className="text-sm font-medium text-[var(--text)]">
                 {averageChangePerDay >= 0 ? '+' : ''}{averageChangePerDay.toFixed(2)} {unit}/day
               </p>

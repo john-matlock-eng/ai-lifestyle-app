@@ -16,7 +16,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   size = 120,
   strokeWidth = 8,
   color = '#3B82F6',
-  backgroundColor = '#E5E7EB',
+  backgroundColor = 'var(--surface-muted)',
   showPercentage = true,
   className = '',
   children,
@@ -115,7 +115,7 @@ export const GoalProgressRing: React.FC<GoalProgressRingProps> = ({
   
   // Adjust color for limit goals when over target
   const color = goalType === 'limit' && isOverTarget 
-    ? '#EF4444' // Red for exceeded limits
+    ? 'var(--error)' // Red for exceeded limits
     : ringProps.color;
 
   return (
@@ -123,15 +123,15 @@ export const GoalProgressRing: React.FC<GoalProgressRingProps> = ({
       <div className="text-center">
         <div
           className="text-xl font-bold"
-          style={{ color: progress > 0 ? color : '#E5E7EB' }}
+          style={{ color: progress > 0 ? color : 'var(--text-muted)' }}
         >
           {current.toFixed(2)}
         </div>
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-[var(--text-muted)]">
           of {target.toFixed(2)} {unit}
         </div>
         {isOverTarget && goalType !== 'limit' && (
-          <div className="text-xs text-green-600 font-medium mt-1">
+          <div className="text-xs text-[var(--success)] font-medium mt-1">
             +{(current - target).toFixed(2)}
           </div>
         )}

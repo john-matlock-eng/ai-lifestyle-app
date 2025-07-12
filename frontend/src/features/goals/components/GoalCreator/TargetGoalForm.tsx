@@ -73,8 +73,8 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-green-100 rounded-lg">
-          <Target className="h-6 w-6 text-green-600" />
+        <div className="p-2 bg-[var(--accent-bg)] rounded-lg">
+          <Target className="h-6 w-6 text-[var(--accent)]" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-[var(--text)]">Create Target Goal</h3>
@@ -84,7 +84,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
       {/* Goal Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
           Goal Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -100,7 +100,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
       {/* Category */}
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="category" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
           Category <span className="text-red-500">*</span>
         </label>
         <select
@@ -119,15 +119,15 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
       </div>
 
       {/* Target Configuration */}
-      <div className="bg-green-50 rounded-lg p-4 space-y-4">
+      <div className="bg-[var(--surface-muted)] rounded-lg p-4 space-y-4">
         <h4 className="font-medium text-[var(--text)] flex items-center gap-2">
-          <Target className="h-4 w-4 text-green-600" />
+          <Target className="h-4 w-4 text-[var(--accent)]" />
           Define your target
         </h4>
 
         {/* Direction */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
             Goal Direction
           </label>
           <div className="flex gap-2">
@@ -136,7 +136,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               onClick={() => updateFormData({ direction: 'increase' })}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border-2 transition-colors ${
                 formData.direction === 'increase'
-                  ? 'border-green-500 bg-green-50 text-green-700'
+                  ? 'border-[var(--accent)] bg-[var(--surface-muted)] text-[var(--accent)]'
                   : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)]'
               }`}
             >
@@ -148,7 +148,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               onClick={() => updateFormData({ direction: 'decrease' })}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg border-2 transition-colors ${
                 formData.direction === 'decrease'
-                  ? 'border-green-500 bg-green-50 text-green-700'
+                  ? 'border-[var(--accent)] bg-[var(--surface-muted)] text-[var(--accent)]'
                   : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)]'
               }`}
             >
@@ -161,7 +161,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Starting Value */}
           <div>
-            <label htmlFor="startValue" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="startValue" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Current Value
             </label>
             <input
@@ -170,14 +170,14 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               value={formData.startValue}
               onChange={(e) => updateFormData({ startValue: parseFloat(e.target.value) || 0 })}
               step="0.1"
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
               required
             />
           </div>
 
           {/* Target Value */}
           <div>
-            <label htmlFor="targetValue" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="targetValue" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Target Value
             </label>
             <input
@@ -186,14 +186,14 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               value={formData.targetValue}
               onChange={(e) => updateFormData({ targetValue: parseFloat(e.target.value) || 0 })}
               step="0.1"
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
               required
             />
           </div>
 
           {/* Unit */}
           <div>
-            <label htmlFor="unit" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="unit" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Unit
             </label>
             <div className="flex gap-2">
@@ -230,7 +230,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
         {/* Target Date */}
         <div>
-          <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="targetDate" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
             <Calendar className="inline h-4 w-4 mr-1" />
             Target Date <span className="text-red-500">*</span>
           </label>
@@ -246,28 +246,28 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
         </div>
 
         {/* Target Summary */}
-        <div className="bg-green-100 rounded-lg p-4 space-y-2">
+        <div className="bg-[var(--accent-bg)] rounded-lg p-4 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-green-900">Goal Summary</span>
-            <span className="text-sm text-green-700">{daysUntilTarget} days</span>
+            <span className="text-sm font-medium text-[var(--text)]">Goal Summary</span>
+            <span className="text-sm text-[var(--accent)]">{daysUntilTarget} days</span>
           </div>
           
-          <div className="text-lg font-semibold text-green-900">
+          <div className="text-lg font-semibold text-[var(--text)]">
             {formData.direction === 'increase' ? 'Increase' : 'Decrease'} from{' '}
-            <span className="text-green-600">{formData.startValue}</span> to{' '}
-            <span className="text-green-600">{formData.targetValue}</span> {formData.unit}
+            <span className="text-[var(--accent)]">{formData.startValue}</span> to{' '}
+            <span className="text-[var(--accent)]">{formData.targetValue}</span> {formData.unit}
           </div>
           
           {changePerWeek > 0 && (
-            <div className="text-sm text-green-700">
+            <div className="text-sm text-[var(--accent)]">
               Required change: ~{changePerWeek.toFixed(1)} {formData.unit} per week
             </div>
           )}
           
-          <div className="mt-2 pt-2 border-t border-green-200">
+          <div className="mt-2 pt-2 border-t border-[var(--surface-muted)]">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-green-700">Total Change</span>
-              <span className="text-sm font-medium text-green-900">
+              <span className="text-xs text-[var(--accent)]">Total Change</span>
+              <span className="text-sm font-medium text-[var(--text)]">
                 {totalChange.toFixed(1)} {formData.unit}
               </span>
             </div>
@@ -277,7 +277,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
           Description (optional)
         </label>
         <textarea
@@ -297,12 +297,12 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
             type="checkbox"
             checked={includePrivateNotes}
             onChange={(e) => setIncludePrivateNotes(e.target.checked)}
-            className="h-4 w-4 text-green-600 rounded"
+            className="h-4 w-4 text-[var(--accent)] rounded"
           />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-[var(--text-secondary)]">
             Add private encrypted notes
           </span>
-          <Info className="h-4 w-4 text-gray-400" />
+          <Info className="h-4 w-4 text-[var(--text-muted)]" />
         </label>
         
         {includePrivateNotes && (
@@ -312,9 +312,9 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
               onChange={(e) => setPrivateNotes(e.target.value)}
               placeholder="Your strategy, obstacles to overcome, or personal thoughts (encrypted)..."
               rows={3}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-muted)] mt-1">
               🔒 These notes will be encrypted and only visible to you
             </p>
           </div>
@@ -331,7 +331,7 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
             onChange={(e) => setIsJournalLinked(e.target.checked)}
             className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
           />
-          <label htmlFor="journal-linked" className="text-sm text-gray-700">
+          <label htmlFor="journal-linked" className="text-sm text-[var(--text-secondary)]">
             Link this goal to journaling
           </label>
         </div>
@@ -342,13 +342,13 @@ export const TargetGoalForm: React.FC<TargetGoalFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 hover:text-[var(--text)]"
+          className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text)]"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
+          className="px-6 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
         >
           Create Goal
         </button>

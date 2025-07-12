@@ -122,7 +122,7 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
           <div className="text-2xl font-bold" style={{ color }}>
             {progressPercentage.toFixed(2)}%
           </div>
-          <p className="text-xs text-gray-500">Complete</p>
+          <p className="text-xs text-[var(--text-muted)]">Complete</p>
         </div>
       </div>
       
@@ -133,7 +133,7 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
             <div
               key={index}
               className={`flex items-center gap-1 ${
-                milestone.achieved ? 'text-green-600' : 'text-gray-400'
+                milestone.achieved ? 'text-[var(--success)]' : 'text-[var(--text-muted)]'
               }`}
             >
               <Trophy className="h-4 w-4" />
@@ -144,7 +144,7 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
           ))}
           <div
             className={`flex items-center gap-1 ${
-              progressPercentage >= 100 ? 'text-green-600' : 'text-gray-400'
+              progressPercentage >= 100 ? 'text-[var(--success)]' : 'text-[var(--text-muted)]'
             }`}
           >
             <Trophy className="h-4 w-4" />
@@ -162,15 +162,15 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
               <stop offset="95%" stopColor={color} stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-muted)" />
           <XAxis 
             dataKey="date" 
             tick={{ fontSize: 12 }}
-            stroke="#9CA3AF"
+            stroke="var(--text-muted)"
           />
           <YAxis 
             tick={{ fontSize: 12 }}
-            stroke="#9CA3AF"
+            stroke="var(--text-muted)"
             domain={[0, 'dataMax + 10%']}
           />
           <Tooltip content={<CustomTooltip />} />
@@ -191,7 +191,7 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
             <ReferenceLine
               key={index}
               y={milestone.value}
-              stroke={milestone.achieved ? '#10B981' : '#E5E7EB'}
+              stroke={milestone.achieved ? 'var(--success)' : 'var(--surface-muted)'}
               strokeDasharray="3 3"
               opacity={0.5}
             />
@@ -254,7 +254,7 @@ export const MilestoneBar: React.FC<MilestoneBarProps> = ({
     <div className={`space-y-2 ${className}`}>
       {(label || showPercentage) && (
         <div className="flex items-center justify-between">
-          {label && <span className="text-sm font-medium text-gray-700">{label}</span>}
+          {label && <span className="text-sm font-medium text-[var(--text-secondary)]">{label}</span>}
           {showPercentage && (
             <span className="text-sm font-medium" style={{ color }}>
               {percentage.toFixed(2)}%
@@ -264,7 +264,7 @@ export const MilestoneBar: React.FC<MilestoneBarProps> = ({
       )}
       
       <div className="relative">
-        <div className="h-8 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-8 bg-[var(--surface-muted)] rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500 ease-out relative"
             style={{
@@ -280,7 +280,7 @@ export const MilestoneBar: React.FC<MilestoneBarProps> = ({
           </div>
         </div>
         {percentage < 50 && (
-          <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs font-medium text-gray-700">
+          <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs font-medium text-[var(--text-secondary)]">
             {current.toLocaleString()} / {target.toLocaleString()} {unit}
           </span>
         )}

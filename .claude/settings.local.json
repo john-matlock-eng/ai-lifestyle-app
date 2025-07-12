@@ -6,7 +6,8 @@
       "Bash(find:*)",
       "Bash(npm run build:*)",
       "Bash(npm run lint)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

@@ -28,6 +28,13 @@ from archive_goal.handler import lambda_handler as archive_goal_handler
 from log_activity.handler import lambda_handler as log_activity_handler
 from list_activities.handler import lambda_handler as list_activities_handler
 from get_progress.handler import lambda_handler as get_progress_handler
+# Journal endpoints
+from create_journal_entry.handler import lambda_handler as create_journal_entry_handler
+from get_journal_entry.handler import lambda_handler as get_journal_entry_handler
+from list_journal_entries.handler import lambda_handler as list_journal_entries_handler
+from update_journal_entry.handler import lambda_handler as update_journal_entry_handler
+from delete_journal_entry.handler import lambda_handler as delete_journal_entry_handler
+from get_journal_stats.handler import lambda_handler as get_journal_stats_handler
 # Future imports:
 # from update_user_profile.handler import lambda_handler as update_user_profile_handler
 
@@ -102,6 +109,13 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "GET /goals/{goalId}/activities": list_activities_handler,
         "POST /goals/{goalId}/activities": log_activity_handler,
         "GET /goals/{goalId}/progress": get_progress_handler,
+        # Journal endpoints
+        "GET /journal": list_journal_entries_handler,
+        "POST /journal": create_journal_entry_handler,
+        "GET /journal/{entryId}": get_journal_entry_handler,
+        "PUT /journal/{entryId}": update_journal_entry_handler,
+        "DELETE /journal/{entryId}": delete_journal_entry_handler,
+        "GET /journal/stats": get_journal_stats_handler,
         # "PUT /users/profile": update_user_profile_handler,
     }
     
@@ -141,6 +155,29 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         handler = log_activity_handler
                 elif path_parts[3] == 'progress' and http_method == 'GET':
                     handler = get_progress_handler
+        
+        # Check for journal-specific routes with {entryId}
+        elif len(path_parts) >= 3 and path_parts[1] == 'journal':
+            # Check if this is /journal/stats first (no path parameter)
+            if len(path_parts) == 3 and path_parts[2] == 'stats' and http_method == 'GET':
+                handler = get_journal_stats_handler
+            # Otherwise, treat as journal entry ID
+            elif len(path_parts) == 3:
+                # Extract entryId for path parameter
+                entry_id = path_parts[2]
+                
+                # Add path parameters to event if not present
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['entryId'] = entry_id
+                
+                # /journal/{entryId}
+                if http_method == 'GET':
+                    handler = get_journal_entry_handler
+                elif http_method == 'PUT':
+                    handler = update_journal_entry_handler
+                elif http_method == 'DELETE':
+                    handler = delete_journal_entry_handler
     
     if handler:
         # Ensure the event has the expected format for handlers

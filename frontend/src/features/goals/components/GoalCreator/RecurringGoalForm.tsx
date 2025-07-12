@@ -219,7 +219,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
 
         {/* Frequency */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
             <Clock className="inline h-4 w-4 mr-1" />
             Frequency
           </label>
@@ -250,7 +250,7 @@ export const RecurringGoalForm: React.FC<RecurringGoalFormProps> = ({
         {/* Days of Week (for weekly frequency) */}
         {formData.frequency === 'weekly' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
               Which days?
             </label>
             <div className="flex gap-1">

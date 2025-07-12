@@ -70,7 +70,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         className="p-1 hover:bg-[color:var(--surface-muted)] rounded-lg transition-colors"
         aria-label="Goal actions"
       >
-        <MoreVertical className="h-4 w-4 text-gray-500" />
+        <MoreVertical className="h-4 w-4 text-[var(--text-muted)]" />
       </button>
       
       {openMenuId === goal.goalId && (
@@ -135,7 +135,7 @@ export const GoalList: React.FC<GoalListProps> = ({
                 setOpenMenuId(null);
               }
             }}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
+            className="w-full px-4 py-2 text-left text-sm hover:bg-[var(--error-bg)] text-[var(--error)] flex items-center gap-2"
           >
             <Trash2 className="h-4 w-4" />
             Delete Goal
@@ -157,7 +157,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           bg-[var(--surface)] rounded-lg border-2 p-4 cursor-pointer transition-all duration-200
           hover:shadow-lg hover:border-[color:var(--surface-muted)]
           ${goal.status === 'paused' ? 'opacity-60' : ''}
-          ${goal.status === 'completed' ? 'border-green-300 bg-green-50' : 'border-[color:var(--surface-muted)]'}
+          ${goal.status === 'completed' ? 'border-[var(--success)] bg-[var(--success-bg)]' : 'border-[color:var(--surface-muted)]'}
         `}
       >
         <div className="flex items-start justify-between mb-3">
@@ -179,7 +179,7 @@ export const GoalList: React.FC<GoalListProps> = ({
                   {goal.goalPattern}
                 </span>
                 {isOverdue && goal.status === 'active' && (
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-600">
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-[var(--error-bg)] text-[var(--error)]">
                     Overdue
                   </span>
                 )}
@@ -198,7 +198,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         </div>
 
         {/* Pattern-specific display */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-[var(--surface-muted)]">
           {goal.goalPattern === 'recurring' && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted">
@@ -253,7 +253,7 @@ export const GoalList: React.FC<GoalListProps> = ({
               <span 
                 className="font-medium"
                 style={{ 
-                  color: (goal.progress.averageValue || 0) <= goal.target.value ? '#10B981' : '#EF4444' 
+                  color: (goal.progress.averageValue || 0) <= goal.target.value ? 'var(--success)' : 'var(--error)' 
                 }}
               >
                 {goal.progress.daysOverLimit || 0} days over limit
@@ -272,7 +272,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         <h2 className="text-2xl font-bold text-[var(--text)]">Your Goals</h2>
         <button
           onClick={onCreateGoal}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
         >
           <Plus className="h-5 w-5" />
           New Goal
@@ -283,13 +283,13 @@ export const GoalList: React.FC<GoalListProps> = ({
       <div className="bg-[var(--surface-muted)] rounded-lg p-4 space-y-4">
         <div className="flex items-center gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[var(--text-muted)]" />
             <input
               type="text"
               placeholder="Search goals..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full pl-10 pr-4 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
             />
           </div>
           
@@ -298,9 +298,9 @@ export const GoalList: React.FC<GoalListProps> = ({
               type="checkbox"
               checked={showActiveOnly}
               onChange={(e) => setShowActiveOnly(e.target.checked)}
-              className="h-4 w-4 text-purple-600 rounded"
+              className="h-4 w-4 text-[var(--accent)] rounded"
             />
-            <span className="text-sm font-medium text-gray-700">Active only</span>
+            <span className="text-sm font-medium text-[var(--text-secondary)]">Active only</span>
           </label>
         </div>
 
@@ -308,7 +308,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-1.5 border border-[color:var(--surface-muted)] rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="px-3 py-1.5 border border-[color:var(--surface-muted)] rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
           >
             <option value="all">All Categories</option>
             {GOAL_CATEGORIES.map(cat => (
@@ -321,7 +321,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           <select
             value={selectedPattern}
             onChange={(e) => setSelectedPattern(e.target.value)}
-            className="px-3 py-1.5 border border-[color:var(--surface-muted)] rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="px-3 py-1.5 border border-[color:var(--surface-muted)] rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
           >
             <option value="all">All Patterns</option>
             <option value="recurring">🔄 Recurring</option>
@@ -336,7 +336,7 @@ export const GoalList: React.FC<GoalListProps> = ({
       {/* Goals Grid */}
       {filteredGoals.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
+          <div className="text-[var(--text-muted)] mb-4">
             <Target className="h-12 w-12 mx-auto" />
           </div>
           <h3 className="text-lg font-medium text-[var(--text)] mb-2">No goals found</h3>
@@ -348,7 +348,7 @@ export const GoalList: React.FC<GoalListProps> = ({
           {!searchTerm && selectedCategory === 'all' && selectedPattern === 'all' && (
             <button
               onClick={onCreateGoal}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)]"
             >
               <Plus className="h-5 w-5" />
               Create Goal
@@ -359,7 +359,7 @@ export const GoalList: React.FC<GoalListProps> = ({
         <div className="space-y-6">
           {Object.entries(groupedGoals).map(([category, categoryGoals]) => (
             <div key={category}>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">{category}</h3>
+              <h3 className="text-lg font-semibold text-[var(--text)] mb-3">{category}</h3>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {categoryGoals.map(renderGoalCard)}
               </div>
