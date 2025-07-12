@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft, X } from 'lucide-react';
-import { Button } from '../../components/common';
 import { JournalEditorWithSections } from '../../features/journal/components';
 import { useTemplateRegistry } from '../../features/journal/hooks/useTemplateRegistry';
 import { createEntry } from '../../api/journal';

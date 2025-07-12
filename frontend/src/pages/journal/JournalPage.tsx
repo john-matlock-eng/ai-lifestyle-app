@@ -5,7 +5,6 @@ import { format } from 'date-fns';
 import { Plus, Search, Calendar, FileText, Edit2 } from 'lucide-react';
 import { Button } from '../../components/common';
 import { listEntries, getStats } from '../../api/journal';
-import type { JournalEntry, JournalStats } from '../../types/journal';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();

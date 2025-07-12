@@ -8,7 +8,7 @@ import { JournalEditor } from '../../features/journal/components';
 import { JournalEditorWithSections } from '../../features/journal/components';
 import { useTemplateRegistry } from '../../features/journal/hooks/useTemplateRegistry';
 import { getEntry, updateEntry, deleteEntry } from '../../api/journal';
-import type { UpdateJournalEntryRequest, JournalEntry } from '../../types/journal';
+import type { UpdateJournalEntryRequest } from '../../types/journal';
 
 // Map journal template types to actual template IDs
 const TEMPLATE_MAPPING: Record<string, string> = {
