@@ -30,7 +30,6 @@ import GoalDetailPage from './pages/goals/GoalDetailPage';
 // Components
 import DevTools from './components/common/DevTools';
 import { SessionWarning } from './components/SessionWarning';
-import ThemeShowcase from './components/ThemeShowcase';
 
 
 
@@ -78,7 +77,6 @@ function App() {
             >
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/showcase" element={<ComponentShowcase />} />
-              <Route path="/theme-demo" element={<ThemeShowcase />} />
               <Route path="/profile" element={<div>Profile - Coming Soon</div>} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/security" element={<div>Security Settings - Coming Soon</div>} />

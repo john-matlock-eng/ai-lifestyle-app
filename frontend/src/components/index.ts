@@ -15,7 +15,6 @@ export { default as PublicLayout } from './layout/PublicLayout';
 
 // Theme Components
 export { default as ThemeSelector } from './ThemeSelector';
-export { default as ThemeShowcase } from './ThemeShowcase';
 
 // Other Components
 export { default as ProtectedRoute } from './ProtectedRoute';

@@ -98,13 +98,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                 to="/showcase"
                 className="text-accent hover:text-accent-hover px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
-                🎨 Components
-              </Link>
-              <Link
-                to="/theme-demo"
-                className="text-accent hover:text-accent-hover px-3 py-2 rounded-md text-sm font-medium transition-colors animate-pulse-glow"
-              >
-                ✨ Theme Demo
+                🎨 Component Showcase
               </Link>
             </nav>
           </div>
