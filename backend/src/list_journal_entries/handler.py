@@ -51,57 +51,6 @@ def extract_user_id(event: Dict[str, Any]) -> str:
     return user_id
 
 
-def parse_query_params(event: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Parse query parameters from API Gateway event.
-    
-    Args:
-        event: API Gateway event
-        
-    Returns:
-        Parsed query parameters
-    """
-    query_params = event.get('queryStringParameters') or {}
-    
-    # Parse pagination params
-    page = int(query_params.get('page', '1'))
-    limit = int(query_params.get('limit', '20'))
-    
-    # Validate pagination
-    if page < 1:
-        page = 1
-    if limit < 1:
-        limit = 1
-    if limit > 100:
-        limit = 100
-    
-    # Parse goal filter
-    goal_id = query_params.get('goalId')
-    
-    # Parse date filters
-    start_date = query_params.get('startDate')
-    end_date = query_params.get('endDate')
-    
-    # Parse template filter
-    template = query_params.get('template')
-    
-    # Parse tag filter
-    tag = query_params.get('tag')
-    
-    # Parse mood filter
-    mood = query_params.get('mood')
-    
-    return {
-        'page': page,
-        'limit': limit,
-        'goal_id': goal_id,
-        'start_date': start_date,
-        'end_date': end_date,
-        'template': template,
-        'tag': tag,
-        'mood': mood
-    }
-
 
 @logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
 @tracer.capture_lambda_handler
@@ -148,11 +97,13 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         query_params = event.get('queryStringParameters') or {}
         
         # Extract pagination params
+        page = int(query_params.get('page', '1'))
         limit = int(query_params.get('limit', '20'))
-        page_token = query_params.get('page_token')
         goal_id = query_params.get('goalId')
         
-        # Validate limit
+        # Validate pagination
+        if page < 1:
+            page = 1
         if limit < 1:
             limit = 1
         if limit > 100:
@@ -166,8 +117,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         try:
             response = service.list_entries(
                 user_id=user_id,
+                page=page,
                 limit=limit,
-                page_token=page_token,
                 goal_id=goal_id
             )
         except Exception as e:

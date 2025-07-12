@@ -22,8 +22,8 @@ class ListJournalEntriesService:
     def list_entries(
         self,
         user_id: str,
+        page: int = 1,
         limit: int = 20,
-        page_token: Optional[str] = None,
         goal_id: Optional[str] = None
     ) -> JournalListResponse:
         """
@@ -31,64 +31,68 @@ class ListJournalEntriesService:
         
         Args:
             user_id: User's unique identifier
+            page: Page number (1-based)
             limit: Maximum number of entries to return
-            page_token: Pagination token
             goal_id: Optional goal ID to filter by
             
         Returns:
             Journal list response with entries and pagination
         """
         try:
-            # Validate limit
+            # Validate pagination
+            if page < 1:
+                page = 1
             if limit < 1 or limit > 100:
                 limit = 20
             
-            # Convert page token to last evaluated key
+            # For DynamoDB pagination, we need to implement page-based pagination
+            # This is not the most efficient for DynamoDB, but matches frontend expectations
+            skip_count = (page - 1) * limit
+            
+            # Fetch entries
+            # Note: This is a simplified implementation. In production, you'd want to
+            # use cursor-based pagination for better performance with DynamoDB
+            all_entries = []
             last_evaluated_key = None
-            if page_token:
-                try:
-                    import base64
-                    import json
-                    decoded = base64.b64decode(page_token).decode('utf-8')
-                    last_evaluated_key = json.loads(decoded)
-                except Exception as e:
-                    logger.warning(f"Invalid page token: {str(e)}")
-                    # Invalid page token, start from beginning
-                    last_evaluated_key = None
             
-            # Get entries from repository
-            entries, next_key = self.repository.list_user_entries(
-                user_id=user_id,
-                limit=limit,
-                last_evaluated_key=last_evaluated_key,
-                goal_id=goal_id
-            )
+            # Keep fetching until we have enough entries
+            while len(all_entries) <= skip_count + limit:
+                entries, next_key = self.repository.list_user_entries(
+                    user_id=user_id,
+                    limit=100,  # Fetch in batches
+                    last_evaluated_key=last_evaluated_key,
+                    goal_id=goal_id
+                )
+                
+                all_entries.extend(entries)
+                
+                # If no more entries, break
+                if not next_key:
+                    break
+                    
+                last_evaluated_key = next_key
             
-            # Convert next key to page token
-            next_page_token = None
-            if next_key:
-                try:
-                    import base64
-                    import json
-                    encoded = base64.b64encode(
-                        json.dumps(next_key).encode('utf-8')
-                    ).decode('utf-8')
-                    next_page_token = encoded
-                except Exception as e:
-                    logger.error(f"Failed to encode page token: {str(e)}")
+            # Apply pagination
+            start_idx = skip_count
+            end_idx = skip_count + limit
+            paginated_entries = all_entries[start_idx:end_idx]
             
-            # Get user stats for the response
+            # Get user stats for total count
             stats = self.repository.get_user_stats(user_id)
+            
+            # Determine if there are more entries
+            has_more = len(all_entries) > end_idx
             
             # Build response
             response = JournalListResponse(
-                entries=entries,
-                next_page_token=next_page_token,
-                total_count=stats.total_entries,
-                has_more=next_page_token is not None
+                entries=paginated_entries,
+                total=stats.total_entries,
+                page=page,
+                limit=limit,
+                has_more=has_more
             )
             
-            logger.info(f"Listed {len(entries)} journal entries for user {user_id}")
+            logger.info(f"Listed {len(paginated_entries)} journal entries for user {user_id} (page {page})")
             
             return response
             
