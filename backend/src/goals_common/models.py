@@ -94,6 +94,11 @@ class TrendDirection(str, Enum):
     DECLINING = "declining"
 
 
+class GoalModule(str, Enum):
+    """Optional module a goal is associated with."""
+    JOURNAL = "journal"
+
+
 # Target Definition Models
 class GoalTarget(BaseModel):
     """Flexible target definition for all goal patterns."""
@@ -289,6 +294,9 @@ class Goal(BaseModel):
     category: str = Field(..., min_length=1, max_length=50)
     icon: Optional[str] = Field(None, max_length=50)
     color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
+
+    # Optional module association
+    module: Optional[GoalModule] = None
     
     # Goal Pattern - THE KEY FIELD
     goal_pattern: GoalPattern
@@ -413,6 +421,8 @@ class CreateGoalRequest(BaseModel):
     target: GoalTarget
     schedule: Optional[GoalSchedule] = None
     context: Optional[GoalContext] = None
+
+    module: Optional[GoalModule] = None
     
     visibility: Visibility = Visibility.PRIVATE
     status: Optional[GoalStatus] = None

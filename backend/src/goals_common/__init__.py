@@ -87,6 +87,7 @@ __all__ = [
     'GoalStatus',
     'Visibility',
     'TrendDirection',
+    'GoalModule',
     'ActivityType',
     'TimeOfDay',
     'LocationType',

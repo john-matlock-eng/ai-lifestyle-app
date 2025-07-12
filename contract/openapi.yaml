@@ -454,6 +454,12 @@ paths:
               type: string
           style: form
           explode: true
+        - name: module
+          in: query
+          description: Filter by module
+          schema:
+            type: string
+            enum: [journal]
         - name: page
           in: query
           schema:
@@ -649,6 +655,45 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: Cannot update completed/archived goal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      summary: Update goal module
+      description: Set or clear module association for a goal
+      operationId: updateGoalModule
+      tags:
+        - Goals
+      parameters:
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGoalModuleRequest'
+      responses:
+        '200':
+          description: Goal updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Goal not found
           content:
             application/json:
               schema:
@@ -867,6 +912,26 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Goal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /journal/stats:
+    get:
+      summary: Get journal statistics
+      operationId: getJournalStats
+      tags:
+        - Journal
+      responses:
+        '200':
+          description: Stats retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalStats'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -1677,6 +1742,11 @@ components:
           type: string
           pattern: '^#[0-9A-Fa-f]{6}$'
           description: Hex color for UI
+        module:
+          type: string
+          enum: [journal]
+          nullable: true
+          description: Module associated with goal
         goalPattern:
           type: string
           enum: [recurring, milestone, target, streak, limit]
@@ -1748,6 +1818,10 @@ components:
           $ref: '#/components/schemas/GoalContext'
         rewards:
           $ref: '#/components/schemas/GoalRewards'
+        module:
+          type: string
+          enum: [journal]
+          nullable: true
         visibility:
           type: string
           enum: [private, friends, public]
@@ -1791,6 +1865,16 @@ components:
         metadata:
           type: object
           additionalProperties: true
+
+    UpdateGoalModuleRequest:
+      type: object
+      required:
+        - module
+      properties:
+        module:
+          type: string
+          enum: [journal]
+          nullable: true
 
     GoalTarget:
       type: object
@@ -2377,6 +2461,45 @@ components:
           type: integer
           minimum: 0
 
+    JournalGoalProgress:
+      type: object
+      required:
+        - goalId
+        - title
+        - percentComplete
+        - streak
+      properties:
+        goalId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        percentComplete:
+          type: number
+        streak:
+          type: integer
+
+    JournalStats:
+      type: object
+      required:
+        - totalEntries
+        - currentStreak
+        - lastEntryDate
+        - goalProgress
+      properties:
+        totalEntries:
+          type: integer
+        currentStreak:
+          type: integer
+        lastEntryDate:
+          type: string
+          format: date
+          nullable: true
+        goalProgress:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalGoalProgress'
+
     # AI Analysis Schemas
     CreateAIShareRequest:
       type: object
@@ -2915,6 +3038,8 @@ tags:
     description: User profile management
   - name: Goals
     description: Goal setting and tracking
+  - name: Journal
+    description: Journal entry management
   - name: Encryption
     description: Core encryption service for all modules
   - name: AI Analysis

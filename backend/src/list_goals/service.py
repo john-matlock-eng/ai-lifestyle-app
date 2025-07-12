@@ -26,6 +26,7 @@ class ListGoalsService:
         status_filter: Optional[List[GoalStatus]] = None,
         pattern_filter: Optional[List[GoalPattern]] = None,
         category_filter: Optional[List[str]] = None,
+        module_filter: Optional[str] = None,
         page: int = 1,
         limit: int = 20,
         sort: str = 'updated_desc'
@@ -69,7 +70,8 @@ class ListGoalsService:
                 all_goals,
                 status_filter,
                 pattern_filter,
-                category_filter
+                category_filter,
+                module_filter
             )
             
             # Apply sorting
@@ -110,7 +112,8 @@ class ListGoalsService:
         goals: List[Goal],
         status_filter: Optional[List[GoalStatus]],
         pattern_filter: Optional[List[GoalPattern]],
-        category_filter: Optional[List[str]]
+        category_filter: Optional[List[str]],
+        module_filter: Optional[str],
     ) -> List[Goal]:
         """Apply filters to goal list."""
         filtered = goals
@@ -131,7 +134,10 @@ class ListGoalsService:
             # Case-insensitive category matching
             lower_categories = [c.lower() for c in category_filter]
             filtered = [g for g in filtered if g.category.lower() in lower_categories]
-        
+
+        if module_filter:
+            filtered = [g for g in filtered if g.module == module_filter]
+
         return filtered
     
     def _apply_sorting(self, goals: List[Goal], sort: str) -> List[Goal]:
