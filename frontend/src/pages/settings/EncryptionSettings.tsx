@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Lock, Key, AlertTriangle, CheckCircle, Info, RefreshCw } from 'lucide-react';
+import { Shield, Lock, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { Button } from '../../components/common';
 import { getEncryptionService } from '../../services/encryption';
 import { useAuth } from '../../features/auth/contexts/AuthContext';

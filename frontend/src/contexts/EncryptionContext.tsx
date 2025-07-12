@@ -1,28 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../features/auth/contexts/AuthContext';
 import { getEncryptionService } from '../services/encryption';
 import apiClient from '../api/client';
-
-interface EncryptionContextValue {
-  isEncryptionEnabled: boolean;
-  isEncryptionSetup: boolean;
-  isEncryptionLocked: boolean;
-  encryptionKeyId: string | null;
-  unlockEncryption: (password: string) => Promise<void>;
-  lockEncryption: () => void;
-  checkEncryptionStatus: () => Promise<void>;
-}
-
-const EncryptionContext = createContext<EncryptionContextValue | undefined>(undefined);
-
-export const useEncryption = () => {
-  const context = useContext(EncryptionContext);
-  if (!context) {
-    throw new Error('useEncryption must be used within an EncryptionProvider');
-  }
-  return context;
-};
+import { EncryptionContext, EncryptionContextValue } from './EncryptionContextType';
 
 interface EncryptionProviderProps {
   children: ReactNode;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Lock } from 'lucide-react';
-import { useEncryption } from '../contexts/EncryptionContext';
+import { useEncryption } from '../contexts/useEncryption';
 import { Button } from './common';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,7 +24,7 @@ export const EncryptionUnlockPrompt: React.FC = () => {
     try {
       await unlockEncryption(password);
       setPassword('');
-    } catch (error) {
+    } catch {
       setError('Invalid password. Please try again.');
     } finally {
       setIsUnlocking(false);
