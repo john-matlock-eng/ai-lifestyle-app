@@ -99,6 +99,25 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
     statistics: {} as GoalStatistics,
   };
 
+  const ringCurrent = React.useMemo(() => {
+    switch (goal.goalPattern) {
+      case 'recurring':
+      case 'limit':
+        return progressInfo.progress.currentPeriodValue || 0;
+      case 'milestone':
+        return progressInfo.progress.totalAccumulated || 0;
+      case 'streak':
+        return progressInfo.progress.currentStreak || 0;
+      case 'target':
+        if (goal.target.currentValue !== undefined && goal.target.currentValue !== null) {
+          return goal.target.currentValue;
+        }
+        return (progressInfo.progress.percentComplete / 100) * goal.target.value;
+      default:
+        return 0;
+    }
+  }, [goal.goalPattern, goal.target.currentValue, goal.target.value, progressInfo]);
+
   // Calculate streak data for streak goals
   const streakData = goal.goalPattern === 'streak' ? {
     completedDates: activities
@@ -281,7 +300,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           
           <div className="text-center">
             <GoalProgressRing
-              current={progressInfo.progress.currentPeriodValue || progressInfo.progress.totalAccumulated || progressInfo.progress.currentStreak || 0}
+              current={ringCurrent}
               target={goal.target.value}
               unit={goal.target.unit}
               goalType={goal.goalPattern}

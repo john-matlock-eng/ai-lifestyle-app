@@ -118,7 +118,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
   const radialData = [
     {
       name: 'Progress',
-      value: goal.progress.percentComplete,
+      value: progress.progress.percentComplete,
       fill: color,
     },
   ];
@@ -263,7 +263,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                 className="text-3xl font-bold"
                 fill="#111827"
               >
-                {goal.progress.percentComplete}%
+                {progress.progress.percentComplete}%
               </text>
               <text 
                 x="50%" 
@@ -422,14 +422,14 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
         <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <p className="text-sm text-muted mb-1">Trend</p>
           <div className="flex items-center gap-2">
-            {goal.progress.trend === 'improving' ? (
+            {progress.progress.trend === 'improving' ? (
               <TrendingUp className="h-6 w-6 text-green-600" />
-            ) : goal.progress.trend === 'declining' ? (
+            ) : progress.progress.trend === 'declining' ? (
               <TrendingDown className="h-6 w-6 text-red-600" />
             ) : (
               <Activity className="h-6 w-6 text-muted" />
             )}
-            <span className="text-lg font-semibold capitalize">{goal.progress.trend}</span>
+            <span className="text-lg font-semibold capitalize">{progress.progress.trend}</span>
           </div>
         </div>
       </div>
