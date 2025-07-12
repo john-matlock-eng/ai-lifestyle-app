@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'react-redux';
 import { store } from './store';
@@ -62,8 +62,7 @@ function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <Router>
-          <AuthProvider>
+        <AuthProvider>
           <Routes>
             {/* Public Routes */}
             <Route element={<PublicLayout />}>
@@ -113,8 +112,7 @@ function App() {
           >
             Theme: {theme}
           </button>
-          </AuthProvider>
-        </Router>
+        </AuthProvider>
       </QueryClientProvider>
     {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </Provider>

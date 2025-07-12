@@ -2,12 +2,15 @@ import { render } from '@testing-library/react';
 import { expect, test } from 'vitest';
 import { ThemeProvider } from '../contexts';
 import App from '../App';
+import { MemoryRouter } from 'react-router-dom';
 
 test('applies reading theme to html and body', () => {
   localStorage.setItem('theme-preference', 'reading');
   render(
     <ThemeProvider>
-      <App />
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
     </ThemeProvider>
   );
   const html = document.documentElement;
