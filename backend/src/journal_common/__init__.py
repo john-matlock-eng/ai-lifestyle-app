@@ -11,6 +11,8 @@ from .models import (
     TemplateUsage
 )
 
+from .repository import JournalRepository
+
 __all__ = [
     "JournalEntry",
     "JournalTemplate",
@@ -19,5 +21,6 @@ __all__ = [
     "JournalListResponse",
     "JournalStats",
     "GoalProgress",
-    "TemplateUsage"
+    "TemplateUsage",
+    "JournalRepository"
 ]

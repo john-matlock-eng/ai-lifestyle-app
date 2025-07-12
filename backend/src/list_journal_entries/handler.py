@@ -145,79 +145,52 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         # Parse query parameters
+        query_params = event.get('queryStringParameters') or {}
+        
+        # Extract pagination params
+        limit = int(query_params.get('limit', '20'))
+        page_token = query_params.get('page_token')
+        goal_id = query_params.get('goalId')
+        
+        # Validate limit
+        if limit < 1:
+            limit = 1
+        if limit > 100:
+            limit = 100
+        
+        # Initialize journal service
+        from .service import ListJournalEntriesService
+        service = ListJournalEntriesService()
+        
+        # List journal entries from database
         try:
-            params = parse_query_params(event)
-            logger.info(f"Query parameters: {params}")
-        except ValueError as e:
-            logger.error(f"Invalid query parameters: {str(e)}")
+            response = service.list_entries(
+                user_id=user_id,
+                limit=limit,
+                page_token=page_token,
+                goal_id=goal_id
+            )
+        except Exception as e:
+            logger.error(f"Failed to list journal entries: {str(e)}")
+            metrics.add_metric(name="JournalEntryListFailures", unit=MetricUnit.Count, value=1)
+            
             return {
-                'statusCode': 400,
+                'statusCode': 500,
                 'headers': {
                     'Content-Type': 'application/json',
                     'X-Request-ID': request_id
                 },
                 'body': json.dumps({
-                    'error': 'INVALID_PARAMETERS',
-                    'message': 'Invalid query parameters',
+                    'error': 'SYSTEM_ERROR',
+                    'message': 'Failed to list journal entries',
                     'request_id': request_id,
                     'timestamp': datetime.now(timezone.utc).isoformat()
                 })
             }
         
-        # TODO: Initialize journal service when available
-        # service = ListJournalEntriesService()
-        
-        # TODO: Fetch journal entries from database with filters
-        # entries, total = service.list_entries(
-        #     user_id=user_id,
-        #     page=params['page'],
-        #     limit=params['limit'],
-        #     goal_id=params['goal_id'],
-        #     start_date=params['start_date'],
-        #     end_date=params['end_date'],
-        #     template=params['template'],
-        #     tag=params['tag'],
-        #     mood=params['mood']
-        # )
-        
-        # For now, create mock journal entries
-        mock_entries = []
-        
-        # Create different entries based on page
-        base_time = datetime.now(timezone.utc) - timedelta(days=params['page'] * 7)
-        
-        for i in range(min(params['limit'], 5)):  # Return max 5 mock entries
-            entry_time = base_time - timedelta(days=i)
-            mock_entries.append(JournalEntry(
-                entry_id=f"mock-entry-{params['page']}-{i}",
-                user_id=user_id,
-                title=f"Journal Entry {params['page']}-{i}",
-                content=f"This is a mock journal entry created on page {params['page']}, entry {i}.",
-                template=JournalTemplate.DAILY_REFLECTION if i % 3 == 0 else JournalTemplate.GRATITUDE,
-                word_count=25 + i * 10,
-                tags=[f"tag{i}", "mock"] if i % 2 == 0 else ["mock"],
-                mood="happy" if i % 2 == 0 else "calm",
-                linked_goal_ids=["goal-1"] if params['goal_id'] == "goal-1" else [],
-                goal_progress=[],
-                is_encrypted=True,
-                is_shared=False,
-                created_at=entry_time,
-                updated_at=entry_time
-            ))
-        
-        # Create response
-        total_entries = 15  # Mock total
-        response = JournalListResponse(
-            entries=mock_entries,
-            total=total_entries,
-            page=params['page'],
-            limit=params['limit'],
-            has_more=(params['page'] * params['limit']) < total_entries
-        )
-        
         # Add metrics
         metrics.add_metric(name="JournalEntriesListRequests", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name="JournalEntriesReturned", unit=MetricUnit.Count, value=len(mock_entries))
+        metrics.add_metric(name="JournalEntriesReturned", unit=MetricUnit.Count, value=len(response.entries))
         
         return {
             'statusCode': 200,

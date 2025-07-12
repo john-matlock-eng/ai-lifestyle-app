@@ -109,37 +109,55 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
-        # TODO: Initialize journal service when available
-        # service = DeleteJournalEntryService()
+        # Initialize journal service
+        from .service import DeleteJournalEntryService
+        service = DeleteJournalEntryService()
         
-        # TODO: Delete journal entry from database
-        # success = service.delete_entry(user_id, entry_id)
-        
-        # For now, simulate successful deletion for mock entry
-        if entry_id == "mock-entry-123":
-            # Add metrics
-            metrics.add_metric(name="JournalEntryDeletionAttempts", unit=MetricUnit.Count, value=1)
-            metrics.add_metric(name="SuccessfulJournalEntryDeletions", unit=MetricUnit.Count, value=1)
+        # Delete journal entry from database
+        try:
+            success = service.delete_entry(user_id, entry_id)
             
-            return {
-                'statusCode': 204,
-                'headers': {
-                    'X-Request-ID': request_id
+            if success:
+                # Add metrics
+                metrics.add_metric(name="JournalEntryDeletionAttempts", unit=MetricUnit.Count, value=1)
+                metrics.add_metric(name="SuccessfulJournalEntryDeletions", unit=MetricUnit.Count, value=1)
+                
+                return {
+                    'statusCode': 204,
+                    'headers': {
+                        'X-Request-ID': request_id
+                    }
                 }
-            }
-        else:
-            # Entry not found
-            metrics.add_metric(name="JournalEntryNotFoundForDeletion", unit=MetricUnit.Count, value=1)
+            else:
+                # Entry not found
+                metrics.add_metric(name="JournalEntryNotFoundForDeletion", unit=MetricUnit.Count, value=1)
+                
+                return {
+                    'statusCode': 404,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'X-Request-ID': request_id
+                    },
+                    'body': json.dumps({
+                        'error': 'NOT_FOUND',
+                        'message': 'Journal entry not found',
+                        'request_id': request_id,
+                        'timestamp': datetime.now(timezone.utc).isoformat()
+                    })
+                }
+        except Exception as e:
+            logger.error(f"Failed to delete journal entry: {str(e)}")
+            metrics.add_metric(name="JournalEntryDeletionFailures", unit=MetricUnit.Count, value=1)
             
             return {
-                'statusCode': 404,
+                'statusCode': 500,
                 'headers': {
                     'Content-Type': 'application/json',
                     'X-Request-ID': request_id
                 },
                 'body': json.dumps({
-                    'error': 'NOT_FOUND',
-                    'message': 'Journal entry not found',
+                    'error': 'SYSTEM_ERROR',
+                    'message': 'Failed to delete journal entry',
                     'request_id': request_id,
                     'timestamp': datetime.now(timezone.utc).isoformat()
                 })

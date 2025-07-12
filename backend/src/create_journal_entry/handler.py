@@ -3,7 +3,6 @@ Lambda handler for creating a new journal entry.
 """
 
 import json
-import uuid
 from datetime import datetime, timezone
 from typing import Dict, Any
 from aws_lambda_powertools import Logger, Tracer, Metrics
@@ -133,29 +132,47 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
-        # TODO: Initialize journal service when available
-        # service = CreateJournalEntryService()
+        # Initialize journal service
+        from .service import CreateJournalEntryService
+        service = CreateJournalEntryService()
         
-        # TODO: Create journal entry in database
-        # journal_entry = service.create_entry(user_id, request_data)
-        
-        # For now, create a mock journal entry
-        journal_entry = JournalEntry(
-            entry_id=str(uuid.uuid4()),
-            user_id=user_id,
-            title=request_data.title,
-            content=request_data.content,
-            template=request_data.template,
-            word_count=len(request_data.content.split()),
-            tags=request_data.tags or [],
-            mood=request_data.mood,
-            linked_goal_ids=request_data.linked_goal_ids or [],
-            goal_progress=request_data.goal_progress or [],
-            is_encrypted=True,
-            is_shared=request_data.is_shared,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc)
-        )
+        # Create journal entry in database
+        try:
+            journal_entry = service.create_entry(user_id, request_data)
+        except ValueError as e:
+            logger.error(f"Business rule validation failed: {str(e)}")
+            metrics.add_metric(name="JournalEntryValidationFailures", unit=MetricUnit.Count, value=1)
+            
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'X-Request-ID': request_id
+                },
+                'body': json.dumps({
+                    'error': 'VALIDATION_ERROR',
+                    'message': str(e),
+                    'request_id': request_id,
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                })
+            }
+        except Exception as e:
+            logger.error(f"Failed to create journal entry: {str(e)}")
+            metrics.add_metric(name="JournalEntryCreationFailures", unit=MetricUnit.Count, value=1)
+            
+            return {
+                'statusCode': 500,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'X-Request-ID': request_id
+                },
+                'body': json.dumps({
+                    'error': 'SYSTEM_ERROR',
+                    'message': 'Failed to create journal entry',
+                    'request_id': request_id,
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                })
+            }
         
         # Add metrics
         metrics.add_metric(name="JournalEntryCreationAttempts", unit=MetricUnit.Count, value=1)

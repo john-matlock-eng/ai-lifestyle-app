@@ -156,14 +156,30 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
-        # TODO: Initialize journal stats service when available
-        # service = JournalStatsService()
+        # Initialize journal service
+        from .service import GetJournalStatsService
+        service = GetJournalStatsService()
         
-        # TODO: Fetch actual statistics from database
-        # stats = service.get_stats(user_id)
-        
-        # For now, return mock statistics
-        stats = calculate_mock_stats(user_id)
+        # Get journal stats from database
+        try:
+            stats = service.get_stats(user_id)
+        except Exception as e:
+            logger.error(f"Failed to get journal stats: {str(e)}")
+            metrics.add_metric(name="JournalStatsRetrievalFailures", unit=MetricUnit.Count, value=1)
+            
+            return {
+                'statusCode': 500,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'X-Request-ID': request_id
+                },
+                'body': json.dumps({
+                    'error': 'SYSTEM_ERROR',
+                    'message': 'Failed to retrieve journal statistics',
+                    'request_id': request_id,
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                })
+            }
         
         # Add metrics
         metrics.add_metric(name="JournalStatsRequests", unit=MetricUnit.Count, value=1)

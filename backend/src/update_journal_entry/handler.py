@@ -150,29 +150,63 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
-        # TODO: Initialize journal service when available
-        # service = UpdateJournalEntryService()
+        # Initialize journal service
+        from .service import UpdateJournalEntryService
+        service = UpdateJournalEntryService()
         
-        # TODO: Update journal entry in database
-        # journal_entry = service.update_entry(user_id, entry_id, request_data)
-        
-        # For now, return mock updated entry
-        journal_entry = JournalEntry(
-            entry_id=entry_id,
-            user_id=user_id,
-            title=request_data.title or "Mock Journal Entry",
-            content=request_data.content or "Updated content",
-            template=request_data.template or "daily_reflection",
-            word_count=len((request_data.content or "").split()),
-            tags=request_data.tags or [],
-            mood=request_data.mood,
-            linked_goal_ids=request_data.linked_goal_ids or [],
-            goal_progress=request_data.goal_progress or [],
-            is_encrypted=True,
-            is_shared=request_data.is_shared if request_data.is_shared is not None else False,
-            created_at=datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
-            updated_at=datetime.now(timezone.utc)
-        )
+        # Update journal entry in database
+        try:
+            journal_entry = service.update_entry(user_id, entry_id, request_data)
+        except ValueError as e:
+            logger.error(f"Update validation failed: {str(e)}")
+            metrics.add_metric(name="JournalEntryUpdateValidationFailures", unit=MetricUnit.Count, value=1)
+            
+            # Determine if it's a not found error
+            if "not found" in str(e).lower():
+                return {
+                    'statusCode': 404,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'X-Request-ID': request_id
+                    },
+                    'body': json.dumps({
+                        'error': 'NOT_FOUND',
+                        'message': str(e),
+                        'request_id': request_id,
+                        'timestamp': datetime.now(timezone.utc).isoformat()
+                    })
+                }
+            else:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'X-Request-ID': request_id
+                    },
+                    'body': json.dumps({
+                        'error': 'VALIDATION_ERROR',
+                        'message': str(e),
+                        'request_id': request_id,
+                        'timestamp': datetime.now(timezone.utc).isoformat()
+                    })
+                }
+        except Exception as e:
+            logger.error(f"Failed to update journal entry: {str(e)}")
+            metrics.add_metric(name="JournalEntryUpdateFailures", unit=MetricUnit.Count, value=1)
+            
+            return {
+                'statusCode': 500,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'X-Request-ID': request_id
+                },
+                'body': json.dumps({
+                    'error': 'SYSTEM_ERROR',
+                    'message': 'Failed to update journal entry',
+                    'request_id': request_id,
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                })
+            }
         
         # Add metrics
         metrics.add_metric(name="JournalEntryUpdateAttempts", unit=MetricUnit.Count, value=1)

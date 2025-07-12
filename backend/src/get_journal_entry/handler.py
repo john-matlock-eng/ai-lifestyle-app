@@ -111,30 +111,13 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
-        # TODO: Initialize journal service when available
-        # service = GetJournalEntryService()
+        # Initialize journal service
+        from .service import GetJournalEntryService
+        service = GetJournalEntryService()
         
-        # TODO: Get journal entry from database
-        # journal_entry = service.get_entry(user_id, entry_id)
-        
-        # For now, return mock data if entry_id matches
-        if entry_id == "mock-entry-123":
-            journal_entry = JournalEntry(
-                entry_id=entry_id,
-                user_id=user_id,
-                title="Mock Journal Entry",
-                content="This is a mock journal entry for testing purposes.",
-                template="daily_reflection",
-                word_count=10,
-                tags=["test", "mock"],
-                mood="neutral",
-                linked_goal_ids=[],
-                goal_progress=[],
-                is_encrypted=True,
-                is_shared=False,
-                created_at=datetime.now(timezone.utc),
-                updated_at=datetime.now(timezone.utc)
-            )
+        # Get journal entry from database
+        try:
+            journal_entry = service.get_entry(user_id, entry_id)
             
             # Add metrics
             metrics.add_metric(name="JournalEntryRetrievalAttempts", unit=MetricUnit.Count, value=1)
@@ -148,8 +131,10 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 },
                 'body': journal_entry.model_dump_json(by_alias=True)
             }
-        else:
+            
+        except ValueError as e:
             # Entry not found
+            logger.warning(f"Journal entry not found: {str(e)}")
             metrics.add_metric(name="JournalEntryNotFound", unit=MetricUnit.Count, value=1)
             
             return {
@@ -161,6 +146,23 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'body': json.dumps({
                     'error': 'NOT_FOUND',
                     'message': 'Journal entry not found',
+                    'request_id': request_id,
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                })
+            }
+        except Exception as e:
+            logger.error(f"Failed to get journal entry: {str(e)}")
+            metrics.add_metric(name="JournalEntryRetrievalFailures", unit=MetricUnit.Count, value=1)
+            
+            return {
+                'statusCode': 500,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'X-Request-ID': request_id
+                },
+                'body': json.dumps({
+                    'error': 'SYSTEM_ERROR',
+                    'message': 'Failed to retrieve journal entry',
                     'request_id': request_id,
                     'timestamp': datetime.now(timezone.utc).isoformat()
                 })
