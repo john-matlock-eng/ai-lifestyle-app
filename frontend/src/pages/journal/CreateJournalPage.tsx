@@ -5,8 +5,8 @@ import { ArrowLeft, X } from 'lucide-react';
 import { JournalEditorWithSections } from '../../features/journal/components';
 import { useTemplateRegistry } from '../../features/journal/hooks/useTemplateRegistry';
 import { createEntry } from '../../api/journal';
-import type { CreateJournalEntryRequest, JournalTemplate as JournalTemplateEnum } from '../../types/journal';
-import type { Goal } from '../../types/goal';
+import type { CreateJournalEntryRequest, JournalTemplate } from '../../types/journal';
+import type { Goal } from '../../features/goals/types/api.types';
 
 // Template prompts for different journal types
 const TEMPLATE_PROMPTS: Record<string, { name: string; description: string; prompts: string[] }> = {
@@ -131,7 +131,7 @@ const CreateJournalPage: React.FC = () => {
     await createEntryMutation.mutateAsync({
       title: title || `${TEMPLATE_PROMPTS[selectedTemplateType].name} - ${new Date().toLocaleDateString()}`,
       content,
-      template: selectedTemplateType as JournalTemplateEnum,
+      template: selectedTemplateType as JournalTemplate,
       tags,
       mood: mood || undefined,
       linkedGoalIds: linkedGoalIds.length > 0 ? linkedGoalIds : undefined,

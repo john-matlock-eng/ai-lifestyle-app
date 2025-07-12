@@ -3,15 +3,17 @@
  * Matches backend models with camelCase property names
  */
 
-export enum JournalTemplate {
-  DAILY_REFLECTION = "daily_reflection",
-  GRATITUDE = "gratitude",
-  GOAL_PROGRESS = "goal_progress",
-  MOOD_TRACKER = "mood_tracker",
-  HABIT_TRACKER = "habit_tracker",
-  CREATIVE_WRITING = "creative_writing",
-  BLANK = "blank"
-}
+export const JournalTemplate = {
+  DAILY_REFLECTION: "daily_reflection",
+  GRATITUDE: "gratitude",
+  GOAL_PROGRESS: "goal_progress",
+  MOOD_TRACKER: "mood_tracker",
+  HABIT_TRACKER: "habit_tracker",
+  CREATIVE_WRITING: "creative_writing",
+  BLANK: "blank"
+} as const;
+
+export type JournalTemplate = typeof JournalTemplate[keyof typeof JournalTemplate];
 
 export interface GoalProgress {
   goalId: string;

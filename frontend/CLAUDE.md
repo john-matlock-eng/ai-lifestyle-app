@@ -19,6 +19,12 @@ npm run test:ui          # Run tests with UI
 npm run lint             # ESLint
 npm run type-check       # TypeScript type checking
 npm run format           # Prettier formatting
+
+# Pre-push Checklist (run these before pushing code)
+npm run lint             # Check for linting errors
+npm run type-check       # Check for TypeScript errors
+npm run build            # Ensure build succeeds
+npm test                 # Run all tests
 ```
 
 ### Backend Development
