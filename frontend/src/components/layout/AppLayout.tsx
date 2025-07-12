@@ -7,7 +7,7 @@ const AppLayout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-surface text-theme">
+    <div className="min-h-screen bg-background text-theme">
       <Header
         onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />

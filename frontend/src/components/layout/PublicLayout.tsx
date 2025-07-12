@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 
 const PublicLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-surface text-theme">
+    <div className="min-h-screen bg-background text-theme">
       <Outlet />
     </div>
   );
