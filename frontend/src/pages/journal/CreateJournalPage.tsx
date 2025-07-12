@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft, X } from 'lucide-react';
@@ -100,10 +100,25 @@ const CreateJournalPage: React.FC = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [isEncrypted, setIsEncrypted] = useState(false); // Default to unencrypted until encryption is properly initialized
+  const [encryptionReady, setEncryptionReady] = useState(false);
 
   // Get the actual template based on the selected type
   const actualTemplateId = TEMPLATE_MAPPING[selectedTemplateType] || 'daily_log';
   const currentTemplate = templates.find(t => t.id === actualTemplateId);
+
+  // Check encryption status on mount
+  useEffect(() => {
+    const checkEncryption = async () => {
+      try {
+        const encryptionService = getEncryptionService();
+        const isSetup = await encryptionService.checkSetup();
+        setEncryptionReady(isSetup);
+      } catch (error) {
+        console.error('Failed to check encryption status:', error);
+      }
+    };
+    checkEncryption();
+  }, []);
 
   // Mock goals query - replace with actual API call when available
   const { data: goals = [] } = useQuery<Goal[]>({
@@ -138,19 +153,15 @@ const CreateJournalPage: React.FC = () => {
     let encryptedKey: string | undefined;
     let encryptionIv: string | undefined;
     
-    if (isEncrypted) {
+    if (isEncrypted && encryptionReady) {
       try {
         const encryptionService = getEncryptionService();
-        // For demo purposes, initialize with a dummy password
-        // In production, this would use the user's actual password
-        if (!(await encryptionService.checkSetup())) {
-          await encryptionService.initialize('demo-password');
-        }
-        
+        console.log('Encrypting content...');
         const encrypted = await encryptionService.encryptContent(content);
         finalContent = encrypted.content;
         encryptedKey = encrypted.encryptedKey;
         encryptionIv = encrypted.iv;
+        console.log('Content encrypted successfully');
       } catch (error) {
         console.error('Encryption failed:', error);
         // If encryption fails, disable it and continue
@@ -295,34 +306,58 @@ const CreateJournalPage: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <label htmlFor="encrypt-toggle" className="text-sm font-medium text-gray-900">
                       End-to-End Encryption
                     </label>
                     <p className="text-xs text-gray-600">
-                      {isEncrypted 
-                        ? "Your entry will be encrypted. Only you can read it."
-                        : "Your entry will be stored unencrypted."}
+                      {!encryptionReady ? (
+                        "Encryption not set up. Initialize to enable encryption."
+                      ) : isEncrypted ? (
+                        "Your entry will be encrypted. Only you can read it."
+                      ) : (
+                        "Your entry will be stored unencrypted."
+                      )}
                     </p>
                   </div>
                 </div>
-                <button
-                  id="encrypt-toggle"
-                  type="button"
-                  onClick={() => setIsEncrypted(!isEncrypted)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    isEncrypted ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
-                  role="switch"
-                  aria-checked={isEncrypted}
-                >
-                  <span className="sr-only">Enable encryption</span>
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      isEncrypted ? 'translate-x-6' : 'translate-x-1'
+                {!encryptionReady ? (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const encryptionService = getEncryptionService();
+                        await encryptionService.initialize('demo-password');
+                        setEncryptionReady(true);
+                        alert('Encryption initialized successfully!');
+                      } catch (error) {
+                        console.error('Failed to initialize encryption:', error);
+                        alert('Failed to initialize encryption. Please try again.');
+                      }
+                    }}
+                    className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Initialize
+                  </button>
+                ) : (
+                  <button
+                    id="encrypt-toggle"
+                    type="button"
+                    onClick={() => setIsEncrypted(!isEncrypted)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isEncrypted ? 'bg-blue-600' : 'bg-gray-200'
                     }`}
-                  />
-                </button>
+                    role="switch"
+                    aria-checked={isEncrypted}
+                  >
+                    <span className="sr-only">Enable encryption</span>
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isEncrypted ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                )}
               </div>
             </div>
 
