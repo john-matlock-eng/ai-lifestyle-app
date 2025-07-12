@@ -120,7 +120,7 @@ export const MilestoneChart: React.FC<MilestoneChartProps> = ({
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold" style={{ color }}>
-            {progressPercentage.toFixed(1)}%
+            {progressPercentage.toFixed(2)}%
           </div>
           <p className="text-xs text-gray-500">Complete</p>
         </div>
@@ -257,7 +257,7 @@ export const MilestoneBar: React.FC<MilestoneBarProps> = ({
           {label && <span className="text-sm font-medium text-gray-700">{label}</span>}
           {showPercentage && (
             <span className="text-sm font-medium" style={{ color }}>
-              {percentage.toFixed(1)}%
+              {percentage.toFixed(2)}%
             </span>
           )}
         </div>

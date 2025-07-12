@@ -427,7 +427,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
             <div>
               <p className="text-sm text-muted">Success Rate</p>
               <p className="text-2xl font-bold text-[var(--text)]">
-                {progressInfo.progress.successRate}%
+                {progressInfo.progress.successRate?.toFixed(2)}%
               </p>
             </div>
           </div>
