@@ -53,10 +53,16 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
       }
     ],
     extractors: {
-      mood: (responses) => responses.mood,
+      mood: (responses) => {
+        const moodResponse = responses.mood;
+        return moodResponse && typeof moodResponse.value === 'string' ? moodResponse.value : undefined;
+      },
       tags: (responses) => {
         const tags = ['daily-reflection'];
-        if (responses.mood) tags.push(`mood-${responses.mood}`);
+        const moodResponse = responses.mood;
+        if (moodResponse && typeof moodResponse.value === 'string') {
+          tags.push(`mood-${moodResponse.value}`);
+        }
         return tags;
       }
     }
@@ -151,12 +157,15 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
     extractors: {
       tags: () => ['goals', 'progress', 'productivity'],
       goalProgress: (responses) => {
-        if (!Array.isArray(responses['goals-worked'])) return [];
-        return responses['goals-worked'].map((goalId: string) => ({
+        const goalsWorked = responses['goals-worked'];
+        if (!goalsWorked || !Array.isArray(goalsWorked.value)) return [];
+        const progressRating = responses['progress-rating'];
+        const progressDescription = responses['progress-description'];
+        return (goalsWorked.value as string[]).map((goalId: string) => ({
           goalId,
           completed: false,
-          progressValue: responses['progress-rating'] || 5,
-          notes: responses['progress-description'] || ''
+          progressValue: typeof progressRating?.value === 'number' ? progressRating.value : 5,
+          notes: typeof progressDescription?.value === 'string' ? progressDescription.value : ''
         }));
       }
     }
@@ -217,12 +226,19 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
       }
     ],
     extractors: {
-      mood: (responses) => responses['current-mood'],
+      mood: (responses) => {
+        const moodResponse = responses['current-mood'];
+        return moodResponse && typeof moodResponse.value === 'string' ? moodResponse.value : undefined;
+      },
       tags: (responses) => {
         const tags = ['mood-tracker'];
-        if (responses['current-mood']) tags.push(`mood-${responses['current-mood']}`);
-        if (Array.isArray(responses['mood-tags'])) {
-          tags.push(...responses['mood-tags']);
+        const moodResponse = responses['current-mood'];
+        if (moodResponse && typeof moodResponse.value === 'string') {
+          tags.push(`mood-${moodResponse.value}`);
+        }
+        const moodTags = responses['mood-tags'];
+        if (moodTags && Array.isArray(moodTags.value)) {
+          tags.push(...(moodTags.value as string[]));
         }
         return tags;
       }
@@ -336,11 +352,15 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
       }
     ],
     extractors: {
-      mood: (responses) => responses['writing-mood'],
+      mood: (responses) => {
+        const moodResponse = responses['writing-mood'];
+        return moodResponse && typeof moodResponse.value === 'string' ? moodResponse.value : undefined;
+      },
       tags: (responses) => {
         const tags = ['creative-writing'];
-        if (Array.isArray(responses['writing-tags'])) {
-          tags.push(...responses['writing-tags']);
+        const writingTags = responses['writing-tags'];
+        if (writingTags && Array.isArray(writingTags.value)) {
+          tags.push(...(writingTags.value as string[]));
         }
         return tags;
       }
@@ -371,8 +391,9 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
     extractors: {
       tags: (responses) => {
         const tags = ['free-writing'];
-        if (Array.isArray(responses.tags)) {
-          tags.push(...responses.tags);
+        const tagsResponse = responses.tags;
+        if (tagsResponse && Array.isArray(tagsResponse.value)) {
+          tags.push(...(tagsResponse.value as string[]));
         }
         return tags;
       }

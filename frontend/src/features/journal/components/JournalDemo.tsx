@@ -4,9 +4,9 @@ import {
   EnhancedJournalEditor,
   EnhancedTemplatePicker,
   DraftManager
-} from './components';
+} from './';
 import { JournalTemplate } from '@/types/journal';
-import type { CreateJournalEntryRequest } from '@/types/journal';
+import type { CreateJournalEntryRequest, UpdateJournalEntryRequest } from '@/types/journal';
 
 /**
  * Example implementation showing how to use the enhanced journal system
@@ -16,7 +16,7 @@ export const JournalDemo: React.FC = () => {
   const [view, setView] = useState<'picker' | 'editor' | 'drafts'>('picker');
   const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
   
-  const handleSave = async (request: CreateJournalEntryRequest) => {
+  const handleSave = async (request: CreateJournalEntryRequest | UpdateJournalEntryRequest) => {
     console.log('Saving journal entry:', {
       title: request.title,
       template: request.template,

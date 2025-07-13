@@ -4,7 +4,9 @@ import {
   Calendar, 
   FileText, 
   Lock,
-  Hash
+  Unlock,
+  Hash,
+  Target
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { JournalEntry } from '@/types/journal';

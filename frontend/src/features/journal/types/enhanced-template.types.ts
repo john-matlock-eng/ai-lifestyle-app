@@ -26,6 +26,7 @@ export interface SectionDefinition {
     max?: number;
     choices?: Array<{ value: string; label: string; icon?: string }>;
     moods?: Array<{ value: string; label: string; emoji: string }>;
+    items?: Array<{ id: string; label: string }>;
   };
 }
 

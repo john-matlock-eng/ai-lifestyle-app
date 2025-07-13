@@ -20,11 +20,12 @@ import type {
   GoalPattern,
 } from '../features/goals';
 
-import {
-  JournalEditor,
-  JournalStorageSample,
-  JournalTemplateDemo,
-} from '../features/journal';
+// Temporarily commented out - old components no longer exist
+// import {
+//   JournalEditor,
+//   JournalStorageSample,
+//   JournalTemplateDemo,
+// } from '../features/journal';
 
 // Mock data for demonstrations
 const mockGoals: Goal[] = [
@@ -161,7 +162,6 @@ export const ComponentShowcase: React.FC = () => {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [encryptionEnabled, setEncryptionEnabled] = useState(false);
   const [showQuickLog, setShowQuickLog] = useState<string | null>(null);
-  const [journalContent, setJournalContent] = useState<string>('# Journal Entry\nThis is a sample entry.');
 
   const sections = [
     { id: 'overview', label: 'Overview' },
@@ -390,31 +390,7 @@ export const ComponentShowcase: React.FC = () => {
           {activeSection === 'journal' && (
             <div className="space-y-8">
               <h2 className="text-2xl font-bold text-[var(--text)]">Journal Components</h2>
-
-              <div className="bg-surface rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
-                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Journal Editor</h3>
-                <JournalEditor
-                  initialContent={journalContent}
-                  onSave={(md) => {
-                    setJournalContent(md);
-                    console.log('Saved journal markdown:', md);
-                  }}
-                />
-                <div className="mt-4">
-                  <h4 className="font-semibold text-gray-700 mb-2">Saved Markdown</h4>
-                  <pre className="p-2 bg-[var(--surface-muted)] rounded border text-sm whitespace-pre-wrap">{journalContent}</pre>
-                </div>
-              </div>
-
-              <div className="bg-surface rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
-                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Journal Storage Sample</h3>
-                <JournalStorageSample />
-              </div>
-
-              <div className="bg-surface rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
-                <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Template Picker Demo</h3>
-                <JournalTemplateDemo />
-              </div>
+              <p className="text-muted">Journal components have been migrated to the enhanced journal system. View them in the Journal page.</p>
             </div>
           )}
         </main>

@@ -14,12 +14,11 @@ import {
 import type { SectionDefinition } from '../../types/enhanced-template.types';
 
 import type { Goal } from '@/features/goals/types/api.types';
-import type { SectionResponse } from '../../types/enhanced-template.types';
 
 export interface SectionEditorProps {
   section: SectionDefinition;
-  value: SectionResponse;
-  onChange: (value: SectionResponse) => void;
+  value: string | number | string[] | Record<string, boolean>;
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
   isCompleted?: boolean;
   availableGoals?: Goal[];
 }
@@ -36,19 +35,19 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   const renderInput = () => {
     switch (section.type) {
       case 'text':
-        return <TextInput section={section} value={value} onChange={onChange} />;
+        return <TextInput section={section} value={value as string} onChange={onChange} />;
       case 'scale':
-        return <ScaleInput section={section} value={value} onChange={onChange} />;
+        return <ScaleInput section={section} value={value as number} onChange={onChange} />;
       case 'mood':
-        return <MoodInput section={section} value={value} onChange={onChange} />;
+        return <MoodInput section={section} value={value as string} onChange={onChange} />;
       case 'choice':
-        return <ChoiceInput section={section} value={value} onChange={onChange} />;
+        return <ChoiceInput section={section} value={value as string} onChange={onChange} />;
       case 'tags':
-        return <TagsInput section={section} value={value} onChange={onChange} />;
+        return <TagsInput section={section} value={value as string[]} onChange={onChange} />;
       case 'goals':
-        return <GoalsInput section={section} value={value} onChange={onChange} availableGoals={availableGoals} />;
+        return <GoalsInput section={section} value={value as string[]} onChange={onChange} availableGoals={availableGoals} />;
       case 'checklist':
-        return <ChecklistInput section={section} value={value} onChange={onChange} />;
+        return <ChecklistInput section={section} value={value as Record<string, boolean>} onChange={onChange} />;
       default:
         return <div>Unsupported input type: {section.type}</div>;
     }
@@ -91,7 +90,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 const TextInput: React.FC<{
   section: SectionDefinition;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
 }> = ({ section, value, onChange }) => {
   const editor = useEditor({
     extensions: [
@@ -122,7 +121,7 @@ const TextInput: React.FC<{
 const ScaleInput: React.FC<{
   section: SectionDefinition;
   value: number;
-  onChange: (value: number) => void;
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
 }> = ({ section, value, onChange }) => {
   const min = section.options?.min || 1;
   const max = section.options?.max || 10;
@@ -162,7 +161,7 @@ const ScaleInput: React.FC<{
 const MoodInput: React.FC<{
   section: SectionDefinition;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
 }> = ({ section, value, onChange }) => {
   const moods = section.options?.moods || [];
 
@@ -192,7 +191,7 @@ const MoodInput: React.FC<{
 const ChoiceInput: React.FC<{
   section: SectionDefinition;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
 }> = ({ section, value, onChange }) => {
   const choices = section.options?.choices || [];
 
@@ -232,7 +231,7 @@ const ChoiceInput: React.FC<{
 const TagsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
-  onChange: (value: string[]) => void;
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
 }> = ({ value = [], onChange }) => {
   const [inputValue, setInputValue] = React.useState('');
 
@@ -287,7 +286,7 @@ const TagsInput: React.FC<{
 const GoalsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
-  onChange: (value: string[]) => void;
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
   availableGoals: Goal[];
 }> = ({ value = [], onChange, availableGoals }) => {
   return (
@@ -298,10 +297,10 @@ const GoalsInput: React.FC<{
         <>
           {availableGoals.map(goal => (
             <label
-              key={goal.id}
+              key={goal.goalId}
               className={`
                 flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all
-                ${value.includes(goal.id) 
+                ${value.includes(goal.goalId) 
                   ? 'bg-accent/10 ring-2 ring-accent' 
                   : 'bg-surface-muted hover:bg-surface-hover'
                 }
@@ -309,12 +308,12 @@ const GoalsInput: React.FC<{
             >
               <input
                 type="checkbox"
-                checked={value.includes(goal.id)}
+                checked={value.includes(goal.goalId)}
                 onChange={(e) => {
                   if (e.target.checked) {
-                    onChange([...value, goal.id]);
+                    onChange([...value, goal.goalId]);
                   } else {
-                    onChange(value.filter(id => id !== goal.id));
+                    onChange(value.filter(id => id !== goal.goalId));
                   }
                 }}
                 className="sr-only"
@@ -324,7 +323,7 @@ const GoalsInput: React.FC<{
                 <div className="font-medium">{goal.title}</div>
                 {goal.category && <div className="text-xs text-muted">{goal.category}</div>}
               </div>
-              {value.includes(goal.id) && <Check className="w-4 h-4 text-accent" />}
+              {value.includes(goal.goalId) && <Check className="w-4 h-4 text-accent" />}
             </label>
           ))}
         </>
@@ -337,7 +336,7 @@ const GoalsInput: React.FC<{
 const ChecklistInput: React.FC<{
   section: SectionDefinition;
   value: Record<string, boolean>;
-  onChange: (value: Record<string, boolean>) => void;
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
 }> = ({ section, value = {}, onChange }) => {
   const items = section.options?.items || [];
 

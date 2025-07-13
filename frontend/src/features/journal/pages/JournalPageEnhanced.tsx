@@ -11,6 +11,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { JournalTemplate } from '@/types/journal';
+import type { CreateJournalEntryRequest, UpdateJournalEntryRequest } from '@/types/journal';
 import { Button } from '@/components/common';
 import { createEntry } from '@/api/journal';
 import { journalStorage } from '../services/JournalStorageService';
@@ -18,9 +19,9 @@ import { useJournalSearch } from '../hooks/useJournalSearch';
 import { EnhancedJournalEditor } from '../components/EnhancedEditor';
 import { EnhancedTemplatePicker } from '../components/EnhancedTemplatePicker';
 import { DraftManager } from '../components/DraftManager';
-import JournalSearchBar from '../components/JournalSearchBar';
+import { JournalSearchBar } from '../components/JournalSearchBar';
 import JournalCard from '../components/JournalCard';
-import SearchResultsSummary from '../components/SearchResultsSummary';
+import { SearchResultsSummary } from '../components/SearchResultsSummary';
 
 type ViewMode = 'list' | 'create' | 'drafts';
 
@@ -28,6 +29,8 @@ export const JournalPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_selectedDraftKey, _setSelectedDraftKey] = useState<string | null>(null);
 
   // Search functionality
   const {
@@ -88,7 +91,7 @@ export const JournalPageEnhanced: React.FC = () => {
 
   // Handle draft selection
   const handleDraftSelect = (draftKey: string) => {
-    setSelectedDraftKey(draftKey);
+    _setSelectedDraftKey(draftKey);
     setViewMode('create');
     
     // Load draft data
@@ -121,6 +124,12 @@ export const JournalPageEnhanced: React.FC = () => {
     cleanupDrafts();
   }, []);
 
+  // Handle save for both create and update
+  const handleSave = async (request: CreateJournalEntryRequest | UpdateJournalEntryRequest) => {
+    // For now, we only support create
+    await createMutation.mutateAsync(request as CreateJournalEntryRequest);
+  };
+
   // Render based on view mode
   if (viewMode === 'create' && selectedTemplate) {
     return (
@@ -128,11 +137,11 @@ export const JournalPageEnhanced: React.FC = () => {
         <div className="container mx-auto py-8 px-4">
           <EnhancedJournalEditor
             templateId={selectedTemplate}
-            onSave={createMutation.mutate}
+            onSave={handleSave}
             onCancel={() => {
               setViewMode('list');
               setSelectedTemplate(null);
-              setSelectedDraftKey(null);
+              _setSelectedDraftKey(null);
             }}
             autoSave={true}
             showEncryption={true}
@@ -277,13 +286,10 @@ export const JournalPageEnhanced: React.FC = () => {
           <SearchResultsSummary
             filters={filters}
             total={total}
-            onClearFilter={(filterType) => {
-              if (filterType === 'all') {
-                setFilters({});
-              } else {
-                setFilters({ ...filters, [filterType]: undefined });
-              }
+            onClearFilter={(filterType: string) => {
+              setFilters({ ...filters, [filterType]: undefined });
             }}
+            onClearAll={() => setFilters({})}
           />
         )}
 
