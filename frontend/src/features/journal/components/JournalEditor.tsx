@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
@@ -69,6 +69,16 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastSaved, setLastSaved] = useState(initialContent);
   const [restoreDraft, setRestoreDraft] = useState<string | null>(null);
+  const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
   
   useEffect(() => {
     if (!editor || readOnly) return;
@@ -102,7 +112,13 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
       localStorage.removeItem(DRAFT_KEY);
       setLastSaved(markdown);
       setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+      successTimeoutRef.current = setTimeout(() => {
+        setShowSuccess(false);
+        successTimeoutRef.current = null;
+      }, 3000);
     } catch (error) {
       console.error('Failed to save:', error);
     } finally {

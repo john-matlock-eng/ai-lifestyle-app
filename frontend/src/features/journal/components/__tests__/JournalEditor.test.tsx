@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import JournalEditor from '../JournalEditor';
 
@@ -8,6 +8,14 @@ const initial = '# Hello';
 describe('JournalEditor', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.clearAllTimers();
+    vi.useFakeTimers();
+  });
+  
+  afterEach(() => {
+    cleanup();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
   it('renders initial markdown content', () => {

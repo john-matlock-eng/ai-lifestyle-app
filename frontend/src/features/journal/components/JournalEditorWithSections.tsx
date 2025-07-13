@@ -49,6 +49,16 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
   const [saveCounter, setSaveCounter] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Update content when initialData changes
   useEffect(() => {
@@ -95,7 +105,13 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
       });
       setSaveCounter((c) => c + 1);
       setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+      successTimeoutRef.current = setTimeout(() => {
+        setShowSuccess(false);
+        successTimeoutRef.current = null;
+      }, 3000);
     } catch (error) {
       console.error('Failed to save journal entry:', error);
     } finally {

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import JournalEditorWithSections from '../JournalEditorWithSections';
 import type { JournalTemplate } from '../../types/template.types';
@@ -17,6 +17,14 @@ const template: JournalTemplate = {
 describe('JournalEditorWithSections', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.clearAllTimers();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   it('renders sections based on template', () => {

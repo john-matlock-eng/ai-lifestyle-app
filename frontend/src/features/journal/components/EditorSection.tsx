@@ -117,8 +117,9 @@ const EditorSection: React.FC<EditorSectionProps> = ({
     }
   }, [editor, initialContent]);
 
+  // Auto-save draft handling
   useEffect(() => {
-    if (!editor || readOnly || !DRAFT_KEY) return;
+    if (!editor || readOnly || !DRAFT_KEY || editor.isDestroyed) return;
 
     const draft = localStorage.getItem(DRAFT_KEY);
     if (draft && draft !== lastSaved) {
@@ -136,7 +137,9 @@ const EditorSection: React.FC<EditorSectionProps> = ({
       }
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [editor, readOnly, DRAFT_KEY, lastSaved]);
 
   useEffect(() => {

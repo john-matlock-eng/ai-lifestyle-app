@@ -1,5 +1,5 @@
-import { describe, it, beforeEach, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import JournalStorageSample from '../JournalStorageSample';
 import { indexedDB } from 'fake-indexeddb';
@@ -11,6 +11,14 @@ describe('JournalStorageSample', () => {
   beforeEach(() => {
     const req = indexedDB.deleteDatabase('journal-db');
     req.onsuccess = () => {};
+    vi.clearAllTimers();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
   });
 
   it('creates a new entry and displays it', async () => {
