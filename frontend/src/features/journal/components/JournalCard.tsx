@@ -12,6 +12,7 @@ import { formatDistanceToNow } from 'date-fns';
 import type { JournalEntry } from '@/types/journal';
 import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
 import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
+import { shouldTreatAsEncrypted, getSafeExcerpt } from '@/utils/encryption-utils';
 
 interface JournalCardProps {
   entry: JournalEntry;
@@ -43,25 +44,8 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
     return legacyMoodMap[mood] || { emoji: '💭', label: mood };
   };
 
-  const getExcerpt = (content: string, maxLength: number = 150) => {
-    if (entry.isEncrypted) {
-      return 'This entry is encrypted';
-    }
-    
-    // Remove markdown formatting for preview
-    const plainText = content
-      .replace(/#{1,6}\s/g, '') // Remove headers
-      .replace(/\*\*|__/g, '') // Remove bold
-      .replace(/\*|_/g, '') // Remove italic
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links
-      .replace(/`/g, '') // Remove code
-      .replace(/\n{2,}/g, ' ') // Replace multiple newlines
-      .trim();
-    
-    return plainText.length > maxLength 
-      ? plainText.substring(0, maxLength) + '...'
-      : plainText;
-  };
+  // Check if content is actually encrypted
+  const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
 
   return (
     <div
@@ -106,17 +90,17 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
               </span>
             );
           })()}
-          {entry.isEncrypted ? (
-            <Lock className="w-4 h-4 text-muted" />
+          {isActuallyEncrypted ? (
+          <Lock className="w-4 h-4 text-muted" />
           ) : (
-            <Unlock className="w-4 h-4 text-muted opacity-50" />
+          <Unlock className="w-4 h-4 text-muted opacity-50" />
           )}
         </div>
       </div>
 
       {/* Content Preview */}
       <p className="text-sm text-muted line-clamp-3 mb-3">
-        {getExcerpt(entry.content)}
+        {getSafeExcerpt(entry.content, entry.isEncrypted)}
       </p>
 
       {/* Footer */}

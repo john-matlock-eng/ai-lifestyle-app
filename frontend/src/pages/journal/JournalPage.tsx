@@ -10,6 +10,7 @@ import { useEncryption } from '../../contexts/useEncryption';
 import { useJournalSearch } from '../../features/journal/hooks/useJournalSearch';
 import { JournalSearchBar } from '../../features/journal/components/JournalSearchBar';
 import { SearchResultsSummary } from '../../features/journal/components/SearchResultsSummary';
+import { shouldTreatAsEncrypted, getSafeExcerpt } from '../../utils/encryption-utils';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
@@ -172,7 +173,7 @@ const JournalPage: React.FC = () => {
             >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold truncate flex-1">{entry.title}</h3>
-                {entry.isEncrypted && (
+                {shouldTreatAsEncrypted(entry) && (
                   <div className="flex-shrink-0 ml-2" title="End-to-End Encrypted">
                     <Lock className="h-4 w-4 text-blue-600" />
                   </div>
@@ -190,9 +191,7 @@ const JournalPage: React.FC = () => {
               </div>
 
               <p className="text-muted text-sm mb-4 line-clamp-3">
-                {entry.isEncrypted 
-                  ? "🔒 This entry is encrypted. Click to view."
-                  : entry.content}
+                {getSafeExcerpt(entry.content, entry.isEncrypted, 200)}
               </p>
 
               {entry.tags.length > 0 && (
