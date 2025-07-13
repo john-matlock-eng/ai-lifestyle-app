@@ -5,6 +5,7 @@ export { SearchResultsSummary } from './SearchResultsSummary';
 // Journal Display Components
 export { default as JournalCard } from './JournalCard';
 export { default as JournalEntryDetail } from './JournalEntryDetail';
+export { JournalActions } from './JournalActions';
 
 // Enhanced Editor Components
 export { EnhancedJournalEditor, SectionEditor } from './EnhancedEditor';

@@ -35,7 +35,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
     currentValue: 0,
     targetDate: undefined,
     icon: '🏆',
-    color: '#8B5CF6',
+    color: 'var(--accent)',
     ...initialData,
   });
   
@@ -69,14 +69,14 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
         </div>
         <div>
           <h3 className="text-lg font-semibold text-[var(--text)]">Create Milestone Goal</h3>
-          <p className="text-sm text-muted">Set a cumulative target to achieve</p>
+          <p className="text-sm text-[var(--text-muted)]">Set a cumulative target to achieve</p>
         </div>
       </div>
 
       {/* Goal Title */}
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-          Goal Title <span className="text-red-500">*</span>
+          Goal Title <span className="text-[var(--accent)]">*</span>
         </label>
         <input
           type="text"
@@ -84,7 +84,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
           placeholder="e.g., Write my first novel"
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
           required
         />
       </div>
@@ -92,13 +92,13 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
       {/* Category */}
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-          Category <span className="text-red-500">*</span>
+          Category <span className="text-[var(--accent)]">*</span>
         </label>
         <select
           id="category"
           value={formData.category}
           onChange={(e) => updateFormData({ category: e.target.value })}
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
           required
         >
           {GOAL_CATEGORIES.map(cat => (
@@ -128,7 +128,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               value={formData.targetValue}
               onChange={(e) => updateFormData({ targetValue: parseInt(e.target.value) || 0 })}
               min={1}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
+              className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
               required
             />
           </div>
@@ -146,7 +146,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
                   setMetricType(newType);
                   updateFormData({ unit: METRIC_UNITS[newType][0] || '' });
                 }}
-                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="flex-1 px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
               >
                 <option value="count">Count</option>
                 <option value="amount">Amount</option>
@@ -157,7 +157,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
                 id="unit"
                 value={formData.unit}
                 onChange={(e) => updateFormData({ unit: e.target.value })}
-                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="flex-1 px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
                 required
               >
                 {availableUnits.map(unit => (
@@ -179,7 +179,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               onChange={(e) => updateFormData({ currentValue: parseInt(e.target.value) || 0 })}
               min={0}
               max={formData.targetValue}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
+              className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               targetDate: e.target.value ? new Date(e.target.value) : undefined 
             })}
             min={new Date().toISOString().split('T')[0]}
-            className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
           />
           <p className="text-xs text-[var(--text-muted)] mt-1">
             Add a deadline to help stay motivated
@@ -235,7 +235,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
           onChange={(e) => updateFormData({ description: e.target.value })}
           placeholder="What does achieving this milestone mean to you?"
           rows={3}
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
         />
       </div>
 
@@ -261,7 +261,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
               onChange={(e) => setPrivateNotes(e.target.value)}
               placeholder="Your motivation, milestones along the way, or personal thoughts (encrypted)..."
               rows={3}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
+              className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
             />
             <p className="text-xs text-[var(--text-muted)] mt-1">
               🔒 These notes will be encrypted and only visible to you
@@ -278,7 +278,7 @@ export const MilestoneGoalForm: React.FC<MilestoneGoalFormProps> = ({
             id="journal-linked"
             checked={isJournalLinked}
             onChange={(e) => setIsJournalLinked(e.target.checked)}
-            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            className="h-4 w-4 text-[var(--accent)] focus:ring-[var(--accent)] border-[var(--surface-muted)] rounded"
           />
           <label htmlFor="journal-linked" className="text-sm text-[var(--text-secondary)]">
             Link this goal to journaling

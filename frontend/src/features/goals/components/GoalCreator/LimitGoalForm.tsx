@@ -47,7 +47,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
     period: 'day',
     targetType: 'maximum',
     icon: '🛡️',
-    color: '#EF4444',
+    color: 'var(--error)',
     ...initialData,
   });
   
@@ -109,12 +109,12 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-[var(--accent-bg)] rounded-lg">
+        <div className="p-2 bg-[var(--error-bg)] rounded-lg">
           <ShieldAlert className="h-6 w-6 text-[var(--accent)]" />
         </div>
         <div>
           <h3 className="text-lg font-semibold text-[var(--text)]">Create Limit Goal</h3>
-          <p className="text-sm text-muted">Set boundaries to stay within healthy limits</p>
+          <p className="text-sm text-[var(--text-muted)]">Set boundaries to stay within healthy limits</p>
         </div>
       </div>
 
@@ -136,7 +136,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
                 <span className="text-lg">{template.icon}</span>
                 <div className="flex-1">
                   <div className="text-sm font-medium text-[var(--text)]">{template.title}</div>
-                  <div className="text-xs text-muted">
+                  <div className="text-xs text-[var(--text-muted)]">
                     Max {template.limitValue} {template.unit}/{template.period}
                   </div>
                 </div>
@@ -149,7 +149,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
       {/* Goal Title */}
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-          Goal Title <span className="text-red-500">*</span>
+          Goal Title <span className="text-[var(--accent)]">*</span>
         </label>
         <input
           type="text"
@@ -157,7 +157,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
           placeholder="e.g., Limit screen time"
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
           required
         />
       </div>
@@ -165,13 +165,13 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
       {/* Category */}
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-          Category <span className="text-red-500">*</span>
+          Category <span className="text-[var(--accent)]">*</span>
         </label>
         <select
           id="category"
           value={formData.category}
           onChange={(e) => updateFormData({ category: e.target.value })}
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
           required
         >
           {GOAL_CATEGORIES.map(cat => (
@@ -251,7 +251,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
                   setMetricType(newType);
                   updateFormData({ unit: METRIC_UNITS[newType][0] || '' });
                 }}
-                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="flex-1 px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
               >
                 <option value="duration">Duration</option>
                 <option value="amount">Amount</option>
@@ -263,7 +263,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
                 id="unit"
                 value={formData.unit}
                 onChange={(e) => updateFormData({ unit: e.target.value })}
-                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="flex-1 px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
                 required
               >
                 {availableUnits.map(unit => (
@@ -293,7 +293,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
         </div>
 
         {/* Limit Summary */}
-        <div className="bg-[var(--accent-bg)] rounded-lg p-4 space-y-3">
+        <div className="bg-[var(--error-bg)] rounded-lg p-4 space-y-3">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-[var(--accent)]" />
             <span className="font-medium text-[var(--text)]">Your Limit</span>
@@ -317,7 +317,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
               <span>Warning</span>
               <span>{formData.targetType === 'maximum' ? 'Over Limit' : 'Under Limit'}</span>
             </div>
-            <div className="h-2 bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 rounded-full" />
+            <div className="h-2 bg-gradient-to-r from-[var(--success)] via-[var(--warning)] to-[var(--error)] rounded-full" />
           </div>
         </div>
       </div>
@@ -333,7 +333,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
           onChange={(e) => updateFormData({ description: e.target.value })}
           placeholder="Why is this limit important? What are you trying to achieve?"
           rows={3}
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
         />
       </div>
 
@@ -376,7 +376,7 @@ export const LimitGoalForm: React.FC<LimitGoalFormProps> = ({
             id="journal-linked"
             checked={isJournalLinked}
             onChange={(e) => setIsJournalLinked(e.target.checked)}
-            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            className="h-4 w-4 text-[var(--accent)] focus:ring-[var(--accent)] border-[var(--surface-muted)] rounded"
           />
           <label htmlFor="journal-linked" className="text-sm text-[var(--text-secondary)]">
             Link this goal to journaling

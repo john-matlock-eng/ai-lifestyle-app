@@ -14,7 +14,9 @@ import {
   FileText,
   Hash,
   Target,
-  TrendingUp
+  TrendingUp,
+  Users,
+  X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
@@ -22,14 +24,24 @@ import { Button } from '@/components/common';
 import { getEntry, deleteEntry } from '@/api/journal';
 import { journalStorage } from '../services/JournalStorageService';
 import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
+import ShareDialog from '@/components/encryption/ShareDialog';
+import ShareManagement from '@/components/encryption/ShareManagement';
+import AIShareDialog from '@/components/encryption/AIShareDialog';
+import { JournalActions } from '../components/JournalActions';
+import { useEncryption } from '@/contexts/useEncryption';
 
 export const JournalViewPageEnhanced: React.FC = () => {
   const { entryId } = useParams<{ entryId: string }>();
   const navigate = useNavigate();
+  const { isEncryptionEnabled: isEncryptionInitialized } = useEncryption();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showShareManagement, setShowShareManagement] = useState(false);
+  const [showAIShareDialog, setShowAIShareDialog] = useState(false);
+  const [shareSuccessMessage, setShareSuccessMessage] = useState<string | null>(null);
 
   // Fetch entry
-  const { data: entry, isLoading, error } = useQuery({
+  const { data: entry, isLoading, error, refetch } = useQuery({
     queryKey: ['journal', 'entry', entryId],
     queryFn: () => getEntry(entryId!),
     enabled: !!entryId
@@ -52,6 +64,48 @@ export const JournalViewPageEnhanced: React.FC = () => {
       setShowDeleteConfirm(true);
       setTimeout(() => setShowDeleteConfirm(false), 3000);
     }
+  };
+
+  const handleShare = (tokens: Array<{ id: string; recipientEmail: string; permissions: string[]; expiresAt: string }>) => {
+    console.log('Created shares:', tokens);
+    setShareSuccessMessage(`Successfully shared with ${tokens.length} recipient${tokens.length > 1 ? 's' : ''}`);
+    setTimeout(() => setShareSuccessMessage(null), 3000);
+    refetch(); // Refresh entry to show updated sharing status
+  };
+
+  const handleAIAnalysis = (analysisId: string) => {
+    console.log('AI analysis started:', analysisId);
+    setShareSuccessMessage('AI analysis has been initiated. Results will be available soon.');
+    setTimeout(() => setShareSuccessMessage(null), 5000);
+  };
+
+  const handleShareRevoked = (shareId: string) => {
+    console.log('Revoked share:', shareId);
+    setShareSuccessMessage('Share access has been revoked.');
+    setTimeout(() => setShareSuccessMessage(null), 3000);
+    refetch(); // Refresh entry data
+  };
+
+  const getMoodEmoji = (mood?: string) => {
+    const moodMap: Record<string, string> = {
+      amazing: '🤩',
+      good: '😊',
+      okay: '😐',
+      stressed: '😰',
+      sad: '😢',
+      joyful: '😊',
+      content: '😌',
+      anxious: '😰',
+      angry: '😠',
+      tired: '😴',
+      inspired: '✨',
+      relaxed: '😌',
+      energized: '⚡',
+      thoughtful: '🤔',
+      emotional: '💭',
+      grateful: '🙏'
+    };
+    return moodMap[mood || ''] || '😐';
   };
 
   if (isLoading) {
@@ -80,31 +134,16 @@ export const JournalViewPageEnhanced: React.FC = () => {
     );
   }
 
-  const getMoodEmoji = (mood?: string) => {
-    const moodMap: Record<string, string> = {
-      amazing: '🤩',
-      good: '😊',
-      okay: '😐',
-      stressed: '😰',
-      sad: '😢',
-      joyful: '😊',
-      content: '😌',
-      anxious: '😰',
-      angry: '😠',
-      tired: '😴',
-      inspired: '✨',
-      relaxed: '😌',
-      energized: '⚡',
-      thoughtful: '🤔',
-      emotional: '💭',
-      grateful: '🙏'
-    };
-    return moodMap[mood || ''] || '😐';
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 max-w-4xl">
+        {/* Success Message */}
+        {shareSuccessMessage && (
+          <div className="mb-4 p-3 bg-success/10 text-success rounded-lg">
+            {shareSuccessMessage}
+          </div>
+        )}
+
         {/* Navigation */}
         <div className="flex items-center justify-between mb-6">
           <Button
@@ -116,6 +155,14 @@ export const JournalViewPageEnhanced: React.FC = () => {
           </Button>
           
           <div className="flex items-center gap-2">
+            {isEncryptionInitialized && entry.isEncrypted && (
+              <JournalActions
+                entry={entry}
+                onShare={() => setShowShareDialog(true)}
+                onAIAnalyze={() => setShowAIShareDialog(true)}
+                onManageShares={() => setShowShareManagement(true)}
+              />
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -160,6 +207,12 @@ export const JournalViewPageEnhanced: React.FC = () => {
                   {entry.isEncrypted ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                   {entry.isEncrypted ? 'Encrypted' : 'Not encrypted'}
                 </span>
+                {entry.sharedWith && entry.sharedWith.length > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    Shared with {entry.sharedWith.length}
+                  </span>
+                )}
               </div>
               
               {/* Template & Mood */}
@@ -253,22 +306,42 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
         {/* Actions */}
         <div className="flex items-center justify-center gap-4 mt-8">
-          <Button
-            variant="outline"
-            onClick={() => {
-              // Share functionality
-              if (navigator.share) {
-                navigator.share({
-                  title: entry.title,
-                  text: `Check out my journal entry: ${entry.title}`,
-                  url: window.location.href
-                });
-              }
-            }}
-          >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share
-          </Button>
+          {isEncryptionInitialized && entry.isEncrypted ? (
+            <Button
+              variant="outline"
+              onClick={() => setShowShareDialog(true)}
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share Encrypted
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Basic browser share API
+                if (navigator.share) {
+                  navigator.share({
+                    title: entry.title,
+                    text: `Check out my journal entry: ${entry.title}`,
+                    url: window.location.href
+                  });
+                }
+              }}
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+          )}
+          
+          {entry.sharedWith && entry.sharedWith.length > 0 && (
+            <Button
+              variant="ghost"
+              onClick={() => setShowShareManagement(true)}
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Manage Shares
+            </Button>
+          )}
           
           <Button
             onClick={() => navigate(`/journal/${entryId}/edit`)}
@@ -278,6 +351,56 @@ export const JournalViewPageEnhanced: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* Share Dialog */}
+      <ShareDialog
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        items={[{
+          id: entry.entryId,
+          title: entry.title,
+          type: 'journal',
+          createdAt: entry.createdAt,
+          encrypted: entry.isEncrypted
+        }]}
+        onShare={handleShare}
+      />
+
+      {/* AI Share Dialog */}
+      <AIShareDialog
+        isOpen={showAIShareDialog}
+        onClose={() => setShowAIShareDialog(false)}
+        items={[{
+          id: entry.entryId,
+          title: entry.title,
+          type: 'journal',
+          createdAt: entry.createdAt,
+          encrypted: entry.isEncrypted
+        }]}
+        onAnalysisComplete={handleAIAnalysis}
+      />
+
+      {/* Share Management Modal */}
+      {showShareManagement && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-surface rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold">Manage Shares</h2>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowShareManagement(false)}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <ShareManagement 
+              itemType="journal"
+              onShareRevoked={handleShareRevoked}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

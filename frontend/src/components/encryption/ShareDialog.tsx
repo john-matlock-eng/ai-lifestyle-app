@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Share2, Shield, X, AlertCircle } from 'lucide-react';
+import { getEncryptionService } from '../../services/encryption';
+import apiClient from '../../api/client';
 
 interface ShareableItem {
   id: string;
@@ -45,6 +47,16 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
   if (!isOpen) return null;
 
+  const getExpirationHours = (duration: string): number => {
+    const durations: Record<string, number> = {
+      '1h': 1,
+      '24h': 24,
+      '7d': 7 * 24,
+      '30d': 30 * 24,
+    };
+    return durations[duration] || 24;
+  };
+
   const handleShare = async () => {
     if (selectedItems.length === 0) {
       setError('Please select at least one item to share');
@@ -60,34 +72,69 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
     setError(null);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const encryptionService = getEncryptionService();
+      const tokens: ShareToken[] = [];
 
-      const tokens: ShareToken[] = selectedItems.map(itemId => ({
-        id: `token-${itemId}-${Date.now()}`,
-        recipientEmail,
-        permissions,
-        expiresAt: new Date(Date.now() + getExpirationMs()).toISOString(),
-      }));
+      // First, try to find the user by email
+      let recipientUserId: string;
+      try {
+        const userResponse = await apiClient.get(`/users/by-email/${encodeURIComponent(recipientEmail)}`);
+        recipientUserId = userResponse.data.userId;
+      } catch {
+        setError('User not found. Make sure they have an account and have set up encryption.');
+        setIsSharing(false);
+        return;
+      }
 
-      onShare(tokens);
-      resetForm();
-      onClose();
-    } catch {
+      // Share each selected item
+      for (const itemId of selectedItems) {
+        const item = items.find(i => i.id === itemId);
+        if (!item || !item.encrypted) continue;
+
+        try {
+          // Get the encrypted key for this item
+          const entryResponse = await apiClient.get(`/journal/entries/${itemId}`);
+          const entry = entryResponse.data;
+          
+          if (!entry.encryptedKey) {
+            console.error('No encrypted key found for entry:', itemId);
+            continue;
+          }
+
+          // Share with the recipient
+          const shareResult = await encryptionService.shareWithUser(
+            'journal',
+            itemId,
+            recipientUserId,
+            entry.encryptedKey,
+            getExpirationHours(expiresIn),
+            permissions
+          );
+
+          tokens.push({
+            id: shareResult.shareId,
+            recipientEmail,
+            permissions,
+            expiresAt: new Date(Date.now() + getExpirationHours(expiresIn) * 60 * 60 * 1000).toISOString(),
+          });
+        } catch (err) {
+          console.error('Failed to share item:', itemId, err);
+        }
+      }
+
+      if (tokens.length > 0) {
+        onShare(tokens);
+        resetForm();
+        onClose();
+      } else {
+        setError('Failed to create any shares. Please try again.');
+      }
+    } catch (err) {
+      console.error('Share error:', err);
       setError('Failed to create share. Please try again.');
     } finally {
       setIsSharing(false);
     }
-  };
-
-  const getExpirationMs = () => {
-    const durations: Record<string, number> = {
-      '1h': 60 * 60 * 1000,
-      '24h': 24 * 60 * 60 * 1000,
-      '7d': 7 * 24 * 60 * 60 * 1000,
-      '30d': 30 * 24 * 60 * 60 * 1000,
-    };
-    return durations[expiresIn] || durations['24h'];
   };
 
   const resetForm = () => {

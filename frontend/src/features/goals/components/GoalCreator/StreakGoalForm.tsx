@@ -42,7 +42,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
     unit: 'days',
     frequency: 'daily',
     icon: '🔥',
-    color: '#F59E0B',
+    color: 'var(--accent)',
     ...initialData,
   });
   
@@ -83,7 +83,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
         </div>
         <div>
           <h3 className="text-lg font-semibold text-[var(--text)]">Create Streak Goal</h3>
-          <p className="text-sm text-muted">Build momentum with consecutive daily habits</p>
+          <p className="text-sm text-[var(--text-muted)]">Build momentum with consecutive daily habits</p>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
                 <span className="text-lg">{template.icon}</span>
                 <div className="flex-1">
                   <div className="text-sm font-medium text-[var(--text)]">{template.title}</div>
-                  <div className="text-xs text-muted">
+                  <div className="text-xs text-[var(--text-muted)]">
                     {template.targetStreak} {template.unit}
                   </div>
                 </div>
@@ -118,7 +118,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
       {/* Goal Title */}
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-          Goal Title <span className="text-red-500">*</span>
+          Goal Title <span className="text-[var(--error)]">*</span>
         </label>
         <input
           type="text"
@@ -126,7 +126,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
           placeholder="e.g., 30 days of meditation"
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
           required
         />
       </div>
@@ -134,13 +134,13 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
       {/* Category */}
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-          Category <span className="text-red-500">*</span>
+          Category <span className="text-[var(--error)]">*</span>
         </label>
         <select
           id="category"
           value={formData.category}
           onChange={(e) => updateFormData({ category: e.target.value })}
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
           required
         >
           {GOAL_CATEGORIES.map(cat => (
@@ -171,13 +171,13 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
                 value={formData.targetStreak}
                 onChange={(e) => updateFormData({ targetStreak: parseInt(e.target.value) || 1 })}
                 min={1}
-                className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="flex-1 px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
                 required
               />
               <select
                 value={formData.unit}
                 onChange={(e) => updateFormData({ unit: e.target.value })}
-                className="px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
               >
                 <option value="days">Days</option>
                 <option value="weeks">Weeks</option>
@@ -195,7 +195,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
               id="frequency"
               value={formData.frequency}
               onChange={(e) => updateFormData({ frequency: e.target.value as Frequency })}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
+              className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
             >
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -217,7 +217,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
                 {[...Array(Math.min(7, formData.targetStreak))].map((_, i) => (
                   <div
                     key={i}
-                    className="w-8 h-8 bg-[var(--accent)] rounded-full flex items-center justify-center text-white text-xs font-medium border-2 border-[var(--accent-bg)]"
+                    className="w-8 h-8 bg-[var(--accent)] rounded-full flex items-center justify-center text-[var(--bg)] text-xs font-medium border-2 border-[var(--accent-bg)]"
                     style={{ opacity: 1 - (i * 0.1) }}
                   >
                     {i + 1}
@@ -248,11 +248,11 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
         {/* Motivation Tips */}
         <div className="bg-[var(--surface)] rounded-lg p-3 border border-[var(--surface-muted)]">
           <h5 className="text-sm font-medium text-[var(--text)] mb-2">💡 Tips for Success</h5>
-          <ul className="text-xs text-muted space-y-1">
-            <li>• Start small - even 1 minute counts!</li>
-            <li>• Set a specific time each day</li>
-            <li>• Track visually to stay motivated</li>
-            <li>• Plan for obstacles in advance</li>
+          <ul className="text-xs space-y-1">
+            <li className="text-[var(--text-muted)]">• Start small - even 1 minute counts!</li>
+            <li className="text-[var(--text-muted)]">• Set a specific time each day</li>
+            <li className="text-[var(--text-muted)]">• Track visually to stay motivated</li>
+            <li className="text-[var(--text-muted)]">• Plan for obstacles in advance</li>
           </ul>
         </div>
       </div>
@@ -268,12 +268,12 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
           onChange={(e) => updateFormData({ description: e.target.value })}
           placeholder="What habit are you building? Why is it important?"
           rows={3}
-          className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
         />
       </div>
 
       {/* Private Notes */}
-      <div className="border-t pt-4">
+      <div className="border-t border-[var(--surface-muted)] pt-4">
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -294,7 +294,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
               onChange={(e) => setPrivateNotes(e.target.value)}
               placeholder="Your triggers, coping strategies, or personal motivations (encrypted)..."
               rows={3}
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
+              className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
             />
             <p className="text-xs text-[var(--text-muted)] mt-1">
               🔒 These notes will be encrypted and only visible to you
@@ -311,7 +311,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
             id="journal-linked"
             checked={isJournalLinked}
             onChange={(e) => setIsJournalLinked(e.target.checked)}
-            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+            className="h-4 w-4 text-[var(--accent)] focus:ring-[var(--accent)] focus:ring-2 border-[var(--surface-muted)] rounded"
           />
           <label htmlFor="journal-linked" className="text-sm text-[var(--text-secondary)]">
             Link this goal to journaling
@@ -320,7 +320,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
       )}
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t">
+      <div className="flex justify-end gap-3 pt-4 border-t border-[var(--surface-muted)]">
         <button
           type="button"
           onClick={onCancel}
@@ -330,7 +330,7 @@ export const StreakGoalForm: React.FC<StreakGoalFormProps> = ({
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]"
+          className="px-6 py-2 bg-[var(--accent)] text-[var(--bg)] rounded-lg hover:bg-[var(--accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
         >
           Create Goal
         </button>

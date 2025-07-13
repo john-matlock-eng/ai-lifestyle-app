@@ -7,7 +7,8 @@ import {
   Unlock,
   Hash,
   Target,
-  Share2
+  Share2,
+  Users
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { JournalEntry } from '@/types/journal';
@@ -78,7 +79,7 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
           </div>
         </div>
         
-        {/* Mood & Encryption indicator */}
+        {/* Mood & Status indicators */}
         <div className="flex items-center gap-2">
           {entry.mood && (() => {
             const moodDisplay = getMoodDisplay(entry.mood);
@@ -91,15 +92,16 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
               </span>
             );
           })()}
-          {entry.isShared && (
-            <span title="Shared">
-              <Share2 className="w-4 h-4 text-blue-500" />
-            </span>
+          {entry.sharedWith && entry.sharedWith.length > 0 && (
+            <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-600 rounded-full text-xs">
+              <Users className="w-3 h-3" />
+              <span>{entry.sharedWith.length}</span>
+            </div>
           )}
           {isActuallyEncrypted ? (
-          <Lock className="w-4 h-4 text-muted" />
+            <Lock className="w-4 h-4 text-muted" />
           ) : (
-          <Unlock className="w-4 h-4 text-muted opacity-50" />
+            <Unlock className="w-4 h-4 text-muted opacity-50" />
           )}
         </div>
       </div>
@@ -117,7 +119,7 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
           <span className="text-xs text-muted">{getTemplateName(entry.template)}</span>
         </div>
 
-        {/* Tags and Goals */}
+        {/* Tags, Goals, and Sharing */}
         <div className="flex items-center gap-2">
           {entry.tags.slice(0, 2).map(tag => (
             <span key={tag} className="tag tag-xs">
@@ -132,6 +134,11 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
             <span className="flex items-center gap-1 text-xs text-accent">
               <Target className="w-3 h-3" />
               {entry.linkedGoalIds.length}
+            </span>
+          )}
+          {entry.isShared && (
+            <span className="flex items-center gap-1 text-xs text-blue-600">
+              <Share2 className="w-3 h-3" />
             </span>
           )}
         </div>

@@ -13,6 +13,17 @@ interface ListJournalEntriesParams {
   goalId?: string;
 }
 
+interface SharedJournal {
+  entry: JournalEntry;
+  shareInfo: {
+    sharedAt: string;
+    sharedBy?: string;
+    permissions: string[];
+    expiresAt?: string;
+  };
+  isIncoming: boolean;
+}
+
 const journalApi = {
   async createEntry(data: CreateJournalEntryRequest): Promise<JournalEntry> {
     const { data: response } = await apiClient.post<JournalEntry>('/journal', data);
@@ -20,7 +31,7 @@ const journalApi = {
   },
 
   async getEntry(entryId: string): Promise<JournalEntry> {
-    const { data } = await apiClient.get<JournalEntry>(`/journal/${entryId}`);
+    const { data } = await apiClient.get<JournalEntry>(`/journal/entries/${entryId}`);
     return data;
   },
 
@@ -42,6 +53,26 @@ const journalApi = {
     const { data } = await apiClient.get<JournalStats>('/journal/stats');
     return data;
   },
+
+  async getSharedJournals(filter?: string): Promise<SharedJournal[]> {
+    const { data } = await apiClient.get<SharedJournal[]>('/journal/shared', {
+      params: { filter }
+    });
+    return data;
+  },
+
+  async shareJournal(entryId: string, recipientEmail: string, permissions: string[], expiresInHours: number): Promise<{ shareId: string }> {
+    const { data } = await apiClient.post<{ shareId: string }>(`/journal/${entryId}/share`, {
+      recipientEmail,
+      permissions,
+      expiresInHours
+    });
+    return data;
+  },
+
+  async revokeShare(shareId: string): Promise<void> {
+    await apiClient.delete(`/journal/shares/${shareId}`);
+  },
 };
 
 export default journalApi;
@@ -53,4 +84,7 @@ export const {
   updateEntry,
   deleteEntry,
   getStats,
+  getSharedJournals,
+  shareJournal,
+  revokeShare,
 } = journalApi;

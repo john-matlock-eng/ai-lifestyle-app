@@ -8,7 +8,8 @@ import {
   Edit3,
   Sparkles,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Share2
 } from 'lucide-react';
 import { JournalTemplate } from '@/types/journal';
 import type { CreateJournalEntryRequest, UpdateJournalEntryRequest } from '@/types/journal';
@@ -199,6 +200,14 @@ export const JournalPageEnhanced: React.FC = () => {
           </div>
           
           <div className="flex flex-wrap gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/journal/shared')}
+              className="hover-lift"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Shared
+            </Button>
             <Button
               variant="ghost"
               onClick={() => setViewMode('drafts')}
