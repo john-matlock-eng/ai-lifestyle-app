@@ -22,19 +22,21 @@
 
 /* Zoom controls styling */
 .emotion-wheel-zoom-controls {
-  background: var(--color-surface);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 0.75rem;
   padding: 0.25rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: 1px solid var(--color-surface-muted);
 }
 
-/* Dark mode zoom controls */
-[data-theme="dark"] .emotion-wheel-zoom-controls {
-  background: rgba(30, 30, 30, 0.95);
+.emotion-wheel-zoom-controls button {
+  opacity: 0.9;
+}
+
+.emotion-wheel-zoom-controls button:hover {
+  opacity: 1;
+  transform: scale(1.05);
 }
 
 .emotion-wheel-zoom-controls button:disabled {
@@ -352,4 +354,38 @@
 /* Selection state visual feedback */
 .emotion-segment[style*="strokeWidth: '2.5'"] {
   filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* Subtle pulse animation for complete buttons */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Complete buttons container */
+.emotion-complete-buttons {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); /* Blue accent fallback */
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  transition: all 0.3s ease;
+}
+
+.emotion-complete-buttons:hover {
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  transform: translateY(-1px);
+}
+
+/* Ensure wheel container has proper spacing */
+.emotion-wheel-container {
+  margin-top: 1rem;
 }

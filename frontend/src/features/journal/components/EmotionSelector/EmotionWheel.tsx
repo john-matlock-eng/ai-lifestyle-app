@@ -20,7 +20,7 @@ interface EmotionWheelProps {
 }
 
 const EmotionWheel: React.FC<EmotionWheelProps> = ({ 
-  selectedEmotions, 
+  selectedEmotions = [], 
   onEmotionToggle,
   className = '',
   hierarchicalSelection = true,
@@ -28,11 +28,11 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   onComplete
 }) => {
   // Ensure selectedEmotions is always an array
-  const safeSelectedEmotions: string[] = Array.isArray(selectedEmotions) ? selectedEmotions : [];
+  const safeSelectedEmotions = Array.isArray(selectedEmotions) ? selectedEmotions : [];
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredEmotion, setHoveredEmotion] = useState<string | null>(null);
-  const [wheelSize, setWheelSize] = useState(800); // Increased default size
+  const [wheelSize, setWheelSize] = useState(400); // Start with smaller size to prevent overlap
   const [zoomLevel, setZoomLevel] = useState(1);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; emotion: Emotion | null } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -119,6 +119,13 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           onEmotionToggle(emotionId);
           // Show complete button when a tertiary is selected
           setShowCompleteButton(true);
+          // Auto-scroll to complete buttons
+          setTimeout(() => {
+            const buttonsElement = document.querySelector('.emotion-complete-buttons');
+            if (buttonsElement) {
+              buttonsElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
         }
       }
     } else {
@@ -158,8 +165,8 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     const handleResize = () => {
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth;
-        const maxSize = Math.min(containerWidth - 40, 900); // Increased max size
-        setWheelSize(maxSize);
+        const maxSize = Math.min(containerWidth - 40, 600); // Reasonable max size
+        setWheelSize(Math.max(400, maxSize)); // Ensure minimum size
       }
     };
     
@@ -247,11 +254,12 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       }
     }
     
-    // Dynamic font sizes based on level and zoom
+    // Dynamic font sizes based on level with better zoom scaling
+    const zoomScaleFactor = Math.min(Math.sqrt(zoomLevel), 1.5); // Reduce text scaling at high zoom
     const baseFontSizes = {
-      core: wheelSize * 0.018,
-      secondary: wheelSize * 0.014,
-      tertiary: wheelSize * 0.011
+      core: wheelSize * 0.02,
+      secondary: wheelSize * 0.016,
+      tertiary: wheelSize * 0.013
     };
     
     return {
@@ -259,7 +267,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       y,
       rotation: textRotation,
       anchor,
-      fontSize: baseFontSizes[level] * zoomLevel
+      fontSize: baseFontSizes[level] * zoomScaleFactor
     };
   };
   
@@ -424,7 +432,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             const newZoom = Math.min(zoomLevel + 0.2, 4);
             setZoomLevel(newZoom);
           }}
-          className="p-2 rounded bg-transparent hover:bg-surface-hover transition-colors"
+          className="p-2 rounded bg-surface/80 hover:bg-surface text-theme hover:text-accent transition-all"
           title="Zoom in (scroll to zoom)"
           disabled={zoomLevel >= 4}
         >
@@ -447,7 +455,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               });
             }
           }}
-          className="p-2 rounded bg-transparent hover:bg-surface-hover transition-colors"
+          className="p-2 rounded bg-surface/80 hover:bg-surface text-theme hover:text-accent transition-all"
           title="Zoom out (scroll to zoom)"
           disabled={zoomLevel <= 0.8}
         >
@@ -455,7 +463,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         </button>
         <button
           onClick={resetView}
-          className="p-2 rounded bg-transparent hover:bg-surface-hover transition-colors"
+          className="p-2 rounded bg-surface/80 hover:bg-surface text-theme hover:text-accent transition-all"
           title="Reset view (ESC)"
           disabled={zoomLevel === 1 && panOffset.x === 0 && panOffset.y === 0}
         >
@@ -506,22 +514,33 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             </pattern>
           </defs>
           
-          {/* Instructions */}
+          {/* Instructions - positioned in the center area */}
           {zoomLevel <= 1.2 && (
-            <text
-              x={centerX}
-              y={centerY}
-              textAnchor="middle"
-              className="emotion-wheel-hint fill-accent text-sm font-medium"
-              style={{ userSelect: 'none' }}
-            >
-              {!focusedCoreEmotion 
-                ? (safeSelectedEmotions.length === 0 ? 'Start by selecting a core emotion' : 'Select a core emotion to continue')
-                : (!focusedSecondaryEmotion 
-                  ? 'Now select a more specific emotion'
-                  : 'Select the most specific emotion')
-              }
-            </text>
+            <g>
+              <rect
+                x={centerX - innerRadius * 0.8}
+                y={centerY - 12}
+                width={innerRadius * 1.6}
+                height={24}
+                fill="var(--color-background)"
+                opacity="0.9"
+                rx="4"
+              />
+              <text
+                x={centerX}
+                y={centerY + 2}
+                textAnchor="middle"
+                className="emotion-wheel-hint fill-accent text-xs font-medium"
+                style={{ userSelect: 'none' }}
+              >
+                {!focusedCoreEmotion 
+                  ? (safeSelectedEmotions.length === 0 ? 'Select core emotion' : 'Select core to continue')
+                  : (!focusedSecondaryEmotion 
+                    ? 'Select specific emotion'
+                    : 'Select final emotion')
+                }
+              </text>
+            </g>
           )}
           
           {/* Pan/Zoom instructions when zoomed */}
@@ -787,7 +806,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       
       {/* Complete/Add Another buttons */}
       {progressiveReveal && showCompleteButton && (
-        <div className="mt-4 flex justify-center gap-3">
+        <div className="emotion-complete-buttons mt-6 p-4 bg-accent/10 border-2 border-accent/30 rounded-lg flex justify-center gap-3 animate-pulse-subtle">
           <button
             onClick={() => {
               if (onComplete) onComplete();
