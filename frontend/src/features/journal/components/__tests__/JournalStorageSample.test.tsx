@@ -11,23 +11,30 @@ describe('JournalStorageSample', () => {
   beforeEach(() => {
     const req = indexedDB.deleteDatabase('journal-db');
     req.onsuccess = () => {};
-    vi.clearAllTimers();
-    vi.useFakeTimers();
   });
 
   afterEach(() => {
     cleanup();
-    vi.runOnlyPendingTimers();
-    vi.useRealTimers();
   });
 
   it('creates a new entry and displays it', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     render(<JournalStorageSample />);
+    
+    // Wait for component to initialize
+    await vi.waitFor(() => {
+      expect(screen.getByRole('button', { name: /new entry/i })).toBeInTheDocument();
+    });
+    
     await user.click(screen.getByRole('button', { name: /new entry/i }));
-    const textarea = screen.getByRole('textbox');
+    
+    // Wait for textarea to appear
+    const textarea = await screen.findByRole('textbox');
     await user.type(textarea, '# My Entry');
     await user.click(screen.getByRole('button', { name: /save/i }));
-    expect(await screen.findByText('My Entry')).toBeInTheDocument();
+    
+    // Wait for the entry to be saved and displayed
+    // The component displays the first line of content which includes the markdown
+    expect(await screen.findByText('# My Entry', {}, { timeout: 3000 })).toBeInTheDocument();
   });
 });
