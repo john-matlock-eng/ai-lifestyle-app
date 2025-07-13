@@ -28,9 +28,11 @@ import CreateGoalPage from './pages/goals/CreateGoalPage';
 import GoalDetailPage from './pages/goals/GoalDetailPage';
 
 // Pages - Journal
-import JournalPage from './pages/journal/JournalPage';
-import CreateJournalPage from './pages/journal/CreateJournalPage';
-import JournalDetailPage from './pages/journal/JournalDetailPage';
+import { 
+  JournalPageEnhanced, 
+  JournalEditPageEnhanced, 
+  JournalViewPageEnhanced 
+} from './features/journal/pages';
 
 // Components
 import DevTools from './components/common/DevTools';
@@ -96,9 +98,10 @@ function App() {
               <Route path="/workouts" element={<div>Workouts - Coming Soon</div>} />
               
               {/* Journal Routes */}
-              <Route path="/journal" element={<JournalPage />} />
-              <Route path="/journal/new" element={<CreateJournalPage />} />
-              <Route path="/journal/:entryId" element={<JournalDetailPage />} />
+              <Route path="/journal" element={<JournalPageEnhanced />} />
+              <Route path="/journal/new" element={<JournalEditPageEnhanced />} />
+              <Route path="/journal/:entryId" element={<JournalViewPageEnhanced />} />
+              <Route path="/journal/:entryId/edit" element={<JournalEditPageEnhanced />} />
             </Route>
 
             {/* Default redirect */}

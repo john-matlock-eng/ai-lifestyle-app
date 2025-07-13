@@ -13,6 +13,136 @@ interface UserProfile extends BaseUserProfile {
   encryptionKeyId?: string;
 }
 
+// Setup Wizard Component - Defined outside to prevent recreation
+interface SetupWizardProps {
+  setupStep: number;
+  setSetupStep: (step: number) => void;
+  masterPassword: string;
+  setMasterPassword: (password: string) => void;
+  confirmPassword: string;
+  setConfirmPassword: (password: string) => void;
+  setupError: string;
+  setShowSetupWizard: (show: boolean) => void;
+  handleSetupComplete: () => Promise<void>;
+}
+
+const SetupWizard: React.FC<SetupWizardProps> = ({
+  setupStep,
+  setSetupStep,
+  masterPassword,
+  setMasterPassword,
+  confirmPassword,
+  setConfirmPassword,
+  setupError,
+  setShowSetupWizard,
+  handleSetupComplete,
+}) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white rounded-lg max-w-md w-full p-6">
+      <div className="flex items-center mb-4">
+        <Shield className="h-8 w-8 text-blue-600 mr-3" />
+        <h2 className="text-2xl font-bold">Set Up Encryption</h2>
+      </div>
+
+      {setupStep === 1 && (
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              <strong>Important:</strong> Your master encryption password is separate from your login password. 
+              Store it securely - you'll need it to decrypt your data on other devices.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">How it works:</h3>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <span>Your journal entries will be encrypted before leaving your device</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <span>Only you can decrypt them with your master password</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <span>We cannot recover your data if you lose this password</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={() => setShowSetupWizard(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setSetupStep(2)}>
+              Continue
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {setupStep === 2 && (
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="master-password" className="block text-sm font-medium text-gray-700 mb-1">
+              Master Encryption Password
+            </label>
+            <input
+              id="master-password"
+              type="password"
+              value={masterPassword}
+              onChange={(e) => setMasterPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter a strong password"
+              autoComplete="new-password"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Use a unique password you'll remember. Min 12 characters.
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password
+            </label>
+            <input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              placeholder="Confirm your password"
+              autoComplete="new-password"
+            />
+          </div>
+
+          {setupError && (
+            <div className="bg-red-50 border border-red-200 rounded p-3">
+              <p className="text-sm text-red-700">{setupError}</p>
+            </div>
+          )}
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p className="text-sm text-yellow-800">
+              <strong>Remember:</strong> This password cannot be recovered. Consider using a password manager.
+            </p>
+          </div>
+
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={() => setSetupStep(1)}>
+              Back
+            </Button>
+            <Button onClick={handleSetupComplete} disabled={!masterPassword || !confirmPassword}>
+              Complete Setup
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 const EncryptionSettings: React.FC = () => {
   const { user } = useAuth();
   const [isSetup, setIsSetup] = useState(false);
@@ -141,116 +271,6 @@ const EncryptionSettings: React.FC = () => {
       console.error('Reset failed:', error);
     }
   };
-
-  // Setup Wizard Component
-  const SetupWizard = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <div className="flex items-center mb-4">
-          <Shield className="h-8 w-8 text-blue-600 mr-3" />
-          <h2 className="text-2xl font-bold">Set Up Encryption</h2>
-        </div>
-
-        {setupStep === 1 && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                <strong>Important:</strong> Your master encryption password is separate from your login password. 
-                Store it securely - you'll need it to decrypt your data on other devices.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">How it works:</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  <span>Your journal entries will be encrypted before leaving your device</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  <span>Only you can decrypt them with your master password</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                  <span>We cannot recover your data if you lose this password</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setShowSetupWizard(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => setSetupStep(2)}>
-                Continue
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {setupStep === 2 && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Master Encryption Password
-              </label>
-              <input
-                type="password"
-                value={masterPassword}
-                onChange={(e) => setMasterPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter a strong password"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Use a unique password you'll remember. Min 12 characters.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                placeholder="Confirm your password"
-              />
-            </div>
-
-            {setupError && (
-              <div className="bg-red-50 border border-red-200 rounded p-3">
-                <p className="text-sm text-red-700">{setupError}</p>
-              </div>
-            )}
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <div className="flex items-start">
-                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
-                <p className="text-xs text-yellow-800">
-                  Save this password in your password manager. You cannot recover encrypted data without it.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setSetupStep(1)}>
-                Back
-              </Button>
-              <Button 
-                onClick={handleSetupEncryption}
-                disabled={!masterPassword || !confirmPassword}
-              >
-                Enable Encryption
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   // Password Prompt Component
   const PasswordPrompt = () => (
@@ -445,7 +465,19 @@ const EncryptionSettings: React.FC = () => {
         </div>
       </div>
 
-      {showSetupWizard && <SetupWizard />}
+      {showSetupWizard && (
+        <SetupWizard
+          setupStep={setupStep}
+          setSetupStep={setSetupStep}
+          masterPassword={masterPassword}
+          setMasterPassword={setMasterPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          setupError={setupError}
+          setShowSetupWizard={setShowSetupWizard}
+          handleSetupComplete={handleSetupEncryption}
+        />
+      )}
       {showPasswordPrompt && <PasswordPrompt />}
       {showResetConfirm && <ResetConfirmation />}
     </div>

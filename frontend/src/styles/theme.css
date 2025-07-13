@@ -4,6 +4,7 @@
 :root {
   /* Primary Colors */
   --bg: #0A0E1A;
+  --background: #0A0E1A; /* Alias for compatibility */
   --bg-gradient: linear-gradient(135deg, #0A0E1A 0%, #0F172A 100%);
   --surface: #1A1F2E;
   --surface-hover: #242938;
@@ -12,8 +13,10 @@
   
   /* Text Colors with proper contrast ratios */
   --text: #F8FAFC;
+  --theme: #F8FAFC; /* Alias for compatibility */
   --text-secondary: #CBD5E1;
   --text-muted: #94A3B8;
+  --muted: #94A3B8; /* Alias for compatibility */
   --text-disabled: #64748B;
   
   /* Accent Colors */
@@ -55,6 +58,7 @@
 /* Dark Theme - Enhanced version */
 [data-theme="dark"] {
   --bg: #0A0E1A;
+  --background: #0A0E1A; /* Alias for compatibility */
   --bg-gradient: linear-gradient(135deg, #0A0E1A 0%, #0F172A 100%);
   --surface: #1A1F2E;
   --surface-hover: #242938;
@@ -62,8 +66,10 @@
   --surface-glass: rgba(26, 31, 46, 0.7);
   
   --text: #F8FAFC;
+  --theme: #F8FAFC; /* Alias for compatibility */
   --text-secondary: #CBD5E1;
   --text-muted: #94A3B8;
+  --muted: #94A3B8; /* Alias for compatibility */
   --text-disabled: #64748B;
   
   --accent: #60A5FA;
@@ -91,6 +97,7 @@
 /* Light Theme - Clean & Professional */
 [data-theme="light"] {
   --bg: #FFFFFF;
+  --background: #FFFFFF; /* Alias for compatibility */
   --bg-gradient: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
   --surface: #F8FAFC;
   --surface-hover: #F1F5F9;
@@ -98,8 +105,10 @@
   --surface-glass: rgba(248, 250, 252, 0.8);
   
   --text: #0F172A;
+  --theme: #0F172A; /* Alias for compatibility */
   --text-secondary: #334155;
   --text-muted: #64748B;
+  --muted: #64748B; /* Alias for compatibility */
   --text-disabled: #94A3B8;
   
   --accent: #3B82F6;

@@ -1,4 +1,22 @@
-// Journal Editor Components
-export { default as JournalEditor } from './JournalEditor';
-export { default as JournalEditorWithSections } from './JournalEditorWithSections';
-export { default as EditorSection } from './EditorSection';
+// Search Components
+export { JournalSearchBar } from './JournalSearchBar';
+export { SearchResultsSummary } from './SearchResultsSummary';
+
+// Journal Display Components
+export { default as JournalCard } from './JournalCard';
+
+// Enhanced Editor Components
+export { EnhancedJournalEditor, SectionEditor } from './EnhancedEditor';
+export type { EnhancedJournalEditorProps, SectionEditorProps } from './EnhancedEditor';
+
+// Template Components
+export { default as EnhancedTemplatePicker } from './EnhancedTemplatePicker';
+export { default as DraftManager } from './DraftManager';
+
+// Re-export types
+export type { 
+  EnhancedTemplate, 
+  SectionDefinition, 
+  SectionResponse,
+  JournalDraft 
+} from '../types/enhanced-template.types';

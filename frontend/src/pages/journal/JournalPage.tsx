@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Plus, Search, Calendar, FileText, Edit2, Lock } from 'lucide-react';
+import { Plus, Calendar, FileText, Edit2, Lock } from 'lucide-react';
 import { Button } from '../../components/common';
-import { listEntries, getStats } from '../../api/journal';
+import { getStats } from '../../api/journal';
 import { EncryptionOnboarding } from '../../components/EncryptionOnboarding';
 import { useEncryption } from '../../contexts/useEncryption';
+import { useJournalSearch } from '../../features/journal/hooks/useJournalSearch';
+import { JournalSearchBar } from '../../features/journal/components/JournalSearchBar';
+import { SearchResultsSummary } from '../../features/journal/components/SearchResultsSummary';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
   const { isEncryptionEnabled, isEncryptionSetup } = useEncryption();
-  const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
-  const limit = 12;
 
   // Check if it's the user's first visit to journal page
   useEffect(() => {
@@ -29,11 +29,21 @@ const JournalPage: React.FC = () => {
     localStorage.setItem('hasSeenJournalEncryptionPrompt', 'true');
   };
 
-  // Fetch journal entries
-  const { data: entriesData, isLoading: entriesLoading, error: entriesError } = useQuery({
-    queryKey: ['journal', 'entries', page, limit],
-    queryFn: () => listEntries({ page, limit }),
-  });
+  // Use the new journal search hook
+  const {
+    entries,
+    total,
+    isLoading: entriesLoading,
+    error: entriesError,
+    filters,
+    setFilters,
+    availableTags,
+    availableMoods,
+    availableTemplates,
+    page,
+    setPage,
+    hasMore
+  } = useJournalSearch({ limit: 12 });
 
   // Fetch journal stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -51,6 +61,16 @@ const JournalPage: React.FC = () => {
 
   const handleEntryClick = (entryId: string) => {
     navigate(`/journal/${entryId}`);
+  };
+
+  const handleClearFilter = (filterType: keyof typeof filters) => {
+    const newFilters = { ...filters };
+    delete newFilters[filterType];
+    setFilters(newFilters);
+  };
+
+  const handleClearAllFilters = () => {
+    setFilters({});
   };
 
   const renderStats = () => {
@@ -118,15 +138,25 @@ const JournalPage: React.FC = () => {
       );
     }
 
-    if (!entriesData?.entries.length) {
+    if (!entries.length) {
       return (
         <div className="bg-surface rounded-lg p-8 text-center">
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No journal entries yet</h3>
-          <p className="text-muted mb-4">Start your journaling journey by creating your first entry</p>
-          <Button onClick={handleCreateNew} leftIcon={<Plus className="h-4 w-4" />}>
-            Create First Entry
-          </Button>
+          <h3 className="text-lg font-semibold mb-2">
+            {filters.query || filters.tags?.length || filters.template || filters.mood || filters.startDate || filters.endDate
+              ? 'No matching entries found'
+              : 'No journal entries yet'}
+          </h3>
+          <p className="text-muted mb-4">
+            {filters.query || filters.tags?.length || filters.template || filters.mood || filters.startDate || filters.endDate
+              ? 'Try adjusting your search filters'
+              : 'Start your journaling journey by creating your first entry'}
+          </p>
+          {!(filters.query || filters.tags?.length || filters.template || filters.mood || filters.startDate || filters.endDate) && (
+            <Button onClick={handleCreateNew} leftIcon={<Plus className="h-4 w-4" />}>
+              Create First Entry
+            </Button>
+          )}
         </div>
       );
     }
@@ -134,7 +164,7 @@ const JournalPage: React.FC = () => {
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {entriesData.entries.map((entry) => (
+          {entries.map((entry) => (
             <div
               key={entry.entryId}
               className="bg-surface rounded-lg p-6 cursor-pointer hover:shadow-lg transition-shadow"
@@ -200,7 +230,7 @@ const JournalPage: React.FC = () => {
           ))}
         </div>
 
-        {entriesData.total > limit && (
+        {total > 12 && (
           <div className="flex justify-center mt-8">
             <div className="flex gap-2">
               <Button
@@ -212,13 +242,13 @@ const JournalPage: React.FC = () => {
                 Previous
               </Button>
               <span className="px-4 py-2 text-sm">
-                Page {page} of {Math.ceil(entriesData.total / limit)}
+                Page {page} of {Math.ceil(total / 12)}
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(page + 1)}
-                disabled={page >= Math.ceil(entriesData.total / limit)}
+                disabled={!hasMore}
               >
                 Next
               </Button>
@@ -246,19 +276,22 @@ const JournalPage: React.FC = () => {
         {/* Stats */}
         {renderStats()}
 
-        {/* Search Bar */}
-        <div className="bg-surface rounded-lg p-4 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search journal entries..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            />
-          </div>
-        </div>
+        {/* Enhanced Search Bar */}
+        <JournalSearchBar
+          filters={filters}
+          onFiltersChange={setFilters}
+          availableTags={availableTags}
+          availableMoods={availableMoods}
+          availableTemplates={availableTemplates}
+        />
+
+        {/* Search Results Summary */}
+        <SearchResultsSummary
+          filters={filters}
+          total={total}
+          onClearFilter={handleClearFilter}
+          onClearAll={handleClearAllFilters}
+        />
 
         {/* Entries Grid */}
         {renderEntries()}
