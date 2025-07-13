@@ -27,6 +27,8 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   progressiveReveal = true,
   onComplete
 }) => {
+  // Ensure selectedEmotions is always an array
+  const safeSelectedEmotions: string[] = Array.isArray(selectedEmotions) ? selectedEmotions : [];
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredEmotion, setHoveredEmotion] = useState<string | null>(null);
@@ -72,18 +74,18 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           setFocusedSecondaryEmotion(null);
           setShowCompleteButton(false);
           // Clear all selections for this core emotion
-          const toRemove = selectedEmotions.filter(id => {
+          const toRemove = safeSelectedEmotions.filter((id: string) => {
             const e = getEmotionById(id);
             return e && (e.id === emotionId || e.parent === emotionId || 
               (e.parent && getEmotionById(e.parent)?.parent === emotionId));
           });
-          toRemove.forEach(id => onEmotionToggle(id));
+          toRemove.forEach((id: string) => onEmotionToggle(id));
         } else {
           // Focus on this core emotion
           setFocusedCoreEmotion(emotionId);
           setFocusedSecondaryEmotion(null);
           setShowCompleteButton(false);
-          if (!selectedEmotions.includes(emotionId)) {
+          if (!safeSelectedEmotions.includes(emotionId)) {
             onEmotionToggle(emotionId);
           }
         }
@@ -95,18 +97,18 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             setFocusedSecondaryEmotion(null);
             setShowCompleteButton(false);
             // Clear tertiary selections for this secondary emotion
-            const toRemove = selectedEmotions.filter(id => {
+            const toRemove = safeSelectedEmotions.filter((id: string) => {
               const e = getEmotionById(id);
               return e && e.parent === emotionId;
             });
-            toRemove.forEach(id => onEmotionToggle(id));
+            toRemove.forEach((id: string) => onEmotionToggle(id));
             // Also deselect this secondary emotion
             onEmotionToggle(emotionId);
           } else {
             // Focus on this secondary emotion
             setFocusedSecondaryEmotion(emotionId);
             setShowCompleteButton(false);
-            if (!selectedEmotions.includes(emotionId)) {
+            if (!safeSelectedEmotions.includes(emotionId)) {
               onEmotionToggle(emotionId);
             }
           }
@@ -121,7 +123,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       }
     } else {
       // Standard selection mode
-      if (selectedEmotions.includes(emotionId)) {
+      if (safeSelectedEmotions.includes(emotionId)) {
         // Deselecting - just remove this emotion
         onEmotionToggle(emotionId);
       } else {
@@ -132,7 +134,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           let currentId: string | undefined = emotion.parent;
           
           while (currentId) {
-            if (!selectedEmotions.includes(currentId)) {
+            if (!safeSelectedEmotions.includes(currentId)) {
               parents.push(currentId);
             }
             const parentEmotion = getEmotionById(currentId);
@@ -399,7 +401,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const coreAngleSize = 360 / coreEmotions.length;
   
   // Check if any tertiary emotion is selected
-  const hasTertiarySelected = selectedEmotions.some(id => {
+  const hasTertiarySelected = safeSelectedEmotions.some((id: string) => {
     const emotion = getEmotionById(id);
     return emotion?.level === 'tertiary';
   });
@@ -413,16 +415,16 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     <div 
       ref={containerRef} 
       className={`emotion-wheel-container relative ${className}`}
-      data-empty={selectedEmotions.length === 0}
+      data-empty={safeSelectedEmotions.length === 0}
     >
-      {/* Zoom controls - positioned outside the zoomable area */}
-      <div className="emotion-wheel-zoom-controls absolute -top-12 right-0 z-20 flex gap-2">
+      {/* Zoom controls - positioned inside the container */}
+      <div className="emotion-wheel-zoom-controls absolute top-2 right-2 z-20 flex gap-2">
         <button
           onClick={() => {
             const newZoom = Math.min(zoomLevel + 0.2, 4);
             setZoomLevel(newZoom);
           }}
-          className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
+          className="p-2 rounded bg-transparent hover:bg-surface-hover transition-colors"
           title="Zoom in (scroll to zoom)"
           disabled={zoomLevel >= 4}
         >
@@ -445,7 +447,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               });
             }
           }}
-          className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
+          className="p-2 rounded bg-transparent hover:bg-surface-hover transition-colors"
           title="Zoom out (scroll to zoom)"
           disabled={zoomLevel <= 0.8}
         >
@@ -453,7 +455,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         </button>
         <button
           onClick={resetView}
-          className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
+          className="p-2 rounded bg-transparent hover:bg-surface-hover transition-colors"
           title="Reset view (ESC)"
           disabled={zoomLevel === 1 && panOffset.x === 0 && panOffset.y === 0}
         >
@@ -514,7 +516,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               style={{ userSelect: 'none' }}
             >
               {!focusedCoreEmotion 
-                ? (selectedEmotions.length === 0 ? 'Start by selecting a core emotion' : 'Select a core emotion to continue')
+                ? (safeSelectedEmotions.length === 0 ? 'Start by selecting a core emotion' : 'Select a core emotion to continue')
                 : (!focusedSecondaryEmotion 
                   ? 'Now select a more specific emotion'
                   : 'Select the most specific emotion')
@@ -539,7 +541,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           {coreEmotions.map((emotion, index) => {
             const startAngle = index * coreAngleSize - 90;
             const endAngle = (index + 1) * coreAngleSize - 90;
-            const isSelected = selectedEmotions.includes(emotion.id);
+            const isSelected = safeSelectedEmotions.includes(emotion.id);
             const isHovered = hoveredEmotion === emotion.id;
             const textPos = getTextPosition(startAngle, endAngle, innerRadius * 0.6, 'core');
             
@@ -558,7 +560,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                   className={`emotion-segment emotion-segment-core transition-all duration-200 ${!progressiveReveal || !focusedCoreEmotion ? 'cursor-pointer' : (focusedCoreEmotion === emotion.id ? 'cursor-pointer' : 'cursor-not-allowed')}`}
                   style={{ 
                     filter: isSelected ? 'brightness(1.1)' : 'none',
-                    strokeWidth: (selectedEmotions.length === 0 || focusedCoreEmotion === emotion.id) ? '3' : '2'
+                    strokeWidth: (safeSelectedEmotions.length === 0 || focusedCoreEmotion === emotion.id) ? '3' : '2'
                   }}
                 />
                 <text
@@ -590,7 +592,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             return secondaryEmotions.map((emotion, secIndex) => {
               const startAngle = coreStartAngle + secIndex * secondaryAngleSize;
               const endAngle = startAngle + secondaryAngleSize;
-              const isSelected = selectedEmotions.includes(emotion.id);
+              const isSelected = safeSelectedEmotions.includes(emotion.id);
               const isHovered = hoveredEmotion === emotion.id;
               const textPos = getTextPosition(startAngle, endAngle, (innerRadius + middleRadius) / 2, 'secondary');
               
@@ -655,7 +657,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               return tertiaryEmotions.map((emotion, terIndex) => {
                 const startAngle = secStartAngle + terIndex * tertiaryAngleSize;
                 const endAngle = startAngle + tertiaryAngleSize;
-                const isSelected = selectedEmotions.includes(emotion.id);
+                const isSelected = safeSelectedEmotions.includes(emotion.id);
                 const isHovered = hoveredEmotion === emotion.id;
                 const textPos = getTextPosition(startAngle, endAngle, (middleRadius + outerRadius) / 2, 'tertiary');
                 
@@ -761,7 +763,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               <span className="font-medium">{currentEmotion.label}</span>
             </div>
             <div className="text-xs text-muted mt-1">
-              Click to {selectedEmotions.includes(currentEmotion.id) ? 'deselect' : 'select'}
+              Click to {safeSelectedEmotions.includes(currentEmotion.id) ? 'deselect' : 'select'}
             </div>
           </div>
         );
@@ -811,18 +813,18 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       )}
       
       {/* Selected emotions display with hierarchy */}
-      {selectedEmotions.length > 0 && (
+      {safeSelectedEmotions.length > 0 && (
         <div className="mt-4 p-3 bg-surface rounded-lg border border-surface-muted">
           <p className="text-sm font-medium mb-2">Selected emotions:</p>
           <div className="space-y-2">
             {/* Group by core emotions */}
             {getCoreEmotions()
-              .filter(core => selectedEmotions.includes(core.id))
+              .filter(core => safeSelectedEmotions.includes(core.id))
               .map(coreEmotion => {
                 const selectedSecondary = getSecondaryEmotions(coreEmotion.id)
-                  .filter(e => selectedEmotions.includes(e.id));
+                  .filter(e => safeSelectedEmotions.includes(e.id));
                 const selectedTertiary = selectedSecondary.flatMap(sec => 
-                  getTertiaryEmotions(sec.id).filter(e => selectedEmotions.includes(e.id))
+                  getTertiaryEmotions(sec.id).filter(e => safeSelectedEmotions.includes(e.id))
                 );
                 
                 return (
@@ -903,13 +905,13 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               })}
             
             {/* Show orphaned emotions (shouldn't happen with hierarchical selection) */}
-            {selectedEmotions
+            {safeSelectedEmotions
               .filter(id => {
                 const emotion = getEmotionById(id);
                 return emotion && emotion.level !== 'core' && 
-                  (!emotion.parent || !selectedEmotions.includes(emotion.parent));
+                  (!emotion.parent || !safeSelectedEmotions.includes(emotion.parent));
               })
-              .map(emotionId => {
+              .map((emotionId: string) => {
                 const emotion = getEmotionById(emotionId);
                 if (!emotion) return null;
                 return (
