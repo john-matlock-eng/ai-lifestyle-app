@@ -11,19 +11,14 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
     color: '#6366f1',
     sections: [
       {
-        id: 'mood',
-        title: "Today's Mood",
+        id: 'emotions',
+        title: "Today's Emotions",
         prompt: 'How are you feeling?',
-        type: 'mood',
+        type: 'emotions',
         required: true,
         options: {
-          moods: [
-            { value: 'amazing', label: 'Amazing', emoji: '🤩' },
-            { value: 'good', label: 'Good', emoji: '😊' },
-            { value: 'okay', label: 'Okay', emoji: '😐' },
-            { value: 'stressed', label: 'Stressed', emoji: '😰' },
-            { value: 'sad', label: 'Sad', emoji: '😢' }
-          ]
+          maxSelections: 5,
+          mode: 'both'
         }
       },
       {
@@ -54,14 +49,20 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
     ],
     extractors: {
       mood: (responses) => {
-        const moodResponse = responses.mood;
-        return moodResponse && typeof moodResponse.value === 'string' ? moodResponse.value : undefined;
+        const emotionsResponse = responses.emotions;
+        if (emotionsResponse && Array.isArray(emotionsResponse.value) && emotionsResponse.value.length > 0) {
+          // Return the primary emotion (first selected)
+          return emotionsResponse.value[0] as string;
+        }
+        return undefined;
       },
       tags: (responses) => {
         const tags = ['daily-reflection'];
-        const moodResponse = responses.mood;
-        if (moodResponse && typeof moodResponse.value === 'string') {
-          tags.push(`mood-${moodResponse.value}`);
+        const emotionsResponse = responses.emotions;
+        if (emotionsResponse && Array.isArray(emotionsResponse.value)) {
+          (emotionsResponse.value as string[]).forEach(emotion => {
+            tags.push(`emotion-${emotion}`);
+          });
         }
         return tags;
       }
@@ -179,26 +180,20 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
     color: '#8b5cf6',
     sections: [
       {
-        id: 'current-mood',
-        title: 'Current Mood',
+        id: 'current-emotions',
+        title: 'Current Emotions',
         prompt: 'How are you feeling right now?',
-        type: 'mood',
+        type: 'emotions',
         required: true,
         options: {
-          moods: [
-            { value: 'joyful', label: 'Joyful', emoji: '😊' },
-            { value: 'content', label: 'Content', emoji: '😌' },
-            { value: 'anxious', label: 'Anxious', emoji: '😰' },
-            { value: 'sad', label: 'Sad', emoji: '😢' },
-            { value: 'angry', label: 'Angry', emoji: '😠' },
-            { value: 'tired', label: 'Tired', emoji: '😴' }
-          ]
+          maxSelections: 10,
+          mode: 'both'
         }
       },
       {
-        id: 'mood-intensity',
-        title: 'Intensity',
-        prompt: 'How strong is this feeling?',
+        id: 'emotion-intensity',
+        title: 'Overall Intensity',
+        prompt: 'How intense are these feelings?',
         type: 'scale',
         required: true,
         options: {
@@ -207,19 +202,19 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
         }
       },
       {
-        id: 'mood-triggers',
-        title: 'What Triggered This Mood?',
+        id: 'emotion-triggers',
+        title: 'What Triggered These Emotions?',
         prompt: 'Describe what led to this emotional state',
         type: 'text'
       },
       {
-        id: 'mood-physical',
+        id: 'emotion-physical',
         title: 'Physical Sensations',
-        prompt: 'How does this mood feel in your body?',
+        prompt: 'How do these emotions feel in your body?',
         type: 'text'
       },
       {
-        id: 'mood-tags',
+        id: 'emotion-tags',
         title: 'Contributing Factors',
         prompt: 'Tag related factors',
         type: 'tags'
@@ -227,18 +222,24 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
     ],
     extractors: {
       mood: (responses) => {
-        const moodResponse = responses['current-mood'];
-        return moodResponse && typeof moodResponse.value === 'string' ? moodResponse.value : undefined;
+        const emotionsResponse = responses['current-emotions'];
+        if (emotionsResponse && Array.isArray(emotionsResponse.value) && emotionsResponse.value.length > 0) {
+          // Return the primary emotion (first selected)
+          return emotionsResponse.value[0] as string;
+        }
+        return undefined;
       },
       tags: (responses) => {
         const tags = ['mood-tracker'];
-        const moodResponse = responses['current-mood'];
-        if (moodResponse && typeof moodResponse.value === 'string') {
-          tags.push(`mood-${moodResponse.value}`);
+        const emotionsResponse = responses['current-emotions'];
+        if (emotionsResponse && Array.isArray(emotionsResponse.value)) {
+          (emotionsResponse.value as string[]).forEach(emotion => {
+            tags.push(`emotion-${emotion}`);
+          });
         }
-        const moodTags = responses['mood-tags'];
-        if (moodTags && Array.isArray(moodTags.value)) {
-          tags.push(...(moodTags.value as string[]));
+        const emotionTags = responses['emotion-tags'];
+        if (emotionTags && Array.isArray(emotionTags.value)) {
+          tags.push(...(emotionTags.value as string[]));
         }
         return tags;
       }
@@ -330,18 +331,13 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
         required: true
       },
       {
-        id: 'writing-mood',
-        title: 'Writing Mood',
+        id: 'writing-emotions',
+        title: 'Writing Emotions',
         prompt: 'How did writing make you feel?',
-        type: 'mood',
+        type: 'emotions',
         options: {
-          moods: [
-            { value: 'inspired', label: 'Inspired', emoji: '✨' },
-            { value: 'relaxed', label: 'Relaxed', emoji: '😌' },
-            { value: 'energized', label: 'Energized', emoji: '⚡' },
-            { value: 'thoughtful', label: 'Thoughtful', emoji: '🤔' },
-            { value: 'emotional', label: 'Emotional', emoji: '💭' }
-          ]
+          maxSelections: 3,
+          mode: 'list'
         }
       },
       {
@@ -353,8 +349,12 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
     ],
     extractors: {
       mood: (responses) => {
-        const moodResponse = responses['writing-mood'];
-        return moodResponse && typeof moodResponse.value === 'string' ? moodResponse.value : undefined;
+        const emotionsResponse = responses['writing-emotions'];
+        if (emotionsResponse && Array.isArray(emotionsResponse.value) && emotionsResponse.value.length > 0) {
+          // Return the primary emotion (first selected)
+          return emotionsResponse.value[0] as string;
+        }
+        return undefined;
       },
       tags: (responses) => {
         const tags = ['creative-writing'];
@@ -382,6 +382,15 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
         required: true
       },
       {
+        id: 'emotions',
+        title: 'Current Emotions (Optional)',
+        prompt: 'How are you feeling?',
+        type: 'emotions',
+        options: {
+          mode: 'list'
+        }
+      },
+      {
         id: 'tags',
         title: 'Tags',
         prompt: 'Add tags to organize this entry',
@@ -389,11 +398,25 @@ export const enhancedTemplates: Record<JournalTemplate, EnhancedTemplate> = {
       }
     ],
     extractors: {
+      mood: (responses) => {
+        const emotionsResponse = responses.emotions;
+        if (emotionsResponse && Array.isArray(emotionsResponse.value) && emotionsResponse.value.length > 0) {
+          // Return the primary emotion (first selected)
+          return emotionsResponse.value[0] as string;
+        }
+        return undefined;
+      },
       tags: (responses) => {
         const tags = ['free-writing'];
         const tagsResponse = responses.tags;
         if (tagsResponse && Array.isArray(tagsResponse.value)) {
           tags.push(...(tagsResponse.value as string[]));
+        }
+        const emotionsResponse = responses.emotions;
+        if (emotionsResponse && Array.isArray(emotionsResponse.value)) {
+          (emotionsResponse.value as string[]).forEach(emotion => {
+            tags.push(`emotion-${emotion}`);
+          });
         }
         return tags;
       }

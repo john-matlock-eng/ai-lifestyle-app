@@ -1,8 +1,7 @@
-// SectionEditor.tsx
+// Updated SectionEditor.tsx with RichTextEditor
 import React from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
+import RichTextEditor from '../RichTextEditor';
+import { EmotionSelector } from '../EmotionSelector';
 import {
   ChevronDown,
   Check,
@@ -12,7 +11,6 @@ import {
   Target
 } from 'lucide-react';
 import type { SectionDefinition } from '../../types/enhanced-template.types';
-
 import type { Goal } from '@/features/goals/types/api.types';
 
 export interface SectionEditorProps {
@@ -48,6 +46,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         return <GoalsInput section={section} value={value as string[]} onChange={onChange} availableGoals={availableGoals} />;
       case 'checklist':
         return <ChecklistInput section={section} value={value as Record<string, boolean>} onChange={onChange} />;
+      case 'emotions':
+        return <EmotionsInput section={section} value={value as string[]} onChange={onChange} />;
       default:
         return <div>Unsupported input type: {section.type}</div>;
     }
@@ -86,34 +86,23 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   );
 };
 
-// Text Input with TipTap
+// Text Input with Enhanced RichTextEditor
 const TextInput: React.FC<{
   section: SectionDefinition;
   value: string;
   onChange: (value: string | number | string[] | Record<string, boolean>) => void;
 }> = ({ section, value, onChange }) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Placeholder.configure({
-        placeholder: section.prompt,
-      }),
-    ],
-    content: value,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getText());
-    },
-  });
-
-  if (!editor) return null;
-
   return (
-    <div className="prose prose-sm max-w-none dark:prose-invert">
-      <EditorContent 
-        editor={editor} 
-        className="min-h-[100px] p-3 bg-surface-hover rounded-lg border border-surface-muted focus-within:border-accent transition-colors"
-      />
-    </div>
+    <RichTextEditor
+      content={value || ''}
+      onChange={(markdown) => onChange(markdown)}
+      placeholder={section.prompt}
+      minHeight="200px"
+      maxHeight="600px"
+      showToolbar={true}
+      showBubbleMenu={true}
+      showFloatingMenu={true}
+    />
   );
 };
 
@@ -359,6 +348,22 @@ const ChecklistInput: React.FC<{
         </label>
       ))}
     </div>
+  );
+};
+
+// Emotions Input
+const EmotionsInput: React.FC<{
+  section: SectionDefinition;
+  value: string[];
+  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+}> = ({ section, value = [], onChange }) => {
+  return (
+    <EmotionSelector
+      value={value}
+      onChange={(emotions) => onChange(emotions)}
+      mode={section.options?.mode || 'both'}
+      maxSelections={section.options?.maxSelections}
+    />
   );
 };
 

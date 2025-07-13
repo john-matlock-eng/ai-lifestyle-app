@@ -11,6 +11,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import type { JournalEntry } from '@/types/journal';
 import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
+import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
 
 interface JournalCardProps {
   entry: JournalEntry;
@@ -19,26 +20,27 @@ interface JournalCardProps {
 }
 
 const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '' }) => {
-  const getMoodEmoji = (mood?: string) => {
-    const moodMap: Record<string, string> = {
-      amazing: '🤩',
-      good: '😊',
-      okay: '😐',
-      stressed: '😰',
-      sad: '😢',
-      joyful: '😊',
-      content: '😌',
-      anxious: '😰',
-      angry: '😠',
-      tired: '😴',
-      inspired: '✨',
-      relaxed: '😌',
-      energized: '⚡',
-      thoughtful: '🤔',
-      emotional: '💭',
-      grateful: '🙏'
+  const getMoodDisplay = (mood?: string) => {
+    if (!mood) return null;
+    
+    // Check if it's a new emotion ID from the emotion wheel
+    const emotion = getEmotionById(mood);
+    if (emotion) {
+      return {
+        emoji: getEmotionEmoji(mood),
+        label: emotion.label
+      };
+    }
+    
+    // Fallback for old mood values
+    const legacyMoodMap: Record<string, { emoji: string; label: string }> = {
+      amazing: { emoji: '🤩', label: 'Amazing' },
+      good: { emoji: '😊', label: 'Good' },
+      okay: { emoji: '😐', label: 'Okay' },
+      stressed: { emoji: '😰', label: 'Stressed' }
     };
-    return moodMap[mood || ''] || '';
+    
+    return legacyMoodMap[mood] || { emoji: '💭', label: mood };
   };
 
   const getExcerpt = (content: string, maxLength: number = 150) => {
@@ -91,13 +93,19 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
           </div>
         </div>
         
-        {/* Encryption indicator */}
+        {/* Mood & Encryption indicator */}
         <div className="flex items-center gap-2">
-          {entry.mood && (
-            <span className="text-lg" title={`Mood: ${entry.mood}`}>
-              {getMoodEmoji(entry.mood)}
-            </span>
-          )}
+          {entry.mood && (() => {
+            const moodDisplay = getMoodDisplay(entry.mood);
+            return moodDisplay && (
+              <span 
+                className="text-lg" 
+                title={`Feeling ${moodDisplay.label.toLowerCase()}`}
+              >
+                {moodDisplay.emoji}
+              </span>
+            );
+          })()}
           {entry.isEncrypted ? (
             <Lock className="w-4 h-4 text-muted" />
           ) : (

@@ -19,7 +19,7 @@ export interface SectionDefinition {
   id: string;
   title: string;
   prompt: string;
-  type: 'text' | 'scale' | 'mood' | 'choice' | 'tags' | 'goals' | 'checklist';
+  type: 'text' | 'scale' | 'mood' | 'choice' | 'tags' | 'goals' | 'checklist' | 'emotions';
   required?: boolean;
   options?: {
     min?: number;
@@ -27,6 +27,8 @@ export interface SectionDefinition {
     choices?: Array<{ value: string; label: string; icon?: string }>;
     moods?: Array<{ value: string; label: string; emoji: string }>;
     items?: Array<{ id: string; label: string }>;
+    maxSelections?: number;
+    mode?: 'wheel' | 'list' | 'both';
   };
 }
 
@@ -71,6 +73,11 @@ export const journalContentUtils = {
           case 'mood': {
             const mood = sectionDef.options?.moods?.find(m => m.value === section.value);
             content += mood ? `${mood.emoji} ${mood.label}` : section.value;
+            break;
+          }
+          case 'emotions': {
+            const emotions = section.value as string[];
+            content += `Emotions: ${emotions.join(', ')}`;
             break;
           }
           case 'choice': {

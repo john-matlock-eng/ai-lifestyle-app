@@ -13,6 +13,10 @@ export type { EnhancedJournalEditorProps, SectionEditorProps } from './EnhancedE
 export { default as EnhancedTemplatePicker } from './EnhancedTemplatePicker';
 export { default as DraftManager } from './DraftManager';
 
+// Emotion Components
+export { EmotionSelector, EmotionWheel, EmotionDrillDown } from './EmotionSelector';
+export type { Emotion } from './EmotionSelector';
+
 // Re-export types
 export type { 
   EnhancedTemplate, 
