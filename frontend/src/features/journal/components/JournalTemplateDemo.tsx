@@ -20,7 +20,11 @@ const JournalTemplateDemo: React.FC = () => {
     setSelection(null);
   };
 
-  const handleSave = (data: any) => {
+  type SaveData = 
+    | { content: string; type: 'scratch' }
+    | { templateId: string; sections: { id: string; title: string; markdown: string }[]; markdownExport: string };
+
+  const handleSave = (data: SaveData) => {
     console.log('Saved journal entry:', data);
     // In a real app, this would save to your backend
     alert('Journal entry saved successfully!');

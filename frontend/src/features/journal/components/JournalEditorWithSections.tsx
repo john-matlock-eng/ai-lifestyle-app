@@ -11,7 +11,7 @@ import {
   RotateCcw,
   Check
 } from 'lucide-react';
-import { Button } from '@/components/common';
+
 import EditorSection from './EditorSection';
 import type { JournalTemplate } from '../types/template.types';
 import '../styles/journal-editor.css';
