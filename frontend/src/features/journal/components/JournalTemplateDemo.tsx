@@ -11,7 +11,7 @@ type SelectionState = { template: JournalTemplate } | 'scratch' | null;
 
 const JournalTemplateDemo: React.FC = () => {
   const [selection, setSelection] = useState<SelectionState>(null);
-  const [savedData, setSavedData] = useState<Record<string, any>>({});
+  const [savedData, setSavedData] = useState<Record<string, Record<string, string>>>({});
 
   useEffect(() => {
     purgeOldDrafts();
