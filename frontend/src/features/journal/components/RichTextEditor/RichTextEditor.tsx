@@ -1,4 +1,4 @@
-// Updated RichTextEditor.tsx - Fixed selection and toolbar issues
+// RichTextEditor.tsx - Fixed to prevent DOM manipulation errors and menu overlapping
 import React, { useCallback, useRef } from 'react';
 import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -50,11 +50,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   maxHeight = '500px',
   readOnly = false,
   showToolbar = true,
-  showFloatingMenu = true,
-  showBubbleMenu = true,
+  showFloatingMenu = false, // Disabled by default to prevent overlap
+  showBubbleMenu = false, // Disabled by default to prevent issues
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [bubbleMenuVisible, setBubbleMenuVisible] = React.useState(true);
+  const [isTyping, setIsTyping] = React.useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -99,16 +100,40 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         style: `min-height: ${minHeight}; max-height: ${maxHeight}; overflow-y: auto;`,
       },
       handleKeyDown: () => {
-        // Hide bubble menu when typing
-        setBubbleMenuVisible(false);
-        setTimeout(() => setBubbleMenuVisible(true), 500);
+        // Set typing state
+        setIsTyping(true);
+        
+        // Clear any existing timeout
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+        
+        // Reset typing state after user stops typing
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+        }, 1500);
       },
     },
     onUpdate: ({ editor }) => {
       const markdown = editor.storage.markdown.getMarkdown();
       onChange(markdown);
     },
+    onCreate: ({ editor }) => {
+      // Focus the editor on creation
+      setTimeout(() => {
+        editor.commands.focus();
+      }, 100);
+    },
   });
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const setLink = useCallback(() => {
     if (!editor) return;
@@ -130,11 +155,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   // Focus editor when clicking toolbar buttons
   const executeCommand = useCallback((command: () => boolean | void) => {
-    // Small delay to ensure the editor processes the focus before the command
-    setTimeout(() => {
-      command();
-    }, 0);
-  }, []);
+    // Ensure editor has focus before executing command
+    editor?.chain().focus();
+    command();
+  }, [editor]);
 
   if (!editor) {
     return null;
@@ -327,19 +351,21 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       )}
 
       {/* Bubble Menu - appears when text is selected */}
-      {showBubbleMenu && !readOnly && bubbleMenuVisible && (
+      {showBubbleMenu && !readOnly && !isTyping && (
         <BubbleMenu 
           editor={editor} 
           tippyOptions={{ 
             duration: 100,
-            delay: [400, 0], // Delay showing to not interfere with selection
+            delay: [1000, 0], // Long delay to avoid interference
             interactive: true,
             placement: 'top',
+            offset: [0, 15], // Add offset to avoid overlapping text
+            zIndex: 9999,
           }}
           className="bg-surface border border-surface-muted rounded-lg shadow-lg p-1 flex items-center gap-1"
-          shouldShow={({ from, to }) => {
-            // Only show if there's actually a selection
-            return from !== to;
+          shouldShow={({ from, to, editor }) => {
+            // Only show if there's actually a selection and not typing
+            return from !== to && !isTyping && editor.isEditable;
           }}
         >
           <ToolbarButton
@@ -382,14 +408,22 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       )}
 
       {/* Floating Menu - appears for new lines */}
-      {showFloatingMenu && !readOnly && (
+      {showFloatingMenu && !readOnly && !isTyping && (
         <FloatingMenu 
           editor={editor} 
           tippyOptions={{ 
             duration: 100,
             placement: 'left',
+            offset: [-20, 0], // Offset to the left to avoid text area
+            zIndex: 9999,
           }}
           className="bg-surface border border-surface-muted rounded-lg shadow-lg p-1 flex items-center gap-1"
+          shouldShow={({ editor }) => {
+            // Only show for empty paragraphs
+            const { $from } = editor.state.selection;
+            const node = $from.parent;
+            return node.type.name === 'paragraph' && node.content.size === 0 && !isTyping;
+          }}
         >
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}

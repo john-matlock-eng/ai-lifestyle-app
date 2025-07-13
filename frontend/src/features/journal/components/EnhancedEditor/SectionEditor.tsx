@@ -100,8 +100,8 @@ const TextInput: React.FC<{
       minHeight="200px"
       maxHeight="600px"
       showToolbar={true}
-      showBubbleMenu={true}
-      showFloatingMenu={true}
+      showBubbleMenu={false}
+      showFloatingMenu={false}
     />
   );
 };

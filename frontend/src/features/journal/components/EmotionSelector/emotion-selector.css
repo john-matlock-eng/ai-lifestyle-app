@@ -7,6 +7,8 @@
   --wheel-text-primary: var(--color-theme);
   --wheel-text-secondary: var(--color-muted);
   --wheel-hover-brightness: 1.1;
+  /* Add padding top to accommodate zoom controls positioned above */
+  padding-top: 3rem;
 }
 
 /* Dark mode adjustments */
@@ -17,6 +19,12 @@
 /* Smooth zoom transitions */
 .emotion-wheel-zoom {
   transition: transform 0.2s ease-out;
+}
+
+/* Zoom controls styling */
+.emotion-wheel-zoom-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Emotion segment transitions */
@@ -87,7 +95,7 @@
 @media (max-width: 640px) {
   .emotion-wheel-container {
     max-width: 100vw;
-    padding: 0.5rem;
+    padding: 3rem 0.5rem 0.5rem 0.5rem;
   }
   
   .emotion-text-tertiary {

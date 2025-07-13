@@ -1,6 +1,6 @@
 // EmotionWheel.tsx - Improved version with better readability and zoom
 import React, { useState, useRef, useEffect } from 'react';
-import { X, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { 
   getCoreEmotions, 
   getSecondaryEmotions, 
@@ -28,6 +28,11 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const [zoomLevel, setZoomLevel] = useState(1);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; emotion: Emotion } | null>(null);
   
+  // Reset zoom to default
+  const resetZoom = () => {
+    setZoomLevel(1);
+  };
+  
   // Responsive sizing
   useEffect(() => {
     const handleResize = () => {
@@ -41,6 +46,30 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Handle escape key to reset zoom
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        resetZoom();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+  
+  // Handle click outside to reset zoom
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        resetZoom();
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
   const centerX = wheelSize / 2;
@@ -137,12 +166,13 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   
   return (
     <div ref={containerRef} className={`emotion-wheel-container relative ${className}`}>
-      {/* Zoom controls */}
-      <div className="emotion-wheel-zoom-controls absolute top-2 right-2 z-10 flex gap-2">
+      {/* Zoom controls - positioned outside the zoomable area */}
+      <div className="emotion-wheel-zoom-controls absolute -top-12 right-0 z-20 flex gap-2">
         <button
           onClick={() => setZoomLevel(Math.min(zoomLevel + 0.1, 1.5))}
           className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
           title="Zoom in"
+          disabled={zoomLevel >= 1.5}
         >
           <ZoomIn className="w-4 h-4" />
         </button>
@@ -150,8 +180,17 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           onClick={() => setZoomLevel(Math.max(zoomLevel - 0.1, 0.8))}
           className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
           title="Zoom out"
+          disabled={zoomLevel <= 0.8}
         >
           <ZoomOut className="w-4 h-4" />
+        </button>
+        <button
+          onClick={resetZoom}
+          className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
+          title="Reset zoom (ESC)"
+          disabled={zoomLevel === 1}
+        >
+          <RotateCcw className="w-4 h-4" />
         </button>
       </div>
       
@@ -162,7 +201,8 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           width: wheelSize,
           height: wheelSize,
           transform: `scale(${zoomLevel})`,
-          transformOrigin: 'center'
+          transformOrigin: 'center',
+          transition: 'transform 0.2s ease-in-out'
         }}
       >
         <svg 
