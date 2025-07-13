@@ -13,6 +13,8 @@ interface EmotionSelectorProps {
   className?: string;
   maxSelections?: number;
   hierarchicalSelection?: boolean;
+  progressiveReveal?: boolean;
+  onComplete?: () => void;
 }
 
 const EmotionSelector: React.FC<EmotionSelectorProps> = ({ 
@@ -21,7 +23,9 @@ const EmotionSelector: React.FC<EmotionSelectorProps> = ({
   mode = 'both',
   className = '',
   maxSelections,
-  hierarchicalSelection = true
+  hierarchicalSelection = true,
+  progressiveReveal = true,
+  onComplete
 }) => {
   const [viewMode, setViewMode] = useState<'wheel' | 'list'>(
     mode === 'both' ? 'list' : mode
@@ -102,6 +106,8 @@ const EmotionSelector: React.FC<EmotionSelectorProps> = ({
           selectedEmotions={value}
           onEmotionToggle={handleEmotionToggle}
           hierarchicalSelection={hierarchicalSelection}
+          progressiveReveal={progressiveReveal}
+          onComplete={onComplete}
         />
       ) : (
         <EmotionDrillDown

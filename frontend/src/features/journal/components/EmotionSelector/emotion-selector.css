@@ -249,3 +249,92 @@
     opacity: 1;
   }
 }
+
+/* Progressive reveal animations */
+.emotion-segment-hidden {
+  opacity: 0.1 !important;
+  pointer-events: none !important;
+}
+
+.emotion-segment-revealed {
+  animation: segment-reveal 0.5s ease-out;
+}
+
+@keyframes segment-reveal {
+  from {
+    opacity: 0.1;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Focused core emotion */
+.emotion-segment-core-focused {
+  animation: core-focus 0.3s ease-out;
+}
+
+@keyframes core-focus {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Complete button animation */
+.emotion-complete-buttons {
+  animation: slide-up 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Progressive reveal cursor feedback */
+.emotion-segment.cursor-not-allowed {
+  cursor: not-allowed !important;
+}
+
+.emotion-segment.cursor-not-allowed:hover {
+  filter: none !important;
+}
+
+/* Visual feedback for selectable emotions in progressive mode */
+.emotion-segment-core.cursor-pointer {
+  stroke-width: 3px;
+  transition: all 0.2s ease;
+}
+
+.emotion-segment-core.cursor-pointer:hover {
+  stroke-width: 4px;
+  filter: brightness(1.15);
+}
+
+/* Dimmed unselectable emotions */
+.emotion-segment[style*="opacity: 0.3"] {
+  filter: saturate(0.5) !important;
+}
+
+/* Progress indicator styles */
+.progress-indicator {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Selection state visual feedback */
+.emotion-segment[style*="strokeWidth: '2.5'"] {
+  filter: drop-shadow(0 0 8px currentColor);
+}

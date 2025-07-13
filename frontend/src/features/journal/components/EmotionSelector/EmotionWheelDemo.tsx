@@ -5,6 +5,7 @@ import EmotionWheel from './EmotionWheel';
 const EmotionWheelDemo: React.FC = () => {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [hierarchicalSelection, setHierarchicalSelection] = useState(true);
+  const [progressiveReveal, setProgressiveReveal] = useState(true);
   
   const handleEmotionToggle = (emotionId: string) => {
     if (selectedEmotions.includes(emotionId)) {
@@ -12,6 +13,10 @@ const EmotionWheelDemo: React.FC = () => {
     } else {
       setSelectedEmotions([...selectedEmotions, emotionId]);
     }
+  };
+  
+  const handleComplete = () => {
+    alert(`Selected emotions: ${selectedEmotions.join(', ')}`);
   };
   
   return (
@@ -49,22 +54,41 @@ const EmotionWheelDemo: React.FC = () => {
           </div>
         </div>
         
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="hierarchical"
-              checked={hierarchicalSelection}
-              onChange={(e) => setHierarchicalSelection(e.target.checked)}
-              className="rounded border-surface-muted text-accent focus:ring-accent"
-            />
-            <label htmlFor="hierarchical" className="text-sm cursor-pointer">
-              Enable hierarchical selection
-              <span className="text-xs text-muted ml-2">
-                (auto-selects parent emotions)
-              </span>
-            </label>
-          </div>
+        <div className="mb-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="hierarchical"
+                  checked={hierarchicalSelection}
+                  onChange={(e) => setHierarchicalSelection(e.target.checked)}
+                  className="rounded border-surface-muted text-accent focus:ring-accent"
+                />
+                <label htmlFor="hierarchical" className="text-sm cursor-pointer">
+                  Hierarchical selection
+                  <span className="text-xs text-muted ml-1">
+                    (auto-select parents)
+                  </span>
+                </label>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="progressive"
+                  checked={progressiveReveal}
+                  onChange={(e) => setProgressiveReveal(e.target.checked)}
+                  className="rounded border-surface-muted text-accent focus:ring-accent"
+                />
+                <label htmlFor="progressive" className="text-sm cursor-pointer">
+                  Progressive reveal
+                  <span className="text-xs text-muted ml-1">
+                    (guided selection)
+                  </span>
+                </label>
+              </div>
+            </div>
           
           {selectedEmotions.length > 0 && (
             <button
@@ -74,17 +98,24 @@ const EmotionWheelDemo: React.FC = () => {
               Clear all
             </button>
           )}
+          </div>
         </div>
         
         <EmotionWheel
           selectedEmotions={selectedEmotions}
           onEmotionToggle={handleEmotionToggle}
           hierarchicalSelection={hierarchicalSelection}
+          progressiveReveal={progressiveReveal}
+          onComplete={handleComplete}
         />
         
         <div className="bg-surface rounded-lg p-4 mt-6">
           <h3 className="font-medium mb-2">Latest Updates:</h3>
           <ul className="space-y-2 text-sm text-muted">
+            <li className="flex items-start gap-2">
+              <span className="text-success">✓</span>
+              <span><strong>Progressive Reveal:</strong> Start with core emotions, then progressively reveal deeper levels for guided selection.</span>
+            </li>
             <li className="flex items-start gap-2">
               <span className="text-success">✓</span>
               <span><strong>Hierarchical Selection:</strong> Selecting a specific emotion auto-selects its parent emotions for logical grouping.</span>

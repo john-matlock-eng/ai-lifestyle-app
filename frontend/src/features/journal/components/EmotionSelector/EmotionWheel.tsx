@@ -15,13 +15,17 @@ interface EmotionWheelProps {
   onEmotionToggle: (emotionId: string) => void;
   className?: string;
   hierarchicalSelection?: boolean;
+  progressiveReveal?: boolean;
+  onComplete?: () => void;
 }
 
 const EmotionWheel: React.FC<EmotionWheelProps> = ({ 
   selectedEmotions, 
   onEmotionToggle,
   className = '',
-  hierarchicalSelection = true
+  hierarchicalSelection = true,
+  progressiveReveal = true,
+  onComplete
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -37,6 +41,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const hasDraggedRef = useRef(false);
   const clickStartTimeRef = useRef(0);
   const initialClickPosRef = useRef({ x: 0, y: 0 });
+  const [focusedCoreEmotion, setFocusedCoreEmotion] = useState<string | null>(null);
+  const [focusedSecondaryEmotion, setFocusedSecondaryEmotion] = useState<string | null>(null);
+  const [showCompleteButton, setShowCompleteButton] = useState(false);
   
   // Reset zoom and pan to default
   const resetView = () => {
@@ -56,32 +63,91 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     const emotion = getEmotionById(emotionId);
     if (!emotion) return;
     
-    if (selectedEmotions.includes(emotionId)) {
-      // Deselecting - just remove this emotion
-      onEmotionToggle(emotionId);
-    } else {
-      // Selecting - check if we need to select parents
-      if (hierarchicalSelection && emotion.parent) {
-        // Get all parent emotions
-        const parents: string[] = [];
-        let currentId: string | undefined = emotion.parent;
-        
-        while (currentId) {
-          if (!selectedEmotions.includes(currentId)) {
-            parents.push(currentId);
+    if (progressiveReveal) {
+      // Progressive reveal mode
+      if (emotion.level === 'core') {
+        if (focusedCoreEmotion === emotionId) {
+          // Clicking the same core emotion - unfocus and clear selections
+          setFocusedCoreEmotion(null);
+          setFocusedSecondaryEmotion(null);
+          setShowCompleteButton(false);
+          // Clear all selections for this core emotion
+          const toRemove = selectedEmotions.filter(id => {
+            const e = getEmotionById(id);
+            return e && (e.id === emotionId || e.parent === emotionId || 
+              (e.parent && getEmotionById(e.parent)?.parent === emotionId));
+          });
+          toRemove.forEach(id => onEmotionToggle(id));
+        } else {
+          // Focus on this core emotion
+          setFocusedCoreEmotion(emotionId);
+          setFocusedSecondaryEmotion(null);
+          setShowCompleteButton(false);
+          if (!selectedEmotions.includes(emotionId)) {
+            onEmotionToggle(emotionId);
           }
-          const parentEmotion = getEmotionById(currentId);
-          currentId = parentEmotion?.parent;
+        }
+      } else if (emotion.level === 'secondary') {
+        // Can only select if it's a child of the focused core emotion
+        if (emotion.parent === focusedCoreEmotion) {
+          if (focusedSecondaryEmotion === emotionId) {
+            // Clicking the same secondary emotion - unfocus
+            setFocusedSecondaryEmotion(null);
+            setShowCompleteButton(false);
+            // Clear tertiary selections for this secondary emotion
+            const toRemove = selectedEmotions.filter(id => {
+              const e = getEmotionById(id);
+              return e && e.parent === emotionId;
+            });
+            toRemove.forEach(id => onEmotionToggle(id));
+            // Also deselect this secondary emotion
+            onEmotionToggle(emotionId);
+          } else {
+            // Focus on this secondary emotion
+            setFocusedSecondaryEmotion(emotionId);
+            setShowCompleteButton(false);
+            if (!selectedEmotions.includes(emotionId)) {
+              onEmotionToggle(emotionId);
+            }
+          }
+        }
+      } else if (emotion.level === 'tertiary') {
+        // Can only select if it's a child of the focused secondary emotion
+        if (emotion.parent === focusedSecondaryEmotion) {
+          onEmotionToggle(emotionId);
+          // Show complete button when a tertiary is selected
+          setShowCompleteButton(true);
+        }
+      }
+    } else {
+      // Standard selection mode
+      if (selectedEmotions.includes(emotionId)) {
+        // Deselecting - just remove this emotion
+        onEmotionToggle(emotionId);
+      } else {
+        // Selecting - check if we need to select parents
+        if (hierarchicalSelection && emotion.parent) {
+          // Get all parent emotions
+          const parents: string[] = [];
+          let currentId: string | undefined = emotion.parent;
+          
+          while (currentId) {
+            if (!selectedEmotions.includes(currentId)) {
+              parents.push(currentId);
+            }
+            const parentEmotion = getEmotionById(currentId);
+            currentId = parentEmotion?.parent;
+          }
+          
+          // Select parents first (in reverse order - from core to specific)
+          parents.reverse().forEach(parentId => {
+            onEmotionToggle(parentId);
+          });
         }
         
-        // Select parents first (in reverse order - from core to specific)
-        parents.reverse().forEach(parentId => {
-          onEmotionToggle(parentId);
-        });
+        // Then select the clicked emotion
+        onEmotionToggle(emotionId);
       }
-      
-      // Then select the clicked emotion
-      onEmotionToggle(emotionId);
     }
   };
   
@@ -332,6 +398,17 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const coreEmotions = getCoreEmotions();
   const coreAngleSize = 360 / coreEmotions.length;
   
+  // Check if any tertiary emotion is selected
+  const hasTertiarySelected = selectedEmotions.some(id => {
+    const emotion = getEmotionById(id);
+    return emotion?.level === 'tertiary';
+  });
+  
+  // Update complete button visibility
+  useEffect(() => {
+    setShowCompleteButton(progressiveReveal && hasTertiarySelected);
+  }, [progressiveReveal, hasTertiarySelected]);
+  
   return (
     <div 
       ref={containerRef} 
@@ -428,7 +505,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           </defs>
           
           {/* Instructions */}
-          {zoomLevel <= 1.2 && selectedEmotions.length === 0 && (
+          {zoomLevel <= 1.2 && (
             <text
               x={centerX}
               y={centerY}
@@ -436,7 +513,12 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               className="emotion-wheel-hint fill-accent text-sm font-medium"
               style={{ userSelect: 'none' }}
             >
-              Start by selecting a core emotion
+              {!focusedCoreEmotion 
+                ? (selectedEmotions.length === 0 ? 'Start by selecting a core emotion' : 'Select a core emotion to continue')
+                : (!focusedSecondaryEmotion 
+                  ? 'Now select a more specific emotion'
+                  : 'Select the most specific emotion')
+              }
             </text>
           )}
           
@@ -468,15 +550,15 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                   fill={emotion.color}
                   stroke="var(--color-background)"
                   strokeWidth="2"
-                  opacity={isSelected ? 1 : (isHovered ? 0.9 : 0.8)}
+                  opacity={isSelected ? 1 : (isHovered ? 0.9 : (progressiveReveal && focusedCoreEmotion && focusedCoreEmotion !== emotion.id ? 0.3 : 0.8))}
                   onClick={() => handleEmotionSelect(emotion.id)}
                   onMouseEnter={(e) => handleMouseEnter(e, emotion)}
                   onMouseMove={(e) => handleMouseMove(e, emotion)}
                   onMouseLeave={handleMouseLeave}
-                  className={`emotion-segment emotion-segment-core transition-all duration-200 ${selectedEmotions.length === 0 ? 'cursor-pointer' : ''}`}
+                  className={`emotion-segment emotion-segment-core transition-all duration-200 ${!progressiveReveal || !focusedCoreEmotion ? 'cursor-pointer' : (focusedCoreEmotion === emotion.id ? 'cursor-pointer' : 'cursor-not-allowed')}`}
                   style={{ 
                     filter: isSelected ? 'brightness(1.1)' : 'none',
-                    strokeWidth: selectedEmotions.length === 0 ? '3' : '2'
+                    strokeWidth: (selectedEmotions.length === 0 || focusedCoreEmotion === emotion.id) ? '3' : '2'
                   }}
                 />
                 <text
@@ -496,6 +578,11 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           
           {/* Secondary emotions */}
           {coreEmotions.map((coreEmotion, coreIndex) => {
+            // Only show secondary emotions for the focused core emotion in progressive reveal mode
+            if (progressiveReveal && focusedCoreEmotion !== coreEmotion.id) {
+              return null;
+            }
+            
             const secondaryEmotions = getSecondaryEmotions(coreEmotion.id);
             const coreStartAngle = coreIndex * coreAngleSize - 90;
             const secondaryAngleSize = coreAngleSize / secondaryEmotions.length;
@@ -514,13 +601,16 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                     fill={emotion.color}
                     stroke="var(--color-background)"
                     strokeWidth="1.5"
-                    opacity={isSelected ? 1 : (isHovered ? 0.85 : 0.7)}
+                    opacity={isSelected ? 1 : (isHovered ? 0.85 : (progressiveReveal && focusedSecondaryEmotion && focusedSecondaryEmotion !== emotion.id ? 0.3 : 0.7))}
                     onClick={() => handleEmotionSelect(emotion.id)}
                     onMouseEnter={(e) => handleMouseEnter(e, emotion)}
                     onMouseMove={(e) => handleMouseMove(e, emotion)}
                     onMouseLeave={handleMouseLeave}
-                    className="emotion-segment transition-all duration-200"
-                    style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
+                    className={`emotion-segment transition-all duration-200 ${!progressiveReveal || !focusedSecondaryEmotion ? 'cursor-pointer' : (focusedSecondaryEmotion === emotion.id ? 'cursor-pointer' : 'cursor-not-allowed')}`}
+                    style={{ 
+                      filter: isSelected ? 'brightness(1.1)' : 'none',
+                      strokeWidth: focusedSecondaryEmotion === emotion.id ? '2.5' : '1.5'
+                    }}
                   />
                   <text
                     x={textPos.x}
@@ -541,11 +631,21 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           
           {/* Tertiary emotions */}
           {coreEmotions.map((coreEmotion, coreIndex) => {
+            // Only show tertiary emotions for the focused secondary emotion in progressive reveal mode
+            if (progressiveReveal && focusedCoreEmotion !== coreEmotion.id) {
+              return null;
+            }
+            
             const secondaryEmotions = getSecondaryEmotions(coreEmotion.id);
             const coreStartAngle = coreIndex * coreAngleSize - 90;
             const secondaryAngleSize = coreAngleSize / secondaryEmotions.length;
             
             return secondaryEmotions.map((secEmotion, secIndex) => {
+              // Only show tertiary emotions for the focused secondary emotion
+              if (progressiveReveal && focusedSecondaryEmotion !== secEmotion.id) {
+                return null;
+              }
+              
               const tertiaryEmotions = getTertiaryEmotions(secEmotion.id);
               if (tertiaryEmotions.length === 0) return null;
               
@@ -571,7 +671,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                       onMouseEnter={(e) => handleMouseEnter(e, emotion)}
                       onMouseMove={(e) => handleMouseMove(e, emotion)}
                       onMouseLeave={handleMouseLeave}
-                      className="emotion-segment transition-all duration-200"
+                      className="emotion-segment transition-all duration-200 cursor-pointer"
                       style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
                     />
                     {/* Only show text if zoomed in enough or hovered */}
@@ -666,6 +766,49 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           </div>
         );
       })()}
+      
+      {/* Progress indicator */}
+      {progressiveReveal && focusedCoreEmotion && (
+        <div className="mt-4 p-3 bg-surface rounded-lg border border-surface-muted">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-medium">Selection progress:</span>
+            <div className="flex items-center gap-1">
+              <span className="px-2 py-1 rounded bg-accent/20 text-accent font-medium">1. Core</span>
+              <span className="text-muted">→</span>
+              <span className={`px-2 py-1 rounded ${focusedSecondaryEmotion ? 'bg-accent/20 text-accent font-medium' : 'bg-muted/20 text-muted'}`}>2. Secondary</span>
+              <span className="text-muted">→</span>
+              <span className={`px-2 py-1 rounded ${showCompleteButton ? 'bg-accent/20 text-accent font-medium' : 'bg-muted/20 text-muted'}`}>3. Specific</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Complete/Add Another buttons */}
+      {progressiveReveal && showCompleteButton && (
+        <div className="mt-4 flex justify-center gap-3">
+          <button
+            onClick={() => {
+              if (onComplete) onComplete();
+              setFocusedCoreEmotion(null);
+              setFocusedSecondaryEmotion(null);
+              setShowCompleteButton(false);
+            }}
+            className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            Complete Selection
+          </button>
+          <button
+            onClick={() => {
+              setFocusedCoreEmotion(null);
+              setFocusedSecondaryEmotion(null);
+              setShowCompleteButton(false);
+            }}
+            className="px-4 py-2 bg-surface border border-surface-muted rounded-lg hover:bg-surface-hover transition-colors"
+          >
+            Add Another Emotion
+          </button>
+        </div>
+      )}
       
       {/* Selected emotions display with hierarchy */}
       {selectedEmotions.length > 0 && (
