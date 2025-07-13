@@ -11,6 +11,7 @@ type SelectionState = { template: JournalTemplate } | 'scratch' | null;
 
 const JournalTemplateDemo: React.FC = () => {
   const [selection, setSelection] = useState<SelectionState>(null);
+  const [savedData, setSavedData] = useState<Record<string, any>>({});
 
   useEffect(() => {
     purgeOldDrafts();
@@ -26,9 +27,23 @@ const JournalTemplateDemo: React.FC = () => {
 
   const handleSave = (data: SaveData) => {
     console.log('Saved journal entry:', data);
-    // In a real app, this would save to your backend
-    alert('Journal entry saved successfully!');
-    setSelection(null);
+    
+    // Store the saved data for demonstration
+    if ('templateId' in data) {
+      const sectionData: Record<string, string> = {};
+      data.sections.forEach(section => {
+        sectionData[section.id] = section.markdown;
+      });
+      setSavedData(prev => ({
+        ...prev,
+        [data.templateId]: sectionData
+      }));
+      alert(`Journal entry saved successfully!\n\nTotal sections: ${data.sections.length}\nNon-empty sections: ${data.sections.filter(s => s.markdown.trim()).length}`);
+    } else {
+      alert('Journal entry saved successfully!');
+    }
+    
+    // Don't reset selection to keep content visible
   };
 
   if (selection === null) {
@@ -97,6 +112,7 @@ const JournalTemplateDemo: React.FC = () => {
           ) : (
             <JournalEditorWithSections
               template={selection.template}
+              initialData={savedData[selection.template.id] || {}}
               onSave={handleSave}
               draftId={`demo-${selection.template.id}`}
             />

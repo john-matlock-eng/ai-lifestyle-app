@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Save, 
   FileText, 
@@ -11,7 +11,6 @@ import {
   RotateCcw,
   Check
 } from 'lucide-react';
-
 import EditorSection from './EditorSection';
 import type { JournalTemplate } from '../types/template.types';
 import '../styles/journal-editor.css';
@@ -37,16 +36,37 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
   readOnly = false,
   className = '',
 }) => {
-  const [content, setContent] = useState<Record<string, string>>(
-    Object.fromEntries(template.sections.map((s) => [s.id, initialData[s.id] || '']))
-  );
+  // Initialize content with provided data or empty strings
+  const [content, setContent] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    template.sections.forEach(section => {
+      initial[section.id] = initialData[section.id] || '';
+    });
+    return initial;
+  });
+  
   const draftBase = useRef(draftId ?? `${template.id}-${Date.now()}`);
   const [saveCounter, setSaveCounter] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // Update content when initialData changes
+  useEffect(() => {
+    const newContent: Record<string, string> = {};
+    template.sections.forEach(section => {
+      newContent[section.id] = initialData[section.id] || '';
+    });
+    setContent(newContent);
+  }, [template, initialData]);
+
   const handleChange = (id: string) => (markdown: string) => {
-    setContent((prev) => ({ ...prev, [id]: markdown }));
+    setContent(prev => {
+      // Only update if the content has actually changed
+      if (prev[id] !== markdown) {
+        return { ...prev, [id]: markdown };
+      }
+      return prev;
+    });
   };
 
   const handleSave = async () => {
@@ -54,9 +74,10 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
     const sections = template.sections.map((s) => ({
       id: s.id,
       title: s.title,
-      markdown: content[s.id] ?? '',
+      markdown: content[s.id] || '',
     }));
     const markdownExport = sections
+      .filter(s => s.markdown.trim()) // Only include non-empty sections
       .map((s) => `## ${s.title}\n\n${s.markdown}`)
       .join('\n\n');
 
@@ -84,11 +105,14 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset all sections? This will clear all your content.')) {
-      setContent(Object.fromEntries(template.sections.map((s) => [s.id, ''])));
-      template.sections.forEach((s) => {
-        const key = `journal-draft-${draftBase.current}-${s.id}`;
+      const emptyContent: Record<string, string> = {};
+      template.sections.forEach(section => {
+        emptyContent[section.id] = '';
+        const key = `journal-draft-${draftBase.current}-${section.id}`;
         localStorage.removeItem(key);
       });
+      setContent(emptyContent);
+      setSaveCounter(prev => prev + 1); // Force editor updates
     }
   };
 
@@ -156,7 +180,7 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
           <EditorSection
             key={section.id}
             section={section}
-            initialContent={content[section.id]}
+            initialContent={content[section.id] || ''}
             readOnly={readOnly}
             onChange={handleChange(section.id)}
             draftId={`${draftBase.current}-${section.id}`}

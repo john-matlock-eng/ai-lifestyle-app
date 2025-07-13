@@ -68,7 +68,10 @@ const EditorSection: React.FC<EditorSectionProps> = ({
           levels: [1, 2, 3],
         },
       }),
-      Markdown,
+      Markdown.configure({
+        html: false,
+        transformCopiedText: true,
+      }),
       Placeholder.configure({
         placeholder: section.prompt,
         emptyEditorClass: 'is-editor-empty',
@@ -80,10 +83,21 @@ const EditorSection: React.FC<EditorSectionProps> = ({
     onCreate({ editor }) {
       // Set initial word count
       setWordCount(editor.getText().split(/\s+/).filter(word => word.length > 0).length);
+      // Call onChange with initial content if provided
+      if (initialContent && onChange) {
+        onChange(initialContent);
+      }
     },
     onUpdate({ editor }) {
-      const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
-      onChange?.(markdown);
+      // Get markdown content
+      const storage = editor.storage.markdown;
+      const markdown = storage && typeof storage.getMarkdown === 'function' 
+        ? storage.getMarkdown() 
+        : editor.getText(); // Fallback to plain text if markdown not available
+      
+      if (onChange) {
+        onChange(markdown);
+      }
       setHasUnsavedChanges(true);
       setWordCount(editor.getText().split(/\s+/).filter(word => word.length > 0).length);
     },
@@ -91,6 +105,17 @@ const EditorSection: React.FC<EditorSectionProps> = ({
 
   const [lastSaved, setLastSaved] = useState(initialContent);
   const [restoreDraft, setRestoreDraft] = useState<string | null>(null);
+
+  // Update editor content when initialContent changes
+  useEffect(() => {
+    if (editor && initialContent !== undefined && !editor.isDestroyed) {
+      // Only update if content is actually different
+      const currentMarkdown = editor.storage.markdown?.getMarkdown?.() || '';
+      if (currentMarkdown !== initialContent) {
+        editor.commands.setContent(initialContent);
+      }
+    }
+  }, [editor, initialContent]);
 
   useEffect(() => {
     if (!editor || readOnly || !DRAFT_KEY) return;
@@ -101,11 +126,13 @@ const EditorSection: React.FC<EditorSectionProps> = ({
     }
 
     const interval = setInterval(() => {
-      const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
-      if (markdown !== lastSaved) {
-        localStorage.setItem(DRAFT_KEY, markdown);
-      } else {
-        localStorage.removeItem(DRAFT_KEY);
+      if (!editor.isDestroyed) {
+        const markdown = editor.storage.markdown?.getMarkdown?.() || editor.getText();
+        if (markdown !== lastSaved) {
+          localStorage.setItem(DRAFT_KEY, markdown);
+        } else {
+          localStorage.removeItem(DRAFT_KEY);
+        }
       }
     }, 5000);
 
@@ -117,8 +144,8 @@ const EditorSection: React.FC<EditorSectionProps> = ({
   }, [initialContent]);
 
   useEffect(() => {
-    if (!editor) return;
-    const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
+    if (!editor || editor.isDestroyed) return;
+    const markdown = editor.storage.markdown?.getMarkdown?.() || editor.getText();
     setLastSaved(markdown);
     setHasUnsavedChanges(false);
   }, [editor, saveSignal]);
