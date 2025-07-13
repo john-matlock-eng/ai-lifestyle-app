@@ -33,7 +33,7 @@ import { useEncryption } from '@/contexts/useEncryption';
 export const JournalViewPageEnhanced: React.FC = () => {
   const { entryId } = useParams<{ entryId: string }>();
   const navigate = useNavigate();
-  const { isEncryptionEnabled: isEncryptionInitialized } = useEncryption();
+  const { isEncryptionSetup } = useEncryption();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showShareManagement, setShowShareManagement] = useState(false);
@@ -155,7 +155,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
           </Button>
           
           <div className="flex items-center gap-2">
-            {isEncryptionInitialized && entry.isEncrypted && (
+            {isEncryptionSetup && entry.isEncrypted && (
               <JournalActions
                 entry={entry}
                 onShare={() => setShowShareDialog(true)}
@@ -306,7 +306,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
         {/* Actions */}
         <div className="flex items-center justify-center gap-4 mt-8">
-          {isEncryptionInitialized && entry.isEncrypted ? (
+          {isEncryptionSetup && entry.isEncrypted ? (
             <Button
               variant="outline"
               onClick={() => setShowShareDialog(true)}

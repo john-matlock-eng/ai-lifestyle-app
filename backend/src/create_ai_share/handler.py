@@ -3,18 +3,14 @@ Lambda handler for creating AI analysis shares.
 """
 
 import json
-import os
 import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List
 from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.logging import correlation_paths
-
-from encryption_common import (
-    Share, AIShareRequest, ShareType, SharePermission,
-    EncryptionRepository, AI_SERVICE_ACCOUNT
-)
+from common.response_utils import create_response, create_error_response
+from pydantic import BaseModel, Field, validator
 
 # Initialize AWS Lambda Powertools
 logger = Logger()
@@ -22,20 +18,44 @@ tracer = Tracer()
 metrics = Metrics(namespace="AILifestyleApp")
 
 
-def extract_user_id(event: Dict[str, Any]) -> str:
-    """
-    Extract user ID from JWT claims.
+class CreateAIShareRequest(BaseModel):
+    """Request model for creating an AI share."""
+    item_type: str = Field(alias="itemType", description="Type of items being shared")
+    item_ids: List[str] = Field(alias="itemIds", description="IDs of items to analyze")
+    analysis_type: str = Field(alias="analysisType", description="Type of AI analysis")
+    context: str = Field(default="", description="Additional context for analysis")
+    expires_in_minutes: int = Field(alias="expiresInMinutes", default=30, description="Minutes until share expires")
     
-    Args:
-        event: Lambda event
-        
-    Returns:
-        User ID
-        
-    Raises:
-        ValueError: If user ID not found
-    """
-    # For authenticated endpoints, user info comes from JWT claims
+    @validator('item_type')
+    def validate_item_type(cls, v):
+        if v not in ['journal', 'goal']:
+            raise ValueError('Invalid item type')
+        return v
+    
+    @validator('analysis_type')
+    def validate_analysis_type(cls, v):
+        valid_types = ['sentiment', 'themes', 'patterns', 'goals', 'summary', 'insights']
+        if v not in valid_types:
+            raise ValueError(f'Invalid analysis type. Must be one of: {", ".join(valid_types)}')
+        return v
+    
+    @validator('expires_in_minutes')
+    def validate_expiration(cls, v):
+        if v < 5 or v > 60:  # Max 1 hour for AI shares
+            raise ValueError('Expiration must be between 5 and 60 minutes')
+        return v
+    
+    @validator('item_ids')
+    def validate_item_ids(cls, v):
+        if not v or len(v) == 0:
+            raise ValueError('At least one item ID required')
+        if len(v) > 10:  # Limit batch size
+            raise ValueError('Maximum 10 items per AI analysis')
+        return v
+
+
+def extract_user_id(event: Dict[str, Any]) -> str:
+    """Extract user ID from JWT claims."""
     authorizer = event.get('requestContext', {}).get('authorizer', {})
     claims = authorizer.get('claims', {})
     
@@ -45,8 +65,7 @@ def extract_user_id(event: Dict[str, Any]) -> str:
         if authorizer:
             claims = authorizer
     
-    user_id = claims.get('sub')  # Cognito user ID
-    
+    user_id = claims.get('sub')
     if not user_id:
         raise ValueError("User ID not found in token")
     
@@ -68,173 +87,95 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         API Gateway Lambda proxy response
     """
     
-    # Extract request ID for tracking
     request_id = context.aws_request_id
     
     try:
         # Extract user ID from JWT
         try:
-            owner_id = extract_user_id(event)
-            logger.info(f"AI share creation request from user {owner_id}")
+            user_id = extract_user_id(event)
+            logger.info(f"AI share creation request from user {user_id}")
         except ValueError as e:
             logger.error(f"Failed to extract user ID: {str(e)}")
             metrics.add_metric(name="UnauthorizedAIShareCreationAttempts", unit=MetricUnit.Count, value=1)
             
-            return {
-                'statusCode': 401,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'UNAUTHORIZED',
-                    'message': 'User authentication required',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
+            return create_error_response(
+                status_code=401,
+                error_code='UNAUTHORIZED',
+                message='User authentication required',
+                request_id=request_id
+            )
         
         # Parse and validate request body
-        body = json.loads(event.get('body', '{}'))
-        
         try:
-            # Validate request against schema
-            request_data = AIShareRequest(**body)
+            body = json.loads(event.get('body', '{}'))
+            request = CreateAIShareRequest(**body)
         except Exception as e:
-            logger.error(f"Request validation failed: {str(e)}", exc_info=True)
+            logger.error(f"Invalid request body: {str(e)}")
             metrics.add_metric(name="InvalidAIShareCreationRequests", unit=MetricUnit.Count, value=1)
             
-            # Extract validation errors
-            validation_errors = []
-            if hasattr(e, 'errors'):
-                for error in e.errors():
-                    validation_errors.append({
-                        'field': '.'.join(str(x) for x in error['loc']),
-                        'message': error['msg']
-                    })
-            else:
-                validation_errors.append({
-                    'field': 'request',
-                    'message': str(e)
-                })
-            
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'VALIDATION_ERROR',
-                    'message': 'Validation failed',
-                    'validationErrors': validation_errors,
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
+            return create_error_response(
+                status_code=400,
+                error_code='VALIDATION_ERROR',
+                message=str(e),
+                request_id=request_id
+            )
         
-        # Initialize repository
-        table_name = os.environ.get('TABLE_NAME', 'ai-lifestyle-dev')
-        repository = EncryptionRepository(table_name)
+        # Initialize service
+        from .service import CreateAIShareService
+        service = CreateAIShareService()
         
-        # For AI shares, we need to:
-        # 1. Get the content keys for each item
-        # 2. Re-encrypt them for the AI service
-        # 3. Create time-limited, single-use shares
-        
-        # In a real implementation, you would:
-        # 1. Fetch the items from their respective tables
-        # 2. Get the encrypted content keys
-        # 3. Decrypt with user's private key
-        # 4. Re-encrypt with AI service's public key
-        
-        # For now, we'll create the share structure
-        created_shares: List[Share] = []
-        
-        for item_id in request_data.item_ids:
-            share_id = str(uuid.uuid4())
-            
-            # AI shares are time-limited and single-use
-            expires_at = datetime.now(timezone.utc) + timedelta(minutes=request_data.expires_in_minutes)
-            
-            share = Share(
-                share_id=share_id,
-                owner_id=owner_id,
-                recipient_id=AI_SERVICE_ACCOUNT["user_id"],
-                item_type=request_data.item_type,
-                item_id=item_id,
-                encrypted_key="",  # This would be the re-encrypted content key
-                share_type=ShareType.AI,
-                permissions=[SharePermission.READ],  # AI only gets read access
-                expires_at=expires_at,
-                max_accesses=1  # Single-use
+        # Create the AI shares
+        try:
+            result = service.create_ai_shares(
+                owner_id=user_id,
+                item_type=request.item_type,
+                item_ids=request.item_ids,
+                analysis_type=request.analysis_type,
+                context=request.context,
+                expires_in_minutes=request.expires_in_minutes
             )
             
-            # Save to database
-            try:
-                repository.create_share(share)
-                created_shares.append(share)
-            except Exception as e:
-                logger.error(f"Failed to create AI share for item {item_id}: {str(e)}")
-                # Continue with other items
-        
-        if not created_shares:
+            metrics.add_metric(name="AISharesCreated", unit=MetricUnit.Count, value=len(result['shareIds']))
+            metrics.add_metric(name=f"AIAnalysis_{request.analysis_type}", unit=MetricUnit.Count, value=1)
+            
+            return create_response(
+                status_code=201,
+                body={
+                    'analysisRequestId': result['analysisRequestId'],
+                    'shareIds': result['shareIds'],
+                    'expiresAt': result['expiresAt']
+                },
+                request_id=request_id
+            )
+            
+        except ValueError as e:
+            logger.error(f"AI share creation failed: {str(e)}")
             metrics.add_metric(name="AIShareCreationFailures", unit=MetricUnit.Count, value=1)
             
-            return {
-                'statusCode': 500,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'SYSTEM_ERROR',
-                    'message': 'Failed to create AI shares',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
-        
-        # Create analysis request for AI service
-        analysis_request_id = str(uuid.uuid4())
-        
-        # In production, you would trigger the AI analysis here
-        # For example, send to SQS or invoke another Lambda
-        
-        # Add metrics
-        metrics.add_metric(name="AIShareCreationAttempts", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name="SuccessfulAIShareCreations", unit=MetricUnit.Count, value=len(created_shares))
-        metrics.add_metric(name=f"AIAnalysisType_{request_data.analysis_type}", unit=MetricUnit.Count, value=1)
-        
-        return {
-            'statusCode': 201,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': json.dumps({
-                'analysisRequestId': analysis_request_id,
-                'sharesCreated': len(created_shares),
-                'shareIds': [share.share_id for share in created_shares],
-                'expiresAt': created_shares[0].expires_at.isoformat() if created_shares else None,
-                'message': 'AI analysis request created successfully'
-            })
-        }
+            return create_error_response(
+                status_code=400,
+                error_code='AI_SHARE_CREATION_FAILED',
+                message=str(e),
+                request_id=request_id
+            )
+        except Exception as e:
+            logger.error(f"Unexpected error creating AI share: {str(e)}")
+            metrics.add_metric(name="AIShareCreationSystemErrors", unit=MetricUnit.Count, value=1)
+            
+            return create_error_response(
+                status_code=500,
+                error_code='SYSTEM_ERROR',
+                message='Failed to create AI share',
+                request_id=request_id
+            )
         
     except Exception as e:
-        logger.error(f"Unexpected error during AI share creation: {str(e)}", exc_info=True)
-        metrics.add_metric(name="AIShareCreationSystemErrors", unit=MetricUnit.Count, value=1)
+        logger.error(f"Unexpected error in AI share creation handler: {str(e)}", exc_info=True)
+        metrics.add_metric(name="AIShareCreationHandlerErrors", unit=MetricUnit.Count, value=1)
         
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': json.dumps({
-                'error': 'SYSTEM_ERROR',
-                'message': 'An unexpected error occurred',
-                'requestId': request_id,
-                'timestamp': datetime.now(timezone.utc).isoformat()
-            })
-        }
+        return create_error_response(
+            status_code=500,
+            error_code='SYSTEM_ERROR',
+            message='An unexpected error occurred',
+            request_id=request_id
+        )

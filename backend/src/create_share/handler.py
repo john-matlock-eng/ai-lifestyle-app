@@ -3,18 +3,14 @@ Lambda handler for creating encrypted shares.
 """
 
 import json
-import os
-import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Any
 from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.logging import correlation_paths
-
-from encryption_common import (
-    Share, CreateShareRequest, ShareType, SharePermission,
-    EncryptionRepository
-)
+from common.response_utils import create_response, create_error_response
+from pydantic import BaseModel, Field, validator
+from typing import List, Optional
 
 # Initialize AWS Lambda Powertools
 logger = Logger()
@@ -22,20 +18,38 @@ tracer = Tracer()
 metrics = Metrics(namespace="AILifestyleApp")
 
 
-def extract_user_id(event: Dict[str, Any]) -> str:
-    """
-    Extract user ID from JWT claims.
+class CreateShareRequest(BaseModel):
+    """Request model for creating a share."""
+    item_type: str = Field(alias="itemType", description="Type of item being shared (journal, goal, etc)")
+    item_id: str = Field(alias="itemId", description="ID of the item being shared")
+    recipient_id: str = Field(alias="recipientId", description="User ID of the recipient")
+    encrypted_key: str = Field(alias="encryptedKey", description="Re-encrypted content key for recipient")
+    permissions: List[str] = Field(default=["read"], description="List of permissions")
+    expires_in_hours: Optional[int] = Field(alias="expiresInHours", default=24, description="Hours until share expires")
     
-    Args:
-        event: Lambda event
-        
-    Returns:
-        User ID
-        
-    Raises:
-        ValueError: If user ID not found
-    """
-    # For authenticated endpoints, user info comes from JWT claims
+    @validator('item_type')
+    def validate_item_type(cls, v):
+        if v not in ['journal', 'goal']:
+            raise ValueError('Invalid item type')
+        return v
+    
+    @validator('permissions')
+    def validate_permissions(cls, v):
+        valid_permissions = ['read', 'write', 'share']
+        for perm in v:
+            if perm not in valid_permissions:
+                raise ValueError(f'Invalid permission: {perm}')
+        return v
+    
+    @validator('expires_in_hours')
+    def validate_expiration(cls, v):
+        if v and (v < 1 or v > 720):  # Max 30 days
+            raise ValueError('Expiration must be between 1 and 720 hours')
+        return v
+
+
+def extract_user_id(event: Dict[str, Any]) -> str:
+    """Extract user ID from JWT claims."""
     authorizer = event.get('requestContext', {}).get('authorizer', {})
     claims = authorizer.get('claims', {})
     
@@ -45,8 +59,7 @@ def extract_user_id(event: Dict[str, Any]) -> str:
         if authorizer:
             claims = authorizer
     
-    user_id = claims.get('sub')  # Cognito user ID
-    
+    user_id = claims.get('sub')
     if not user_id:
         raise ValueError("User ID not found in token")
     
@@ -68,168 +81,96 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         API Gateway Lambda proxy response
     """
     
-    # Extract request ID for tracking
     request_id = context.aws_request_id
     
     try:
         # Extract user ID from JWT
         try:
-            owner_id = extract_user_id(event)
-            logger.info(f"Share creation request from user {owner_id}")
+            user_id = extract_user_id(event)
+            logger.info(f"Share creation request from user {user_id}")
         except ValueError as e:
             logger.error(f"Failed to extract user ID: {str(e)}")
             metrics.add_metric(name="UnauthorizedShareCreationAttempts", unit=MetricUnit.Count, value=1)
             
-            return {
-                'statusCode': 401,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'UNAUTHORIZED',
-                    'message': 'User authentication required',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
+            return create_error_response(
+                status_code=401,
+                error_code='UNAUTHORIZED',
+                message='User authentication required',
+                request_id=request_id
+            )
         
         # Parse and validate request body
-        body = json.loads(event.get('body', '{}'))
-        
         try:
-            # Validate request against schema
-            request_data = CreateShareRequest(**body)
+            body = json.loads(event.get('body', '{}'))
+            request = CreateShareRequest(**body)
         except Exception as e:
-            logger.error(f"Request validation failed: {str(e)}", exc_info=True)
+            logger.error(f"Invalid request body: {str(e)}")
             metrics.add_metric(name="InvalidShareCreationRequests", unit=MetricUnit.Count, value=1)
             
-            # Extract validation errors
-            validation_errors = []
-            if hasattr(e, 'errors'):
-                for error in e.errors():
-                    validation_errors.append({
-                        'field': '.'.join(str(x) for x in error['loc']),
-                        'message': error['msg']
-                    })
-            else:
-                validation_errors.append({
-                    'field': 'request',
-                    'message': str(e)
-                })
-            
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'VALIDATION_ERROR',
-                    'message': 'Validation failed',
-                    'validationErrors': validation_errors,
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
+            return create_error_response(
+                status_code=400,
+                error_code='VALIDATION_ERROR',
+                message=str(e),
+                request_id=request_id
+            )
         
-        # Initialize repository
-        table_name = os.environ.get('TABLE_NAME', 'ai-lifestyle-dev')
-        repository = EncryptionRepository(table_name)
+        # Initialize service
+        from .service import CreateShareService
+        service = CreateShareService()
         
-        # Verify recipient has encryption set up
-        recipient_keys = repository.get_public_key(request_data.recipient_id)
-        if not recipient_keys:
-            logger.warning(f"Recipient {request_data.recipient_id} does not have encryption set up")
-            metrics.add_metric(name="ShareToUnencryptedUser", unit=MetricUnit.Count, value=1)
-            
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'RECIPIENT_NOT_ENCRYPTED',
-                    'message': 'Recipient has not set up encryption',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
-        
-        # Create share
-        share_id = str(uuid.uuid4())
-        
-        # Calculate expiration
-        expires_at = None
-        if request_data.expires_in_hours:
-            expires_at = datetime.now(timezone.utc) + timedelta(hours=request_data.expires_in_hours)
-        
-        # Set default permissions if not provided
-        permissions = request_data.permissions or [SharePermission.READ]
-        
-        share = Share(
-            share_id=share_id,
-            owner_id=owner_id,
-            recipient_id=request_data.recipient_id,
-            item_type=request_data.item_type,
-            item_id=request_data.item_id,
-            encrypted_key=request_data.encrypted_key,
-            share_type=request_data.share_type,
-            permissions=permissions,
-            expires_at=expires_at,
-            max_accesses=request_data.max_accesses
-        )
-        
-        # Save to database
+        # Create the share
         try:
-            repository.create_share(share)
-        except Exception as e:
-            logger.error(f"Failed to create share: {str(e)}")
+            share_data = service.create_share(
+                owner_id=user_id,
+                item_type=request.item_type,
+                item_id=request.item_id,
+                recipient_id=request.recipient_id,
+                encrypted_key=request.encrypted_key,
+                permissions=request.permissions,
+                expires_in_hours=request.expires_in_hours
+            )
+            
+            metrics.add_metric(name="SharesCreated", unit=MetricUnit.Count, value=1)
+            metrics.add_metric(name=f"SharesCreated_{request.item_type}", unit=MetricUnit.Count, value=1)
+            
+            return create_response(
+                status_code=201,
+                body={
+                    'shareId': share_data['shareId'],
+                    'expiresAt': share_data['expiresAt'],
+                    'createdAt': share_data['createdAt']
+                },
+                request_id=request_id
+            )
+            
+        except ValueError as e:
+            logger.error(f"Share creation failed: {str(e)}")
             metrics.add_metric(name="ShareCreationFailures", unit=MetricUnit.Count, value=1)
             
-            return {
-                'statusCode': 500,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'SYSTEM_ERROR',
-                    'message': 'Failed to create share',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
-        
-        # Add metrics
-        metrics.add_metric(name="ShareCreationAttempts", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name="SuccessfulShareCreations", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name=f"ShareType_{share.share_type.value}", unit=MetricUnit.Count, value=1)
-        
-        return {
-            'statusCode': 201,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': share.model_dump_json(by_alias=True)
-        }
+            return create_error_response(
+                status_code=400,
+                error_code='SHARE_CREATION_FAILED',
+                message=str(e),
+                request_id=request_id
+            )
+        except Exception as e:
+            logger.error(f"Unexpected error creating share: {str(e)}")
+            metrics.add_metric(name="ShareCreationSystemErrors", unit=MetricUnit.Count, value=1)
+            
+            return create_error_response(
+                status_code=500,
+                error_code='SYSTEM_ERROR',
+                message='Failed to create share',
+                request_id=request_id
+            )
         
     except Exception as e:
-        logger.error(f"Unexpected error during share creation: {str(e)}", exc_info=True)
-        metrics.add_metric(name="ShareCreationSystemErrors", unit=MetricUnit.Count, value=1)
+        logger.error(f"Unexpected error in share creation handler: {str(e)}", exc_info=True)
+        metrics.add_metric(name="ShareCreationHandlerErrors", unit=MetricUnit.Count, value=1)
         
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': json.dumps({
-                'error': 'SYSTEM_ERROR',
-                'message': 'An unexpected error occurred',
-                'requestId': request_id,
-                'timestamp': datetime.now(timezone.utc).isoformat()
-            })
-        }
+        return create_error_response(
+            status_code=500,
+            error_code='SYSTEM_ERROR',
+            message='An unexpected error occurred',
+            request_id=request_id
+        )

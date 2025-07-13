@@ -84,20 +84,20 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
   };
 
   const getShareStatus = (share: ShareData) => {
-    if (!share.isActive) return { text: 'Revoked', color: 'text-red-600' };
+    if (!share.isActive) return { text: 'Revoked', color: 'text-[var(--error)]' };
     
     if (share.expiresAt) {
       const expiresDate = new Date(share.expiresAt);
       if (expiresDate < new Date()) {
-        return { text: 'Expired', color: 'text-gray-600' };
+        return { text: 'Expired', color: 'text-[var(--text-muted)]' };
       }
     }
     
     if (share.maxAccesses && share.accessCount >= share.maxAccesses) {
-      return { text: 'Used', color: 'text-gray-600' };
+      return { text: 'Used', color: 'text-[var(--text-muted)]' };
     }
     
-    return { text: 'Active', color: 'text-green-600' };
+    return { text: 'Active', color: 'text-[var(--success)]' };
   };
 
   const getPermissionLabel = (permission: string) => {
@@ -112,7 +112,7 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -120,9 +120,9 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
   if (shares.length === 0) {
     return (
       <div className="text-center py-12">
-        <Share2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <Share2 className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-4" />
         <h3 className="text-lg font-medium text-[var(--text)] mb-2">No active shares</h3>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-[var(--text-muted)]">
           When you share encrypted items, they'll appear here
         </p>
       </div>
@@ -133,7 +133,7 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-[var(--text)]">Active Shares</h3>
-        <div className="flex items-center gap-2 text-sm text-muted">
+        <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
           <Shield className="w-4 h-4" />
           <span>{shares.length} active {shares.length === 1 ? 'share' : 'shares'}</span>
         </div>
@@ -148,12 +148,12 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
           return (
             <div
               key={share.shareId}
-              className="bg-[var(--surface)] border border-[color:var(--surface-muted)] rounded-lg p-4 hover:shadow-md transition-shadow"
+              className="bg-[var(--surface)] border border-[var(--surface-muted)] rounded-lg p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <Share2 className="w-5 h-5 text-[var(--primary)]" />
+                    <Share2 className="w-5 h-5 text-[var(--accent)]" />
                     <h4 className="font-medium text-[var(--text)]">
                       {share.itemType} shared with {share.recipientName || share.recipientId}
                     </h4>
@@ -163,7 +163,7 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-muted">
+                    <div className="flex items-center gap-2 text-[var(--text-muted)]">
                       <Clock className="w-4 h-4" />
                       <span>
                         Created {formatDistanceToNow(new Date(share.createdAt), { addSuffix: true })}
@@ -171,7 +171,7 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
                     </div>
 
                     {share.expiresAt && (
-                      <div className={`flex items-center gap-2 ${isExpiringSoon ? 'text-orange-600' : 'text-muted'}`}>
+                      <div className={`flex items-center gap-2 ${isExpiringSoon ? 'text-[var(--warning)]' : 'text-[var(--text-muted)]'}`}>
                         <Clock className="w-4 h-4" />
                         <span>
                           Expires {formatDistanceToNow(new Date(share.expiresAt), { addSuffix: true })}
@@ -179,7 +179,7 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-muted">
+                    <div className="flex items-center gap-2 text-[var(--text-muted)]">
                       <Users className="w-4 h-4" />
                       <span>
                         Permissions: {share.permissions.map(getPermissionLabel).join(', ')}
@@ -187,7 +187,7 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
                     </div>
 
                     {share.maxAccesses && (
-                      <div className="flex items-center gap-2 text-muted">
+                      <div className="flex items-center gap-2 text-[var(--text-muted)]">
                         <ExternalLink className="w-4 h-4" />
                         <span>
                           Accessed {share.accessCount} / {share.maxAccesses} times
@@ -201,11 +201,11 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
                   <button
                     onClick={() => revokeShare(share.shareId)}
                     disabled={isRevoking === share.shareId}
-                    className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                    className="ml-4 p-2 text-[var(--error)] hover:bg-[var(--error-bg)] rounded-md transition-colors disabled:opacity-50"
                     title="Revoke share"
                   >
                     {isRevoking === share.shareId ? (
-                      <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-[var(--error)] border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <Trash2 className="w-5 h-5" />
                     )}
@@ -214,15 +214,15 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
               </div>
 
               {selectedShare?.shareId === share.shareId && (
-                <div className="mt-4 pt-4 border-t border-[color:var(--surface-muted)]">
+                <div className="mt-4 pt-4 border-t border-[var(--surface-muted)]">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-muted">Share ID:</span>
-                      <span className="ml-2 font-mono text-xs">{share.shareId}</span>
+                      <span className="text-[var(--text-muted)]">Share ID:</span>
+                      <span className="ml-2 font-mono text-xs text-[var(--text)]">{share.shareId}</span>
                     </div>
                     <div>
-                      <span className="text-muted">Item ID:</span>
-                      <span className="ml-2 font-mono text-xs">{share.itemId}</span>
+                      <span className="text-[var(--text-muted)]">Item ID:</span>
+                      <span className="ml-2 font-mono text-xs text-[var(--text)]">{share.itemId}</span>
                     </div>
                   </div>
                 </div>
@@ -232,7 +232,7 @@ const ShareManagement: React.FC<ShareManagementProps> = ({
                 onClick={() => setSelectedShare(
                   selectedShare?.shareId === share.shareId ? null : share
                 )}
-                className="mt-3 text-sm text-[var(--primary)] hover:text-[var(--primary-dark)]"
+                className="mt-3 text-sm text-[var(--accent)] hover:text-[var(--accent)]/80 transition-colors"
               >
                 {selectedShare?.shareId === share.shareId ? 'Hide details' : 'Show details'}
               </button>

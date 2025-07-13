@@ -3,16 +3,12 @@ Lambda handler for listing encrypted shares.
 """
 
 import json
-import os
 from datetime import datetime, timezone
 from typing import Dict, Any
 from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.logging import correlation_paths
-
-from encryption_common import (
-    ShareListResponse, EncryptionRepository
-)
+from common.response_utils import create_response, create_error_response
 
 # Initialize AWS Lambda Powertools
 logger = Logger()
@@ -21,19 +17,7 @@ metrics = Metrics(namespace="AILifestyleApp")
 
 
 def extract_user_id(event: Dict[str, Any]) -> str:
-    """
-    Extract user ID from JWT claims.
-    
-    Args:
-        event: Lambda event
-        
-    Returns:
-        User ID
-        
-    Raises:
-        ValueError: If user ID not found
-    """
-    # For authenticated endpoints, user info comes from JWT claims
+    """Extract user ID from JWT claims."""
     authorizer = event.get('requestContext', {}).get('authorizer', {})
     claims = authorizer.get('claims', {})
     
@@ -43,8 +27,7 @@ def extract_user_id(event: Dict[str, Any]) -> str:
         if authorizer:
             claims = authorizer
     
-    user_id = claims.get('sub')  # Cognito user ID
-    
+    user_id = claims.get('sub')
     if not user_id:
         raise ValueError("User ID not found in token")
     
@@ -56,7 +39,7 @@ def extract_user_id(event: Dict[str, Any]) -> str:
 @metrics.log_metrics
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
-    Handle share listing request.
+    Handle list shares request.
     
     Args:
         event: API Gateway Lambda proxy event
@@ -66,109 +49,90 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         API Gateway Lambda proxy response
     """
     
-    # Extract request ID for tracking
     request_id = context.aws_request_id
     
     try:
         # Extract user ID from JWT
         try:
             user_id = extract_user_id(event)
-            logger.info(f"Share listing request from user {user_id}")
+            logger.info(f"List shares request from user {user_id}")
         except ValueError as e:
             logger.error(f"Failed to extract user ID: {str(e)}")
-            metrics.add_metric(name="UnauthorizedShareListingAttempts", unit=MetricUnit.Count, value=1)
+            metrics.add_metric(name="UnauthorizedListSharesAttempts", unit=MetricUnit.Count, value=1)
             
-            return {
-                'statusCode': 401,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'UNAUTHORIZED',
-                    'message': 'User authentication required',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
+            return create_error_response(
+                status_code=401,
+                error_code='UNAUTHORIZED',
+                message='User authentication required',
+                request_id=request_id
+            )
         
-        # Extract query parameters
-        query_params = event.get('queryStringParameters', {}) or {}
+        # Parse query parameters
+        query_params = event.get('queryStringParameters') or {}
         item_type = query_params.get('itemType')
-        direction = query_params.get('direction', 'both')  # 'sent', 'received', or 'both'
-        active_only = query_params.get('activeOnly', 'true').lower() == 'true'
+        direction = query_params.get('direction', 'both')  # 'sent', 'received', 'both'
+        include_expired = query_params.get('includeExpired', 'false').lower() == 'true'
         
-        # Initialize repository
-        table_name = os.environ.get('TABLE_NAME', 'ai-lifestyle-dev')
-        repository = EncryptionRepository(table_name)
-        
-        # Get shares based on direction
-        all_shares = []
-        
-        if direction in ['sent', 'both']:
-            # Get shares created by the user
-            sent_shares = repository.get_shares_by_owner(
-                owner_id=user_id,
-                item_type=item_type,
-                active_only=active_only
+        # Validate parameters
+        if direction not in ['sent', 'received', 'both']:
+            return create_error_response(
+                status_code=400,
+                error_code='VALIDATION_ERROR',
+                message='Invalid direction parameter. Must be: sent, received, or both',
+                request_id=request_id
             )
-            all_shares.extend(sent_shares)
-            logger.info(f"Found {len(sent_shares)} sent shares")
         
-        if direction in ['received', 'both']:
-            # Get shares received by the user
-            received_shares = repository.get_shares_for_recipient(
-                recipient_id=user_id,
-                item_type=item_type,
-                active_only=active_only
+        if item_type and item_type not in ['journal', 'goal']:
+            return create_error_response(
+                status_code=400,
+                error_code='VALIDATION_ERROR',
+                message='Invalid itemType parameter. Must be: journal or goal',
+                request_id=request_id
             )
-            all_shares.extend(received_shares)
-            logger.info(f"Found {len(received_shares)} received shares")
         
-        # Remove duplicates if any
-        unique_shares = []
-        seen_ids = set()
-        for share in all_shares:
-            if share.share_id not in seen_ids:
-                unique_shares.append(share)
-                seen_ids.add(share.share_id)
+        # Initialize service
+        from .service import ListSharesService
+        service = ListSharesService()
         
-        # Sort by creation date (newest first)
-        unique_shares.sort(key=lambda s: s.created_at, reverse=True)
-        
-        # Add metrics
-        metrics.add_metric(name="ShareListingRequests", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name="SharesReturned", unit=MetricUnit.Count, value=len(unique_shares))
-        
-        response = ShareListResponse(
-            shares=unique_shares,
-            total=len(unique_shares),
-            has_more=False  # Simple implementation, no pagination yet
-        )
-        
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': response.model_dump_json(by_alias=True)
-        }
+        # Get shares
+        try:
+            shares = service.list_shares(
+                user_id=user_id,
+                direction=direction,
+                item_type=item_type,
+                include_expired=include_expired
+            )
+            
+            metrics.add_metric(name="ListSharesRequests", unit=MetricUnit.Count, value=1)
+            metrics.add_metric(name="SharesReturned", unit=MetricUnit.Count, value=len(shares))
+            
+            return create_response(
+                status_code=200,
+                body={
+                    'shares': shares,
+                    'count': len(shares)
+                },
+                request_id=request_id
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to list shares: {str(e)}")
+            metrics.add_metric(name="ListSharesFailures", unit=MetricUnit.Count, value=1)
+            
+            return create_error_response(
+                status_code=500,
+                error_code='SYSTEM_ERROR',
+                message='Failed to list shares',
+                request_id=request_id
+            )
         
     except Exception as e:
-        logger.error(f"Unexpected error listing shares: {str(e)}", exc_info=True)
-        metrics.add_metric(name="ShareListingErrors", unit=MetricUnit.Count, value=1)
+        logger.error(f"Unexpected error in list shares handler: {str(e)}", exc_info=True)
+        metrics.add_metric(name="ListSharesHandlerErrors", unit=MetricUnit.Count, value=1)
         
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': json.dumps({
-                'error': 'SYSTEM_ERROR',
-                'message': 'An unexpected error occurred',
-                'requestId': request_id,
-                'timestamp': datetime.now(timezone.utc).isoformat()
-            })
-        }
+        return create_error_response(
+            status_code=500,
+            error_code='SYSTEM_ERROR',
+            message='An unexpected error occurred',
+            request_id=request_id
+        )

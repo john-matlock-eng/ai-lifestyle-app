@@ -6,11 +6,11 @@ COPY src/create_share/requirements.txt ${LAMBDA_TASK_ROOT}/
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy common modules
-COPY src/encryption_common ${LAMBDA_TASK_ROOT}/encryption_common/
+# Copy common module
+COPY src/common/ ${LAMBDA_TASK_ROOT}/common/
 
 # Copy function code
-COPY src/create_share/handler.py ${LAMBDA_TASK_ROOT}/
+COPY src/create_share/ ${LAMBDA_TASK_ROOT}/
 
-# Set the CMD to the handler
+# Set the handler
 CMD ["handler.lambda_handler"]

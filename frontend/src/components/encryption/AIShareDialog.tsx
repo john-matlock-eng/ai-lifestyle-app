@@ -91,12 +91,12 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
-            <Brain className="w-6 h-6 text-blue-600" />
+            <Brain className="w-6 h-6 text-[var(--accent)]" />
             <h2 className="text-xl font-semibold text-[var(--text)]">AI Analysis</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-muted transition-colors"
+            className="text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -105,7 +105,7 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
           {error && (
-            <div className="mb-4 flex items-start gap-2 p-3 bg-red-50 text-red-800 rounded-md text-sm">
+            <div className="mb-4 flex items-start gap-2 p-3 bg-[var(--danger-bg)] text-[var(--danger)] rounded-md text-sm">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -113,31 +113,31 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
 
           {/* Items Selection */}
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
+            <h3 className="text-sm font-medium text-[var(--text)] mb-3">
               Select items to analyze
             </h3>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {items.map(item => (
                 <label
                   key={item.id}
-                  className="flex items-center gap-3 p-3 bg-[var(--surface-muted)] rounded-lg hover:bg-[color:var(--surface-muted)] cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 bg-[var(--surface-muted)] rounded-lg hover:bg-[var(--surface)] cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
                     checked={selectedItems.includes(item.id)}
                     onChange={() => toggleItemSelection(item.id)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-[var(--accent)] rounded focus:ring-[var(--accent)]"
                   />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-[var(--text)]">
                       {item.title}
                     </p>
-                    <p className="text-xs text-muted">
+                    <p className="text-xs text-[var(--text-muted)]">
                       {new Date(item.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   {item.encrypted && (
-                    <Shield className="w-4 h-4 text-green-600" />
+                    <Shield className="w-4 h-4 text-[var(--success)]" />
                   )}
                 </label>
               ))}
@@ -146,7 +146,7 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
 
           {/* Analysis Type */}
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
+            <h3 className="text-sm font-medium text-[var(--text)] mb-3">
               Choose analysis type
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -155,8 +155,8 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
                   key={type.id}
                   className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     selectedAnalysis === type.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-[var(--accent)] bg-[var(--accent-bg)]'
+                      : 'border-[var(--surface-muted)] hover:border-[var(--border)]'
                   }`}
                 >
                   <input
@@ -169,8 +169,8 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
                   />
                   <span className="text-2xl">{type.icon}</span>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{type.name}</p>
-                    <p className="text-sm text-gray-600 mt-1">{type.description}</p>
+                    <p className="font-medium text-[var(--text)]">{type.name}</p>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">{type.description}</p>
                   </div>
                 </label>
               ))}
@@ -179,26 +179,26 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
 
           {/* Additional Context */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--text)] mb-2">
               Additional context (optional)
             </label>
             <textarea
               value={context}
               onChange={(e) => setContext(e.target.value)}
               placeholder="Provide any specific questions or areas of focus for the AI analysis..."
-              className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-md focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] resize-none"
               rows={3}
             />
           </div>
 
           {/* Privacy Notice */}
-          <div className="p-4 bg-blue-50 rounded-lg">
+          <div className="p-4 bg-[var(--info-bg)] rounded-lg">
             <div className="flex items-start gap-3">
               <div className="flex items-center gap-2 mt-0.5">
-                <Shield className="w-5 h-5 text-blue-600" />
-                <Clock className="w-5 h-5 text-blue-600" />
+                <Shield className="w-5 h-5 text-[var(--info)]" />
+                <Clock className="w-5 h-5 text-[var(--info)]" />
               </div>
-              <div className="text-sm text-blue-800">
+              <div className="text-sm text-[var(--info)]">
                 <p className="font-medium mb-1">Privacy-preserving AI analysis</p>
                 <ul className="space-y-1 list-disc list-inside">
                   <li>Your data remains encrypted during analysis</li>
@@ -216,14 +216,14 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
           <button
             onClick={onClose}
             disabled={isSharing}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-[var(--text)] hover:bg-[var(--surface)] rounded-md transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleShare}
             disabled={isSharing || selectedItems.length === 0 || !selectedAnalysis}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bg-[var(--accent)] text-white rounded-md hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSharing && (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

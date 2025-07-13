@@ -3,14 +3,12 @@ Lambda handler for revoking encrypted shares.
 """
 
 import json
-import os
 from datetime import datetime, timezone
 from typing import Dict, Any
 from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.logging import correlation_paths
-
-from encryption_common import EncryptionRepository
+from common.response_utils import create_response, create_error_response
 
 # Initialize AWS Lambda Powertools
 logger = Logger()
@@ -19,19 +17,7 @@ metrics = Metrics(namespace="AILifestyleApp")
 
 
 def extract_user_id(event: Dict[str, Any]) -> str:
-    """
-    Extract user ID from JWT claims.
-    
-    Args:
-        event: Lambda event
-        
-    Returns:
-        User ID
-        
-    Raises:
-        ValueError: If user ID not found
-    """
-    # For authenticated endpoints, user info comes from JWT claims
+    """Extract user ID from JWT claims."""
     authorizer = event.get('requestContext', {}).get('authorizer', {})
     claims = authorizer.get('claims', {})
     
@@ -41,8 +27,7 @@ def extract_user_id(event: Dict[str, Any]) -> str:
         if authorizer:
             claims = authorizer
     
-    user_id = claims.get('sub')  # Cognito user ID
-    
+    user_id = claims.get('sub')
     if not user_id:
         raise ValueError("User ID not found in token")
     
@@ -64,111 +49,95 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         API Gateway Lambda proxy response
     """
     
-    # Extract request ID for tracking
     request_id = context.aws_request_id
     
     try:
         # Extract user ID from JWT
         try:
             user_id = extract_user_id(event)
-            logger.info(f"Share revocation request from user {user_id}")
+            logger.info(f"Revoke share request from user {user_id}")
         except ValueError as e:
             logger.error(f"Failed to extract user ID: {str(e)}")
-            metrics.add_metric(name="UnauthorizedShareRevocationAttempts", unit=MetricUnit.Count, value=1)
+            metrics.add_metric(name="UnauthorizedRevokeShareAttempts", unit=MetricUnit.Count, value=1)
             
-            return {
-                'statusCode': 401,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'UNAUTHORIZED',
-                    'message': 'User authentication required',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
+            return create_error_response(
+                status_code=401,
+                error_code='UNAUTHORIZED',
+                message='User authentication required',
+                request_id=request_id
+            )
         
         # Extract share ID from path parameters
         path_params = event.get('pathParameters', {})
         share_id = path_params.get('shareId')
         
         if not share_id:
-            logger.error("Share ID not provided in path")
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'BAD_REQUEST',
-                    'message': 'Share ID is required',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
-        
-        logger.info(f"Attempting to revoke share {share_id}")
-        
-        # Initialize repository
-        table_name = os.environ.get('TABLE_NAME', 'ai-lifestyle-dev')
-        repository = EncryptionRepository(table_name)
-        
-        # Revoke the share (this will verify ownership)
-        success = repository.revoke_share(share_id, user_id)
-        
-        if not success:
-            logger.warning(f"Share {share_id} not found or user {user_id} not authorized")
-            metrics.add_metric(name="ShareRevocationNotFound", unit=MetricUnit.Count, value=1)
+            logger.error("Share ID not provided in path parameters")
+            metrics.add_metric(name="InvalidRevokeShareRequests", unit=MetricUnit.Count, value=1)
             
+            return create_error_response(
+                status_code=400,
+                error_code='VALIDATION_ERROR',
+                message='Share ID required',
+                request_id=request_id
+            )
+        
+        # Initialize service
+        from .service import RevokeShareService
+        service = RevokeShareService()
+        
+        # Revoke the share
+        try:
+            service.revoke_share(
+                user_id=user_id,
+                share_id=share_id
+            )
+            
+            metrics.add_metric(name="SharesRevoked", unit=MetricUnit.Count, value=1)
+            
+            # Return 204 No Content on success
             return {
-                'statusCode': 404,
+                'statusCode': 204,
                 'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
+                    'X-Request-ID': request_id,
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
                 },
-                'body': json.dumps({
-                    'error': 'NOT_FOUND',
-                    'message': 'Share not found or you are not authorized to revoke it',
-                    'requestId': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
+                'body': ''
             }
-        
-        # Add metrics
-        metrics.add_metric(name="ShareRevocationRequests", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name="SuccessfulShareRevocations", unit=MetricUnit.Count, value=1)
-        
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': json.dumps({
-                'shareId': share_id,
-                'status': 'revoked',
-                'revokedAt': datetime.now(timezone.utc).isoformat(),
-                'message': 'Share successfully revoked'
-            })
-        }
+            
+        except ValueError as e:
+            logger.error(f"Share revocation failed: {str(e)}")
+            metrics.add_metric(name="ShareRevocationFailures", unit=MetricUnit.Count, value=1)
+            
+            error_code = 'SHARE_NOT_FOUND' if 'not found' in str(e).lower() else 'REVOCATION_FAILED'
+            status_code = 404 if error_code == 'SHARE_NOT_FOUND' else 403
+            
+            return create_error_response(
+                status_code=status_code,
+                error_code=error_code,
+                message=str(e),
+                request_id=request_id
+            )
+        except Exception as e:
+            logger.error(f"Unexpected error revoking share: {str(e)}")
+            metrics.add_metric(name="ShareRevocationSystemErrors", unit=MetricUnit.Count, value=1)
+            
+            return create_error_response(
+                status_code=500,
+                error_code='SYSTEM_ERROR',
+                message='Failed to revoke share',
+                request_id=request_id
+            )
         
     except Exception as e:
-        logger.error(f"Unexpected error revoking share: {str(e)}", exc_info=True)
-        metrics.add_metric(name="ShareRevocationErrors", unit=MetricUnit.Count, value=1)
+        logger.error(f"Unexpected error in revoke share handler: {str(e)}", exc_info=True)
+        metrics.add_metric(name="RevokeShareHandlerErrors", unit=MetricUnit.Count, value=1)
         
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': json.dumps({
-                'error': 'SYSTEM_ERROR',
-                'message': 'An unexpected error occurred',
-                'requestId': request_id,
-                'timestamp': datetime.now(timezone.utc).isoformat()
-            })
-        }
+        return create_error_response(
+            status_code=500,
+            error_code='SYSTEM_ERROR',
+            message='An unexpected error occurred',
+            request_id=request_id
+        )

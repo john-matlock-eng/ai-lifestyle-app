@@ -18,26 +18,26 @@ const sizeClasses = {
 const statusConfig = {
   encrypted: {
     icon: Shield,
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-[var(--success)]',
+    bgColor: 'bg-[var(--success-bg)]',
     label: 'Fully encrypted',
   },
   unencrypted: {
     icon: Unlock,
-    color: 'text-gray-400',
+    color: 'text-[var(--text-muted)]',
     bgColor: 'bg-[var(--surface-muted)]',
     label: 'Not encrypted',
   },
   partial: {
     icon: Lock,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100',
+    color: 'text-[var(--warning)]',
+    bgColor: 'bg-[var(--warning-bg)]',
     label: 'Partially encrypted',
   },
   error: {
     icon: AlertCircle,
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
+    color: 'text-[var(--error)]',
+    bgColor: 'bg-[var(--error-bg)]',
     label: 'Encryption error',
   },
 };
@@ -92,14 +92,14 @@ export const EncryptionStatusList: React.FC<EncryptionStatusListProps> = ({
 }) => {
   return (
     <div className={`space-y-2 ${className}`}>
-      <h3 className="text-sm font-semibold text-gray-700">Encryption Status</h3>
+      <h3 className="text-sm font-semibold text-[var(--text)]">Encryption Status</h3>
       <ul className="space-y-1">
         {modules.map((module) => (
           <li
             key={module.moduleId}
             className="flex items-center justify-between py-1"
           >
-            <span className="text-sm text-muted">{module.moduleName}</span>
+            <span className="text-sm text-[var(--text-muted)]">{module.moduleName}</span>
             <EncryptionIndicator
               status={module.status}
               size="sm"

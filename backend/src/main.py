@@ -36,6 +36,7 @@ from update_journal_entry.handler import lambda_handler as update_journal_entry_
 from delete_journal_entry.handler import lambda_handler as delete_journal_entry_handler
 from get_journal_stats.handler import lambda_handler as get_journal_stats_handler
 from update_user_profile.handler import lambda_handler as update_user_profile_handler
+from get_user_by_email.handler import lambda_handler as get_user_by_email_handler
 # Encryption endpoints
 from setup_encryption.handler import lambda_handler as setup_encryption_handler
 from check_encryption.handler import lambda_handler as check_encryption_handler
@@ -105,6 +106,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "GET /debug": debug_handler,  # Debug endpoint to inspect events
         "POST /auth/refresh": refresh_token_handler,
         "GET /users/profile": get_user_profile_handler,
+        "GET /users/by-email/{email}": get_user_by_email_handler,
         "POST /auth/email/verify": verify_email_handler,
         "POST /auth/mfa/setup": setup_mfa_handler,
         "POST /auth/mfa/verify-setup": verify_mfa_setup_handler,
@@ -224,6 +226,16 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 event['pathParameters']['shareId'] = share_id
                 if http_method == 'DELETE':
                     handler = revoke_share_handler
+        
+        # Check for user-specific routes with email parameter
+        elif len(path_parts) >= 4 and path_parts[1] == 'users' and path_parts[2] == 'by-email':
+            # /users/by-email/{email}
+            email = path_parts[3]
+            if 'pathParameters' not in event:
+                event['pathParameters'] = {}
+            event['pathParameters']['email'] = email
+            if http_method == 'GET':
+                handler = get_user_by_email_handler
     
     if handler:
         # Ensure the event has the expected format for handlers
