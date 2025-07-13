@@ -31,7 +31,7 @@ const journalApi = {
   },
 
   async getEntry(entryId: string): Promise<JournalEntry> {
-    const { data } = await apiClient.get<JournalEntry>(`/journal/entries/${entryId}`);
+    const { data } = await apiClient.get<JournalEntry>(`/journal/${entryId}`);
     return data;
   },
 

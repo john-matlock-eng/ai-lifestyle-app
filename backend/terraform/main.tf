@@ -180,7 +180,7 @@ module "api_lambda" {
     # Encryption environment variables
     AI_SERVICE_PUBLIC_KEY_PARAM = module.encryption_service.ai_service_public_key_parameter
     AI_ANALYSIS_QUEUE_URL = module.encryption_service.ai_analysis_queue_url
-    CORS_ORIGIN                = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
+    CORS_ORIGIN                = var.environment == "prod" ? "https://ailifestyle.app" : "*"
   }
 
   additional_policies = [
