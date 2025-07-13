@@ -60,7 +60,7 @@ def migrate_encryption_status(table_name: str, dry_run: bool = True):
             profile_response = table.get_item(
                 Key={
                     'pk': f'USER#{user_id}',
-                    'sk': 'PROFILE'
+                    'sk': f'USER#{user_id}'
                 }
             )
             
@@ -85,7 +85,7 @@ def migrate_encryption_status(table_name: str, dry_run: bool = True):
                         table.update_item(
                             Key={
                                 'pk': f'USER#{user_id}',
-                                'sk': 'PROFILE'
+                                'sk': f'USER#{user_id}'
                             },
                             UpdateExpression='SET encryption_enabled = :enabled, encryption_setup_date = :setup_date, encryption_key_id = :key_id, updated_at = :updated_at',
                             ExpressionAttributeValues={

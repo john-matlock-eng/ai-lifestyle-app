@@ -76,7 +76,7 @@ def update_user_profile_encryption(table_name: str, user_id: str, public_key_id:
         response = table.update_item(
             Key={
                 'pk': f'USER#{user_id}',
-                'sk': 'PROFILE'
+                'sk': f'USER#{user_id}'
             },
             UpdateExpression='SET encryption_enabled = :enabled, encryption_setup_date = :setup_date, encryption_key_id = :key_id, updated_at = :updated_at',
             ExpressionAttributeValues={
