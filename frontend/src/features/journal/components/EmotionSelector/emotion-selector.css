@@ -1,0 +1,133 @@
+/* emotion-selector.css */
+
+/* Emotion Wheel specific styles */
+.emotion-wheel-container {
+  --wheel-bg: var(--color-background);
+  --wheel-border: var(--color-surface-muted);
+  --wheel-text-primary: var(--color-theme);
+  --wheel-text-secondary: var(--color-muted);
+  --wheel-hover-brightness: 1.1;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .emotion-wheel-container {
+  --wheel-hover-brightness: 1.2;
+}
+
+/* Smooth zoom transitions */
+.emotion-wheel-zoom {
+  transition: transform 0.2s ease-out;
+}
+
+/* Emotion segment transitions */
+.emotion-segment {
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.emotion-segment:hover {
+  filter: brightness(var(--wheel-hover-brightness));
+}
+
+/* Text readability improvements */
+.emotion-text-core {
+  font-weight: 600;
+  fill: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.emotion-text-secondary {
+  font-weight: 500;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.emotion-text-tertiary {
+  font-weight: 400;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Tooltip styles */
+.emotion-tooltip {
+  backdrop-filter: blur(8px);
+  background: rgba(var(--color-surface-rgb), 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Selected emotion pills */
+.emotion-pill {
+  transition: all 0.2s ease;
+}
+
+.emotion-pill:hover {
+  transform: scale(1.05);
+}
+
+/* Drill-down list styles */
+.emotion-list-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.emotion-list-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.emotion-list-item:hover::before {
+  opacity: 0.05;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .emotion-wheel-container {
+    max-width: 100vw;
+    padding: 0.5rem;
+  }
+  
+  .emotion-text-tertiary {
+    display: none;
+  }
+  
+  .emotion-text-secondary {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .emotion-wheel-zoom-controls {
+    display: none;
+  }
+  
+  .emotion-wheel-container {
+    page-break-inside: avoid;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .emotion-segment,
+  .emotion-pill,
+  .emotion-wheel-zoom {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .emotion-segment {
+    stroke-width: 3 !important;
+  }
+  
+  .emotion-text-core,
+  .emotion-text-secondary,
+  .emotion-text-tertiary {
+    font-weight: 600 !important;
+  }
+}

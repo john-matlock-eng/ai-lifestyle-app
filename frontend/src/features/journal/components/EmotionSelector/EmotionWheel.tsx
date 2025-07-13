@@ -1,12 +1,13 @@
-// EmotionWheel.tsx
+// EmotionWheel.tsx - Improved version with better readability and zoom
 import React, { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { 
   getCoreEmotions, 
   getSecondaryEmotions, 
   getTertiaryEmotions,
   getEmotionById,
-  getEmotionEmoji 
+  getEmotionEmoji,
+  type Emotion
 } from './emotionData';
 
 interface EmotionWheelProps {
@@ -21,14 +22,20 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   className = '' 
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredEmotion, setHoveredEmotion] = useState<string | null>(null);
-  const [wheelSize, setWheelSize] = useState(600);
+  const [wheelSize, setWheelSize] = useState(800); // Increased default size
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; emotion: Emotion } | null>(null);
   
   // Responsive sizing
   useEffect(() => {
     const handleResize = () => {
-      const minDimension = Math.min(window.innerWidth - 40, 600);
-      setWheelSize(minDimension);
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const maxSize = Math.min(containerWidth - 40, 900); // Increased max size
+        setWheelSize(maxSize);
+      }
     };
     
     handleResize();
@@ -39,8 +46,8 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const centerX = wheelSize / 2;
   const centerY = wheelSize / 2;
   const innerRadius = wheelSize * 0.12;
-  const middleRadius = wheelSize * 0.28;
-  const outerRadius = wheelSize * 0.45;
+  const middleRadius = wheelSize * 0.30; // Slightly larger
+  const outerRadius = wheelSize * 0.48; // Slightly larger
   
   // Calculate path for a segment
   const createPath = (
@@ -72,93 +79,127 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     `;
   };
   
-  // Calculate text position for labels
-  const getTextPosition = (startAngle: number, endAngle: number, radius: number) => {
+  // Calculate text position and optimal font size
+  const getTextPosition = (startAngle: number, endAngle: number, radius: number, level: 'core' | 'secondary' | 'tertiary') => {
     const midAngle = ((startAngle + endAngle) / 2) * Math.PI / 180;
     const x = centerX + radius * Math.cos(midAngle);
     const y = centerY + radius * Math.sin(midAngle);
     const rotation = (startAngle + endAngle) / 2;
-    const shouldFlip = rotation > 90 && rotation < 270;
+    
+    // Adjust text orientation for readability
+    let textRotation = rotation;
+    let anchor = 'middle';
+    
+    if (level !== 'core') {
+      const normalizedRotation = ((rotation + 90) % 360 + 360) % 360;
+      if (normalizedRotation > 180) {
+        textRotation = rotation + 180;
+        anchor = 'middle';
+      }
+    }
+    
+    // Dynamic font sizes based on level and zoom
+    const baseFontSizes = {
+      core: wheelSize * 0.018,
+      secondary: wheelSize * 0.014,
+      tertiary: wheelSize * 0.011
+    };
     
     return {
       x,
       y,
-      rotation: shouldFlip ? rotation + 180 : rotation,
-      anchor: shouldFlip ? 'end' : 'start'
+      rotation: textRotation,
+      anchor,
+      fontSize: baseFontSizes[level] * zoomLevel
     };
+  };
+  
+  // Handle mouse events for tooltip
+  const handleMouseEnter = (e: React.MouseEvent, emotion: Emotion) => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (rect) {
+      setTooltip({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        emotion
+      });
+    }
+    setHoveredEmotion(emotion.id);
+  };
+  
+  const handleMouseLeave = () => {
+    setTooltip(null);
+    setHoveredEmotion(null);
   };
   
   const coreEmotions = getCoreEmotions();
   const coreAngleSize = 360 / coreEmotions.length;
   
   return (
-    <div className={`relative ${className}`}>
-      <svg 
-        ref={svgRef}
-        width={wheelSize} 
-        height={wheelSize} 
-        className="cursor-pointer select-none"
+    <div ref={containerRef} className={`emotion-wheel-container relative ${className}`}>
+      {/* Zoom controls */}
+      <div className="emotion-wheel-zoom-controls absolute top-2 right-2 z-10 flex gap-2">
+        <button
+          onClick={() => setZoomLevel(Math.min(zoomLevel + 0.1, 1.5))}
+          className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
+          title="Zoom in"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setZoomLevel(Math.max(zoomLevel - 0.1, 0.8))}
+          className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
+          title="Zoom out"
+        >
+          <ZoomOut className="w-4 h-4" />
+        </button>
+      </div>
+      
+      {/* SVG Container with zoom */}
+      <div 
+        className="emotion-wheel-zoom overflow-hidden rounded-lg bg-surface"
+        style={{ 
+          width: wheelSize,
+          height: wheelSize,
+          transform: `scale(${zoomLevel})`,
+          transformOrigin: 'center'
+        }}
       >
-        {/* Core emotions (center) */}
-        {coreEmotions.map((emotion, index) => {
-          const startAngle = index * coreAngleSize - 90;
-          const endAngle = (index + 1) * coreAngleSize - 90;
-          const isSelected = selectedEmotions.includes(emotion.id);
-          const isHovered = hoveredEmotion === emotion.id;
+        <svg 
+          ref={svgRef}
+          width={wheelSize} 
+          height={wheelSize} 
+          className="cursor-pointer select-none"
+          style={{ background: 'var(--color-background)' }}
+        >
+          {/* Add subtle grid for better visual organization */}
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--color-surface-muted)" strokeWidth="0.5" opacity="0.3"/>
+            </pattern>
+          </defs>
           
-          return (
-            <g key={emotion.id}>
-              <path
-                d={createPath(startAngle, endAngle, 0, innerRadius)}
-                fill={emotion.color}
-                stroke="white"
-                strokeWidth="2"
-                opacity={isSelected ? 1 : (isHovered ? 0.8 : 0.7)}
-                onClick={() => onEmotionToggle(emotion.id)}
-                onMouseEnter={() => setHoveredEmotion(emotion.id)}
-                onMouseLeave={() => setHoveredEmotion(null)}
-                className="transition-all duration-200"
-              />
-              <text
-                x={centerX}
-                y={centerY}
-                transform={`rotate(${(startAngle + endAngle) / 2}, ${centerX}, ${centerY})`}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="text-xs font-semibold fill-white pointer-events-none"
-                dy={innerRadius * 0.6}
-              >
-                {emotion.label}
-              </text>
-            </g>
-          );
-        })}
-        
-        {/* Secondary emotions */}
-        {coreEmotions.map((coreEmotion, coreIndex) => {
-          const secondaryEmotions = getSecondaryEmotions(coreEmotion.id);
-          const coreStartAngle = coreIndex * coreAngleSize - 90;
-          const secondaryAngleSize = coreAngleSize / secondaryEmotions.length;
-          
-          return secondaryEmotions.map((emotion, secIndex) => {
-            const startAngle = coreStartAngle + secIndex * secondaryAngleSize;
-            const endAngle = startAngle + secondaryAngleSize;
+          {/* Core emotions (center) */}
+          {coreEmotions.map((emotion, index) => {
+            const startAngle = index * coreAngleSize - 90;
+            const endAngle = (index + 1) * coreAngleSize - 90;
             const isSelected = selectedEmotions.includes(emotion.id);
             const isHovered = hoveredEmotion === emotion.id;
-            const textPos = getTextPosition(startAngle, endAngle, (innerRadius + middleRadius) / 2);
+            const textPos = getTextPosition(startAngle, endAngle, innerRadius * 0.6, 'core');
             
             return (
               <g key={emotion.id}>
                 <path
-                  d={createPath(startAngle, endAngle, innerRadius, middleRadius)}
+                  d={createPath(startAngle, endAngle, 0, innerRadius)}
                   fill={emotion.color}
-                  stroke="white"
-                  strokeWidth="1.5"
-                  opacity={isSelected ? 1 : (isHovered ? 0.8 : 0.6)}
+                  stroke="var(--color-background)"
+                  strokeWidth="2"
+                  opacity={isSelected ? 1 : (isHovered ? 0.9 : 0.8)}
                   onClick={() => onEmotionToggle(emotion.id)}
-                  onMouseEnter={() => setHoveredEmotion(emotion.id)}
-                  onMouseLeave={() => setHoveredEmotion(null)}
-                  className="transition-all duration-200"
+                  onMouseEnter={(e) => handleMouseEnter(e, emotion)}
+                  onMouseLeave={handleMouseLeave}
+                  className="emotion-segment transition-all duration-200"
+                  style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
                 />
                 <text
                   x={textPos.x}
@@ -166,47 +207,41 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                   transform={`rotate(${textPos.rotation}, ${textPos.x}, ${textPos.y})`}
                   textAnchor={textPos.anchor}
                   dominantBaseline="middle"
-                  className="text-[10px] font-medium fill-gray-700 pointer-events-none"
+                  className="emotion-text-core fill-white font-semibold pointer-events-none"
+                  style={{ fontSize: `${textPos.fontSize}px` }}
                 >
                   {emotion.label}
                 </text>
               </g>
             );
-          });
-        })}
-        
-        {/* Tertiary emotions */}
-        {coreEmotions.map((coreEmotion, coreIndex) => {
-          const secondaryEmotions = getSecondaryEmotions(coreEmotion.id);
-          const coreStartAngle = coreIndex * coreAngleSize - 90;
-          const secondaryAngleSize = coreAngleSize / secondaryEmotions.length;
+          })}
           
-          return secondaryEmotions.map((secEmotion, secIndex) => {
-            const tertiaryEmotions = getTertiaryEmotions(secEmotion.id);
-            if (tertiaryEmotions.length === 0) return null;
+          {/* Secondary emotions */}
+          {coreEmotions.map((coreEmotion, coreIndex) => {
+            const secondaryEmotions = getSecondaryEmotions(coreEmotion.id);
+            const coreStartAngle = coreIndex * coreAngleSize - 90;
+            const secondaryAngleSize = coreAngleSize / secondaryEmotions.length;
             
-            const secStartAngle = coreStartAngle + secIndex * secondaryAngleSize;
-            const tertiaryAngleSize = secondaryAngleSize / tertiaryEmotions.length;
-            
-            return tertiaryEmotions.map((emotion, terIndex) => {
-              const startAngle = secStartAngle + terIndex * tertiaryAngleSize;
-              const endAngle = startAngle + tertiaryAngleSize;
+            return secondaryEmotions.map((emotion, secIndex) => {
+              const startAngle = coreStartAngle + secIndex * secondaryAngleSize;
+              const endAngle = startAngle + secondaryAngleSize;
               const isSelected = selectedEmotions.includes(emotion.id);
               const isHovered = hoveredEmotion === emotion.id;
-              const textPos = getTextPosition(startAngle, endAngle, (middleRadius + outerRadius) / 2);
+              const textPos = getTextPosition(startAngle, endAngle, (innerRadius + middleRadius) / 2, 'secondary');
               
               return (
                 <g key={emotion.id}>
                   <path
-                    d={createPath(startAngle, endAngle, middleRadius, outerRadius)}
+                    d={createPath(startAngle, endAngle, innerRadius, middleRadius)}
                     fill={emotion.color}
-                    stroke="white"
-                    strokeWidth="1"
-                    opacity={isSelected ? 1 : (isHovered ? 0.8 : 0.5)}
+                    stroke="var(--color-background)"
+                    strokeWidth="1.5"
+                    opacity={isSelected ? 1 : (isHovered ? 0.85 : 0.7)}
                     onClick={() => onEmotionToggle(emotion.id)}
-                    onMouseEnter={() => setHoveredEmotion(emotion.id)}
-                    onMouseLeave={() => setHoveredEmotion(null)}
-                    className="transition-all duration-200"
+                    onMouseEnter={(e) => handleMouseEnter(e, emotion)}
+                    onMouseLeave={handleMouseLeave}
+                    className="emotion-segment transition-all duration-200"
+                    style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
                   />
                   <text
                     x={textPos.x}
@@ -214,16 +249,93 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                     transform={`rotate(${textPos.rotation}, ${textPos.x}, ${textPos.y})`}
                     textAnchor={textPos.anchor}
                     dominantBaseline="middle"
-                    className="text-[9px] fill-gray-600 pointer-events-none"
+                    className="emotion-text-secondary font-medium pointer-events-none"
+                    fill={isHovered || isSelected ? 'var(--color-theme)' : 'var(--color-muted)'}
+                    style={{ fontSize: `${textPos.fontSize}px` }}
                   >
                     {emotion.label}
                   </text>
                 </g>
               );
             });
-          });
-        })}
-      </svg>
+          })}
+          
+          {/* Tertiary emotions */}
+          {coreEmotions.map((coreEmotion, coreIndex) => {
+            const secondaryEmotions = getSecondaryEmotions(coreEmotion.id);
+            const coreStartAngle = coreIndex * coreAngleSize - 90;
+            const secondaryAngleSize = coreAngleSize / secondaryEmotions.length;
+            
+            return secondaryEmotions.map((secEmotion, secIndex) => {
+              const tertiaryEmotions = getTertiaryEmotions(secEmotion.id);
+              if (tertiaryEmotions.length === 0) return null;
+              
+              const secStartAngle = coreStartAngle + secIndex * secondaryAngleSize;
+              const tertiaryAngleSize = secondaryAngleSize / tertiaryEmotions.length;
+              
+              return tertiaryEmotions.map((emotion, terIndex) => {
+                const startAngle = secStartAngle + terIndex * tertiaryAngleSize;
+                const endAngle = startAngle + tertiaryAngleSize;
+                const isSelected = selectedEmotions.includes(emotion.id);
+                const isHovered = hoveredEmotion === emotion.id;
+                const textPos = getTextPosition(startAngle, endAngle, (middleRadius + outerRadius) / 2, 'tertiary');
+                
+                return (
+                  <g key={emotion.id}>
+                    <path
+                      d={createPath(startAngle, endAngle, middleRadius, outerRadius)}
+                      fill={emotion.color}
+                      stroke="var(--color-background)"
+                      strokeWidth="1"
+                      opacity={isSelected ? 1 : (isHovered ? 0.8 : 0.6)}
+                      onClick={() => onEmotionToggle(emotion.id)}
+                      onMouseEnter={(e) => handleMouseEnter(e, emotion)}
+                      onMouseLeave={handleMouseLeave}
+                      className="emotion-segment transition-all duration-200"
+                      style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
+                    />
+                    {/* Only show text if zoomed in enough or hovered */}
+                    {(zoomLevel > 1.1 || isHovered || isSelected) && (
+                      <text
+                        x={textPos.x}
+                        y={textPos.y}
+                        transform={`rotate(${textPos.rotation}, ${textPos.x}, ${textPos.y})`}
+                        textAnchor={textPos.anchor}
+                        dominantBaseline="middle"
+                        className="emotion-text-tertiary pointer-events-none"
+                        fill={isHovered || isSelected ? 'var(--color-theme)' : 'var(--color-muted)'}
+                        style={{ fontSize: `${textPos.fontSize}px` }}
+                      >
+                        {emotion.label}
+                      </text>
+                    )}
+                  </g>
+                );
+              });
+            });
+          })}
+        </svg>
+      </div>
+      
+      {/* Tooltip */}
+      {tooltip && (
+        <div
+          className="emotion-tooltip absolute z-20 px-3 py-2 bg-surface border border-surface-muted rounded-lg shadow-lg pointer-events-none"
+          style={{
+            left: tooltip.x + 10,
+            top: tooltip.y - 10,
+            transform: 'translateY(-100%)'
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{getEmotionEmoji(tooltip.emotion.id)}</span>
+            <span className="font-medium">{tooltip.emotion.label}</span>
+          </div>
+          <div className="text-xs text-muted mt-1">
+            Click to {selectedEmotions.includes(tooltip.emotion.id) ? 'deselect' : 'select'}
+          </div>
+        </div>
+      )}
       
       {/* Selected emotions display */}
       {selectedEmotions.length > 0 && (
@@ -237,7 +349,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               return (
                 <span
                   key={emotionId}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
+                  className="emotion-pill inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
                   style={{ 
                     backgroundColor: emotion.color + '20',
                     color: emotion.color,

@@ -127,7 +127,7 @@ const EmotionDrillDown: React.FC<EmotionDrillDownProps> = ({
                 }
               }}
               className={`
-                relative flex items-center justify-between gap-2 p-3 rounded-lg
+                emotion-list-item relative flex items-center justify-between gap-2 p-3 rounded-lg
                 border transition-all duration-200 group
                 ${isSelected 
                   ? 'border-accent bg-accent/10' 
@@ -177,7 +177,7 @@ const EmotionDrillDown: React.FC<EmotionDrillDownProps> = ({
                   key={emotion.id}
                   onClick={() => onEmotionToggle(emotion.id)}
                   className={`
-                    inline-flex items-center gap-1 px-2 py-1 rounded-full
+                    emotion-pill inline-flex items-center gap-1 px-2 py-1 rounded-full
                     text-xs font-medium transition-all duration-200
                     ${isSelected ? 'ring-1' : 'hover:opacity-80'}
                   `}
@@ -209,7 +209,7 @@ const EmotionDrillDown: React.FC<EmotionDrillDownProps> = ({
               return (
                 <div
                   key={emotionId}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs"
+                  className="emotion-pill inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs"
                   style={{ 
                     backgroundColor: emotion.color + '20',
                     color: emotion.color,

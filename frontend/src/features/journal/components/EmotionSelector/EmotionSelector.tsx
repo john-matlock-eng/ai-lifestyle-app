@@ -4,6 +4,7 @@ import { Grid3X3, List } from 'lucide-react';
 import EmotionWheel from './EmotionWheel';
 import EmotionDrillDown from './EmotionDrillDown';
 import { getEmotionById } from './emotionData';
+import './emotion-selector.css';
 
 interface EmotionSelectorProps {
   value: string[];
