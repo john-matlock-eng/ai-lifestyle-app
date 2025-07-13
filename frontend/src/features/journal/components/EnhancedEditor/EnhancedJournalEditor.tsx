@@ -25,7 +25,7 @@ import type {
   SectionResponse,
   JournalDraft
 } from '../../types/enhanced-template.types';
-import { journalContentUtils } from '../../types/enhanced-template.types';
+import { enhancedJournalContentUtils } from '../../templates/enhanced-template-content-utils';
 import { enhancedTemplates } from '../../templates/enhanced-templates';
 import SectionEditor from './SectionEditor';
 import { getEncryptionService } from '@/services/encryption';
@@ -99,7 +99,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
   useEffect(() => {
     if (entry?.content && !entry.isEncrypted) {
       // Parse existing content back to sections
-      const parsedSections = journalContentUtils.contentToSections(template, entry.content);
+      const parsedSections = enhancedJournalContentUtils.contentToSections(template, entry.content);
       setSections(parsedSections);
     } else if (!entry) {
       // Initialize empty sections from template
@@ -218,7 +218,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
     
     try {
       // Generate content from sections
-      const content = journalContentUtils.sectionsToContent(template, sections);
+      const content = enhancedJournalContentUtils.sectionsToContent(template, sections);
       const wordCount = calculateTotalWordCount();
       const metadata = extractMetadata();
       

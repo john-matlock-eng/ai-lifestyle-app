@@ -18,7 +18,8 @@
       "Bash(npm run test:ci:*)",
       "Bash(mv:*)",
       "Bash(true)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   }
