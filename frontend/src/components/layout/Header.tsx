@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts';
-import ThemeSelector from '../ThemeSelector';
+import { useAuth, useTheme } from '../../contexts';
 
 interface HeaderProps {
   onMobileMenuToggle: () => void;
@@ -9,6 +8,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -94,21 +94,11 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
               >
                 Journal
               </Link>
-              <Link
-                to="/showcase"
-                className="text-accent hover:text-accent-hover px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                🎨 Component Showcase
-              </Link>
             </nav>
           </div>
 
-          {/* Right side - Theme selector, User menu and mobile toggle */}
+          {/* Right side - User menu and mobile toggle */}
           <div className="flex items-center gap-4">
-            {/* Theme Selector */}
-            <div className="hidden md:block">
-              <ThemeSelector />
-            </div>
             {/* User Menu */}
             <div className="relative" ref={userMenuRef}>
               <button
@@ -167,14 +157,63 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                     >
                       Settings
                     </Link>
+                    
+                    {/* Theme Selection */}
+                    <div className="border-t border-surface-muted mt-1 pt-1">
+                      <div className="px-4 py-2 text-xs font-medium text-text-muted uppercase tracking-wider">
+                        Theme
+                      </div>
+                      <div className="px-2">
+                        {[
+                          { value: 'light', label: 'Light', icon: '☀️' },
+                          { value: 'dark', label: 'Dark', icon: '🌙' },
+                          { value: 'serene', label: 'Serene', icon: '🌿' },
+                          { value: 'vibrant', label: 'Vibrant', icon: '🎨' },
+                          { value: 'midnight', label: 'Midnight', icon: '🌌' },
+                          { value: 'solarized', label: 'Solarized', icon: '🌅' },
+                        ].map((themeOption) => (
+                          <button
+                            key={themeOption.value}
+                            onClick={() => {
+                              setTheme(themeOption.value as any);
+                              setIsUserMenuOpen(false);
+                            }}
+                            className={`w-full text-left px-2 py-1.5 text-sm rounded flex items-center gap-2 transition-colors ${
+                              theme === themeOption.value
+                                ? 'bg-accent/20 text-accent'
+                                : 'text-text-secondary hover:bg-button-hover-bg hover:text-accent'
+                            }`}
+                            role="menuitem"
+                          >
+                            <span>{themeOption.icon}</span>
+                            <span>{themeOption.label}</span>
+                            {theme === themeOption.value && (
+                              <svg
+                                className="ml-auto h-4 w-4"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-text-secondary hover:bg-button-hover-bg hover:text-accent transition-colors"
-                      role="menuitem"
-                    >
-                      Sign out
-                    </button>
+                    <div className="border-t border-surface-muted mt-1 pt-1">
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-text-secondary hover:bg-button-hover-bg hover:text-accent transition-colors"
+                        role="menuitem"
+                      >
+                        Sign out
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

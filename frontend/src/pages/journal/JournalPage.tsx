@@ -10,7 +10,7 @@ import { useEncryption } from '../../contexts/useEncryption';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isEncryptionEnabled } = useEncryption();
+  const { isEncryptionEnabled, isEncryptionSetup } = useEncryption();
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
@@ -19,10 +19,10 @@ const JournalPage: React.FC = () => {
   // Check if it's the user's first visit to journal page
   useEffect(() => {
     const hasSeenEncryptionPrompt = localStorage.getItem('hasSeenJournalEncryptionPrompt');
-    if (!hasSeenEncryptionPrompt && !isEncryptionEnabled) {
+    if (!hasSeenEncryptionPrompt && !isEncryptionEnabled && !isEncryptionSetup) {
       setShowEncryptionModal(true);
     }
-  }, [isEncryptionEnabled]);
+  }, [isEncryptionEnabled, isEncryptionSetup]);
 
   const handleDismissEncryptionModal = () => {
     setShowEncryptionModal(false);

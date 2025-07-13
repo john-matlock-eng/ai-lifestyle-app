@@ -20,7 +20,6 @@ import LoginPage from './pages/auth/LoginPage';
 
 // Pages - App
 import DashboardPage from './pages/DashboardPage';
-import { ComponentShowcase } from './pages/ComponentShowcase';
 import SettingsPage from './pages/SettingsPage';
 
 // Pages - Goals
@@ -84,7 +83,6 @@ function App() {
               }
             >
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/showcase" element={<ComponentShowcase />} />
               <Route path="/profile" element={<div>Profile - Coming Soon</div>} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/security" element={<div>Security Settings - Coming Soon</div>} />

@@ -6,6 +6,7 @@ import { JournalEditorWithSections } from '../../features/journal/components';
 import { useTemplateRegistry } from '../../features/journal/hooks/useTemplateRegistry';
 import { createEntry } from '../../api/journal';
 import { getEncryptionService } from '../../services/encryption';
+import { useEncryption } from '../../contexts/useEncryption';
 import type { CreateJournalEntryRequest, JournalTemplate } from '../../types/journal';
 import type { Goal } from '../../features/goals/types/api.types';
 
@@ -92,6 +93,7 @@ const TEMPLATE_MAPPING: Record<string, string> = {
 const CreateJournalPage: React.FC = () => {
   const navigate = useNavigate();
   const { templates, loading: templatesLoading } = useTemplateRegistry();
+  const { isEncryptionSetup, isEncryptionLocked } = useEncryption();
   
   const [title, setTitle] = useState('');
   const [selectedTemplateType, setSelectedTemplateType] = useState<string>('daily_reflection');
@@ -100,25 +102,18 @@ const CreateJournalPage: React.FC = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [isEncrypted, setIsEncrypted] = useState(false); // Default to unencrypted until encryption is properly initialized
-  const [encryptionReady, setEncryptionReady] = useState(false);
+  const encryptionReady = isEncryptionSetup && !isEncryptionLocked;
 
   // Get the actual template based on the selected type
   const actualTemplateId = TEMPLATE_MAPPING[selectedTemplateType] || 'daily_log';
   const currentTemplate = templates.find(t => t.id === actualTemplateId);
 
-  // Check encryption status on mount
+  // Ensure encryption is disabled if not ready
   useEffect(() => {
-    const checkEncryption = async () => {
-      try {
-        const encryptionService = getEncryptionService();
-        const isSetup = await encryptionService.checkSetup();
-        setEncryptionReady(isSetup);
-      } catch (error) {
-        console.error('Failed to check encryption status:', error);
-      }
-    };
-    checkEncryption();
-  }, []);
+    if (!encryptionReady) {
+      setIsEncrypted(false);
+    }
+  }, [encryptionReady]);
 
   // Mock goals query - replace with actual API call when available
   const { data: goals = [] } = useQuery<Goal[]>({
@@ -321,43 +316,30 @@ const CreateJournalPage: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                {!encryptionReady ? (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const encryptionService = getEncryptionService();
-                        await encryptionService.initialize('demo-password');
-                        setEncryptionReady(true);
-                        alert('Encryption initialized successfully!');
-                      } catch (error) {
-                        console.error('Failed to initialize encryption:', error);
-                        alert('Failed to initialize encryption. Please try again.');
-                      }
-                    }}
-                    className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Initialize
-                  </button>
-                ) : (
-                  <button
-                    id="encrypt-toggle"
-                    type="button"
-                    onClick={() => setIsEncrypted(!isEncrypted)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      isEncrypted ? 'bg-blue-600' : 'bg-gray-200'
+                <button
+                  id="encrypt-toggle"
+                  type="button"
+                  onClick={() => {
+                    if (encryptionReady) {
+                      setIsEncrypted(!isEncrypted);
+                    } else {
+                      alert('Please set up encryption in Settings before using this feature.');
+                    }
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isEncrypted ? 'bg-blue-600' : 'bg-gray-200'
+                  } ${!encryptionReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  role="switch"
+                  aria-checked={isEncrypted}
+                  disabled={!encryptionReady}
+                >
+                  <span className="sr-only">Enable encryption</span>
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isEncrypted ? 'translate-x-6' : 'translate-x-1'
                     }`}
-                    role="switch"
-                    aria-checked={isEncrypted}
-                  >
-                    <span className="sr-only">Enable encryption</span>
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        isEncrypted ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                )}
+                  />
+                </button>
               </div>
             </div>
 
