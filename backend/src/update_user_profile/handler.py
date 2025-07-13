@@ -3,6 +3,7 @@ Lambda handler for updating user profile.
 """
 
 import json
+import os
 from typing import Dict, Any
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.event_handler import APIGatewayRestResolver, Response
@@ -15,14 +16,23 @@ from aws_lambda_powertools.event_handler.exceptions import (
 
 from user_profile_common import UpdateUserProfileRequest, ErrorResponse
 from .service import UpdateUserProfileService
+from .cognito_client import CognitoClient
 
 # Initialize AWS Lambda Powertools
 logger = Logger()
 tracer = Tracer()
 app = APIGatewayRestResolver()
 
+# Environment variables
+COGNITO_USER_POOL_ID = os.environ.get('COGNITO_USER_POOL_ID')
+COGNITO_CLIENT_ID = os.environ.get('COGNITO_CLIENT_ID')
+
 # Initialize service
 service = UpdateUserProfileService()
+cognito_client = CognitoClient(
+    user_pool_id=COGNITO_USER_POOL_ID,
+    client_id=COGNITO_CLIENT_ID
+)
 
 
 @app.put("/users/profile")
@@ -40,10 +50,25 @@ def update_user_profile() -> Dict[str, Any]:
         InternalServerError: For server errors
     """
     try:
-        # Get user ID from JWT claims
-        user_id = app.current_event.request_context.authorizer.claims.get("sub")
-        if not user_id:
-            logger.error("No user ID in JWT claims")
+        # Extract Authorization header
+        headers = app.current_event.headers or {}
+        auth_header = headers.get('Authorization') or headers.get('authorization', '')
+        
+        if not auth_header:
+            logger.error("Missing Authorization header")
+            raise BadRequestError("Missing Authorization header")
+        
+        # Extract token (remove 'Bearer ' prefix if present)
+        token = auth_header.replace('Bearer ', '').strip()
+        if not token:
+            logger.error("Empty authentication token")
+            raise BadRequestError("Invalid authentication token")
+            
+        # Verify token and get user ID
+        try:
+            user_id = cognito_client.verify_token_and_get_user_id(token)
+        except Exception as e:
+            logger.error(f"Token validation failed: {str(e)}")
             raise BadRequestError("Invalid authentication token")
         
         # Parse and validate request body
