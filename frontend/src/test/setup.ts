@@ -1,11 +1,24 @@
 // Test setup file
 import '@testing-library/jest-dom';
-import { afterEach, vi } from 'vitest';
+import { afterEach, vi, afterAll } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 // Cleanup after each test case
 afterEach(() => {
   cleanup();
+  // Clear all timers
+  vi.clearAllTimers();
+  // Clear all mocks
+  vi.clearAllMocks();
+  // Clear localStorage
+  localStorage.clear();
+  // Clear sessionStorage
+  sessionStorage.clear();
+});
+
+// Ensure all timers are cleared after all tests
+afterAll(() => {
+  vi.useRealTimers();
 });
 
 // Mock window.matchMedia

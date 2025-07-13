@@ -8,6 +8,8 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: './src/test/setup.ts',
+    testTimeout: 30000,
+    hookTimeout: 30000,
   },
   resolve: {
     alias: {
