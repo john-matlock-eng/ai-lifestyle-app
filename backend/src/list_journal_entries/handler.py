@@ -13,6 +13,7 @@ from journal_common import (
     JournalEntry, JournalListResponse, JournalTemplate,
     GoalProgress
 )
+from common.response_utils import create_response, create_error_response
 
 # Initialize AWS Lambda Powertools
 logger = Logger()
@@ -79,19 +80,12 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             logger.error(f"Failed to extract user ID: {str(e)}")
             metrics.add_metric(name="UnauthorizedJournalListAttempts", unit=MetricUnit.Count, value=1)
             
-            return {
-                'statusCode': 401,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'UNAUTHORIZED',
-                    'message': 'User authentication required',
-                    'request_id': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
+            return create_error_response(
+                status_code=401,
+                error_code='UNAUTHORIZED',
+                message='User authentication required',
+                request_id=request_id
+            )
         
         # Parse query parameters
         query_params = event.get('queryStringParameters') or {}
@@ -125,47 +119,30 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             logger.error(f"Failed to list journal entries: {str(e)}")
             metrics.add_metric(name="JournalEntryListFailures", unit=MetricUnit.Count, value=1)
             
-            return {
-                'statusCode': 500,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': json.dumps({
-                    'error': 'SYSTEM_ERROR',
-                    'message': 'Failed to list journal entries',
-                    'request_id': request_id,
-                    'timestamp': datetime.now(timezone.utc).isoformat()
-                })
-            }
+            return create_error_response(
+                status_code=500,
+                error_code='SYSTEM_ERROR',
+                message='Failed to list journal entries',
+                request_id=request_id
+            )
         
         # Add metrics
         metrics.add_metric(name="JournalEntriesListRequests", unit=MetricUnit.Count, value=1)
         metrics.add_metric(name="JournalEntriesReturned", unit=MetricUnit.Count, value=len(response.entries))
         
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': response.model_dump_json(by_alias=True)
-        }
+        return create_response(
+            status_code=200,
+            body=response.model_dump(by_alias=True),
+            request_id=request_id
+        )
         
     except Exception as e:
         logger.error(f"Unexpected error during journal entries listing: {str(e)}", exc_info=True)
         metrics.add_metric(name="JournalEntriesListSystemErrors", unit=MetricUnit.Count, value=1)
         
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'X-Request-ID': request_id
-            },
-            'body': json.dumps({
-                'error': 'SYSTEM_ERROR',
-                'message': 'An unexpected error occurred',
-                'request_id': request_id,
-                'timestamp': datetime.now(timezone.utc).isoformat()
-            })
-        }
+        return create_error_response(
+            status_code=500,
+            error_code='SYSTEM_ERROR',
+            message='An unexpected error occurred',
+            request_id=request_id
+        )
