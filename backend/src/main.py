@@ -35,8 +35,7 @@ from list_journal_entries.handler import lambda_handler as list_journal_entries_
 from update_journal_entry.handler import lambda_handler as update_journal_entry_handler
 from delete_journal_entry.handler import lambda_handler as delete_journal_entry_handler
 from get_journal_stats.handler import lambda_handler as get_journal_stats_handler
-# Future imports:
-# from update_user_profile.handler import lambda_handler as update_user_profile_handler
+from update_user_profile.handler import lambda_handler as update_user_profile_handler
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -116,7 +115,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "PUT /journal/{entryId}": update_journal_entry_handler,
         "DELETE /journal/{entryId}": delete_journal_entry_handler,
         "GET /journal/stats": get_journal_stats_handler,
-        # "PUT /users/profile": update_user_profile_handler,
+        "PUT /users/profile": update_user_profile_handler,
     }
     
     # Find and execute the appropriate handler
