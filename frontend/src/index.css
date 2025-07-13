@@ -147,6 +147,11 @@
     animation: shimmer 2s infinite linear;
   }
   
+  .animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
+  }
+  
   .animate-pulse-glow {
     animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
@@ -217,6 +222,17 @@
     }
     50% {
       transform: translateY(-4px);
+    }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }

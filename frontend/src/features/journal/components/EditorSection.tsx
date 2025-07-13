@@ -7,10 +7,27 @@ import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
 import ReactMarkdown from 'react-markdown';
-import { Bold, Italic, Heading, List } from 'lucide-react';
+import { 
+  Bold, 
+  Italic, 
+  Heading, 
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Minus,
+  Lock,
+  Globe,
+  Users,
+  Sparkles,
+  ChevronDown,
+  RotateCcw,
+  Trash2
+} from 'lucide-react';
 import { Button } from '@/components/common';
 import type { SectionDefinition } from '../types/template.types';
 import TemplateSection from '../extensions/TemplateSection';
+import '../styles/journal-editor.css';
 
 export interface EditorSectionProps {
   section: SectionDefinition;
@@ -19,6 +36,7 @@ export interface EditorSectionProps {
   draftId?: string;
   onChange?: (markdown: string) => void;
   saveSignal?: number;
+  icon?: React.ReactNode;
 }
 
 const EditorSection: React.FC<EditorSectionProps> = ({
@@ -28,8 +46,12 @@ const EditorSection: React.FC<EditorSectionProps> = ({
   draftId,
   onChange,
   saveSignal = 0,
+  icon,
 }) => {
   const DRAFT_KEY = draftId ? `journal-draft-${draftId}` : undefined;
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [wordCount, setWordCount] = useState(0);
 
   const ExtraShortcuts = Extension.create({
     addKeyboardShortcuts() {
@@ -41,13 +63,19 @@ const EditorSection: React.FC<EditorSectionProps> = ({
       };
     },
   });
+
   const editor = useEditor({
     extensions: [
       TemplateSection.configure({ defaultPrivacy: section.defaultPrivacy ?? 'private' }),
-      StarterKit,
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
       Markdown,
       Placeholder.configure({
         placeholder: section.prompt,
+        emptyEditorClass: 'is-editor-empty',
       }),
       ExtraShortcuts,
     ],
@@ -69,6 +97,8 @@ const EditorSection: React.FC<EditorSectionProps> = ({
           },
         ],
       });
+      // Set initial word count
+      setWordCount(editor.getText().split(/\s+/).filter(word => word.length > 0).length);
     },
   });
 
@@ -103,6 +133,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
     if (!editor) return;
     const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
     setLastSaved(markdown);
+    setHasUnsavedChanges(false);
   }, [editor, saveSignal]);
 
   useEffect(() => {
@@ -110,6 +141,8 @@ const EditorSection: React.FC<EditorSectionProps> = ({
     const handleUpdate = ({ editor: updatedEditor }: { editor: Editor; transaction: Transaction }) => {
       const markdown = (updatedEditor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
       onChange?.(markdown);
+      setHasUnsavedChanges(true);
+      setWordCount(updatedEditor.getText().split(/\s+/).filter(word => word.length > 0).length);
     };
     editor.on('update', handleUpdate);
     return () => {
@@ -128,81 +161,211 @@ const EditorSection: React.FC<EditorSectionProps> = ({
     setRestoreDraft(null);
   };
 
-  if (readOnly) {
-    return (
-      <div className="prose max-w-none">
-        <ReactMarkdown>{initialContent}</ReactMarkdown>
-      </div>
-    );
-  }
+  // Toolbar button component
+  const ToolbarButton = ({ 
+    onClick, 
+    isActive = false, 
+    children, 
+    title 
+  }: { 
+    onClick: () => void; 
+    isActive?: boolean; 
+    children: React.ReactNode; 
+    title: string;
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className={`
+        journal-toolbar-btn
+        ${isActive ? 'active' : ''}
+      `}
+    >
+      {children}
+    </button>
+  );
+
+  const privacyIcons = {
+    private: <Lock className="w-4 h-4" />,
+    ai: <Sparkles className="w-4 h-4" />,
+    shared: <Users className="w-4 h-4" />,
+    public: <Globe className="w-4 h-4" />
+  };
+
+  const privacyLabels = {
+    private: 'Private',
+    ai: 'AI Analysis',
+    shared: 'Shared',
+    public: 'Public'
+  };
 
   if (!editor) return null;
 
   return (
-    <div className="space-y-2">
-      {restoreDraft && (
-        <div className="flex items-center justify-between bg-warning-bg border border-warning-theme rounded p-2 text-sm text-warning-theme">
-          <span>Unsaved draft found.</span>
-          <div className="space-x-2">
-            <Button size="sm" variant="outline" onClick={handleRestore}>
-              Restore
-            </Button>
-            <Button size="sm" variant="ghost" onClick={handleDiscard}>
-              Discard
-            </Button>
+    <div className={`
+      journal-section
+      relative overflow-hidden rounded-2xl
+      bg-gradient-to-br from-surface via-surface to-surface-hover
+      border border-surface-muted/50
+      shadow-lg hover:shadow-xl
+      transition-all duration-300
+      ${!readOnly && hasUnsavedChanges ? 'ring-2 ring-accent/50' : ''}
+    `}>
+      {/* Section Header */}
+      <div 
+        className={`
+          px-6 py-4 
+          journal-section-header
+          border-b border-surface-muted/30
+          cursor-pointer select-none
+          ${!isExpanded ? 'hover:bg-surface-muted/30' : ''}
+        `}
+        onClick={() => !readOnly && setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {icon && (
+              <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                {icon}
+              </div>
+            )}
+            <div>
+              <h3 className="text-lg font-semibold text-theme flex items-center gap-2">
+                {section.title}
+                {hasUnsavedChanges && (
+                  <span className="unsaved-indicator" />
+                )}
+              </h3>
+              {wordCount > 0 && (
+                <p className="text-sm text-muted mt-0.5">
+                  {wordCount} words
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {section.defaultPrivacy && (
+              <div className={`privacy-badge ${section.defaultPrivacy}`}>
+                {privacyIcons[section.defaultPrivacy]}
+                <span>{privacyLabels[section.defaultPrivacy]}</span>
+              </div>
+            )}
+            {!readOnly && (
+              <ChevronDown 
+                className={`
+                  w-5 h-5 text-muted transition-transform duration-200
+                  ${isExpanded ? 'rotate-180' : ''}
+                `}
+              />
+            )}
           </div>
         </div>
-      )}
-      {section.prompt && (
-        <div className="flex items-start gap-2 bg-surface-muted p-2 rounded text-sm italic text-text-muted">
-          <span role="img" aria-label="prompt">
-            💡
-          </span>
-          <p>{section.prompt}</p>
-        </div>
-      )}
-      <div className="flex gap-2 border-b border-surface-muted pb-2">
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-1 rounded hover:bg-button-hover-bg transition-colors ${editor.isActive('bold') ? 'bg-accent text-white' : 'text-text-secondary'}`}
-          aria-label="Toggle bold"
-          title="Bold"
-        >
-          <Bold className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-1 rounded hover:bg-button-hover-bg transition-colors ${editor.isActive('italic') ? 'bg-accent text-white' : 'text-text-secondary'}`}
-          aria-label="Toggle italic"
-          title="Italic"
-        >
-          <Italic className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`p-1 rounded hover:bg-button-hover-bg transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-accent text-white' : 'text-text-secondary'}`}
-          aria-label="Toggle heading"
-          title="Heading"
-        >
-          <Heading className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1 rounded hover:bg-button-hover-bg transition-colors ${editor.isActive('bulletList') ? 'bg-accent text-white' : 'text-text-secondary'}`}
-          aria-label="Toggle bullet list"
-          title="Bullet list"
-        >
-          <List className="w-4 h-4" />
-        </button>
       </div>
-      <EditorContent
-        editor={editor}
-        className="border border-surface-muted bg-surface rounded-lg p-4 min-h-[300px] focus-visible:outline-none focus-visible:shadow-focus transition-all"
-      />
+
+      {/* Editor Content */}
+      <div className={`
+        journal-section-content ${isExpanded ? 'expanded' : 'collapsed'}
+      `}>
+        {restoreDraft && (
+          <div className="mx-6 mt-4 flex items-center justify-between bg-warning/10 border border-warning rounded-lg p-3 text-sm">
+            <span className="text-warning font-medium">Unsaved draft found</span>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={handleRestore} className="hover:bg-warning/20">
+                <RotateCcw className="w-3 h-3 mr-1" />
+                Restore
+              </Button>
+              <Button size="sm" variant="ghost" onClick={handleDiscard} className="hover:bg-error/20">
+                <Trash2 className="w-3 h-3 mr-1" />
+                Discard
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!readOnly && (
+          <div className="px-6 py-3 border-b border-surface-muted/30">
+            <div className="flex items-center gap-1 flex-wrap">
+              <div className="flex items-center gap-1 mr-3">
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                  isActive={editor.isActive('bold')}
+                  title="Bold (Cmd+B)"
+                >
+                  <Bold className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                  isActive={editor.isActive('italic')}
+                  title="Italic (Cmd+I)"
+                >
+                  <Italic className="w-4 h-4" />
+                </ToolbarButton>
+              </div>
+
+              <div className="flex items-center gap-1 mr-3">
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                  isActive={editor.isActive('heading', { level: 2 })}
+                  title="Heading"
+                >
+                  <Heading className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleBulletList().run()}
+                  isActive={editor.isActive('bulletList')}
+                  title="Bullet List"
+                >
+                  <List className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                  isActive={editor.isActive('orderedList')}
+                  title="Ordered List"
+                >
+                  <ListOrdered className="w-4 h-4" />
+                </ToolbarButton>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                  isActive={editor.isActive('blockquote')}
+                  title="Quote"
+                >
+                  <Quote className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().toggleCode().run()}
+                  isActive={editor.isActive('code')}
+                  title="Code"
+                >
+                  <Code className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton
+                  onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                  title="Divider"
+                >
+                  <Minus className="w-4 h-4" />
+                </ToolbarButton>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="px-6 py-4">
+          {readOnly ? (
+            <div className="prose prose-lg max-w-none dark:prose-invert">
+              <ReactMarkdown>{initialContent}</ReactMarkdown>
+            </div>
+          ) : (
+            <EditorContent 
+              editor={editor}
+              className="journal-editor"
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };
