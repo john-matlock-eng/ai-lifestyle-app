@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, useTheme } from '../../contexts';
+import type { Theme } from '../../contexts/ThemeContextType';
 
 interface HeaderProps {
   onMobileMenuToggle: () => void;
@@ -175,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                           <button
                             key={themeOption.value}
                             onClick={() => {
-                              setTheme(themeOption.value as any);
+                              setTheme(themeOption.value as Theme);
                               setIsUserMenuOpen(false);
                             }}
                             className={`w-full text-left px-2 py-1.5 text-sm rounded flex items-center gap-2 transition-colors ${
