@@ -83,7 +83,7 @@ def handle_bad_request(e: BadRequestError) -> Dict[str, Any]:
     error_response = ErrorResponse(
         error="BAD_REQUEST",
         message=str(e),
-        request_id=app.lambda_context.request_id
+        request_id=app.lambda_context.aws_request_id
     )
     
     return {
@@ -101,7 +101,7 @@ def handle_not_found(e: NotFoundError) -> Dict[str, Any]:
     error_response = ErrorResponse(
         error="NOT_FOUND",
         message=str(e),
-        request_id=app.lambda_context.request_id
+        request_id=app.lambda_context.aws_request_id
     )
     
     return {
@@ -119,7 +119,7 @@ def handle_internal_error(e: InternalServerError) -> Dict[str, Any]:
     error_response = ErrorResponse(
         error="INTERNAL_SERVER_ERROR",
         message="An internal error occurred",
-        request_id=app.lambda_context.request_id
+        request_id=app.lambda_context.aws_request_id
     )
     
     return {
