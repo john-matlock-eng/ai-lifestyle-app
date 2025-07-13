@@ -34,7 +34,7 @@ describe('JournalEditor', () => {
     const user = userEvent.setup();
     localStorage.setItem('journal-draft-test', '# Saved');
     render(<JournalEditor initialContent="" onSave={vi.fn()} draftId="test" />);
-    expect(screen.getByText('Unsaved draft found.')).toBeInTheDocument();
+    expect(screen.getByText('Unsaved draft found')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /restore/i }));
     expect(screen.getByText('Saved')).toBeInTheDocument();
   });
