@@ -26,7 +26,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/common';
 import type { SectionDefinition } from '../types/template.types';
-import TemplateSection from '../extensions/TemplateSection';
 import '../styles/journal-editor.css';
 
 export interface EditorSectionProps {
@@ -66,7 +65,6 @@ const EditorSection: React.FC<EditorSectionProps> = ({
 
   const editor = useEditor({
     extensions: [
-      TemplateSection.configure({ defaultPrivacy: section.defaultPrivacy ?? 'private' }),
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
@@ -82,22 +80,13 @@ const EditorSection: React.FC<EditorSectionProps> = ({
     content: initialContent,
     editable: !readOnly,
     onCreate({ editor }) {
-      const doc = editor.getJSON().content ?? [];
-      editor.commands.setContent({
-        type: 'doc',
-        content: [
-          {
-            type: 'template_section',
-            attrs: {
-              id: section.id,
-              title: section.title,
-              privacy: section.defaultPrivacy ?? 'private',
-            },
-            content: doc,
-          },
-        ],
-      });
       // Set initial word count
+      setWordCount(editor.getText().split(/\s+/).filter(word => word.length > 0).length);
+    },
+    onUpdate({ editor }) {
+      const markdown = (editor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
+      onChange?.(markdown);
+      setHasUnsavedChanges(true);
       setWordCount(editor.getText().split(/\s+/).filter(word => word.length > 0).length);
     },
   });
@@ -136,20 +125,6 @@ const EditorSection: React.FC<EditorSectionProps> = ({
     setHasUnsavedChanges(false);
   }, [editor, saveSignal]);
 
-  useEffect(() => {
-    if (!editor) return;
-    const handleUpdate = ({ editor: updatedEditor }: { editor: Editor; transaction: Transaction }) => {
-      const markdown = (updatedEditor.storage.markdown as { getMarkdown: () => string }).getMarkdown();
-      onChange?.(markdown);
-      setHasUnsavedChanges(true);
-      setWordCount(updatedEditor.getText().split(/\s+/).filter(word => word.length > 0).length);
-    };
-    editor.on('update', handleUpdate);
-    return () => {
-      editor.off('update', handleUpdate);
-    };
-  }, [editor, onChange]);
-
   const handleRestore = () => {
     if (!editor || !restoreDraft) return;
     editor.commands.setContent(restoreDraft);
@@ -187,15 +162,15 @@ const EditorSection: React.FC<EditorSectionProps> = ({
   );
 
   const privacyIcons = {
-    private: <Lock className="w-4 h-4" />,
-    ai: <Sparkles className="w-4 h-4" />,
-    shared: <Users className="w-4 h-4" />,
-    public: <Globe className="w-4 h-4" />
+    private: <Lock className="w-3 h-3" />,
+    ai: <Sparkles className="w-3 h-3" />,
+    shared: <Users className="w-3 h-3" />,
+    public: <Globe className="w-3 h-3" />
   };
 
   const privacyLabels = {
     private: 'Private',
-    ai: 'AI Analysis',
+    ai: 'AI',
     shared: 'Shared',
     public: 'Public'
   };
@@ -205,17 +180,17 @@ const EditorSection: React.FC<EditorSectionProps> = ({
   return (
     <div className={`
       journal-section
-      relative overflow-hidden rounded-2xl
+      relative overflow-hidden rounded-xl
       bg-gradient-to-br from-surface via-surface to-surface-hover
       border border-surface-muted/50
-      shadow-lg hover:shadow-xl
+      shadow-md hover:shadow-lg
       transition-all duration-300
       ${!readOnly && hasUnsavedChanges ? 'ring-2 ring-accent/50' : ''}
     `}>
-      {/* Section Header */}
+      {/* Compact Section Header */}
       <div 
         className={`
-          px-6 py-4 
+          px-4 py-3 
           journal-section-header
           border-b border-surface-muted/30
           cursor-pointer select-none
@@ -224,37 +199,37 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         onClick={() => !readOnly && setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {icon && (
-              <div className="p-2 rounded-lg bg-accent/10 text-accent">
-                {icon}
+              <div className="p-1.5 rounded-md bg-accent/10 text-accent">
+                {React.cloneElement(icon as React.ReactElement, { className: 'w-4 h-4' })}
               </div>
             )}
-            <div>
-              <h3 className="text-lg font-semibold text-theme flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <h3 className="text-base font-medium text-theme flex items-center gap-2">
                 {section.title}
                 {hasUnsavedChanges && (
-                  <span className="unsaved-indicator" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                 )}
               </h3>
               {wordCount > 0 && (
-                <p className="text-sm text-muted mt-0.5">
+                <span className="text-xs text-muted">
                   {wordCount} words
-                </p>
+                </span>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2">
             {section.defaultPrivacy && (
-              <div className={`privacy-badge ${section.defaultPrivacy}`}>
+              <div className={`privacy-badge ${section.defaultPrivacy} text-xs px-2 py-0.5`}>
                 {privacyIcons[section.defaultPrivacy]}
-                <span>{privacyLabels[section.defaultPrivacy]}</span>
+                <span className="hidden sm:inline">{privacyLabels[section.defaultPrivacy]}</span>
               </div>
             )}
             {!readOnly && (
               <ChevronDown 
                 className={`
-                  w-5 h-5 text-muted transition-transform duration-200
+                  w-4 h-4 text-muted transition-transform duration-200
                   ${isExpanded ? 'rotate-180' : ''}
                 `}
               />
@@ -268,94 +243,93 @@ const EditorSection: React.FC<EditorSectionProps> = ({
         journal-section-content ${isExpanded ? 'expanded' : 'collapsed'}
       `}>
         {restoreDraft && (
-          <div className="mx-6 mt-4 flex items-center justify-between bg-warning/10 border border-warning rounded-lg p-3 text-sm">
+          <div className="mx-4 mt-3 flex items-center justify-between bg-warning/10 border border-warning rounded p-2 text-xs">
             <span className="text-warning font-medium">Unsaved draft found</span>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="ghost" onClick={handleRestore} className="hover:bg-warning/20">
+            <div className="flex items-center gap-1">
+              <Button size="sm" variant="ghost" onClick={handleRestore} className="h-6 px-2 text-xs">
                 <RotateCcw className="w-3 h-3 mr-1" />
                 Restore
               </Button>
-              <Button size="sm" variant="ghost" onClick={handleDiscard} className="hover:bg-error/20">
-                <Trash2 className="w-3 h-3 mr-1" />
-                Discard
+              <Button size="sm" variant="ghost" onClick={handleDiscard} className="h-6 px-2 text-xs">
+                <Trash2 className="w-3 h-3" />
               </Button>
             </div>
           </div>
         )}
 
         {!readOnly && (
-          <div className="px-6 py-3 border-b border-surface-muted/30">
+          <div className="px-4 py-2 border-b border-surface-muted/30">
             <div className="flex items-center gap-1 flex-wrap">
-              <div className="flex items-center gap-1 mr-3">
+              <div className="flex items-center gap-0.5 mr-2">
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleBold().run()}
                   isActive={editor.isActive('bold')}
                   title="Bold (Cmd+B)"
                 >
-                  <Bold className="w-4 h-4" />
+                  <Bold className="w-3.5 h-3.5" />
                 </ToolbarButton>
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleItalic().run()}
                   isActive={editor.isActive('italic')}
                   title="Italic (Cmd+I)"
                 >
-                  <Italic className="w-4 h-4" />
+                  <Italic className="w-3.5 h-3.5" />
                 </ToolbarButton>
               </div>
 
-              <div className="flex items-center gap-1 mr-3">
+              <div className="flex items-center gap-0.5 mr-2">
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                   isActive={editor.isActive('heading', { level: 2 })}
                   title="Heading"
                 >
-                  <Heading className="w-4 h-4" />
+                  <Heading className="w-3.5 h-3.5" />
                 </ToolbarButton>
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleBulletList().run()}
                   isActive={editor.isActive('bulletList')}
                   title="Bullet List"
                 >
-                  <List className="w-4 h-4" />
+                  <List className="w-3.5 h-3.5" />
                 </ToolbarButton>
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleOrderedList().run()}
                   isActive={editor.isActive('orderedList')}
                   title="Ordered List"
                 >
-                  <ListOrdered className="w-4 h-4" />
+                  <ListOrdered className="w-3.5 h-3.5" />
                 </ToolbarButton>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleBlockquote().run()}
                   isActive={editor.isActive('blockquote')}
                   title="Quote"
                 >
-                  <Quote className="w-4 h-4" />
+                  <Quote className="w-3.5 h-3.5" />
                 </ToolbarButton>
                 <ToolbarButton
                   onClick={() => editor.chain().focus().toggleCode().run()}
                   isActive={editor.isActive('code')}
                   title="Code"
                 >
-                  <Code className="w-4 h-4" />
+                  <Code className="w-3.5 h-3.5" />
                 </ToolbarButton>
                 <ToolbarButton
                   onClick={() => editor.chain().focus().setHorizontalRule().run()}
                   title="Divider"
                 >
-                  <Minus className="w-4 h-4" />
+                  <Minus className="w-3.5 h-3.5" />
                 </ToolbarButton>
               </div>
             </div>
           </div>
         )}
 
-        <div className="px-6 py-4">
+        <div className="px-4 py-3">
           {readOnly ? (
-            <div className="prose prose-lg max-w-none dark:prose-invert">
+            <div className="prose prose-sm max-w-none dark:prose-invert">
               <ReactMarkdown>{initialContent}</ReactMarkdown>
             </div>
           ) : (
