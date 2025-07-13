@@ -155,13 +155,13 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ user }) => {
                     Disable Two-Factor Authentication
                   </h3>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-[var(--text-muted)]">
                       Are you sure you want to disable two-factor authentication? This will make your account less secure.
                     </p>
                   </div>
 
                   <form onSubmit={handleDisableSubmit} className="mt-4">
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="password" className="block text-sm font-medium text-[var(--text)]">
                       Enter your password to confirm
                     </label>
                     <input
@@ -169,11 +169,11 @@ const SecuritySection: React.FC<SecuritySectionProps> = ({ user }) => {
                       id="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="mt-1 block w-full border-[color:var(--surface-muted)] rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                      className="mt-1 block w-full border border-[var(--surface-muted)] rounded-md shadow-sm focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)] sm:text-sm"
                       required
                     />
                     {error && (
-                      <p className="mt-2 text-sm text-red-600">{error}</p>
+                      <p className="mt-2 text-sm text-[var(--error)]">{error}</p>
                     )}
                   </form>
                 </div>

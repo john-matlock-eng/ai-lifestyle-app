@@ -22,17 +22,17 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Settings</h1>
-        <p className="text-gray-600">Manage your account preferences and security</p>
+        <h1 className="text-3xl font-bold mb-2 text-[var(--text)]">Settings</h1>
+        <p className="text-[var(--text-muted)]">Manage your account preferences and security</p>
       </div>
 
       {/* Theme Settings */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">Appearance</h2>
+      <div className="bg-[var(--surface)] rounded-lg shadow-[var(--shadow-md)] p-6 border border-[var(--surface-muted)]">
+        <h2 className="text-xl font-semibold mb-4 text-[var(--text)]">Appearance</h2>
         <div className="space-y-4">
           <label className="block">
-            <span className="text-gray-700 font-medium">Theme</span>
-            <p className="text-sm text-gray-500 mb-2">Choose your preferred color scheme</p>
+            <span className="text-[var(--text)] font-medium">Theme</span>
+            <p className="text-sm text-[var(--text-muted)] mb-2">Choose your preferred color scheme</p>
             <div className="mt-1">
               <ThemeSwitcher />
             </div>

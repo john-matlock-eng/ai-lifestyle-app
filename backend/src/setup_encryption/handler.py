@@ -1,14 +1,17 @@
 """
-Lambda handler for setting up user encryption.
+Fixed Lambda handler for setting up user encryption.
+Now also updates the user profile to set encryptionEnabled = true.
 """
 
 import json
 import os
 from datetime import datetime, timezone
 from typing import Dict, Any
+import boto3
 from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.logging import correlation_paths
+from boto3.dynamodb.conditions import Key
 
 from encryption_common import (
     EncryptionKeys, EncryptionSetupRequest, EncryptionRepository
@@ -18,6 +21,9 @@ from encryption_common import (
 logger = Logger()
 tracer = Tracer()
 metrics = Metrics(namespace="AILifestyleApp")
+
+# Initialize DynamoDB client
+dynamodb = boto3.resource('dynamodb')
 
 
 def extract_user_id(event: Dict[str, Any]) -> str:
@@ -49,6 +55,45 @@ def extract_user_id(event: Dict[str, Any]) -> str:
         raise ValueError("User ID not found in token")
     
     return user_id
+
+
+def update_user_profile_encryption(table_name: str, user_id: str, public_key_id: str) -> bool:
+    """
+    Update user profile to mark encryption as enabled.
+    
+    Args:
+        table_name: DynamoDB table name
+        user_id: User ID
+        public_key_id: Public key ID
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        table = dynamodb.Table(table_name)
+        
+        # Update user profile with encryption information
+        response = table.update_item(
+            Key={
+                'pk': f'USER#{user_id}',
+                'sk': 'PROFILE'
+            },
+            UpdateExpression='SET encryption_enabled = :enabled, encryption_setup_date = :setup_date, encryption_key_id = :key_id, updated_at = :updated_at',
+            ExpressionAttributeValues={
+                ':enabled': True,
+                ':setup_date': datetime.now(timezone.utc).isoformat(),
+                ':key_id': public_key_id,
+                ':updated_at': datetime.now(timezone.utc).isoformat()
+            },
+            ReturnValues='UPDATED_NEW'
+        )
+        
+        logger.info(f"Updated user profile for {user_id} with encryption status")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to update user profile encryption status: {str(e)}")
+        return False
 
 
 @logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
@@ -185,6 +230,19 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
+        # Update user profile to mark encryption as enabled
+        profile_updated = update_user_profile_encryption(
+            table_name,
+            user_id,
+            encryption_keys.public_key_id
+        )
+        
+        if not profile_updated:
+            logger.warning(f"Failed to update user profile encryption status for {user_id}")
+            # Don't fail the request as encryption keys were saved successfully
+            # but log this for monitoring
+            metrics.add_metric(name="UserProfileEncryptionUpdateFailures", unit=MetricUnit.Count, value=1)
+        
         # Add metrics
         metrics.add_metric(name="EncryptionSetupAttempts", unit=MetricUnit.Count, value=1)
         metrics.add_metric(name="SuccessfulEncryptionSetups", unit=MetricUnit.Count, value=1)
@@ -199,7 +257,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'userId': user_id,
                 'publicKeyId': encryption_keys.public_key_id,
                 'createdAt': encryption_keys.created_at.isoformat(),
-                'message': 'Encryption successfully set up'
+                'message': 'Encryption successfully set up',
+                'profileUpdated': profile_updated  # Include status for debugging
             })
         }
         

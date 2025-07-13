@@ -340,6 +340,9 @@ module "api_gateway" {
     "POST /encryption/recovery/attempt" = {
       authorization_type = "NONE"  # Recovery doesn't require auth
     }
+    "DELETE /encryption/keys" = {
+      authorization_type = "JWT"
+    }
   }
 
   # JWT authorizer configuration

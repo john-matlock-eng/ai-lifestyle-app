@@ -45,6 +45,7 @@ from create_ai_share.handler import lambda_handler as create_ai_share_handler
 from list_shares.handler import lambda_handler as list_shares_handler
 from revoke_share.handler import lambda_handler as revoke_share_handler
 from setup_recovery.handler import lambda_handler as setup_recovery_handler
+from delete_encryption_keys.handler import lambda_handler as delete_encryption_keys_handler
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -134,6 +135,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "POST /encryption/ai-shares": create_ai_share_handler,
         "DELETE /encryption/shares/{shareId}": revoke_share_handler,
         "POST /encryption/recovery": setup_recovery_handler,
+        "DELETE /encryption/keys": delete_encryption_keys_handler,
     }
     
     # Find and execute the appropriate handler

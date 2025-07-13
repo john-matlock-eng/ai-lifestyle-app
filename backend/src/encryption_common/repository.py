@@ -46,18 +46,18 @@ class EncryptionRepository:
         """
         item = {
             'pk': f'USER#{keys.user_id}',
-            'sk': 'ENCRYPTION#KEYS',
+            'sk': 'ENCRYPTION',
             'Type': 'EncryptionKeys',
-            'UserId': keys.user_id,
-            'Salt': keys.salt,
-            'EncryptedPrivateKey': keys.encrypted_private_key,
-            'PublicKey': keys.public_key,
-            'PublicKeyId': keys.public_key_id,
-            'RecoveryEnabled': keys.recovery_enabled,
-            'RecoveryMethods': [method.value for method in keys.recovery_methods],
-            'RecoveryData': keys.recovery_data,
-            'CreatedAt': keys.created_at.isoformat(),
-            'UpdatedAt': keys.updated_at.isoformat(),
+            'user_id': keys.user_id,
+            'salt': keys.salt,
+            'encrypted_private_key': keys.encrypted_private_key,
+            'public_key': keys.public_key,
+            'public_key_id': keys.public_key_id,
+            'recovery_enabled': keys.recovery_enabled,
+            'recovery_methods': [method.value for method in keys.recovery_methods],
+            'recovery_data': keys.recovery_data,
+            'created_at': keys.created_at.isoformat(),
+            'updated_at': keys.updated_at.isoformat(),
             'TTL': None  # Encryption keys never expire
         }
         
@@ -77,7 +77,7 @@ class EncryptionRepository:
         response = self.table.get_item(
             Key={
                 'pk': f'USER#{user_id}',
-                'sk': 'ENCRYPTION#KEYS'
+                'sk': 'ENCRYPTION'
             }
         )
         
@@ -86,16 +86,16 @@ class EncryptionRepository:
             return None
         
         return EncryptionKeys(
-            user_id=item['UserId'],
-            salt=item['Salt'],
-            encrypted_private_key=item['EncryptedPrivateKey'],
-            public_key=item['PublicKey'],
-            public_key_id=item['PublicKeyId'],
-            recovery_enabled=item.get('RecoveryEnabled', False),
-            recovery_methods=[RecoveryMethod(m) for m in item.get('RecoveryMethods', [])],
-            recovery_data=item.get('RecoveryData'),
-            created_at=datetime.fromisoformat(item['CreatedAt']),
-            updated_at=datetime.fromisoformat(item['UpdatedAt'])
+            user_id=item['user_id'],
+            salt=item['salt'],
+            encrypted_private_key=item['encrypted_private_key'],
+            public_key=item['public_key'],
+            public_key_id=item['public_key_id'],
+            recovery_enabled=item.get('recovery_enabled', False),
+            recovery_methods=[RecoveryMethod(m) for m in item.get('recovery_methods', [])],
+            recovery_data=item.get('recovery_data'),
+            created_at=datetime.fromisoformat(item['created_at']),
+            updated_at=datetime.fromisoformat(item['updated_at'])
         )
     
     def get_public_key(self, user_id: str) -> Optional[Dict[str, str]]:
@@ -125,6 +125,21 @@ class EncryptionRepository:
             "public_key": keys.public_key,
             "public_key_id": keys.public_key_id
         }
+    
+    def delete_encryption_keys(self, user_id: str) -> None:
+        """
+        Delete user's encryption keys.
+        
+        Args:
+            user_id: User ID
+        """
+        self.table.delete_item(
+            Key={
+                'pk': f'USER#{user_id}',
+                'sk': 'ENCRYPTION'
+            }
+        )
+        logger.info(f"Deleted encryption keys for user {user_id}")
     
     def _get_ai_public_key(self) -> str:
         """Get AI service public key from parameter store."""
