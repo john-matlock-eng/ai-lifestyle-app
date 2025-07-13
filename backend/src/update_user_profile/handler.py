@@ -5,7 +5,7 @@ Lambda handler for updating user profile.
 import json
 from typing import Dict, Any
 from aws_lambda_powertools import Logger, Tracer
-from aws_lambda_powertools.event_handler import APIGatewayRestResolver
+from aws_lambda_powertools.event_handler import APIGatewayRestResolver, Response
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.event_handler.exceptions import (
     NotFoundError,
@@ -78,7 +78,7 @@ def update_user_profile() -> Dict[str, Any]:
 
 
 @app.exception_handler(BadRequestError)
-def handle_bad_request(e: BadRequestError) -> Dict[str, Any]:
+def handle_bad_request(e: BadRequestError) -> Response:
     """Handle bad request errors."""
     error_response = ErrorResponse(
         error="BAD_REQUEST",
@@ -86,17 +86,17 @@ def handle_bad_request(e: BadRequestError) -> Dict[str, Any]:
         request_id=app.lambda_context.aws_request_id
     )
     
-    return {
-        "statusCode": 400,
-        "body": json.dumps(error_response.model_dump(mode="json")),
-        "headers": {
+    return Response(
+        status_code=400,
+        body=json.dumps(error_response.model_dump(mode="json")),
+        headers={
             "Content-Type": "application/json"
         }
-    }
+    )
 
 
 @app.exception_handler(NotFoundError)
-def handle_not_found(e: NotFoundError) -> Dict[str, Any]:
+def handle_not_found(e: NotFoundError) -> Response:
     """Handle not found errors."""
     error_response = ErrorResponse(
         error="NOT_FOUND",
@@ -104,17 +104,17 @@ def handle_not_found(e: NotFoundError) -> Dict[str, Any]:
         request_id=app.lambda_context.aws_request_id
     )
     
-    return {
-        "statusCode": 404,
-        "body": json.dumps(error_response.model_dump(mode="json")),
-        "headers": {
+    return Response(
+        status_code=404,
+        body=json.dumps(error_response.model_dump(mode="json")),
+        headers={
             "Content-Type": "application/json"
         }
-    }
+    )
 
 
 @app.exception_handler(InternalServerError)
-def handle_internal_error(e: InternalServerError) -> Dict[str, Any]:
+def handle_internal_error(e: InternalServerError) -> Response:
     """Handle internal server errors."""
     error_response = ErrorResponse(
         error="INTERNAL_SERVER_ERROR",
@@ -122,13 +122,13 @@ def handle_internal_error(e: InternalServerError) -> Dict[str, Any]:
         request_id=app.lambda_context.aws_request_id
     )
     
-    return {
-        "statusCode": 500,
-        "body": json.dumps(error_response.model_dump(mode="json")),
-        "headers": {
+    return Response(
+        status_code=500,
+        body=json.dumps(error_response.model_dump(mode="json")),
+        headers={
             "Content-Type": "application/json"
         }
-    }
+    )
 
 
 @logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_REST)
