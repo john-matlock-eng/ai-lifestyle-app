@@ -18,7 +18,7 @@ class GetUserByEmailService:
     def __init__(self):
         """Initialize the service with DynamoDB client."""
         self.dynamodb = boto3.resource('dynamodb')
-        self.table_name = os.environ['USERS_TABLE_NAME']
+        self.table_name = os.environ.get('TABLE_NAME', os.environ.get('MAIN_TABLE_NAME', 'ai-lifestyle-dev'))
         self.table = self.dynamodb.Table(self.table_name)
     
     @tracer.capture_method
@@ -39,11 +39,11 @@ class GetUserByEmailService:
         email = email.lower().strip()
         
         # Query using the EmailIndex GSI
-        # The GSI uses gsi1_pk = 'USER#EMAIL' and gsi1_sk = email
+        # The GSI uses gsi1_pk = 'EMAIL#{email}' and gsi1_sk = 'EMAIL#{email}'
         try:
             response = self.table.query(
                 IndexName='EmailIndex',
-                KeyConditionExpression=Key('gsi1_pk').eq('USER#EMAIL') & Key('gsi1_sk').eq(email),
+                KeyConditionExpression=Key('gsi1_pk').eq(f'EMAIL#{email}') & Key('gsi1_sk').eq(f'EMAIL#{email}'),
                 Limit=1
             )
             
@@ -59,12 +59,19 @@ class GetUserByEmailService:
             has_encryption = self._check_encryption_status(user_id)
             
             # Return user data needed for sharing
+            # Build display name from first/last name or email
+            first_name = user_item.get('first_name', '')
+            last_name = user_item.get('last_name', '')
+            display_name = f"{first_name} {last_name}".strip() if (first_name or last_name) else email.split('@')[0]
+            
             return {
                 'userId': user_id,
                 'email': email,
-                'username': user_item.get('username'),
+                'displayName': display_name,
+                'firstName': first_name,
+                'lastName': last_name,
                 'hasEncryption': has_encryption,
-                'createdAt': user_item.get('createdAt')
+                'createdAt': user_item.get('created_at')
             }
             
         except Exception as e:
@@ -87,7 +94,7 @@ class GetUserByEmailService:
             response = self.table.get_item(
                 Key={
                     'pk': f'USER#{user_id}',
-                    'sk': 'ENCRYPTION#SETUP'
+                    'sk': 'ENCRYPTION'
                 }
             )
             
