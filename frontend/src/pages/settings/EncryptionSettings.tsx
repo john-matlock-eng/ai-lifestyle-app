@@ -164,8 +164,16 @@ const EncryptionSettings: React.FC = () => {
   const { data: profile, refetch: refetchProfile } = useQuery<UserProfile>({
     queryKey: ['userProfile', user?.userId],
     queryFn: async () => {
-      const { data } = await apiClient.get('/users/profile');
-      return data;
+      const response = await apiClient.get('/users/profile');
+      // Handle both direct data and wrapped response
+      if (response.data && typeof response.data === 'object' && 'body' in response.data) {
+        // If response is wrapped with statusCode and body
+        const parsed = typeof response.data.body === 'string' 
+          ? JSON.parse(response.data.body) 
+          : response.data.body;
+        return parsed;
+      }
+      return response.data;
     },
     enabled: !!user,
   });
@@ -185,6 +193,7 @@ const EncryptionSettings: React.FC = () => {
   useEffect(() => {
     const checkEncryption = async () => {
       try {
+        console.log('Profile data:', profile); // Debug log
         const encryptionService = getEncryptionService();
         const hasLocalSetup = await encryptionService.checkSetup();
         setIsSetup(hasLocalSetup);
@@ -424,14 +433,20 @@ const EncryptionSettings: React.FC = () => {
                     <span className="text-gray-600">Setup Date:</span>
                     <span className="font-medium">
                       {profile?.encryptionSetupDate 
-                        ? new Date(profile.encryptionSetupDate).toLocaleDateString()
+                        ? new Date(profile.encryptionSetupDate).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })
                         : 'Unknown'}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Key ID:</span>
                     <span className="font-mono text-xs">
-                      {profile?.encryptionKeyId?.substring(0, 12)}...
+                      {profile?.encryptionKeyId 
+                        ? `${profile.encryptionKeyId.substring(0, 12)}...`
+                        : 'Not available'}
                     </span>
                   </div>
                 </div>

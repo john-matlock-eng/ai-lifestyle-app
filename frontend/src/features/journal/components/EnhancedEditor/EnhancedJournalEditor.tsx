@@ -28,6 +28,7 @@ import type {
 import { journalContentUtils } from '../../types/enhanced-template.types';
 import { enhancedTemplates } from '../../templates/enhanced-templates';
 import SectionEditor from './SectionEditor';
+import { getEncryptionService } from '@/services/encryption';
 
 export interface EnhancedJournalEditorProps {
   templateId?: JournalTemplateEnum;
@@ -226,13 +227,18 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       
       // Handle encryption if enabled
       if (isEncrypted && showEncryption) {
-        // Note: You'll need to implement the encryption service
-        // For now, we'll just use the content as-is
-        finalContent = content;
-        encryptionData = {
-          // encryptedKey: encrypted.encryptedKey,
-          // encryptionIv: encrypted.iv
-        };
+        try {
+          const encryptionService = getEncryptionService();
+          const encrypted = await encryptionService.encryptContent(finalContent);
+          finalContent = encrypted.content;
+          encryptionData = {
+            encryptedKey: encrypted.encryptedKey,
+            encryptionIv: encrypted.iv
+          };
+        } catch (error) {
+          console.error('Encryption failed:', error);
+          throw new Error('Failed to encrypt journal entry');
+        }
       }
       
       const request: CreateJournalEntryRequest | UpdateJournalEntryRequest = {
