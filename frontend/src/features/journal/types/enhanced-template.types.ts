@@ -76,7 +76,7 @@ export const journalContentUtils = {
             break;
           }
           case 'emotions': {
-            const emotions = section.value as string[];
+            const emotions = Array.isArray(section.value) ? section.value : [];
             content += `Emotions: ${emotions.join(', ')}`;
             break;
           }
@@ -85,9 +85,11 @@ export const journalContentUtils = {
             content += choice ? choice.label : section.value;
             break;
           }
-          case 'tags':
-            content += (section.value as string[]).map(tag => `#${tag}`).join(' ');
+          case 'tags': {
+            const tags = Array.isArray(section.value) ? section.value : [];
+            content += tags.map(tag => `#${tag}`).join(' ');
             break;
+          }
           case 'goals':
             content += 'Linked goals tracked in this entry';
             break;

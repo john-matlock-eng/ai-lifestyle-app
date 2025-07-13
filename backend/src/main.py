@@ -36,6 +36,15 @@ from update_journal_entry.handler import lambda_handler as update_journal_entry_
 from delete_journal_entry.handler import lambda_handler as delete_journal_entry_handler
 from get_journal_stats.handler import lambda_handler as get_journal_stats_handler
 from update_user_profile.handler import lambda_handler as update_user_profile_handler
+# Encryption endpoints
+from setup_encryption.handler import lambda_handler as setup_encryption_handler
+from check_encryption.handler import lambda_handler as check_encryption_handler
+from get_user_public_key.handler import lambda_handler as get_user_public_key_handler
+from create_share.handler import lambda_handler as create_share_handler
+from create_ai_share.handler import lambda_handler as create_ai_share_handler
+from list_shares.handler import lambda_handler as list_shares_handler
+from revoke_share.handler import lambda_handler as revoke_share_handler
+from setup_recovery.handler import lambda_handler as setup_recovery_handler
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -116,6 +125,15 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "DELETE /journal/{entryId}": delete_journal_entry_handler,
         "GET /journal/stats": get_journal_stats_handler,
         "PUT /users/profile": update_user_profile_handler,
+        # Encryption endpoints
+        "POST /encryption/setup": setup_encryption_handler,
+        "GET /encryption/check/{userId}": check_encryption_handler,
+        "GET /encryption/user/{userId}": get_user_public_key_handler,
+        "POST /encryption/shares": create_share_handler,
+        "GET /encryption/shares": list_shares_handler,
+        "POST /encryption/ai-shares": create_ai_share_handler,
+        "DELETE /encryption/shares/{shareId}": revoke_share_handler,
+        "POST /encryption/recovery": setup_recovery_handler,
     }
     
     # Find and execute the appropriate handler
@@ -177,6 +195,33 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     handler = update_journal_entry_handler
                 elif http_method == 'DELETE':
                     handler = delete_journal_entry_handler
+        
+        # Check for encryption-specific routes with parameters
+        elif len(path_parts) >= 3 and path_parts[1] == 'encryption':
+            if len(path_parts) >= 4 and path_parts[2] == 'check':
+                # /encryption/check/{userId}
+                user_id = path_parts[3]
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['userId'] = user_id
+                if http_method == 'GET':
+                    handler = check_encryption_handler
+            elif len(path_parts) >= 4 and path_parts[2] == 'user':
+                # /encryption/user/{userId}
+                user_id = path_parts[3]
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['userId'] = user_id
+                if http_method == 'GET':
+                    handler = get_user_public_key_handler
+            elif len(path_parts) >= 4 and path_parts[2] == 'shares':
+                # /encryption/shares/{shareId}
+                share_id = path_parts[3]
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['shareId'] = share_id
+                if http_method == 'DELETE':
+                    handler = revoke_share_handler
     
     if handler:
         # Ensure the event has the expected format for handlers
