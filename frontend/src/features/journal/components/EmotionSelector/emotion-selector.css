@@ -27,6 +27,37 @@
   cursor: not-allowed;
 }
 
+/* Pan and zoom container */
+.emotion-wheel-zoom {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Cursor styles for panning */
+.emotion-wheel-zoom[style*="cursor: grab"] {
+  cursor: grab;
+  cursor: -webkit-grab;
+}
+
+.emotion-wheel-zoom[style*="cursor: grabbing"] {
+  cursor: grabbing;
+  cursor: -webkit-grabbing;
+}
+
+/* Prevent text selection during pan */
+.emotion-wheel-zoom * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Smooth transitions except when panning */
+.emotion-wheel-zoom > div {
+  will-change: transform;
+}
+
 /* Emotion segment transitions */
 .emotion-segment {
   transition: opacity 0.2s ease, filter 0.2s ease;
@@ -55,9 +86,35 @@
 
 /* Tooltip styles */
 .emotion-tooltip {
-  backdrop-filter: blur(8px);
-  background: rgba(var(--color-surface-rgb), 0.95);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(var(--color-surface-rgb), 0.98);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(var(--color-surface-muted-rgb), 0.8);
+  animation: tooltip-fade-in 0.2s ease-out;
+}
+
+/* Tooltip animation */
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure tooltip stays on top */
+.emotion-wheel-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Higher z-index for tooltip */
+.emotion-tooltip {
+  z-index: 9999 !important;
 }
 
 /* Selected emotion pills */

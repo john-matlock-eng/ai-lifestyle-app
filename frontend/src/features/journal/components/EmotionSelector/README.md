@@ -2,11 +2,19 @@
 
 A comprehensive emotion selection component for the AI Lifestyle App journal feature. It provides two interfaces for users to select their emotions: an interactive emotion wheel and a hierarchical drill-down list.
 
-## Recent Improvements (v2.0)
+## Recent Improvements (v3.0) - Pan & Zoom Update
 
-### Visual Enhancements
+### New Interactive Features
+- **Drag to Pan**: When zoomed in, drag the wheel to explore different sections
+- **Enhanced Zoom Range**: Now zoom from 0.8x to 4x (previously 1.5x max)
+- **Mouse Wheel Zoom**: Scroll to zoom in/out for quick navigation
+- **Touch Support**: Full support for touch devices with drag gestures
+- **Smart Pan Boundaries**: Prevents dragging the wheel completely off-screen
+- **Visual Feedback**: Grab/grabbing cursor indicates pan capability
+
+### Previous Improvements (v2.0)
 - **Increased Default Size**: Wheel now defaults to 800px (max 900px) for better readability
-- **Zoom Controls**: Added zoom in/out buttons (80%-150% range)
+- **Zoom Controls**: Added zoom in/out buttons with reset option
 - **Smart Label Display**: Tertiary emotions only show labels when zoomed in, hovered, or selected
 - **Dynamic Font Sizing**: Text size scales proportionally with wheel size and zoom level
 - **Hover Tooltips**: Shows emotion name, emoji, and selection hint on hover
@@ -168,11 +176,30 @@ The component uses the app's theme system and respects light/dark modes. Colors 
 - Reduced motion support
 - Print-friendly styles
 
+## Interactive Controls
+
+### Mouse Controls
+- **Scroll**: Zoom in/out
+- **Drag**: Pan around when zoomed in (grab cursor appears)
+- **Click**: Select/deselect emotions
+
+### Touch Controls  
+- **Drag**: Pan around when zoomed in
+- **Tap**: Select/deselect emotions
+
+### Keyboard Controls
+- **ESC**: Reset zoom and pan to default view
+
+### UI Controls
+- **Zoom In/Out Buttons**: Increment zoom by 0.2x
+- **Reset Button**: Return to default view (1x zoom, centered)
+- **View Toggle**: Switch between wheel and list views
+
 ## Known Issues & Solutions
 
 ### Text Readability
 - **Issue**: Small text on outer rings
-- **Solution**: Use zoom controls or hover over emotions to see tooltips
+- **Solution**: Zoom up to 4x and pan to explore specific sections
 
 ### Mobile Performance
 - **Issue**: Large wheel may be slow on older devices

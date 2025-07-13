@@ -27,10 +27,16 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const [wheelSize, setWheelSize] = useState(800); // Increased default size
   const [zoomLevel, setZoomLevel] = useState(1);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; emotion: Emotion } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [lastPanOffset, setLastPanOffset] = useState({ x: 0, y: 0 });
   
-  // Reset zoom to default
-  const resetZoom = () => {
+  // Reset zoom and pan to default
+  const resetView = () => {
     setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
+    setLastPanOffset({ x: 0, y: 0 });
   };
   
   // Responsive sizing
@@ -48,11 +54,11 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Handle escape key to reset zoom
+  // Handle escape key to reset view
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        resetZoom();
+        resetView();
       }
     };
     
@@ -60,17 +66,17 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
   
-  // Handle click outside to reset zoom
+  // Handle click outside to reset view
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        resetZoom();
+      if (containerRef.current && !containerRef.current.contains(e.target as Node) && !isPanning) {
+        resetView();
       }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isPanning]);
   
   const centerX = wheelSize / 2;
   const centerY = wheelSize / 2;
@@ -156,9 +162,80 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     setHoveredEmotion(emotion.id);
   };
   
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (tooltip && svgRef.current) {
+      const rect = svgRef.current.getBoundingClientRect();
+      setTooltip({
+        ...tooltip,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    }
+  };
+  
   const handleMouseLeave = () => {
     setTooltip(null);
     setHoveredEmotion(null);
+  };
+  
+  // Pan handlers
+  const handlePanStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (zoomLevel <= 1) return; // No panning when not zoomed
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    setIsPanning(true);
+    setDragStart({ x: clientX, y: clientY });
+    setLastPanOffset({ ...panOffset });
+    
+    // Prevent text selection while dragging
+    e.preventDefault();
+  };
+  
+  const handlePanMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isPanning) return;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const deltaX = clientX - dragStart.x;
+    const deltaY = clientY - dragStart.y;
+    
+    // Calculate new pan offset with boundaries
+    const maxPan = (wheelSize * (zoomLevel - 1)) / 2;
+    const newX = Math.max(-maxPan, Math.min(maxPan, lastPanOffset.x + deltaX));
+    const newY = Math.max(-maxPan, Math.min(maxPan, lastPanOffset.y + deltaY));
+    
+    setPanOffset({ x: newX, y: newY });
+  };
+  
+  const handlePanEnd = () => {
+    setIsPanning(false);
+  };
+  
+  // Mouse wheel zoom
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!containerRef.current?.contains(e.target as Node)) return;
+    
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    const newZoom = Math.max(0.8, Math.min(4, zoomLevel + delta));
+    
+    // Adjust pan offset when zooming to keep centered
+    if (newZoom !== zoomLevel) {
+      const scale = newZoom / zoomLevel;
+      setPanOffset({
+        x: panOffset.x * scale,
+        y: panOffset.y * scale
+      });
+      setLastPanOffset({
+        x: panOffset.x * scale,
+        y: panOffset.y * scale
+      });
+    }
+    
+    setZoomLevel(newZoom);
   };
   
   const coreEmotions = getCoreEmotions();
@@ -169,42 +246,77 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       {/* Zoom controls - positioned outside the zoomable area */}
       <div className="emotion-wheel-zoom-controls absolute -top-12 right-0 z-20 flex gap-2">
         <button
-          onClick={() => setZoomLevel(Math.min(zoomLevel + 0.1, 1.5))}
+          onClick={() => {
+            const newZoom = Math.min(zoomLevel + 0.2, 4);
+            setZoomLevel(newZoom);
+          }}
           className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
-          title="Zoom in"
-          disabled={zoomLevel >= 1.5}
+          title="Zoom in (scroll to zoom)"
+          disabled={zoomLevel >= 4}
         >
           <ZoomIn className="w-4 h-4" />
         </button>
         <button
-          onClick={() => setZoomLevel(Math.max(zoomLevel - 0.1, 0.8))}
+          onClick={() => {
+            const newZoom = Math.max(zoomLevel - 0.2, 0.8);
+            setZoomLevel(newZoom);
+            // Adjust pan when zooming out
+            if (newZoom < zoomLevel) {
+              const scale = newZoom / zoomLevel;
+              setPanOffset({
+                x: panOffset.x * scale,
+                y: panOffset.y * scale
+              });
+              setLastPanOffset({
+                x: panOffset.x * scale,
+                y: panOffset.y * scale
+              });
+            }
+          }}
           className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
-          title="Zoom out"
+          title="Zoom out (scroll to zoom)"
           disabled={zoomLevel <= 0.8}
         >
           <ZoomOut className="w-4 h-4" />
         </button>
         <button
-          onClick={resetZoom}
+          onClick={resetView}
           className="p-2 rounded-lg bg-surface hover:bg-surface-hover shadow-md transition-colors"
-          title="Reset zoom (ESC)"
-          disabled={zoomLevel === 1}
+          title="Reset view (ESC)"
+          disabled={zoomLevel === 1 && panOffset.x === 0 && panOffset.y === 0}
         >
           <RotateCcw className="w-4 h-4" />
         </button>
       </div>
       
-      {/* SVG Container with zoom */}
+      {/* SVG Container with zoom and pan */}
       <div 
-        className="emotion-wheel-zoom overflow-hidden rounded-lg bg-surface"
+        className="emotion-wheel-zoom overflow-hidden rounded-lg bg-surface relative"
         style={{ 
           width: wheelSize,
           height: wheelSize,
-          transform: `scale(${zoomLevel})`,
-          transformOrigin: 'center',
-          transition: 'transform 0.2s ease-in-out'
+          cursor: zoomLevel > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default',
+          userSelect: 'none',
+          touchAction: 'none'
         }}
+        onMouseDown={handlePanStart}
+        onMouseMove={handlePanMove}
+        onMouseUp={handlePanEnd}
+        onMouseLeave={handlePanEnd}
+        onTouchStart={handlePanStart}
+        onTouchMove={handlePanMove}
+        onTouchEnd={handlePanEnd}
+        onWheel={handleWheel}
       >
+        <div
+          style={{
+            transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+            transformOrigin: 'center',
+            transition: isPanning ? 'none' : 'transform 0.2s ease-in-out',
+            width: '100%',
+            height: '100%'
+          }}
+        >
         <svg 
           ref={svgRef}
           width={wheelSize} 
@@ -218,6 +330,19 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--color-surface-muted)" strokeWidth="0.5" opacity="0.3"/>
             </pattern>
           </defs>
+          
+          {/* Pan/Zoom instructions when zoomed */}
+          {zoomLevel > 1.2 && (
+            <text
+              x={centerX}
+              y={20}
+              textAnchor="middle"
+              className="fill-muted text-xs"
+              style={{ userSelect: 'none' }}
+            >
+              Drag to pan • Scroll to zoom • ESC to reset
+            </text>
+          )}
           
           {/* Core emotions (center) */}
           {coreEmotions.map((emotion, index) => {
@@ -237,6 +362,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                   opacity={isSelected ? 1 : (isHovered ? 0.9 : 0.8)}
                   onClick={() => onEmotionToggle(emotion.id)}
                   onMouseEnter={(e) => handleMouseEnter(e, emotion)}
+                  onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                   className="emotion-segment transition-all duration-200"
                   style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
@@ -279,6 +405,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                     opacity={isSelected ? 1 : (isHovered ? 0.85 : 0.7)}
                     onClick={() => onEmotionToggle(emotion.id)}
                     onMouseEnter={(e) => handleMouseEnter(e, emotion)}
+                    onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                     className="emotion-segment transition-all duration-200"
                     style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
@@ -330,6 +457,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                       opacity={isSelected ? 1 : (isHovered ? 0.8 : 0.6)}
                       onClick={() => onEmotionToggle(emotion.id)}
                       onMouseEnter={(e) => handleMouseEnter(e, emotion)}
+                      onMouseMove={handleMouseMove}
                       onMouseLeave={handleMouseLeave}
                       className="emotion-segment transition-all duration-200"
                       style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
@@ -355,27 +483,75 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             });
           })}
         </svg>
+        </div>
       </div>
       
       {/* Tooltip */}
-      {tooltip && (
-        <div
-          className="emotion-tooltip absolute z-20 px-3 py-2 bg-surface border border-surface-muted rounded-lg shadow-lg pointer-events-none"
-          style={{
-            left: tooltip.x + 10,
-            top: tooltip.y - 10,
-            transform: 'translateY(-100%)'
-          }}
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{getEmotionEmoji(tooltip.emotion.id)}</span>
-            <span className="font-medium">{tooltip.emotion.label}</span>
+      {tooltip && (() => {
+        // Calculate tooltip dimensions (approximate)
+        const tooltipWidth = 200; // Approximate width with padding
+        const tooltipHeight = 70; // Approximate height with padding
+        const offset = 15; // Distance from cursor
+        const padding = 10; // Minimum distance from edges
+        
+        // Get container dimensions
+        const containerWidth = wheelSize;
+        const containerHeight = wheelSize;
+        
+        // Default position (to the right and above cursor)
+        let left = tooltip.x + offset;
+        let top = tooltip.y - tooltipHeight - offset;
+        
+        // Check if tooltip would go off the right edge
+        if (left + tooltipWidth > containerWidth - padding) {
+          // Position to the left of cursor instead
+          left = tooltip.x - tooltipWidth - offset;
+        }
+        
+        // Check if tooltip would go off the left edge
+        if (left < padding) {
+          // Center horizontally on cursor
+          left = tooltip.x - tooltipWidth / 2;
+          // But still respect boundaries
+          left = Math.max(padding, Math.min(left, containerWidth - tooltipWidth - padding));
+        }
+        
+        // Check if tooltip would go off the top edge
+        if (top < padding) {
+          // Position below cursor instead
+          top = tooltip.y + offset;
+        }
+        
+        // Check if tooltip would go off the bottom edge
+        if (top + tooltipHeight > containerHeight - padding) {
+          // Position above cursor, but ensure it fits
+          top = Math.min(tooltip.y - tooltipHeight - offset, containerHeight - tooltipHeight - padding);
+        }
+        
+        // Final boundary checks
+        left = Math.max(padding, Math.min(left, containerWidth - tooltipWidth - padding));
+        top = Math.max(padding, Math.min(top, containerHeight - tooltipHeight - padding));
+        
+        return (
+          <div
+            className="emotion-tooltip absolute z-50 px-3 py-2 bg-surface border border-surface-muted rounded-lg shadow-xl pointer-events-none"
+            style={{
+              left: `${left}px`,
+              top: `${top}px`,
+              width: 'max-content',
+              maxWidth: `${tooltipWidth}px`
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{getEmotionEmoji(tooltip.emotion.id)}</span>
+              <span className="font-medium">{tooltip.emotion.label}</span>
+            </div>
+            <div className="text-xs text-muted mt-1">
+              Click to {selectedEmotions.includes(tooltip.emotion.id) ? 'deselect' : 'select'}
+            </div>
           </div>
-          <div className="text-xs text-muted mt-1">
-            Click to {selectedEmotions.includes(tooltip.emotion.id) ? 'deselect' : 'select'}
-          </div>
-        </div>
-      )}
+        );
+      })()}
       
       {/* Selected emotions display */}
       {selectedEmotions.length > 0 && (
