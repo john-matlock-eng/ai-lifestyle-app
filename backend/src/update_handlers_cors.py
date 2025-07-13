@@ -100,7 +100,7 @@ def update_handler_file(filepath):
         model_var = match.group(1).strip()
         return f'''return create_response(
                 status_code=200,
-                body={model_var}.model_dump(by_alias=True),
+                body={model_var}.model_dump(by_alias=True, mode='json'),
                 request_id=request_id
             )'''
     

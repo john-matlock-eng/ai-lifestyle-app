@@ -6,6 +6,22 @@ Ensures consistent CORS headers across all responses.
 import os
 import json
 from typing import Dict, Any, Optional
+from datetime import datetime, date
+from decimal import Decimal
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    """
+    Custom JSON encoder that handles datetime objects and other special types.
+    """
+    def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        elif isinstance(obj, Decimal):
+            return float(obj)
+        elif hasattr(obj, '__dict__'):
+            return obj.__dict__
+        return super().default(obj)
 
 
 def create_response(
@@ -46,7 +62,8 @@ def create_response(
     
     # Serialize body if it's not already a string
     if not isinstance(body, str):
-        body = json.dumps(body)
+        # Use custom encoder to handle datetime and other types
+        body = json.dumps(body, cls=CustomJSONEncoder)
     
     return {
         "statusCode": status_code,

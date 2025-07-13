@@ -112,7 +112,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             return create_response(
                 status_code=200,
-                body=journal_entry.model_dump(by_alias=True),
+                body=journal_entry.model_dump(by_alias=True, mode='json'),
                 request_id=request_id
             )
             
