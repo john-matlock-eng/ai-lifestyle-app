@@ -68,12 +68,21 @@ const JournalDetailPage: React.FC = () => {
   }, [entry, isEditMode]);
 
   const handleSave = async (content: string) => {
-    await updateMutation.mutateAsync({
+    const updateData: UpdateJournalEntryRequest = {
       title: editedTitle,
       content,
       tags: editedTags,
       mood: editedMood || undefined,
-    });
+    };
+
+    // If the entry is encrypted, we need to provide word count
+    if (entry?.isEncrypted) {
+      // For encrypted entries, we must preserve the original word count
+      // since we can't calculate it from encrypted content
+      updateData.wordCount = entry.wordCount;
+    }
+
+    await updateMutation.mutateAsync(updateData);
   };
 
   const handleSaveWithSections = async (editorData: {
