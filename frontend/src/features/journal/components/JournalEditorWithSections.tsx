@@ -98,21 +98,21 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
     const title = section.title.toLowerCase();
     
     if (id.includes('gratitude') || title.includes('gratitude')) {
-      return <Heart className="w-5 h-5" />;
+      return <Heart className="w-4 h-4" />;
     }
     if (id.includes('goal') || title.includes('goal')) {
-      return <Target className="w-5 h-5" />;
+      return <Target className="w-4 h-4" />;
     }
     if (id.includes('mood') || title.includes('mood')) {
-      return <Smile className="w-5 h-5" />;
+      return <Smile className="w-4 h-4" />;
     }
     if (id.includes('reflection') || title.includes('reflection')) {
-      return <Star className="w-5 h-5" />;
+      return <Star className="w-4 h-4" />;
     }
     if (id.includes('energy') || title.includes('energy') || id.includes('habit')) {
-      return <Zap className="w-5 h-5" />;
+      return <Zap className="w-4 h-4" />;
     }
-    return <FileText className="w-5 h-5" />;
+    return <FileText className="w-4 h-4" />;
   };
 
   // Calculate total word count

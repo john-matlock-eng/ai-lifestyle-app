@@ -200,7 +200,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
           <div className="flex items-center gap-2">
             {icon && (
               <div className="p-1.5 rounded-md bg-accent/10 text-accent">
-                {React.cloneElement(icon as React.ReactElement, { className: 'w-4 h-4' })}
+                {icon}
               </div>
             )}
             <div className="flex items-center gap-3">
