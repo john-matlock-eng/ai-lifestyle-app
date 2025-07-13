@@ -67,8 +67,12 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
 
   const unlockEncryption = async (password: string) => {
     try {
+      if (!user?.userId) {
+        throw new Error('User ID not available');
+      }
+      
       const encryptionService = getEncryptionService();
-      await encryptionService.initialize(password);
+      await encryptionService.initialize(password, user.userId);
       
       const keyId = await encryptionService.getPublicKeyId();
       setEncryptionKeyId(keyId);

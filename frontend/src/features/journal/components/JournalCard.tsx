@@ -6,7 +6,8 @@ import {
   Lock,
   Unlock,
   Hash,
-  Target
+  Target,
+  Share2
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { JournalEntry } from '@/types/journal';
@@ -90,6 +91,11 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
               </span>
             );
           })()}
+          {entry.isShared && (
+            <span title="Shared">
+              <Share2 className="w-4 h-4 text-blue-500" />
+            </span>
+          )}
           {isActuallyEncrypted ? (
           <Lock className="w-4 h-4 text-muted" />
           ) : (

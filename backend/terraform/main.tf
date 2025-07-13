@@ -142,6 +142,19 @@ module "journal_service" {
   }
 }
 
+# Encryption Service Infrastructure
+module "encryption_service" {
+  source = "./services/encryption"
+
+  app_name     = "ai-lifestyle"
+  environment  = var.environment
+  aws_region   = var.aws_region
+  
+  tags = {
+    Service = "encryption"
+  }
+}
+
 # Lambda Function for API handling
 module "api_lambda" {
   count  = var.deploy_lambda ? 1 : 0
@@ -164,6 +177,9 @@ module "api_lambda" {
     GOAL_ATTACHMENTS_BUCKET = module.goals_service.goal_attachments_bucket_name
     # Journal environment variables
     JOURNAL_ATTACHMENTS_BUCKET = module.journal_service.journal_attachments_bucket_name
+    # Encryption environment variables
+    AI_SERVICE_PUBLIC_KEY_PARAM = module.encryption_service.ai_service_public_key_parameter
+    AI_ANALYSIS_QUEUE_URL = module.encryption_service.ai_analysis_queue_url
     CORS_ORIGIN                = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
   }
 
@@ -172,7 +188,8 @@ module "api_lambda" {
     aws_iam_policy.cognito_access.arn,
     aws_iam_policy.main_table_dynamodb_access.arn,
     aws_iam_policy.goals_s3_access.arn,
-    aws_iam_policy.journal_s3_access.arn
+    aws_iam_policy.journal_s3_access.arn,
+    aws_iam_policy.encryption_service_access.arn
   ]
 }
 
@@ -293,6 +310,35 @@ module "api_gateway" {
     }
     "GET /journal/stats" = {
       authorization_type = "JWT"
+    }
+
+    # Encryption endpoints
+    "POST /encryption/setup" = {
+      authorization_type = "JWT"
+    }
+    "GET /encryption/check/{userId}" = {
+      authorization_type = "NONE"  # Public endpoint to check if user has encryption
+    }
+    "GET /encryption/user/{userId}" = {
+      authorization_type = "JWT"  # Get user's public key
+    }
+    "POST /encryption/shares" = {
+      authorization_type = "JWT"
+    }
+    "GET /encryption/shares" = {
+      authorization_type = "JWT"
+    }
+    "POST /encryption/ai-shares" = {
+      authorization_type = "JWT"
+    }
+    "DELETE /encryption/shares/{shareId}" = {
+      authorization_type = "JWT"
+    }
+    "POST /encryption/recovery" = {
+      authorization_type = "JWT"
+    }
+    "POST /encryption/recovery/attempt" = {
+      authorization_type = "NONE"  # Recovery doesn't require auth
     }
   }
 
@@ -420,6 +466,36 @@ resource "aws_iam_policy" "journal_s3_access" {
   })
 }
 
+# IAM Policy for Encryption Service access
+resource "aws_iam_policy" "encryption_service_access" {
+  name        = "ai-lifestyle-encryption-${var.environment}"
+  description = "Policy for Lambda to access encryption service resources"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters"
+        ]
+        Resource = [
+          "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/ai-lifestyle-app/ai-service/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = module.encryption_service.ai_analysis_queue_arn
+      }
+    ]
+  })
+}
+
 # Outputs
 output "ecr_repository_url" {
   description = "ECR repository URL for pushing images"
@@ -474,4 +550,14 @@ output "goal_attachments_bucket_name" {
 output "journal_attachments_bucket_name" {
   description = "Journal attachments S3 bucket name"
   value       = module.journal_service.journal_attachments_bucket_name
+}
+
+output "ai_analysis_queue_url" {
+  description = "AI analysis SQS queue URL"
+  value       = module.encryption_service.ai_analysis_queue_url
+}
+
+output "encryption_log_group_name" {
+  description = "CloudWatch log group for encryption service"
+  value       = module.encryption_service.encryption_log_group_name
 }

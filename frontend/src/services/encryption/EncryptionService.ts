@@ -6,6 +6,7 @@
  */
 
 import { keyStore } from './keyStore';
+import apiClient from '../../api/client';
 
 export interface EncryptedData {
   content: string;      // Base64 encoded encrypted content
@@ -21,23 +22,56 @@ export class EncryptionService {
   /**
    * Initialize the encryption service with user's password
    */
-  async initialize(password: string): Promise<void> {
-    // Check if we have an existing salt
-    const salt = await keyStore.getSalt();
-    
-    if (salt) {
-      // Derive master key from existing salt
-      this.masterKey = await this.deriveMasterKey(password, salt);
+  async initialize(password: string, userId: string): Promise<void> {
+    try {
+      // Check if user has encryption set up on server
+      const response = await apiClient.get(`/encryption/check/${userId}`);
+      const encryptionStatus = response.data;
       
-      // Try to decrypt personal keys
-      const personalKeys = await keyStore.getPersonalKeys();
-      if (personalKeys) {
-        await this.loadPersonalKeys(personalKeys.privateKey);
-        this.publicKeyId = personalKeys.publicKeyId;
+      if (encryptionStatus.hasEncryption) {
+        // User has encryption on server, fetch salt
+        const userResponse = await apiClient.get(`/encryption/user/${userId}`);
+        const encryptionData = userResponse.data;
+        
+        // Convert base64 salt to Uint8Array
+        const salt = this.base64ToArrayBuffer(encryptionData.salt);
+        await keyStore.setSalt(new Uint8Array(salt));
+        
+        // Derive master key
+        this.masterKey = await this.deriveMasterKey(password, new Uint8Array(salt));
+        
+        // Get encrypted private key from server response
+        const encryptedPrivateKey = this.base64ToArrayBuffer(encryptionData.encryptedPrivateKey);
+        
+        // Store keys locally
+        await keyStore.setPersonalKeys(
+          encryptedPrivateKey,
+          encryptionData.publicKey,
+          encryptionData.publicKeyId
+        );
+        
+        // Load personal keys
+        await this.loadPersonalKeys(encryptedPrivateKey);
+        this.publicKeyId = encryptionData.publicKeyId;
+      } else {
+        // First time setup
+        await this.setupNewUser(password, userId);
       }
-    } else {
-      // First time setup
-      await this.setupNewUser(password);
+    } catch (error) {
+      // If server check fails, fall back to local-only mode
+      console.warn('Server check failed, using local encryption:', error);
+      
+      const salt = await keyStore.getSalt();
+      if (salt) {
+        this.masterKey = await this.deriveMasterKey(password, salt);
+        const personalKeys = await keyStore.getPersonalKeys();
+        if (personalKeys) {
+          await this.loadPersonalKeys(personalKeys.privateKey);
+          this.publicKeyId = personalKeys.publicKeyId;
+        }
+      } else {
+        await this.setupNewUser(password, userId);
+      }
     }
   }
 
@@ -79,7 +113,8 @@ export class EncryptionService {
   /**
    * Set up encryption for a new user
    */
-  private async setupNewUser(password: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async setupNewUser(password: string, _userId: string): Promise<void> {
     // Generate random salt
     const salt = crypto.getRandomValues(new Uint8Array(32));
     await keyStore.setSalt(salt);
@@ -110,8 +145,21 @@ export class EncryptionService {
     const publicKeyData = await crypto.subtle.exportKey('spki', this.personalKeyPair.publicKey);
     const publicKeyBase64 = this.arrayBufferToBase64(publicKeyData);
 
-    // Store keys
+    // Store keys locally
     await keyStore.setPersonalKeys(encryptedPrivateKey, publicKeyBase64, this.publicKeyId);
+    
+    try {
+      // Save to server for cross-device access
+      await apiClient.post('/encryption/setup', {
+        salt: this.arrayBufferToBase64(salt),
+        encryptedPrivateKey: this.arrayBufferToBase64(encryptedPrivateKey),
+        publicKey: publicKeyBase64,
+        publicKeyId: this.publicKeyId
+      });
+    } catch (error) {
+      console.warn('Failed to save encryption keys to server:', error);
+      // Continue with local-only encryption
+    }
   }
 
   /**
@@ -257,23 +305,178 @@ export class EncryptionService {
   }
 
   /**
+   * Share entries with AI for analysis
+   */
+  async shareWithAI(
+    itemType: string,
+    itemIds: string[],
+    analysisType: string,
+    context?: string
+  ): Promise<{ analysisRequestId: string; shareIds: string[] }> {
+    if (!this.personalKeyPair) throw new Error('Encryption not initialized');
+
+    try {
+      // Create AI shares with limited time access
+      const response = await apiClient.post('/encryption/ai-shares', {
+        itemType,
+        itemIds,
+        analysisType,
+        context,
+        expiresInMinutes: 30 // AI shares expire quickly
+      });
+
+      return {
+        analysisRequestId: response.data.analysisRequestId,
+        shareIds: response.data.shareIds
+      };
+    } catch (error) {
+      console.error('Failed to create AI share:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get list of active shares
+   */
+  async getShares(itemType?: string): Promise<Array<{
+    id: string;
+    recipientId: string;
+    itemType: string;
+    itemId: string;
+    createdAt: string;
+    expiresAt?: string;
+  }>> {
+    try {
+      const params = itemType ? { itemType } : {};
+      const response = await apiClient.get('/encryption/shares', { params });
+      return response.data.shares || [];
+    } catch (error) {
+      console.error('Failed to get shares:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Revoke a share
+   */
+  async revokeShare(shareId: string): Promise<boolean> {
+    try {
+      await apiClient.delete(`/encryption/shares/${shareId}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to revoke share:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Set up recovery method
+   */
+  async setupRecovery(
+    method: 'mnemonic' | 'social' | 'questions',
+    recoveryData: {
+      mnemonicPhrase?: string;
+      socialGuardians?: string[];
+      socialThreshold?: number;
+      securityQuestions?: Array<{ question: string; answer: string }>;
+    }
+  ): Promise<boolean> {
+    if (!this.masterKey) throw new Error('Master key not initialized');
+
+    try {
+      // Export master key for recovery encryption
+      const masterKeyData = await crypto.subtle.exportKey('raw', this.masterKey);
+      
+      // Encrypt master key with recovery method
+      // In production, this would use the recovery data to encrypt the master key
+      // For example:
+      // - Mnemonic: Derive key from phrase and encrypt master key
+      // - Social: Split key using Shamir's secret sharing
+      // - Questions: Derive key from answers and encrypt master key
+      
+      const encryptedRecoveryKey = this.arrayBufferToBase64(masterKeyData); // Simplified
+
+      await apiClient.post('/encryption/recovery', {
+        method,
+        ...recoveryData,
+        encryptedRecoveryKey
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to set up recovery:', error);
+      return false;
+    }
+  }
+
+  /**
    * Share an encrypted entry with another user
    */
   async shareWithUser(
-    _entryId: string, // eslint-disable-line @typescript-eslint/no-unused-vars
-    _recipientUserId: string, // eslint-disable-line @typescript-eslint/no-unused-vars
-    _encryptedKey: string // eslint-disable-line @typescript-eslint/no-unused-vars
-  ): Promise<string> {
+    itemType: string,
+    itemId: string,
+    recipientUserId: string,
+    encryptedKey: string,
+    expiresInHours?: number,
+    permissions?: string[]
+  ): Promise<{ shareId: string; encryptedKey: string }> {
     if (!this.personalKeyPair) throw new Error('Encryption not initialized');
 
-    // In production, this would:
-    // 1. Fetch recipient's public key from server
-    // 2. Decrypt content key with our private key
-    // 3. Re-encrypt with recipient's public key
-    
-    // For now, return a demo encrypted key
-    const demoKey = crypto.getRandomValues(new Uint8Array(32));
-    return this.arrayBufferToBase64(demoKey);
+    try {
+      // 1. Fetch recipient's public key from server
+      const recipientResponse = await apiClient.get(`/encryption/user/${recipientUserId}`);
+      const recipientData = recipientResponse.data;
+      
+      if (!recipientData.publicKey) {
+        throw new Error('Recipient has not set up encryption');
+      }
+      
+      // 2. Decrypt content key with our private key
+      const encryptedKeyBuffer = this.base64ToArrayBuffer(encryptedKey);
+      const contentKeyBuffer = await crypto.subtle.decrypt(
+        { name: 'RSA-OAEP' },
+        this.personalKeyPair.privateKey,
+        encryptedKeyBuffer
+      );
+      
+      // 3. Import recipient's public key
+      const recipientPublicKeyData = this.base64ToArrayBuffer(recipientData.publicKey);
+      const recipientPublicKey = await crypto.subtle.importKey(
+        'spki',
+        recipientPublicKeyData,
+        {
+          name: 'RSA-OAEP',
+          hash: 'SHA-256'
+        },
+        true,
+        ['encrypt']
+      );
+      
+      // 4. Re-encrypt content key with recipient's public key
+      const reEncryptedKey = await crypto.subtle.encrypt(
+        { name: 'RSA-OAEP' },
+        recipientPublicKey,
+        contentKeyBuffer
+      );
+      
+      // 5. Create share on server
+      const shareResponse = await apiClient.post('/encryption/shares', {
+        itemType,
+        itemId,
+        recipientId: recipientUserId,
+        encryptedKey: this.arrayBufferToBase64(reEncryptedKey),
+        expiresInHours,
+        permissions
+      });
+      
+      return {
+        shareId: shareResponse.data.shareId,
+        encryptedKey: this.arrayBufferToBase64(reEncryptedKey)
+      };
+    } catch (error) {
+      console.error('Failed to share with user:', error);
+      throw error;
+    }
   }
 
   /**

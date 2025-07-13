@@ -221,3 +221,79 @@ Note: API Gateway routes can be deployed before the Lambda handlers exist, but w
 - Backend: Black + isort + pylint with 100-char line length
 - Use absolute imports and barrel exports (`index.ts` files)
 - Component files use PascalCase, utility files use camelCase
+
+## Journal Feature Specifics
+
+### Journal Search Implementation
+The journal search feature uses browser's IndexedDB for local storage with encryption:
+- Full-text search across journal entries
+- Tag-based filtering
+- Journal type filtering
+- Timeframe/date range filtering
+- Search results are decrypted on-the-fly
+
+### Emotion Selector Component
+The `EmotionSelector` component provides two interfaces:
+1. **Emotion Wheel**: Interactive circular visualization with zoom/pan
+2. **Drill-Down List**: Hierarchical list interface
+
+Key features:
+- **Progressive Reveal Mode**: Guides users through 3-step selection (Core → Secondary → Tertiary)
+- **Hierarchical Selection**: Automatically selects parent emotions when selecting children
+- **Multi-selection Support**: Can select multiple emotions across hierarchy
+- **Zoom/Pan**: Mouse wheel zoom (0.8x-4x), click-drag panning when zoomed
+- **Responsive Design**: Adapts to container size with minimum 400px
+
+#### Common Issues and Solutions
+- **Runtime Error "e.some is not a function"**: Ensure `selectedEmotions` prop is always an array
+- **TypeScript Errors**: Add type annotations to array methods: `.filter((id: string) => ...)`
+- **CSS Issues**: Use `@emotion/react` for styled components, avoid inline styles for complex styling
+
+### Rich Text Editor (TipTap)
+The journal uses TipTap editor with:
+- Markdown support with live preview
+- Bubble menu for text formatting (appears on selection)
+- Floating menu for block insertion
+- Character count extension
+- Task lists, code blocks, quotes support
+
+Key configuration:
+- Bubble/Floating menus disabled by default to prevent DOM issues
+- Toolbar always visible for consistent UX
+- Focus management handled properly to prevent selection loss
+
+### Template System
+Journal templates use enhanced template structure:
+```typescript
+interface EnhancedTemplate {
+  id: string;
+  name: string;
+  version: number;
+  sections: SectionDefinition[];
+}
+```
+
+Templates support:
+- Progressive sections with AI suggestions
+- Privacy levels per section (private, ai, shared, public)
+- Draft management with auto-save
+- Template validation with Zod schemas
+
+### Development Workflow Tips
+1. **Always run the quality check trio**:
+   ```bash
+   npm run lint && npm test -- --run && npm run build
+   ```
+2. **Common test warnings to ignore**:
+   - Template validation errors in tests are intentional (testing invalid templates)
+   - Skipped tests are by design (e.g., auth tests requiring Cognito setup)
+
+3. **When modifying emotion components**:
+   - Test with both progressive reveal on/off
+   - Verify touch events work on mobile
+   - Check zoom boundaries don't break UI
+
+4. **Performance considerations**:
+   - Emotion wheel SVG can be large - limit re-renders
+   - Use `useCallback` for event handlers in frequently updated components
+   - Batch DOM updates when possible

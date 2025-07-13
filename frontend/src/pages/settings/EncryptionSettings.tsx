@@ -216,7 +216,7 @@ const EncryptionSettings: React.FC = () => {
 
     try {
       const encryptionService = getEncryptionService();
-      await encryptionService.initialize(masterPassword);
+      await encryptionService.initialize(masterPassword, user?.userId || '');
       
       // Update user profile
       const keyId = await encryptionService.getPublicKeyId();
@@ -240,7 +240,7 @@ const EncryptionSettings: React.FC = () => {
   const handleUnlock = async () => {
     try {
       const encryptionService = getEncryptionService();
-      await encryptionService.initialize(unlockPassword);
+      await encryptionService.initialize(unlockPassword, user?.userId || '');
       
       setIsSetup(true);
       setShowPasswordPrompt(false);
