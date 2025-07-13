@@ -12,10 +12,12 @@ import {
 } from 'lucide-react';
 import type { SectionDefinition } from '../types/enhanced-template.types';
 
+import type { SectionResponse } from '../types/enhanced-template.types';
+
 interface SectionEditorProps {
   section: SectionDefinition;
-  value: any;
-  onChange: (value: any) => void;
+  value: SectionResponse;
+  onChange: (value: SectionResponse) => void;
   isCompleted?: boolean;
 }
 
@@ -227,7 +229,7 @@ const TagsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
   onChange: (value: string[]) => void;
-}> = ({ section, value = [], onChange }) => {
+}> = ({ value = [], onChange }) => {
   const [inputValue, setInputValue] = React.useState('');
 
   const addTag = () => {
@@ -281,7 +283,7 @@ const GoalsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
   onChange: (value: string[]) => void;
-}> = ({ section, value = [], onChange }) => {
+}> = () => {
   // This would be enhanced to fetch actual goals from the goals module
   return <div className="text-sm text-muted">Goal selection would appear here</div>;
 };

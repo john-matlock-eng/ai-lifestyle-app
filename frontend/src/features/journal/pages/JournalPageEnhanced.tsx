@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { 
-  Plus, 
-  Search,
+  Plus,
   FileText,
   Edit3,
   Sparkles,
@@ -29,7 +28,6 @@ export const JournalPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
-  const [selectedDraftKey, setSelectedDraftKey] = useState<string | null>(null);
 
   // Search functionality
   const {
@@ -108,7 +106,7 @@ export const JournalPageEnhanced: React.FC = () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const filtered = draftsList.filter((d: any) => {
+      const filtered = draftsList.filter((d: {key: string; lastSaved: string}) => {
         const lastSaved = new Date(d.lastSaved);
         if (lastSaved < thirtyDaysAgo) {
           localStorage.removeItem(d.key);

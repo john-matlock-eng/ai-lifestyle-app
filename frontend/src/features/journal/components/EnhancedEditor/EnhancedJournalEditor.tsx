@@ -1,8 +1,7 @@
 // EnhancedJournalEditor.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  Save, 
-  Sparkles,
+  Save,
   Check,
   Timer,
   Target,
@@ -22,7 +21,6 @@ import type {
   GoalProgress
 } from '@/types/journal';
 import type { 
-  EnhancedTemplate,
   SectionResponse,
   JournalDraft
 } from '../../types/enhanced-template.types';
@@ -85,7 +83,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       }));
       setSections(initialSections);
     }
-  }, [entry, template]);
+  }, [entry, template, getDefaultValue]);
   
   // Timer effect
   useEffect(() => {
@@ -118,10 +116,10 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
         localStorage.removeItem(draftKey);
       }
     };
-  }, [title, sections, tags, autoSave, draftKey, showSuccess, templateId, startTime]);
+  }, [title, sections, tags, autoSave, draftKey, showSuccess, templateId, startTime, calculateTotalWordCount]);
   
   // Helper functions
-  function getDefaultValue(type: string): any {
+  const getDefaultValue = useCallback((type: string): string | number | string[] | Record<string, boolean> => {
     switch (type) {
       case 'text': return '';
       case 'scale': return 5;
@@ -132,9 +130,9 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       case 'checklist': return {};
       default: return '';
     }
-  }
+  }, []);
   
-  function calculateTotalWordCount(): number {
+  const calculateTotalWordCount = useCallback((): number => {
     const titleWords = title.split(/\s+/).filter(w => w).length;
     const contentWords = sections.reduce((total, section) => {
       if (typeof section.value === 'string') {
@@ -143,7 +141,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       return total;
     }, 0);
     return titleWords + contentWords;
-  }
+  }, [title, sections]);
   
   function extractMetadata() {
     const metadata: {
@@ -160,7 +158,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       const sectionValues = sections.reduce((acc, section) => {
         acc[section.sectionId] = section.value;
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, SectionResponse>);
       metadata.mood = template.extractors.mood(sectionValues);
     } else {
       // Default: look for mood section
@@ -189,7 +187,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       const sectionValues = sections.reduce((acc, section) => {
         acc[section.sectionId] = section.value;
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, SectionResponse>);
       metadata.goalProgress = template.extractors.goalProgress(sectionValues) || [];
     } else {
       // Default goal progress
@@ -205,7 +203,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
     return metadata;
   }
   
-  const handleSectionChange = useCallback((sectionId: string, value: any) => {
+  const handleSectionChange = useCallback((sectionId: string, value: SectionResponse) => {
     setSections(prev => prev.map(section => 
       section.sectionId === sectionId 
         ? { ...section, value, metadata: { ...section.metadata, completedAt: new Date().toISOString() } }

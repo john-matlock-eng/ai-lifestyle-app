@@ -16,16 +16,6 @@ import { JournalTemplate } from '@/types/journal';
 import { enhancedTemplates } from '../templates/enhanced-templates';
 import { getTemplateEstimatedTime } from '../templates/template-utils';
 
-interface TemplateCard {
-  id: JournalTemplate;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  tags: string[];
-  sections: number;
-  estimatedTime: number;
-}
 
 interface EnhancedTemplatePickerProps {
   onSelect: (templateId: JournalTemplate) => void;
@@ -60,18 +50,6 @@ export const EnhancedTemplatePicker: React.FC<EnhancedTemplatePickerProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [hoveredTemplate, setHoveredTemplate] = useState<JournalTemplate | null>(null);
 
-  const getTemplateCards = (): TemplateCard[] => {
-    return Object.entries(enhancedTemplates).map(([id, template]) => ({
-      id: id as JournalTemplate,
-      name: template.name,
-      description: template.description || '',
-      icon: template.icon || '📝',
-      color: template.color || '#6b7280',
-      tags: template.extractors?.tags?.({}) || [],
-      sections: template.sections.length,
-      estimatedTime: getTemplateEstimatedTime(id as JournalTemplate)
-    }));
-  };
 
   const filteredTemplates = selectedCategory
     ? templateCategories.find(cat => cat.name === selectedCategory)?.templates || []

@@ -2,17 +2,9 @@
 import React from 'react';
 import { 
   Calendar, 
-  Clock, 
   FileText, 
-  Lock, 
-  Unlock,
-  Hash,
-  Target,
-  Heart,
-  BarChart3,
-  CheckSquare,
-  PenTool,
-  Sparkles
+  Lock,
+  Hash
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import type { JournalEntry } from '@/types/journal';

@@ -1,5 +1,5 @@
 // Enhanced template types that work with existing JournalEntry structure
-import type { JournalTemplate as JournalTemplateEnum } from '@/types/journal';
+import type { JournalTemplate as JournalTemplateEnum, GoalProgress } from '@/types/journal';
 
 export interface EnhancedTemplate {
   id: JournalTemplateEnum;
@@ -9,9 +9,9 @@ export interface EnhancedTemplate {
   color?: string;
   sections: SectionDefinition[];
   extractors?: {
-    mood?: (responses: Record<string, any>) => string | undefined;
-    tags?: (responses: Record<string, any>) => string[];
-    goalProgress?: (responses: Record<string, any>) => any[];
+    mood?: (responses: Record<string, SectionResponse>) => string | undefined;
+    tags?: (responses: Record<string, SectionResponse>) => string[];
+    goalProgress?: (responses: Record<string, SectionResponse>) => GoalProgress[];
   };
 }
 
@@ -31,7 +31,7 @@ export interface SectionDefinition {
 
 export interface SectionResponse {
   sectionId: string;
-  value: any;
+  value: string | number | string[] | Record<string, boolean>;
   metadata?: {
     wordCount?: number;
     completedAt?: string;
@@ -67,26 +67,29 @@ export const journalContentUtils = {
           case 'scale':
             content += `Rating: ${section.value}/${sectionDef.options?.max || 10}`;
             break;
-          case 'mood':
+          case 'mood': {
             const mood = sectionDef.options?.moods?.find(m => m.value === section.value);
             content += mood ? `${mood.emoji} ${mood.label}` : section.value;
             break;
-          case 'choice':
+          }
+          case 'choice': {
             const choice = sectionDef.options?.choices?.find(c => c.value === section.value);
             content += choice ? choice.label : section.value;
             break;
+          }
           case 'tags':
             content += (section.value as string[]).map(tag => `#${tag}`).join(' ');
             break;
           case 'goals':
             content += 'Linked goals tracked in this entry';
             break;
-          case 'checklist':
+          case 'checklist': {
             const items = section.value as Record<string, boolean>;
             content += Object.entries(items)
               .map(([item, checked]) => `- [${checked ? 'x' : ' '}] ${item}`)
               .join('\n');
             break;
+          }
         }
         
         return content;
@@ -115,17 +118,19 @@ export const journalContentUtils = {
       const sectionContent = lines.slice(contentStartIndex).join('\n').trim();
       
       // Parse based on section type
-      let value: any = sectionContent;
+      let value: string | number | string[] | Record<string, boolean> = sectionContent;
       
       switch (sectionDef.type) {
-        case 'scale':
+        case 'scale': {
           const match = sectionContent.match(/Rating: (\d+)\//);
           value = match ? parseInt(match[1]) : 5;
           break;
-        case 'tags':
+        }
+        case 'tags': {
           value = sectionContent.match(/#(\w+)/g)?.map(tag => tag.substring(1)) || [];
           break;
-        case 'checklist':
+        }
+        case 'checklist': {
           const checklistItems: Record<string, boolean> = {};
           sectionContent.split('\n').forEach(line => {
             const checkMatch = line.match(/- \[([ x])\] (.+)/);
@@ -135,6 +140,7 @@ export const journalContentUtils = {
           });
           value = checklistItems;
           break;
+        }
       }
       
       sections.push({

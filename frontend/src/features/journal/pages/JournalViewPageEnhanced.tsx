@@ -14,7 +14,6 @@ import {
   FileText,
   Hash,
   Target,
-  Heart,
   TrendingUp
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -23,7 +22,6 @@ import { Button } from '@/components/common';
 import { getEntry, deleteEntry } from '@/api/journal';
 import { journalStorage } from '../services/JournalStorageService';
 import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
-import type { JournalEntry } from '@/types/journal';
 
 export const JournalViewPageEnhanced: React.FC = () => {
   const { entryId } = useParams<{ entryId: string }>();

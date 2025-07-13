@@ -50,7 +50,7 @@ export function useJournalDraft({
         wordCount: draftData.metadata.totalWordCount
       };
       
-      const existingIndex = draftsList.findIndex((d: any) => d.key === draftKey);
+      const existingIndex = draftsList.findIndex((d: {key: string}) => d.key === draftKey);
       if (existingIndex >= 0) {
         draftsList[existingIndex] = draftMeta;
       } else {
@@ -69,7 +69,7 @@ export function useJournalDraft({
     
     // Remove from drafts list
     const draftsList = JSON.parse(localStorage.getItem(DRAFT_LIST_KEY) || '[]');
-    const filtered = draftsList.filter((d: any) => d.key !== draftKey);
+    const filtered = draftsList.filter((d: {key: string}) => d.key !== draftKey);
     localStorage.setItem(DRAFT_LIST_KEY, JSON.stringify(filtered));
     
     setDraft(null);
@@ -91,7 +91,7 @@ export function useJournalDraft({
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
     const draftsList = JSON.parse(localStorage.getItem(DRAFT_LIST_KEY) || '[]');
-    const filtered = draftsList.filter((d: any) => {
+    const filtered = draftsList.filter((d: {lastSaved: string; key: string}) => {
       const lastSaved = new Date(d.lastSaved);
       if (lastSaved < thirtyDaysAgo) {
         localStorage.removeItem(d.key);

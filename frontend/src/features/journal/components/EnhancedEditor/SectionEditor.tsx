@@ -13,12 +13,15 @@ import {
 } from 'lucide-react';
 import type { SectionDefinition } from '../../types/enhanced-template.types';
 
+import type { Goal } from '@/features/goals/types/api.types';
+import type { SectionResponse } from '../../types/enhanced-template.types';
+
 export interface SectionEditorProps {
   section: SectionDefinition;
-  value: any;
-  onChange: (value: any) => void;
+  value: SectionResponse;
+  onChange: (value: SectionResponse) => void;
   isCompleted?: boolean;
-  availableGoals?: any[];
+  availableGoals?: Goal[];
 }
 
 export const SectionEditor: React.FC<SectionEditorProps> = ({
@@ -230,7 +233,7 @@ const TagsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
   onChange: (value: string[]) => void;
-}> = ({ section, value = [], onChange }) => {
+}> = ({ value = [], onChange }) => {
   const [inputValue, setInputValue] = React.useState('');
 
   const addTag = () => {
@@ -285,8 +288,8 @@ const GoalsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
   onChange: (value: string[]) => void;
-  availableGoals: any[];
-}> = ({ section, value = [], onChange, availableGoals }) => {
+  availableGoals: Goal[];
+}> = ({ value = [], onChange, availableGoals }) => {
   return (
     <div className="space-y-2">
       {availableGoals.length === 0 ? (
