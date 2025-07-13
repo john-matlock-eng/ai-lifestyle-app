@@ -45,8 +45,8 @@ class EncryptionRepository:
             keys: Encryption keys to save
         """
         item = {
-            'PK': f'USER#{keys.user_id}',
-            'SK': 'ENCRYPTION#KEYS',
+            'pk': f'USER#{keys.user_id}',
+            'sk': 'ENCRYPTION#KEYS',
             'Type': 'EncryptionKeys',
             'UserId': keys.user_id,
             'Salt': keys.salt,
@@ -76,8 +76,8 @@ class EncryptionRepository:
         """
         response = self.table.get_item(
             Key={
-                'PK': f'USER#{user_id}',
-                'SK': 'ENCRYPTION#KEYS'
+                'pk': f'USER#{user_id}',
+                'sk': 'ENCRYPTION#KEYS'
             }
         )
         
@@ -146,8 +146,8 @@ class EncryptionRepository:
         """
         # Convert datetime fields
         item = {
-            'PK': f'USER#{share.recipient_id}',
-            'SK': f'SHARE#{share.share_id}',
+            'pk': f'USER#{share.recipient_id}',
+            'sk': f'SHARE#{share.share_id}',
             'Type': 'Share',
             'ShareId': share.share_id,
             'OwnerId': share.owner_id,
@@ -165,8 +165,8 @@ class EncryptionRepository:
             'IsActive': share.is_active,
             'RevokedAt': share.revoked_at.isoformat() if share.revoked_at else None,
             # GSI for owner queries
-            'GSI1_PK': f'USER#{share.owner_id}',
-            'GSI1_SK': f'SHARE#CREATED#{share.share_id}'
+            'gsi1_pk': f'USER#{share.owner_id}',
+            'gsi1_sk': f'SHARE#CREATED#{share.share_id}'
         }
         
         # Set TTL if share expires
@@ -191,8 +191,8 @@ class EncryptionRepository:
         """
         response = self.table.get_item(
             Key={
-                'PK': f'USER#{recipient_id}',
-                'SK': f'SHARE#{share_id}'
+                'pk': f'USER#{recipient_id}',
+                'sk': f'SHARE#{share_id}'
             }
         )
         
@@ -221,8 +221,8 @@ class EncryptionRepository:
         """
         # Query all shares for recipient
         response = self.table.query(
-            KeyConditionExpression=Key('PK').eq(f'USER#{recipient_id}') & 
-                                 Key('SK').begins_with('SHARE#')
+            KeyConditionExpression=Key('pk').eq(f'USER#{recipient_id}') & 
+                                 Key('sk').begins_with('SHARE#')
         )
         
         shares = []
@@ -266,9 +266,9 @@ class EncryptionRepository:
         """
         # Query using GSI1
         response = self.table.query(
-            IndexName='GSI1',
-            KeyConditionExpression=Key('GSI1_PK').eq(f'USER#{owner_id}') & 
-                                 Key('GSI1_SK').begins_with('SHARE#CREATED#')
+            IndexName='EmailIndex',
+            KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{owner_id}') & 
+                                 Key('gsi1_sk').begins_with('SHARE#CREATED#')
         )
         
         shares = []
@@ -315,8 +315,8 @@ class EncryptionRepository:
             # Update access info
             response = self.table.update_item(
                 Key={
-                    'PK': f'USER#{recipient_id}',
-                    'SK': f'SHARE#{share_id}'
+                    'pk': f'USER#{recipient_id}',
+                    'sk': f'SHARE#{share_id}'
                 },
                 UpdateExpression='SET AccessCount = AccessCount + :inc, AccessedAt = :now',
                 ExpressionAttributeValues={
@@ -346,9 +346,9 @@ class EncryptionRepository:
         try:
             # First get the share using GSI to find recipient
             response = self.table.query(
-                IndexName='GSI1',
-                KeyConditionExpression=Key('GSI1_PK').eq(f'USER#{owner_id}') & 
-                                     Key('GSI1_SK').eq(f'SHARE#CREATED#{share_id}')
+                IndexName='EmailIndex',
+                KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{owner_id}') & 
+                                     Key('gsi1_sk').eq(f'SHARE#CREATED#{share_id}')
             )
             
             items = response.get('Items', [])
@@ -361,8 +361,8 @@ class EncryptionRepository:
             # Update the share
             self.table.update_item(
                 Key={
-                    'PK': f'USER#{recipient_id}',
-                    'SK': f'SHARE#{share_id}'
+                    'pk': f'USER#{recipient_id}',
+                    'sk': f'SHARE#{share_id}'
                 },
                 UpdateExpression='SET IsActive = :false, RevokedAt = :now',
                 ExpressionAttributeValues={
