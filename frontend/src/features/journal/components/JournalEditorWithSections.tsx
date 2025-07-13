@@ -124,27 +124,27 @@ const JournalEditorWithSections: React.FC<JournalEditorWithSectionsProps> = ({
   return (
     <div className={`relative ${className}`}>
       {/* Header Stats */}
-      <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-surface via-surface-hover to-surface shadow-lg border border-surface-muted/30">
+      <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-surface via-surface-hover to-surface shadow-md border border-surface-muted/30">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-accent/10 text-accent">
-                <Sparkles className="w-6 h-6" />
+            <div className="flex items-center gap-2 mb-1">
+              <div className="p-1.5 rounded-lg bg-accent/10 text-accent">
+                <Sparkles className="w-5 h-5" />
               </div>
-              <h2 className="text-2xl font-bold text-theme">{template.name}</h2>
+              <h2 className="text-xl font-semibold text-theme">{template.name}</h2>
             </div>
             {template.description && (
-              <p className="text-muted ml-12">{template.description}</p>
+              <p className="text-sm text-muted ml-9">{template.description}</p>
             )}
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <div className="text-center">
-              <div className="text-3xl font-bold text-gradient">{totalWords}</div>
-              <div className="text-sm text-muted">Total Words</div>
+              <div className="text-2xl font-bold text-gradient">{totalWords}</div>
+              <div className="text-xs text-muted">Total Words</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-theme">{template.sections.length}</div>
-              <div className="text-sm text-muted">Sections</div>
+              <div className="text-2xl font-bold text-theme">{template.sections.length}</div>
+              <div className="text-xs text-muted">Sections</div>
             </div>
           </div>
         </div>

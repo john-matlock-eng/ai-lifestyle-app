@@ -1,5 +1,11 @@
 /* Enhanced Journal Editor Styles */
 
+/* Prevent focus jumping issues */
+.journal-editor {
+  position: relative;
+  z-index: 1;
+}
+
 /* Base Editor Styling */
 .journal-editor .ProseMirror {
   min-height: 120px;
@@ -14,6 +20,9 @@
   font-size: 0.9375rem;
   line-height: 1.7;
   color: var(--text);
+  /* Prevent content jumping */
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 /* Focus state with glow effect */
@@ -26,7 +35,7 @@
   transform: translateY(-2px);
 }
 
-/* Placeholder styling */
+/* Placeholder styling - improved */
 .journal-editor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   color: var(--text-muted);
@@ -35,6 +44,9 @@
   float: left;
   height: 0;
   font-style: italic;
+  /* Prevent placeholder from interfering with typing */
+  position: absolute;
+  user-select: none;
 }
 
 /* Custom scrollbar */
