@@ -1,4 +1,4 @@
-// EnhancedTemplatePicker.tsx
+// EnhancedTemplatePicker.tsx - Fixed hover overlay issue
 import React, { useState } from 'react';
 import { 
   Sparkles, 
@@ -15,6 +15,7 @@ import {
 import { JournalTemplate } from '@/types/journal';
 import { enhancedTemplates } from '../templates/enhanced-templates';
 import { getTemplateEstimatedTime } from '../templates/template-utils';
+import './template-picker-override.css';
 
 
 interface EnhancedTemplatePickerProps {
@@ -122,14 +123,13 @@ export const EnhancedTemplatePicker: React.FC<EnhancedTemplatePickerProps> = ({
             onMouseEnter={() => setHoveredTemplate(JournalTemplate.BLANK)}
             onMouseLeave={() => setHoveredTemplate(null)}
             className={`
-              template-card group relative overflow-hidden
+              template-card group relative
               p-6 rounded-2xl border-2 cursor-pointer
               transition-all duration-300 transform
               ${hoveredTemplate === JournalTemplate.BLANK 
-                ? 'scale-105 shadow-2xl border-accent' 
-                : 'hover:scale-105 hover:shadow-xl border-surface-muted'
+                ? 'scale-105 shadow-2xl border-accent bg-surface' 
+                : 'hover:scale-105 hover:shadow-xl border-surface-muted bg-surface hover:bg-surface-hover'
               }
-              bg-gradient-to-br from-surface via-surface to-surface-hover
             `}
           >
             <div className="flex items-start gap-4 mb-4">
@@ -175,15 +175,17 @@ export const EnhancedTemplatePicker: React.FC<EnhancedTemplatePickerProps> = ({
                 onMouseEnter={() => setHoveredTemplate(templateId)}
                 onMouseLeave={() => setHoveredTemplate(null)}
                 className={`
-                  template-card group relative overflow-hidden
+                  template-card group relative
                   p-6 rounded-2xl border-2 cursor-pointer
                   transition-all duration-300 transform
                   ${hoveredTemplate === templateId 
-                    ? 'scale-105 shadow-2xl border-accent' 
-                    : 'hover:scale-105 hover:shadow-xl border-surface-muted'
+                    ? 'scale-105 shadow-2xl bg-surface' 
+                    : 'hover:scale-105 hover:shadow-xl border-surface-muted bg-surface hover:bg-surface-hover'
                   }
-                  bg-gradient-to-br from-surface via-surface to-surface-hover
                 `}
+                style={{
+                  borderColor: hoveredTemplate === templateId ? template.color : undefined
+                }}
               >
                 {/* Template Header */}
                 <div className="flex items-start gap-4 mb-4">
@@ -243,11 +245,6 @@ export const EnhancedTemplatePicker: React.FC<EnhancedTemplatePickerProps> = ({
                     </div>
                   )}
                 </div>
-                
-                {/* Hover Overlay */}
-                {hoveredTemplate === templateId && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-accent/10 to-transparent pointer-events-none" />
-                )}
               </div>
             );
           })}

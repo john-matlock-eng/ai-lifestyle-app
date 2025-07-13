@@ -1,6 +1,7 @@
 import React from 'react';
 import type { GoalPattern } from '../../types/api.types';
 import { GOAL_PATTERNS } from '../../types/ui.types';
+import './pattern-selector-override.css';
 
 interface PatternSelectorProps {
   onSelect: (pattern: GoalPattern) => void;
@@ -9,7 +10,7 @@ interface PatternSelectorProps {
 
 const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPattern }) => {
   return (
-    <div className="space-y-4">
+    <div className="pattern-selector space-y-4">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-[var(--text)]">What kind of goal do you want to set?</h2>
         <p className="mt-2 text-muted">Choose the pattern that best fits what you want to achieve</p>
