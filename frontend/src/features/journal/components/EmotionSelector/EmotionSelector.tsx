@@ -12,6 +12,7 @@ interface EmotionSelectorProps {
   mode?: 'wheel' | 'list' | 'both';
   className?: string;
   maxSelections?: number;
+  hierarchicalSelection?: boolean;
 }
 
 const EmotionSelector: React.FC<EmotionSelectorProps> = ({ 
@@ -19,7 +20,8 @@ const EmotionSelector: React.FC<EmotionSelectorProps> = ({
   onChange,
   mode = 'both',
   className = '',
-  maxSelections
+  maxSelections,
+  hierarchicalSelection = true
 }) => {
   const [viewMode, setViewMode] = useState<'wheel' | 'list'>(
     mode === 'both' ? 'list' : mode
@@ -99,6 +101,7 @@ const EmotionSelector: React.FC<EmotionSelectorProps> = ({
         <EmotionWheel
           selectedEmotions={value}
           onEmotionToggle={handleEmotionToggle}
+          hierarchicalSelection={hierarchicalSelection}
         />
       ) : (
         <EmotionDrillDown

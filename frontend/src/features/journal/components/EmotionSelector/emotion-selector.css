@@ -51,6 +51,13 @@
   -ms-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+/* Allow proper touch handling on the container */
+.emotion-wheel-zoom {
+  touch-action: none;
 }
 
 /* Smooth transitions except when panning */
@@ -194,5 +201,51 @@
   .emotion-text-secondary,
   .emotion-text-tertiary {
     font-weight: 600 !important;
+  }
+}
+
+/* Core emotion pulse animation when no selections */
+@keyframes core-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.15);
+  }
+}
+
+.emotion-wheel-container[data-empty="true"] .emotion-segment-core {
+  animation: core-pulse 2s ease-in-out infinite;
+}
+
+/* Visual hierarchy in selected emotions */
+.emotion-pill-core {
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.emotion-pill-secondary {
+  margin-left: 0.5rem;
+}
+
+.emotion-pill-tertiary {
+  margin-left: 2rem;
+  opacity: 0.9;
+}
+
+/* Encourage core selection */
+.emotion-wheel-hint {
+  font-weight: 500;
+  animation: fade-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

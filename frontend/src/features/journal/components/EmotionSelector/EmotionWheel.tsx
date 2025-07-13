@@ -1,5 +1,5 @@
 // EmotionWheel.tsx - Improved version with better readability and zoom
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { 
   getCoreEmotions, 
@@ -14,29 +14,75 @@ interface EmotionWheelProps {
   selectedEmotions: string[];
   onEmotionToggle: (emotionId: string) => void;
   className?: string;
+  hierarchicalSelection?: boolean;
 }
 
 const EmotionWheel: React.FC<EmotionWheelProps> = ({ 
   selectedEmotions, 
   onEmotionToggle,
-  className = '' 
+  className = '',
+  hierarchicalSelection = true
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredEmotion, setHoveredEmotion] = useState<string | null>(null);
   const [wheelSize, setWheelSize] = useState(800); // Increased default size
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; emotion: Emotion } | null>(null);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; emotion: Emotion | null } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [lastPanOffset, setLastPanOffset] = useState({ x: 0, y: 0 });
+  const currentHoveredEmotionRef = useRef<Emotion | null>(null);
+  const hasDraggedRef = useRef(false);
+  const clickStartTimeRef = useRef(0);
+  const initialClickPosRef = useRef({ x: 0, y: 0 });
   
   // Reset zoom and pan to default
   const resetView = () => {
     setZoomLevel(1);
     setPanOffset({ x: 0, y: 0 });
     setLastPanOffset({ x: 0, y: 0 });
+  };
+  
+  // Handle emotion selection with hierarchical logic
+  const handleEmotionSelect = (emotionId: string) => {
+    // Don't select if we just finished dragging
+    if (hasDraggedRef.current) {
+      hasDraggedRef.current = false;
+      return;
+    }
+    
+    const emotion = getEmotionById(emotionId);
+    if (!emotion) return;
+    
+    if (selectedEmotions.includes(emotionId)) {
+      // Deselecting - just remove this emotion
+      onEmotionToggle(emotionId);
+    } else {
+      // Selecting - check if we need to select parents
+      if (hierarchicalSelection && emotion.parent) {
+        // Get all parent emotions
+        const parents: string[] = [];
+        let currentId: string | undefined = emotion.parent;
+        
+        while (currentId) {
+          if (!selectedEmotions.includes(currentId)) {
+            parents.push(currentId);
+          }
+          const parentEmotion = getEmotionById(currentId);
+          currentId = parentEmotion?.parent;
+        }
+        
+        // Select parents first (in reverse order - from core to specific)
+        parents.reverse().forEach(parentId => {
+          onEmotionToggle(parentId);
+        });
+      }
+      
+      // Then select the clicked emotion
+      onEmotionToggle(emotionId);
+    }
   };
   
   // Responsive sizing
@@ -153,6 +199,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const handleMouseEnter = (e: React.MouseEvent, emotion: Emotion) => {
     const rect = svgRef.current?.getBoundingClientRect();
     if (rect) {
+      currentHoveredEmotionRef.current = emotion;
       setTooltip({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
@@ -162,13 +209,22 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     setHoveredEmotion(emotion.id);
   };
   
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (tooltip && svgRef.current) {
+  const handleMouseMove = (e: React.MouseEvent, emotion: Emotion) => {
+    if (svgRef.current) {
       const rect = svgRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      // Update emotion if it changed
+      if (currentHoveredEmotionRef.current?.id !== emotion.id) {
+        currentHoveredEmotionRef.current = emotion;
+        setHoveredEmotion(emotion.id);
+      }
+      
       setTooltip({
-        ...tooltip,
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        x,
+        y,
+        emotion
       });
     }
   };
@@ -176,14 +232,20 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const handleMouseLeave = () => {
     setTooltip(null);
     setHoveredEmotion(null);
+    currentHoveredEmotionRef.current = null;
   };
   
   // Pan handlers
   const handlePanStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (zoomLevel <= 1) return; // No panning when not zoomed
-    
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    // Record start time and position
+    clickStartTimeRef.current = Date.now();
+    hasDraggedRef.current = false;
+    initialClickPosRef.current = { x: clientX, y: clientY };
+    
+    if (zoomLevel <= 1) return; // No panning when not zoomed
     
     setIsPanning(true);
     setDragStart({ x: clientX, y: clientY });
@@ -194,10 +256,20 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   };
   
   const handlePanMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isPanning) return;
-    
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    // Check if we've moved enough to consider it a drag (5px threshold)
+    const moveDistance = Math.sqrt(
+      Math.pow(clientX - initialClickPosRef.current.x, 2) + 
+      Math.pow(clientY - initialClickPosRef.current.y, 2)
+    );
+    
+    if (moveDistance > 5) {
+      hasDraggedRef.current = true;
+    }
+    
+    if (!isPanning || zoomLevel <= 1) return;
     
     const deltaX = clientX - dragStart.x;
     const deltaY = clientY - dragStart.y;
@@ -212,37 +284,60 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   
   const handlePanEnd = () => {
     setIsPanning(false);
+    
+    // If it was a quick click (less than 200ms) and no drag, allow selection
+    const clickDuration = Date.now() - clickStartTimeRef.current;
+    if (clickDuration < 200 && !hasDraggedRef.current) {
+      hasDraggedRef.current = false;
+    }
   };
   
   // Mouse wheel zoom
-  const handleWheel = (e: React.WheelEvent) => {
+  const handleWheel = useCallback((e: Event) => {
+    const wheelEvent = e as WheelEvent;
     if (!containerRef.current?.contains(e.target as Node)) return;
     
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    wheelEvent.preventDefault();
+    const delta = wheelEvent.deltaY > 0 ? -0.1 : 0.1;
     const newZoom = Math.max(0.8, Math.min(4, zoomLevel + delta));
     
     // Adjust pan offset when zooming to keep centered
     if (newZoom !== zoomLevel) {
       const scale = newZoom / zoomLevel;
-      setPanOffset({
-        x: panOffset.x * scale,
-        y: panOffset.y * scale
-      });
-      setLastPanOffset({
-        x: panOffset.x * scale,
-        y: panOffset.y * scale
-      });
+      setPanOffset(prev => ({
+        x: prev.x * scale,
+        y: prev.y * scale
+      }));
+      setLastPanOffset(prev => ({
+        x: prev.x * scale,
+        y: prev.y * scale
+      }));
     }
     
     setZoomLevel(newZoom);
-  };
+  }, [zoomLevel]);
+  
+  // Add wheel event listener with passive: false
+  useEffect(() => {
+    const element = containerRef.current?.querySelector('.emotion-wheel-zoom');
+    if (!element) return;
+    
+    element.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      element.removeEventListener('wheel', handleWheel);
+    };
+  }, [handleWheel]);
   
   const coreEmotions = getCoreEmotions();
   const coreAngleSize = 360 / coreEmotions.length;
   
   return (
-    <div ref={containerRef} className={`emotion-wheel-container relative ${className}`}>
+    <div 
+      ref={containerRef} 
+      className={`emotion-wheel-container relative ${className}`}
+      data-empty={selectedEmotions.length === 0}
+    >
       {/* Zoom controls - positioned outside the zoomable area */}
       <div className="emotion-wheel-zoom-controls absolute -top-12 right-0 z-20 flex gap-2">
         <button
@@ -297,7 +392,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           height: wheelSize,
           cursor: zoomLevel > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default',
           userSelect: 'none',
-          touchAction: 'none'
+          touchAction: 'none',
+          WebkitUserSelect: 'none',
+          WebkitTouchCallout: 'none'
         }}
         onMouseDown={handlePanStart}
         onMouseMove={handlePanMove}
@@ -306,7 +403,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         onTouchStart={handlePanStart}
         onTouchMove={handlePanMove}
         onTouchEnd={handlePanEnd}
-        onWheel={handleWheel}
       >
         <div
           style={{
@@ -330,6 +426,19 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--color-surface-muted)" strokeWidth="0.5" opacity="0.3"/>
             </pattern>
           </defs>
+          
+          {/* Instructions */}
+          {zoomLevel <= 1.2 && selectedEmotions.length === 0 && (
+            <text
+              x={centerX}
+              y={centerY}
+              textAnchor="middle"
+              className="emotion-wheel-hint fill-accent text-sm font-medium"
+              style={{ userSelect: 'none' }}
+            >
+              Start by selecting a core emotion
+            </text>
+          )}
           
           {/* Pan/Zoom instructions when zoomed */}
           {zoomLevel > 1.2 && (
@@ -360,12 +469,15 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                   stroke="var(--color-background)"
                   strokeWidth="2"
                   opacity={isSelected ? 1 : (isHovered ? 0.9 : 0.8)}
-                  onClick={() => onEmotionToggle(emotion.id)}
+                  onClick={() => handleEmotionSelect(emotion.id)}
                   onMouseEnter={(e) => handleMouseEnter(e, emotion)}
-                  onMouseMove={handleMouseMove}
+                  onMouseMove={(e) => handleMouseMove(e, emotion)}
                   onMouseLeave={handleMouseLeave}
-                  className="emotion-segment transition-all duration-200"
-                  style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
+                  className={`emotion-segment emotion-segment-core transition-all duration-200 ${selectedEmotions.length === 0 ? 'cursor-pointer' : ''}`}
+                  style={{ 
+                    filter: isSelected ? 'brightness(1.1)' : 'none',
+                    strokeWidth: selectedEmotions.length === 0 ? '3' : '2'
+                  }}
                 />
                 <text
                   x={textPos.x}
@@ -403,9 +515,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                     stroke="var(--color-background)"
                     strokeWidth="1.5"
                     opacity={isSelected ? 1 : (isHovered ? 0.85 : 0.7)}
-                    onClick={() => onEmotionToggle(emotion.id)}
+                    onClick={() => handleEmotionSelect(emotion.id)}
                     onMouseEnter={(e) => handleMouseEnter(e, emotion)}
-                    onMouseMove={handleMouseMove}
+                    onMouseMove={(e) => handleMouseMove(e, emotion)}
                     onMouseLeave={handleMouseLeave}
                     className="emotion-segment transition-all duration-200"
                     style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
@@ -455,9 +567,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                       stroke="var(--color-background)"
                       strokeWidth="1"
                       opacity={isSelected ? 1 : (isHovered ? 0.8 : 0.6)}
-                      onClick={() => onEmotionToggle(emotion.id)}
+                      onClick={() => handleEmotionSelect(emotion.id)}
                       onMouseEnter={(e) => handleMouseEnter(e, emotion)}
-                      onMouseMove={handleMouseMove}
+                      onMouseMove={(e) => handleMouseMove(e, emotion)}
                       onMouseLeave={handleMouseLeave}
                       className="emotion-segment transition-all duration-200"
                       style={{ filter: isSelected ? 'brightness(1.1)' : 'none' }}
@@ -487,7 +599,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       </div>
       
       {/* Tooltip */}
-      {tooltip && (() => {
+      {tooltip && tooltip.emotion && (() => {
+        const currentEmotion = tooltip.emotion;
+        
         // Calculate tooltip dimensions (approximate)
         const tooltipWidth = 200; // Approximate width with padding
         const tooltipHeight = 70; // Approximate height with padding
@@ -543,46 +657,140 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             }}
           >
             <div className="flex items-center gap-2">
-              <span className="text-lg">{getEmotionEmoji(tooltip.emotion.id)}</span>
-              <span className="font-medium">{tooltip.emotion.label}</span>
+              <span className="text-lg">{getEmotionEmoji(currentEmotion.id)}</span>
+              <span className="font-medium">{currentEmotion.label}</span>
             </div>
             <div className="text-xs text-muted mt-1">
-              Click to {selectedEmotions.includes(tooltip.emotion.id) ? 'deselect' : 'select'}
+              Click to {selectedEmotions.includes(currentEmotion.id) ? 'deselect' : 'select'}
             </div>
           </div>
         );
       })()}
       
-      {/* Selected emotions display */}
+      {/* Selected emotions display with hierarchy */}
       {selectedEmotions.length > 0 && (
         <div className="mt-4 p-3 bg-surface rounded-lg border border-surface-muted">
           <p className="text-sm font-medium mb-2">Selected emotions:</p>
-          <div className="flex flex-wrap gap-2">
-            {selectedEmotions.map(emotionId => {
-              const emotion = getEmotionById(emotionId);
-              if (!emotion) return null;
-              
-              return (
-                <span
-                  key={emotionId}
-                  className="emotion-pill inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                  style={{ 
-                    backgroundColor: emotion.color + '20',
-                    color: emotion.color,
-                    border: `1px solid ${emotion.color}`
-                  }}
-                >
-                  <span>{getEmotionEmoji(emotionId)}</span>
-                  {emotion.label}
-                  <button
-                    onClick={() => onEmotionToggle(emotionId)}
-                    className="ml-1 hover:opacity-70 transition-opacity"
+          <div className="space-y-2">
+            {/* Group by core emotions */}
+            {getCoreEmotions()
+              .filter(core => selectedEmotions.includes(core.id))
+              .map(coreEmotion => {
+                const selectedSecondary = getSecondaryEmotions(coreEmotion.id)
+                  .filter(e => selectedEmotions.includes(e.id));
+                const selectedTertiary = selectedSecondary.flatMap(sec => 
+                  getTertiaryEmotions(sec.id).filter(e => selectedEmotions.includes(e.id))
+                );
+                
+                return (
+                  <div key={coreEmotion.id} className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Core emotion */}
+                      <span
+                        className="emotion-pill emotion-pill-core inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold"
+                        style={{ 
+                          backgroundColor: coreEmotion.color + '30',
+                          color: coreEmotion.color,
+                          border: `2px solid ${coreEmotion.color}`
+                        }}
+                      >
+                        <span>{getEmotionEmoji(coreEmotion.id)}</span>
+                        {coreEmotion.label}
+                        <button
+                          onClick={() => handleEmotionSelect(coreEmotion.id)}
+                          className="ml-1 hover:opacity-70 transition-opacity"
+                          title="Remove emotion"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                      
+                      {/* Secondary emotions */}
+                      {selectedSecondary.map(emotion => (
+                        <span
+                          key={emotion.id}
+                          className="emotion-pill inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ml-2"
+                          style={{ 
+                            backgroundColor: emotion.color + '20',
+                            color: emotion.color,
+                            border: `1px solid ${emotion.color}`
+                          }}
+                        >
+                          <span className="text-muted">›</span>
+                          <span>{getEmotionEmoji(emotion.id)}</span>
+                          {emotion.label}
+                          <button
+                            onClick={() => handleEmotionSelect(emotion.id)}
+                            className="ml-1 hover:opacity-70 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    
+                    {/* Tertiary emotions */}
+                    {selectedTertiary.length > 0 && (
+                      <div className="flex items-center gap-2 flex-wrap ml-8">
+                        {selectedTertiary.map(emotion => (
+                          <span
+                            key={emotion.id}
+                            className="emotion-pill inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
+                            style={{ 
+                              backgroundColor: emotion.color + '15',
+                              color: emotion.color,
+                              border: `1px solid ${emotion.color}80`
+                            }}
+                          >
+                            <span className="text-muted">››</span>
+                            <span>{getEmotionEmoji(emotion.id)}</span>
+                            {emotion.label}
+                            <button
+                              onClick={() => handleEmotionSelect(emotion.id)}
+                              className="ml-1 hover:opacity-70 transition-opacity"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            
+            {/* Show orphaned emotions (shouldn't happen with hierarchical selection) */}
+            {selectedEmotions
+              .filter(id => {
+                const emotion = getEmotionById(id);
+                return emotion && emotion.level !== 'core' && 
+                  (!emotion.parent || !selectedEmotions.includes(emotion.parent));
+              })
+              .map(emotionId => {
+                const emotion = getEmotionById(emotionId);
+                if (!emotion) return null;
+                return (
+                  <span
+                    key={emotionId}
+                    className="emotion-pill inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs opacity-60"
+                    style={{ 
+                      backgroundColor: emotion.color + '10',
+                      color: emotion.color,
+                      border: `1px dashed ${emotion.color}`
+                    }}
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              );
-            })}
+                    <span>{getEmotionEmoji(emotionId)}</span>
+                    {emotion.label}
+                    <span className="text-xs ml-1">(orphaned)</span>
+                    <button
+                      onClick={() => handleEmotionSelect(emotionId)}
+                      className="ml-1 hover:opacity-70 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                );
+              })}
           </div>
         </div>
       )}

@@ -4,6 +4,7 @@ import EmotionWheel from './EmotionWheel';
 
 const EmotionWheelDemo: React.FC = () => {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
+  const [hierarchicalSelection, setHierarchicalSelection] = useState(true);
   
   const handleEmotionToggle = (emotionId: string) => {
     if (selectedEmotions.includes(emotionId)) {
@@ -33,6 +34,7 @@ const EmotionWheelDemo: React.FC = () => {
               <h3 className="font-medium mb-2 text-accent">🖐️ Pan & Navigation</h3>
               <ul className="space-y-1 text-sm text-muted">
                 <li>• <strong>Drag to pan</strong> when zoomed in</li>
+                <li>• <strong>No accidental selections</strong> when dragging</li>
                 <li>• Works with <strong>mouse and touch</strong></li>
                 <li>• Press <kbd className="px-2 py-1 bg-surface-hover rounded text-xs">ESC</kbd> to reset view</li>
                 <li>• Click outside to reset</li>
@@ -47,14 +49,46 @@ const EmotionWheelDemo: React.FC = () => {
           </div>
         </div>
         
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="hierarchical"
+              checked={hierarchicalSelection}
+              onChange={(e) => setHierarchicalSelection(e.target.checked)}
+              className="rounded border-surface-muted text-accent focus:ring-accent"
+            />
+            <label htmlFor="hierarchical" className="text-sm cursor-pointer">
+              Enable hierarchical selection
+              <span className="text-xs text-muted ml-2">
+                (auto-selects parent emotions)
+              </span>
+            </label>
+          </div>
+          
+          {selectedEmotions.length > 0 && (
+            <button
+              onClick={() => setSelectedEmotions([])}
+              className="text-sm text-muted hover:text-theme transition-colors"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+        
         <EmotionWheel
           selectedEmotions={selectedEmotions}
           onEmotionToggle={handleEmotionToggle}
+          hierarchicalSelection={hierarchicalSelection}
         />
         
         <div className="bg-surface rounded-lg p-4 mt-6">
           <h3 className="font-medium mb-2">Latest Updates:</h3>
           <ul className="space-y-2 text-sm text-muted">
+            <li className="flex items-start gap-2">
+              <span className="text-success">✓</span>
+              <span><strong>Hierarchical Selection:</strong> Selecting a specific emotion auto-selects its parent emotions for logical grouping.</span>
+            </li>
             <li className="flex items-start gap-2">
               <span className="text-success">✓</span>
               <span><strong>Smart Tooltips:</strong> Hover tooltips now stay within screen boundaries - try hovering over emotions near the edges!</span>
@@ -65,7 +99,7 @@ const EmotionWheelDemo: React.FC = () => {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-success">✓</span>
-              <span><strong>Always Visible Controls:</strong> Zoom controls stay accessible even when fully zoomed in.</span>
+              <span><strong>Guided Selection:</strong> Core emotions pulse when empty, encouraging logical emotion selection flow.</span>
             </li>
           </ul>
         </div>
