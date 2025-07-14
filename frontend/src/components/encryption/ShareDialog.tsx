@@ -93,7 +93,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
         try {
           // Get the encrypted key for this item
-          const entryResponse = await apiClient.get(`/journal/entries/${itemId}`);
+          const entryResponse = await apiClient.get(`/journal/${itemId}`);
           const entry = entryResponse.data;
           
           if (!entry.encryptedKey) {
