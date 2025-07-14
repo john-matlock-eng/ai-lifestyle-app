@@ -37,6 +37,7 @@ from delete_journal_entry.handler import lambda_handler as delete_journal_entry_
 from get_journal_stats.handler import lambda_handler as get_journal_stats_handler
 from update_user_profile.handler import lambda_handler as update_user_profile_handler
 from get_user_by_email.handler import lambda_handler as get_user_by_email_handler
+from get_user_by_id.handler import lambda_handler as get_user_by_id_handler
 # Encryption endpoints
 from setup_encryption.handler import lambda_handler as setup_encryption_handler
 from check_encryption.handler import lambda_handler as check_encryption_handler
@@ -107,6 +108,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "POST /auth/refresh": refresh_token_handler,
         "GET /users/profile": get_user_profile_handler,
         "GET /users/by-email/{email}": get_user_by_email_handler,
+        "GET /users/{userId}": get_user_by_id_handler,
         "POST /auth/email/verify": verify_email_handler,
         "POST /auth/mfa/setup": setup_mfa_handler,
         "POST /auth/mfa/verify-setup": verify_mfa_setup_handler,
@@ -236,6 +238,18 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             event['pathParameters']['email'] = email
             if http_method == 'GET':
                 handler = get_user_by_email_handler
+        
+        # Check for user-specific routes with userId parameter
+        elif len(path_parts) == 3 and path_parts[1] == 'users':
+            # /users/{userId}
+            user_id = path_parts[2]
+            # Skip if it's a known static route
+            if user_id not in ['profile', 'by-email']:
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['userId'] = user_id
+                if http_method == 'GET':
+                    handler = get_user_by_id_handler
     
     if handler:
         # Ensure the event has the expected format for handlers

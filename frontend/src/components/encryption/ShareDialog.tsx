@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Shield, X, AlertCircle } from 'lucide-react';
+import { Share2, Shield, X, AlertCircle, Info } from 'lucide-react';
 import { getEncryptionService } from '../../services/encryption';
 import apiClient from '../../api/client';
 
@@ -39,7 +39,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   onShare,
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipientInput, setRecipientInput] = useState('');
   const [permissions, setPermissions] = useState<string[]>(['read']);
   const [expiresIn, setExpiresIn] = useState('24h');
   const [isSharing, setIsSharing] = useState(false);
@@ -57,14 +57,23 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
     return durations[duration] || 24;
   };
 
+  const isValidCognitoId = (input: string): boolean => {
+    // Cognito IDs are typically UUIDs
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(input);
+  };
+
   const handleShare = async () => {
     if (selectedItems.length === 0) {
       setError('Please select at least one item to share');
       return;
     }
 
-    if (!recipientEmail || !recipientEmail.includes('@')) {
-      setError('Please enter a valid email address');
+    const isEmail = recipientInput.includes('@');
+    const isCognitoId = isValidCognitoId(recipientInput);
+
+    if (!recipientInput || (!isEmail && !isCognitoId)) {
+      setError('Please enter a valid email address or User ID');
       return;
     }
 
@@ -75,13 +84,44 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
       const encryptionService = getEncryptionService();
       const tokens: ShareToken[] = [];
 
-      // First, try to find the user by email
+      // Find the user by email or user ID
       let recipientUserId: string;
+      let recipientEmail: string = '';
+      
       try {
-        const userResponse = await apiClient.get(`/users/by-email/${encodeURIComponent(recipientEmail)}`);
-        recipientUserId = userResponse.data.userId;
+        if (isEmail) {
+          // Search by email
+          const userResponse = await apiClient.get(`/users/by-email/${encodeURIComponent(recipientInput)}`);
+          recipientUserId = userResponse.data.userId;
+          recipientEmail = recipientInput;
+        } else {
+          // Search by user ID (Cognito ID)
+          try {
+            const userResponse = await apiClient.get(`/users/${recipientInput}`);
+            recipientUserId = recipientInput;
+            recipientEmail = userResponse.data.email || 'User';
+          } catch (error) {
+            // If the endpoint doesn't exist yet, show a helpful message
+            if (error instanceof Error && 'response' in error) {
+              const axiosError = error as { response?: { status?: number; data?: { error?: string } } };
+              if (axiosError.response?.status === 404 && axiosError.response?.data?.error === 'ROUTE_NOT_FOUND') {
+                setError('User ID lookup is not yet available. Please use an email address instead.');
+              } else {
+                setError('User ID not found. Please check the ID and try again.');
+              }
+            } else {
+              setError('User ID not found. Please check the ID and try again.');
+            }
+            setIsSharing(false);
+            return;
+          }
+        }
       } catch {
-        setError('User not found. Make sure they have an account and have set up encryption.');
+        setError(
+          isEmail 
+            ? 'User not found. Make sure they have an account and have set up encryption.'
+            : 'User ID not found. Please check the ID and try again.'
+        );
         setIsSharing(false);
         return;
       }
@@ -139,7 +179,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
   const resetForm = () => {
     setSelectedItems([]);
-    setRecipientEmail('');
+    setRecipientInput('');
     setPermissions(['read']);
     setExpiresIn('24h');
     setError(null);
@@ -226,12 +266,18 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
               Share with
             </label>
             <input
-              type="email"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
-              placeholder="recipient@example.com"
+              type="text"
+              value={recipientInput}
+              onChange={(e) => setRecipientInput(e.target.value)}
+              placeholder="Email address or User ID"
               className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-md focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
             />
+            <div className="mt-2 flex items-start gap-2 text-xs text-[var(--text-muted)]">
+              <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              <p>
+                Enter the recipient's email address or their User ID. You can find your User ID in the profile dropdown menu.
+              </p>
+            </div>
           </div>
 
           {/* Permissions */}
@@ -313,7 +359,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
           </button>
           <button
             onClick={handleShare}
-            disabled={isSharing || selectedItems.length === 0 || !recipientEmail}
+            disabled={isSharing || selectedItems.length === 0 || !recipientInput}
             className="px-4 py-2 bg-[var(--accent)] text-white rounded-md hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSharing && (

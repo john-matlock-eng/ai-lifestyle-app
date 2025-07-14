@@ -10,6 +10,7 @@ import {
 } from '../components';
 import { useJournalSearch, useJournalSync } from '../hooks';
 import type { SearchFilters } from '../services/JournalStorageService';
+import type { JournalEntry } from '../../../types/journal';
 
 export const JournalPageWithSync: React.FC = () => {
   const navigate = useNavigate();
@@ -27,10 +28,18 @@ export const JournalPageWithSync: React.FC = () => {
   
   // Use local search with the synced data
   const { 
-    results, 
-    isSearching, 
-    uniqueValues 
-  } = useJournalSearch(filters);
+    entries, 
+    total,
+    availableTags,
+    availableMoods,
+    availableTemplates,
+    setFilters: updateFilters
+  } = useJournalSearch();
+  
+  // Update search filters
+  useEffect(() => {
+    updateFilters(filters);
+  }, [filters, updateFilters]);
   
   // Force sync on mount
   useEffect(() => {
@@ -46,7 +55,7 @@ export const JournalPageWithSync: React.FC = () => {
   };
   
   // Show loading state only on initial load
-  if (isSyncing && !results) {
+  if (isSyncing && !entries) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -90,21 +99,27 @@ export const JournalPageWithSync: React.FC = () => {
         <JournalSearchBar
           filters={filters}
           onFiltersChange={setFilters}
-          availableTags={uniqueValues.tags}
-          availableMoods={uniqueValues.moods}
-          availableTemplates={uniqueValues.templates}
+          availableTags={availableTags || []}
+          availableMoods={availableMoods || []}
+          availableTemplates={availableTemplates || []}
         />
         
         {/* Search Results Summary */}
         {(filters.query || Object.keys(filters).length > 1) && (
           <SearchResultsSummary 
-            total={results.total}
-            isSearching={isSearching}
+            total={total}
+            filters={filters}
+            onClearFilter={(key) => {
+              const newFilters = { ...filters };
+              delete newFilters[key as keyof SearchFilters];
+              setFilters(newFilters);
+            }}
+            onClearAll={() => setFilters({})}
           />
         )}
         
         {/* Results */}
-        {results.entries.length === 0 ? (
+        {entries.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted mb-4">
               {filters.query || Object.keys(filters).length > 1
@@ -119,7 +134,7 @@ export const JournalPageWithSync: React.FC = () => {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {results.entries.map(entry => (
+            {entries.map((entry: JournalEntry) => (
               <JournalCard 
                 key={entry.entryId} 
                 entry={entry}

@@ -251,6 +251,9 @@ module "api_gateway" {
     "GET /users/by-email/{email}" = {
       authorization_type = "JWT"
     }
+    "GET /users/{userId}" = {
+      authorization_type = "JWT"
+    }
     "PUT /users/profile" = {
       authorization_type = "JWT"
     }

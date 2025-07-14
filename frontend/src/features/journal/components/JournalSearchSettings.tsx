@@ -62,7 +62,7 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
       setSettings({ ...settings, cacheDecryptedContent: newValue });
       
       // If enabling, offer to rebuild cache
-      if (newValue && cacheStats?.encryptedEntries > 0) {
+      if (newValue && cacheStats?.encryptedEntries && cacheStats.encryptedEntries > 0) {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
       }

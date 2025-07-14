@@ -91,19 +91,6 @@ export const JournalViewPageEnhanced: React.FC = () => {
     refetch(); // Refresh entry data
   };
 
-  // Handle decryption when entry loads
-  React.useEffect(() => {
-    if (!entry) return;
-
-    const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
-    
-    if (isActuallyEncrypted && entry.encryptedKey) {
-      decryptContent();
-    } else {
-      setDecryptedEntry(entry);
-    }
-  }, [entry, decryptContent]);
-
   const decryptContent = React.useCallback(async () => {
     if (!entry) return;
     
@@ -128,6 +115,19 @@ export const JournalViewPageEnhanced: React.FC = () => {
       setIsDecrypting(false);
     }
   }, [entry]);
+
+  // Handle decryption when entry loads
+  React.useEffect(() => {
+    if (!entry) return;
+
+    const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
+    
+    if (isActuallyEncrypted && entry.encryptedKey) {
+      decryptContent();
+    } else {
+      setDecryptedEntry(entry);
+    }
+  }, [entry, decryptContent]);
 
   const getMoodDisplay = (mood?: string) => {
     if (!mood) return null;

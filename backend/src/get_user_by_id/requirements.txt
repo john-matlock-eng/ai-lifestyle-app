@@ -1,0 +1,13 @@
+# Core dependencies
+boto3>=1.26.0
+botocore>=1.29.0
+
+# AWS Lambda Powertools
+aws-lambda-powertools>=2.25.0
+
+# JWT handling
+PyJWT>=2.8.0
+cryptography>=41.0.0
+
+# Pydantic for data validation
+pydantic>=2.4.0

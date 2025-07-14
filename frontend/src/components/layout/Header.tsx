@@ -13,6 +13,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -34,6 +35,18 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
 
   const isActive = (path: string) => {
     return location.pathname.startsWith(path);
+  };
+
+  const copyUserId = async () => {
+    if (user?.userId) {
+      try {
+        await navigator.clipboard.writeText(user.userId);
+        setCopiedId(true);
+        setTimeout(() => setCopiedId(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy user ID:', err);
+      }
+    }
   };
 
   return (
@@ -136,12 +149,40 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
 
               {/* Dropdown Menu */}
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg bg-surface border border-surface-muted z-50 glass">
+                <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-surface border border-surface-muted z-50 glass">
                   <div className="py-1" role="menu" aria-orientation="vertical">
-                    <div className="px-4 py-2 text-sm text-text-secondary border-b border-surface-muted">
-                      <div className="font-medium">{user?.firstName} {user?.lastName}</div>
-                      <div className="text-text-muted">{user?.email}</div>
+                    <div className="px-4 py-3 border-b border-surface-muted">
+                      <div className="font-medium text-text">{user?.firstName} {user?.lastName}</div>
+                      <div className="text-sm text-text-muted mt-1">{user?.email}</div>
+                      
+                      {/* User ID with Copy Button */}
+                      {user?.userId && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-text-muted">User ID</p>
+                            <p className="text-xs font-mono text-text-secondary truncate">
+                              {user.userId}
+                            </p>
+                          </div>
+                          <button
+                            onClick={copyUserId}
+                            className="p-1 hover:bg-button-hover-bg rounded transition-colors"
+                            title="Copy User ID"
+                          >
+                            {copiedId ? (
+                              <svg className="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      )}
                     </div>
+                    
                     <Link
                       to="/profile"
                       className="block px-4 py-2 text-sm text-text-secondary hover:bg-button-hover-bg hover:text-accent transition-colors"

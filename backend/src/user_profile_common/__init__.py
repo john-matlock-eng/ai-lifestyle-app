@@ -13,6 +13,7 @@ from .models import (
     ErrorResponse,
     UpdateUserProfileRequest
 )
+from .public_info import UserPublicInfo
 
 __all__ = [
     "UserProfile",
@@ -23,5 +24,6 @@ __all__ = [
     "FitnessGoal",
     "DynamoDBUser",
     "ErrorResponse",
-    "UpdateUserProfileRequest"
+    "UpdateUserProfileRequest",
+    "UserPublicInfo"
 ]
