@@ -1,6 +1,7 @@
 // Search Components
 export { JournalSearchBar } from './JournalSearchBar';
 export { SearchResultsSummary } from './SearchResultsSummary';
+export { JournalSearchSettings } from './JournalSearchSettings';
 
 // Journal Display Components
 export { default as JournalCard } from './JournalCard';

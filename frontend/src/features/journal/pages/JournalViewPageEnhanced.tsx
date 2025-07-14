@@ -19,7 +19,6 @@ import {
   X
 } from 'lucide-react';
 import { format } from 'date-fns';
-import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/common';
 import { getEntry, deleteEntry } from '@/api/journal';
 import { journalStorage } from '../services/JournalStorageService';
@@ -28,7 +27,11 @@ import ShareDialog from '@/components/encryption/ShareDialog';
 import ShareManagement from '@/components/encryption/ShareManagement';
 import AIShareDialog from '@/components/encryption/AIShareDialog';
 import { JournalActions } from '../components/JournalActions';
+import { JournalEntryRenderer } from '../components/JournalEntryRenderer';
 import { useEncryption } from '@/contexts/useEncryption';
+import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
+import { getEncryptionService } from '@/services/encryption';
+import { getEmotionById, getEmotionEmoji } from '../components/EmotionSelector/emotionData';
 
 export const JournalViewPageEnhanced: React.FC = () => {
   const { entryId } = useParams<{ entryId: string }>();
@@ -39,6 +42,8 @@ export const JournalViewPageEnhanced: React.FC = () => {
   const [showShareManagement, setShowShareManagement] = useState(false);
   const [showAIShareDialog, setShowAIShareDialog] = useState(false);
   const [shareSuccessMessage, setShareSuccessMessage] = useState<string | null>(null);
+  const [decryptedEntry, setDecryptedEntry] = useState<typeof entry | null>(null);
+  const [isDecrypting, setIsDecrypting] = useState(false);
 
   // Fetch entry
   const { data: entry, isLoading, error, refetch } = useQuery({
@@ -86,26 +91,76 @@ export const JournalViewPageEnhanced: React.FC = () => {
     refetch(); // Refresh entry data
   };
 
-  const getMoodEmoji = (mood?: string) => {
-    const moodMap: Record<string, string> = {
-      amazing: '🤩',
-      good: '😊',
-      okay: '😐',
-      stressed: '😰',
-      sad: '😢',
-      joyful: '😊',
-      content: '😌',
-      anxious: '😰',
-      angry: '😠',
-      tired: '😴',
-      inspired: '✨',
-      relaxed: '😌',
-      energized: '⚡',
-      thoughtful: '🤔',
-      emotional: '💭',
-      grateful: '🙏'
+  // Handle decryption when entry loads
+  React.useEffect(() => {
+    if (!entry) return;
+
+    const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
+    
+    if (isActuallyEncrypted && entry.encryptedKey) {
+      decryptContent();
+    } else {
+      setDecryptedEntry(entry);
+    }
+  }, [entry, decryptContent]);
+
+  const decryptContent = React.useCallback(async () => {
+    if (!entry) return;
+    
+    try {
+      setIsDecrypting(true);
+      const encryptionService = getEncryptionService();
+      const decrypted = await encryptionService.decryptContent({
+        content: entry.content,
+        encryptedKey: entry.encryptedKey!,
+        iv: entry.encryptionIv!,
+      });
+      
+      // Create a decrypted version of the entry
+      setDecryptedEntry({
+        ...entry,
+        content: decrypted
+      });
+    } catch (error) {
+      console.error('Failed to decrypt content:', error);
+      setDecryptedEntry(null);
+    } finally {
+      setIsDecrypting(false);
+    }
+  }, [entry]);
+
+  const getMoodDisplay = (mood?: string) => {
+    if (!mood) return null;
+    
+    const emotion = getEmotionById(mood);
+    if (emotion) {
+      return {
+        emoji: getEmotionEmoji(mood),
+        label: emotion.label
+      };
+    }
+    
+    // Fallback for old mood values
+    const legacyMoodMap: Record<string, { emoji: string; label: string }> = {
+      amazing: { emoji: '🤩', label: 'Amazing' },
+      good: { emoji: '😊', label: 'Good' },
+      okay: { emoji: '😐', label: 'Okay' },
+      stressed: { emoji: '😰', label: 'Stressed' },
+      sad: { emoji: '😢', label: 'Sad' },
+      joyful: { emoji: '😊', label: 'Joyful' },
+      content: { emoji: '😌', label: 'Content' },
+      anxious: { emoji: '😰', label: 'Anxious' },
+      angry: { emoji: '😠', label: 'Angry' },
+      tired: { emoji: '😴', label: 'Tired' },
+      inspired: { emoji: '✨', label: 'Inspired' },
+      relaxed: { emoji: '😌', label: 'Relaxed' },
+      energized: { emoji: '⚡', label: 'Energized' },
+      thoughtful: { emoji: '🤔', label: 'Thoughtful' },
+      emotional: { emoji: '💭', label: 'Emotional' },
+      grateful: { emoji: '🙏', label: 'Grateful' }
     };
-    return moodMap[mood || ''] || '😐';
+    
+    return legacyMoodMap[mood] || { emoji: '💭', label: mood };
   };
 
   if (isLoading) {
@@ -222,12 +277,15 @@ export const JournalViewPageEnhanced: React.FC = () => {
                   <span className="text-sm font-medium">{getTemplateName(entry.template)}</span>
                 </div>
                 
-                {entry.mood && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-surface-muted rounded-full">
-                    <span className="text-lg">{getMoodEmoji(entry.mood)}</span>
-                    <span className="text-sm font-medium capitalize">{entry.mood}</span>
-                  </div>
-                )}
+                {(() => {
+                  const moodDisplay = getMoodDisplay(entry.mood);
+                  return moodDisplay ? (
+                    <div className="flex items-center gap-2 px-3 py-1 bg-surface-muted rounded-full">
+                      <span className="text-lg">{moodDisplay.emoji}</span>
+                      <span className="text-sm font-medium">{moodDisplay.label}</span>
+                    </div>
+                  ) : null;
+                })()}
               </div>
             </div>
             
@@ -256,17 +314,24 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
         {/* Content */}
         <div className="glass rounded-2xl p-8 mb-6">
-          {entry.isEncrypted ? (
+          {isDecrypting ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+              <p className="text-muted">Decrypting content...</p>
+            </div>
+          ) : decryptedEntry ? (
+            <JournalEntryRenderer entry={decryptedEntry} showMetadata={false} />
+          ) : entry?.isEncrypted ? (
             <div className="text-center py-12">
               <Lock className="w-12 h-12 text-muted mx-auto mb-4" />
               <p className="text-muted">This entry is encrypted</p>
               <p className="text-sm text-muted mt-2">
-                Decrypt it in the editor to view the content
+                Content could not be decrypted
               </p>
             </div>
           ) : (
-            <div className="prose prose-lg max-w-none dark:prose-invert">
-              <ReactMarkdown>{entry.content}</ReactMarkdown>
+            <div className="text-center py-12">
+              <p className="text-muted">No content available</p>
             </div>
           )}
         </div>

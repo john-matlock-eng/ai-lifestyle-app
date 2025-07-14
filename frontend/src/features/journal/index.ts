@@ -6,6 +6,7 @@ export * from './hooks';
 
 // Re-export services
 export { journalStorage } from './services/JournalStorageService';
+export type { SearchFilters, SearchResult, JournalSettings } from './services/JournalStorageService';
 
 // Re-export templates
 export { enhancedTemplates } from './templates/enhanced-templates';
