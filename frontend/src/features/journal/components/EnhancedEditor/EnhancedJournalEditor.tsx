@@ -1,4 +1,4 @@
-// EnhancedJournalEditor.tsx
+// EnhancedJournalEditor.tsx - Fixed version
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Save,
@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/common';
 import { useGoals } from '@/features/goals/hooks/useGoals';
 import type { Goal } from '@/features/goals/types/api.types';
-import { journalStorage } from '../../services/JournalStorageService';
+// import { journalStorage } from '../../services/JournalStorageService';
 import type { 
   JournalEntry,
   CreateJournalEntryRequest,
@@ -29,6 +29,7 @@ import { enhancedJournalContentUtils } from '../../templates/enhanced-template-c
 import { enhancedTemplates } from '../../templates/enhanced-templates';
 import SectionEditor from './SectionEditor';
 import { getEncryptionService } from '@/services/encryption';
+import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
 
 export interface EnhancedJournalEditorProps {
   templateId?: JournalTemplateEnum;
@@ -49,8 +50,8 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
   autoSave = true,
   showEncryption = true,
 }) => {
-  // Get template configuration
-  const template = enhancedTemplates[templateId] || enhancedTemplates.blank;
+  // Get template configuration - use entry's template if editing
+  const template = enhancedTemplates[entry?.template || templateId] || enhancedTemplates.blank;
   
   // State
   const [title, setTitle] = useState(entry?.title || '');
@@ -62,6 +63,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
   const [showSuccess, setShowSuccess] = useState(false);
   const [startTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [isLoadingEntry, setIsLoadingEntry] = useState(false);
   
   // Draft key for this specific entry/template
   const draftKey = `${DRAFT_KEY_PREFIX}${entry?.entryId || templateId}-${Date.now()}`;
@@ -97,19 +99,54 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
 
   // Initialize sections from template or existing entry
   useEffect(() => {
-    if (entry?.content && !entry.isEncrypted) {
-      // Parse existing content back to sections
-      const parsedSections = enhancedJournalContentUtils.contentToSections(template, entry.content);
-      setSections(parsedSections);
-    } else if (!entry) {
-      // Initialize empty sections from template
-      const initialSections: SectionResponse[] = template.sections.map(section => ({
-        sectionId: section.id,
-        value: getDefaultValue(section.type),
-        metadata: {}
-      }));
-      setSections(initialSections);
-    }
+    const initializeSections = async () => {
+      if (entry) {
+        setIsLoadingEntry(true);
+        try {
+          let contentToParse = entry.content;
+          
+          // Handle encrypted entries
+          if (shouldTreatAsEncrypted(entry) && entry.encryptedKey) {
+            try {
+              const encryptionService = getEncryptionService();
+              const decrypted = await encryptionService.decryptContent({
+                content: entry.content,
+                encryptedKey: entry.encryptedKey,
+                iv: entry.encryptionIv!,
+              });
+              contentToParse = decrypted;
+            } catch (error) {
+              console.error('Failed to decrypt content for editing:', error);
+              // Initialize with empty sections if decryption fails
+              const initialSections: SectionResponse[] = template.sections.map(section => ({
+                sectionId: section.id,
+                value: getDefaultValue(section.type),
+                metadata: {}
+              }));
+              setSections(initialSections);
+              setIsLoadingEntry(false);
+              return;
+            }
+          }
+          
+          // Parse content back to sections
+          const parsedSections = enhancedJournalContentUtils.contentToSections(template, contentToParse);
+          setSections(parsedSections);
+        } finally {
+          setIsLoadingEntry(false);
+        }
+      } else {
+        // Initialize empty sections for new entry
+        const initialSections: SectionResponse[] = template.sections.map(section => ({
+          sectionId: section.id,
+          value: getDefaultValue(section.type),
+          metadata: {}
+        }));
+        setSections(initialSections);
+      }
+    };
+    
+    initializeSections();
   }, [entry, template, getDefaultValue]);
   
   // Timer effect
@@ -122,10 +159,10 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
   
   // Auto-save to localStorage
   useEffect(() => {
-    if (!autoSave) return;
+    if (!autoSave || isLoadingEntry) return;
     
     const draft: JournalDraft = {
-      template: templateId,
+      template: entry?.template || templateId,
       title,
       sections,
       metadata: {
@@ -143,7 +180,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
         localStorage.removeItem(draftKey);
       }
     };
-  }, [title, sections, tags, autoSave, draftKey, showSuccess, templateId, startTime, calculateTotalWordCount]);
+  }, [title, sections, tags, autoSave, draftKey, showSuccess, templateId, entry?.template, startTime, calculateTotalWordCount, isLoadingEntry]);
   
   function extractMetadata() {
     const metadata: {
@@ -244,7 +281,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       const request: CreateJournalEntryRequest | UpdateJournalEntryRequest = {
         title,
         content: finalContent,
-        template: templateId,
+        template: entry?.template || templateId,
         wordCount,
         tags: metadata.tags,
         mood: metadata.mood,
@@ -255,30 +292,6 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       };
       
       await onSave(request);
-      
-      // Update local storage if this is a new entry
-      if (!entry) {
-        const newEntry: JournalEntry = {
-          entryId: `temp-${Date.now()}`, // Temporary ID, will be replaced by server
-          userId: 'current-user', // Will be set by server
-          title,
-          content: finalContent,
-          template: templateId,
-          wordCount,
-          tags: metadata.tags,
-          mood: metadata.mood,
-          linkedGoalIds,
-          goalProgress: metadata.goalProgress,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          isEncrypted,
-          isShared: false,
-          sharedWith: [],
-          ...encryptionData
-        };
-        
-        await journalStorage.saveEntry(newEntry);
-      }
       
       // Clean up draft
       localStorage.removeItem(draftKey);
@@ -321,6 +334,17 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
   
   const progress = Math.round((completedSections / template.sections.length) * 100);
   
+  if (isLoadingEntry) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
+          <p className="text-muted mt-4">Loading journal entry...</p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="enhanced-journal-editor max-w-4xl mx-auto">
       {/* Header */}
@@ -337,7 +361,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
             <div className="flex items-center gap-4 mt-2 text-sm text-muted">
               <span className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                {new Date().toLocaleDateString()}
+                {entry ? new Date(entry.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}
               </span>
               <span className="flex items-center gap-1">
                 <Timer className="w-4 h-4" />
@@ -466,16 +490,19 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       
       {/* Template Sections */}
       <div className="space-y-4 mb-6">
-        {template.sections.map((section, index) => (
-          <SectionEditor
-            key={section.id}
-            section={section}
-            value={sections[index]?.value || getDefaultValue(section.type)}
-            onChange={(value) => handleSectionChange(section.id, value)}
-            isCompleted={completedSections > index}
-            availableGoals={availableGoals}
-          />
-        ))}
+        {template.sections.map((section, index) => {
+          const sectionData = sections.find(s => s.sectionId === section.id);
+          return (
+            <SectionEditor
+              key={section.id}
+              section={section}
+              value={sectionData?.value || getDefaultValue(section.type)}
+              onChange={(value) => handleSectionChange(section.id, value)}
+              isCompleted={completedSections > index}
+              availableGoals={availableGoals}
+            />
+          );
+        })}
       </div>
       
       {/* Action buttons */}
@@ -501,7 +528,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Save Entry
+              {entry ? 'Update' : 'Save'} Entry
             </>
           )}
         </Button>

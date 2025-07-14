@@ -1,3 +1,4 @@
+// JournalEntryDetail.tsx - Updated version
 import React, { useState, useEffect } from 'react';
 import { 
   Share2, 
@@ -22,6 +23,7 @@ import type { JournalEntry } from '@/types/journal';
 import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
 import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
 import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
+import { JournalEntryRenderer } from './JournalEntryRenderer';
 
 interface JournalEntryDetailProps {
   entry: JournalEntry;
@@ -40,7 +42,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   const [showAIShareDialog, setShowAIShareDialog] = useState(false);
   const [showShareManagement, setShowShareManagement] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
+  const [decryptedEntry, setDecryptedEntry] = useState<JournalEntry | null>(null);
   const [isDecrypting, setIsDecrypting] = useState(false);
   
   const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
@@ -48,6 +50,8 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   useEffect(() => {
     if (isActuallyEncrypted && entry.encryptedKey) {
       decryptContent();
+    } else {
+      setDecryptedEntry(entry);
     }
   }, [entry]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -60,9 +64,15 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
         encryptedKey: entry.encryptedKey!,
         iv: entry.encryptionIv!,
       });
-      setDecryptedContent(decrypted);
+      
+      // Create a decrypted version of the entry
+      setDecryptedEntry({
+        ...entry,
+        content: decrypted
+      });
     } catch (error) {
       console.error('Failed to decrypt content:', error);
+      setDecryptedEntry(null);
     } finally {
       setIsDecrypting(false);
     }
@@ -100,7 +110,6 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     return legacyMoodMap[mood] || { emoji: '💭', label: mood };
   };
 
-  const displayContent = isActuallyEncrypted ? decryptedContent : entry.content;
   const moodDisplay = getMoodDisplay(entry.mood);
 
   return (
@@ -241,7 +250,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
         </div>
       </div>
 
-      {/* Tags */}
+      {/* Tags - shown at top level, not in renderer */}
       {entry.tags.length > 0 && (
         <div className="flex items-center gap-2 mb-6">
           {entry.tags.map(tag => (
@@ -253,14 +262,14 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
         </div>
       )}
 
-      {/* Content */}
-      <div className="prose prose-lg max-w-none mb-8">
+      {/* Content - Use template renderer */}
+      <div className="mb-8">
         {isDecrypting ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
-        ) : displayContent ? (
-          <div dangerouslySetInnerHTML={{ __html: displayContent }} />
+        ) : decryptedEntry ? (
+          <JournalEntryRenderer entry={decryptedEntry} showMetadata={false} />
         ) : (
           <p className="text-muted italic">Content could not be decrypted</p>
         )}
