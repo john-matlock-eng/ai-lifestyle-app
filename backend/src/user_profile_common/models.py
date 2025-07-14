@@ -66,20 +66,7 @@ class UserPreferences(BaseModel):
     )
 
 
-class UserPublicInfo(BaseModel):
-    """Public user information model (for sharing features)."""
-    userId: str = Field(
-        ...,
-        description="Unique user identifier",
-        pattern=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-
-
-class UserPublicInfo(BaseModel):
-    """Public user information model (for sharing features)."""
-    userId: str = Field(
-        ...,
-        description="Unique user identifier",
-        pattern=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+class UserProfileResponse(BaseModel):
     """User profile response model."""
     userId: str = Field(
         ...,

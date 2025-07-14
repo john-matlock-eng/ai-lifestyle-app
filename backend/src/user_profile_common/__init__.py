@@ -4,6 +4,7 @@ Common user profile module.
 
 from .models import (
     UserProfile,
+    UserProfileResponse,
     UserPreferences,
     NotificationPreferences,
     MeasurementUnit,
@@ -17,6 +18,7 @@ from .public_info import UserPublicInfo
 
 __all__ = [
     "UserProfile",
+    "UserProfileResponse",
     "UserPreferences",
     "NotificationPreferences",
     "MeasurementUnit",
