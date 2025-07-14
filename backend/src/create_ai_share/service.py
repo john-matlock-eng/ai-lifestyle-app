@@ -70,8 +70,8 @@ class CreateAIShareService:
             
             # Create share record
             share_item = {
-                'PK': f'SHARE#{share_id}',
-                'SK': 'METADATA',
+                'pk': f'SHARE#{share_id}',
+                'sk': 'METADATA',
                 'shareId': share_id,
                 'analysisRequestId': analysis_request_id,
                 'ownerId': owner_id,
@@ -84,8 +84,8 @@ class CreateAIShareService:
                 'createdAt': datetime.now(timezone.utc).isoformat(),
                 'expiresAt': expires_at.isoformat(),
                 'status': 'pending',  # Will be updated to 'analyzed' when complete
-                'GSI1PK': f'USER#{owner_id}',
-                'GSI1SK': f'AI_SHARE#{share_id}'
+                'gsi1_pk': f'USER#{owner_id}',
+                'gsi1_sk': f'AI_SHARE#{share_id}'
             }
             
             batch_items.append({
@@ -96,8 +96,8 @@ class CreateAIShareService:
         
         # Create analysis request record
         analysis_item = {
-            'PK': f'AI_ANALYSIS#{analysis_request_id}',
-            'SK': 'REQUEST',
+            'pk': f'AI_ANALYSIS#{analysis_request_id}',
+            'sk': 'REQUEST',
             'analysisRequestId': analysis_request_id,
             'ownerId': owner_id,
             'itemType': item_type,
@@ -164,15 +164,15 @@ class CreateAIShareService:
                 if item_type == 'journal':
                     response = self.table.get_item(
                         Key={
-                            'PK': f'USER#{owner_id}',
-                            'SK': f'JOURNAL#{item_id}'
+                            'pk': f'USER#{owner_id}',
+                            'sk': f'JOURNAL#{item_id}'
                         }
                     )
                 elif item_type == 'goal':
                     response = self.table.get_item(
                         Key={
-                            'PK': f'USER#{owner_id}',
-                            'SK': f'GOAL#{item_id}'
+                            'pk': f'USER#{owner_id}',
+                            'sk': f'GOAL#{item_id}'
                         }
                     )
                 else:

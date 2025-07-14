@@ -1,5 +1,5 @@
-"""
-Lambda handler for creating encrypted shares.
+""" 
+Lambda handler for creating shares (encrypted and non-encrypted).
 """
 
 import json
@@ -23,7 +23,7 @@ class CreateShareRequest(BaseModel):
     item_type: str = Field(alias="itemType", description="Type of item being shared (journal, goal, etc)")
     item_id: str = Field(alias="itemId", description="ID of the item being shared")
     recipient_id: str = Field(alias="recipientId", description="User ID of the recipient")
-    encrypted_key: str = Field(alias="encryptedKey", description="Re-encrypted content key for recipient")
+    encrypted_key: Optional[str] = Field(alias="encryptedKey", default=None, description="Re-encrypted content key for recipient (required for encrypted items)")
     permissions: List[str] = Field(default=["read"], description="List of permissions")
     expires_in_hours: Optional[int] = Field(alias="expiresInHours", default=24, description="Hours until share expires")
     
@@ -138,7 +138,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 body={
                     'shareId': share_data['shareId'],
                     'expiresAt': share_data['expiresAt'],
-                    'createdAt': share_data['createdAt']
+                    'createdAt': share_data['createdAt'],
+                    'isEncrypted': share_data['isEncrypted']
                 },
                 request_id=request_id
             )
