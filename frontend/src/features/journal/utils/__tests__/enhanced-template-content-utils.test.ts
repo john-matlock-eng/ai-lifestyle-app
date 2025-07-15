@@ -178,7 +178,8 @@ describe('enhancedJournalContentUtils', () => {
       const content = enhancedJournalContentUtils.sectionsToContent(mockTemplate, sections);
       
       expect(content).toContain('<!--SECTION:text-section:text:');
-      expect(content).toContain('<div class="section-content"></div>');
+      // Version 2.0 doesn't use div wrapper for empty content
+      expect(content).toContain('<h3>Main Content</h3>\n\n<!--/SECTION-->');
     });
   });
 
