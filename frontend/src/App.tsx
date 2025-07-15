@@ -34,6 +34,7 @@ import {
   JournalViewPageEnhanced 
 } from './features/journal/pages';
 import SharedJournalsPage from './pages/journal/SharedJournalsPage';
+import JournalDebugPage from './pages/journal/JournalDebugPage';
 
 // Components
 import DevTools from './components/common/DevTools';
@@ -102,6 +103,7 @@ function App() {
               <Route path="/journal" element={<JournalPageEnhanced />} />
               <Route path="/journal/new" element={<JournalEditPageEnhanced />} />
               <Route path="/journal/shared" element={<SharedJournalsPage />} />
+              <Route path="/journal/debug" element={<JournalDebugPage />} />
               <Route path="/journal/:entryId" element={<JournalViewPageEnhanced />} />
               <Route path="/journal/:entryId/edit" element={<JournalEditPageEnhanced />} />
             </Route>

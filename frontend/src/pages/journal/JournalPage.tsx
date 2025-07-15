@@ -11,11 +11,13 @@ import { useJournalSearch } from '../../features/journal/hooks/useJournalSearch'
 import { JournalSearchBar } from '../../features/journal/components/JournalSearchBar';
 import { SearchResultsSummary } from '../../features/journal/components/SearchResultsSummary';
 import { shouldTreatAsEncrypted, getSafeExcerpt } from '../../utils/encryption-utils';
+import { JournalParsingDebug } from '../../features/journal/components/Debug/JournalParsingDebug';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
   const { isEncryptionEnabled, isEncryptionSetup } = useEncryption();
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
 
   // Check if it's the user's first visit to journal page
   useEffect(() => {
@@ -267,10 +269,29 @@ const JournalPage: React.FC = () => {
             <h1 className="text-3xl font-bold text-theme">My Journal</h1>
             <p className="text-muted mt-1">Track your thoughts, progress, and reflections</p>
           </div>
-          <Button onClick={handleCreateNew} leftIcon={<Plus className="h-4 w-4" />} size="lg">
-            New Entry
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleCreateNew} leftIcon={<Plus className="h-4 w-4" />} size="lg">
+              New Entry
+            </Button>
+            {/* Debug button - only show in development */}
+            {process.env.NODE_ENV === 'development' && (
+              <Button 
+                onClick={() => setShowDebug(!showDebug)} 
+                variant="outline"
+                size="lg"
+              >
+                {showDebug ? 'Hide' : 'Show'} Debug
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Debug Component */}
+        {showDebug && (
+          <div className="mb-8">
+            <JournalParsingDebug />
+          </div>
+        )}
 
         {/* Stats */}
         {renderStats()}
