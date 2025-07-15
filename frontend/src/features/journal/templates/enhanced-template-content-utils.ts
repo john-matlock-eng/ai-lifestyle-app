@@ -27,7 +27,7 @@ console.log('[ContentUtils v2] This version saves text content WITHOUT <div clas
 
 // Global version check function for debugging
 if (typeof window !== 'undefined') {
-  (window as any).checkJournalVersion = () => {
+  (window as unknown as { checkJournalVersion: () => void }).checkJournalVersion = () => {
     console.log('\n=== JOURNAL SYSTEM VERSION CHECK ===');
     console.log('ContentUtils Version: 2.0 (No div wrapper)');
     console.log('Expected save format: <h3>Title</h3>\\nContent');
