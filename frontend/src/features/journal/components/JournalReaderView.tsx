@@ -23,24 +23,7 @@ import { Button } from '@/components/common';
 import { JournalEntryRenderer } from './JournalEntryRenderer';
 import { getTemplateIcon } from '../templates/template-utils';
 import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
-import { JournalTemplate } from '@/types/journal';
-
-interface GoalProgress {
-  completed: boolean;
-  notes?: string;
-  progressValue?: string;
-}
-
-interface JournalEntry {
-  title: string;
-  content: string;
-  template?: string;
-  createdAt: string;
-  wordCount: number;
-  tags: string[];
-  mood?: string;
-  goalProgress?: GoalProgress[];
-}
+import { JournalEntry } from '@/types/journal';
 
 interface JournalReaderViewProps {
   entry: JournalEntry;
@@ -249,7 +232,7 @@ export const JournalReaderView: React.FC<JournalReaderViewProps> = ({
               </Button>
               
               <div className="flex items-center gap-2">
-                <span className="text-lg">{entry.template ? getTemplateIcon(entry.template as JournalTemplate) : '📝'}</span>
+                <span className="text-lg">{getTemplateIcon(entry.template)}</span>
                 <h1 className="text-xl font-semibold truncate max-w-md">{entry.title}</h1>
               </div>
             </div>
@@ -422,6 +405,7 @@ export const JournalReaderView: React.FC<JournalReaderViewProps> = ({
           >
             <JournalEntryRenderer 
               entry={entry} 
+              showMetadata={false}
               className={`${
                 readingMode === 'sepia' ? 'text-[#5c4b37]' : ''
               }`}
@@ -440,7 +424,7 @@ export const JournalReaderView: React.FC<JournalReaderViewProps> = ({
                 Goal Progress
               </h2>
               <div className="space-y-4">
-                {entry.goalProgress.map((progress: GoalProgress, index: number) => (
+                {entry.goalProgress.map((progress, index) => (
                   <div key={index} className={`p-4 rounded ${
                     readingMode === 'dark' ? 'bg-gray-700' : 
                     readingMode === 'sepia' ? 'bg-[#ddd0b8]' : 
@@ -458,7 +442,7 @@ export const JournalReaderView: React.FC<JournalReaderViewProps> = ({
                           <p className="text-sm opacity-70 mt-1">{progress.notes}</p>
                         )}
                       </div>
-                      {progress.progressValue && (
+                      {progress.progressValue !== undefined && (
                         <div className="text-right">
                           <p className="text-2xl font-bold">{progress.progressValue}</p>
                           <p className="text-xs opacity-60">Progress</p>
