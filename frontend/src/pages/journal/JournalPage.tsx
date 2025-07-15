@@ -12,7 +12,7 @@ import { JournalSearchBar } from '../../features/journal/components/JournalSearc
 import { SearchResultsSummary } from '../../features/journal/components/SearchResultsSummary';
 import { shouldTreatAsEncrypted, getSafeExcerpt } from '../../utils/encryption-utils';
 import { JournalParsingDebug } from '../../features/journal/components/Debug/JournalParsingDebug';
-import { useFeatureFlag } from '../../hooks/useFeatureFlags';
+import { useFeatureFlag, useFeatureFlags } from '../../hooks/useFeatureFlags';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +20,7 @@ const JournalPage: React.FC = () => {
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const debugPanelsEnabled = useFeatureFlag('debugPanels');
+  const { flags, isLoading: flagsLoading, error: flagsError } = useFeatureFlags();
 
   // Check if it's the user's first visit to journal page
   useEffect(() => {
@@ -265,6 +266,19 @@ const JournalPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Feature Flags Debug Info (temporary) */}
+        {(flagsError || flagsLoading) && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+            <p className="text-sm">
+              Feature Flags Status: {flagsLoading ? 'Loading...' : 'Error loading flags'}
+              {flagsError && <span className="text-red-600 ml-2">{flagsError.message}</span>}
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              Flags: {JSON.stringify(flags)} | debugPanelsEnabled: {String(debugPanelsEnabled)}
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -275,8 +289,8 @@ const JournalPage: React.FC = () => {
             <Button onClick={handleCreateNew} leftIcon={<Plus className="h-4 w-4" />} size="lg">
               New Entry
             </Button>
-            {/* Debug button - controlled by feature flag */}
-            {debugPanelsEnabled && (
+            {/* Debug button - controlled by feature flag or dev environment */}
+            {(debugPanelsEnabled || window.location.hostname.includes('cloudfront.net') || window.location.hostname === 'localhost') && (
               <Button 
                 onClick={() => setShowDebug(!showDebug)} 
                 variant="outline"
