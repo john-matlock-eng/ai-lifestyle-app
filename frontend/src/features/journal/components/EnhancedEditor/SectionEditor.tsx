@@ -331,22 +331,28 @@ const ChecklistInput: React.FC<{
 
   return (
     <div className="space-y-2">
-      {items.map(item => (
-        <label
-          key={item.id}
-          className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-muted cursor-pointer"
-        >
-          <input
-            type="checkbox"
-            checked={value[item.id] || false}
-            onChange={(e) => onChange({ ...value, [item.id]: e.target.checked })}
-            className="w-4 h-4 rounded border-surface-muted text-accent focus:ring-accent"
-          />
-          <span className={value[item.id] ? 'line-through text-muted' : ''}>
-            {item.label}
-          </span>
-        </label>
-      ))}
+      {items.map(item => {
+        // Support both { id, label } and { label } formats
+        const itemKey = item.id || item.label;
+        const itemLabel = item.label;
+        
+        return (
+          <label
+            key={itemKey}
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-muted cursor-pointer"
+          >
+            <input
+              type="checkbox"
+              checked={value[itemLabel] || false}
+              onChange={(e) => onChange({ ...value, [itemLabel]: e.target.checked })}
+              className="w-4 h-4 rounded border-surface-muted text-accent focus:ring-accent"
+            />
+            <span className={value[itemLabel] ? 'line-through text-muted' : ''}>
+              {itemLabel}
+            </span>
+          </label>
+        );
+      })}
     </div>
   );
 };

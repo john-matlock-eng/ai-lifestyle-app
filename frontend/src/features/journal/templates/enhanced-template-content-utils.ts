@@ -14,7 +14,7 @@ const SECTION_START_MARKER = '<!--SECTION:';
 const SECTION_END_MARKER = '<!--/SECTION-->';
 
 // Debug logging
-const DEBUG = false;
+const DEBUG = true;
 const log = (message: string, data?: unknown) => {
   if (DEBUG) {
     console.log(`[ContentUtils] ${message}`, data || '');
@@ -51,8 +51,8 @@ export const enhancedJournalContentUtils = {
         // Add section content based on type
         switch (sectionDef.type) {
           case 'text':
-            // For text content, wrap in div to preserve formatting
-            html += `<div class="section-content">${section.value || ''}</div>`;
+            // Store text content directly without wrapping
+            html += section.value || '';
             break;
             
           case 'scale':
