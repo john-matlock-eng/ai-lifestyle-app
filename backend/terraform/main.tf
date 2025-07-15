@@ -181,6 +181,8 @@ module "api_lambda" {
     AI_SERVICE_PUBLIC_KEY_PARAM = module.encryption_service.ai_service_public_key_parameter
     AI_ANALYSIS_QUEUE_URL = module.encryption_service.ai_analysis_queue_url
     CORS_ORIGIN                = var.environment == "prod" ? "https://ailifestyle.app" : "*"
+    # Feature flags
+    FEATURE_FLAG_DEBUG_PANELS = var.environment == "prod" ? "false" : "true"
   }
 
   additional_policies = [
@@ -218,6 +220,11 @@ module "api_gateway" {
 
     # Debug endpoint (temporary)
     "GET /debug" = {
+      authorization_type = "NONE"
+    }
+
+    # Feature flags endpoint
+    "GET /config/features" = {
       authorization_type = "NONE"
     }
 

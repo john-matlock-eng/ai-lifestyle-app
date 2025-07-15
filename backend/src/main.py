@@ -48,6 +48,7 @@ from list_shares.handler import lambda_handler as list_shares_handler
 from revoke_share.handler import lambda_handler as revoke_share_handler
 from setup_recovery.handler import lambda_handler as setup_recovery_handler
 from delete_encryption_keys.handler import lambda_handler as delete_encryption_keys_handler
+from get_feature_flags import lambda_handler as get_feature_flags_handler
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -117,6 +118,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # Define routing table
     routes = {
         "GET /health": health_check_handler,
+        "GET /config/features": get_feature_flags_handler,  # Feature flags
         "POST /auth/register": register_user_handler,
         "POST /auth/register-test": register_user_handler_minimal,  # Test minimal handler
         "POST /auth/login": login_user_handler,

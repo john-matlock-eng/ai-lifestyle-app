@@ -7,6 +7,7 @@ import { store } from './store';
 // Context
 import { AuthProvider } from './contexts';
 import { EncryptionProvider } from './contexts/EncryptionContext';
+import { FeatureFlagsProvider } from './contexts/FeatureFlagsContext';
 
 // Layouts
 import PublicLayout from './components/layout/PublicLayout';
@@ -66,8 +67,9 @@ function App() {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <EncryptionProvider>
-            <Routes>
+          <FeatureFlagsProvider>
+            <EncryptionProvider>
+              <Routes>
             {/* Public Routes */}
             <Route element={<PublicLayout />}>
               <Route path="/login" element={<LoginPage />} />
@@ -116,7 +118,8 @@ function App() {
           <SessionWarning />
           <EncryptionUnlockPrompt />
           <DevTools />
-          </EncryptionProvider>
+            </EncryptionProvider>
+          </FeatureFlagsProvider>
         </AuthProvider>
       </QueryClientProvider>
     {/* <ReactQueryDevtools initialIsOpen={false} /> */}

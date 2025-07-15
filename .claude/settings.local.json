@@ -20,7 +20,8 @@
       "Bash(true)",
       "Bash(npx tsc:*)",
       "Bash(npx eslint:*)",
-      "Bash(npm run format:*)"
+      "Bash(npm run format:*)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }

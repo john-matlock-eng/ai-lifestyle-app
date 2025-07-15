@@ -12,12 +12,14 @@ import { JournalSearchBar } from '../../features/journal/components/JournalSearc
 import { SearchResultsSummary } from '../../features/journal/components/SearchResultsSummary';
 import { shouldTreatAsEncrypted, getSafeExcerpt } from '../../utils/encryption-utils';
 import { JournalParsingDebug } from '../../features/journal/components/Debug/JournalParsingDebug';
+import { useFeatureFlag } from '../../hooks/useFeatureFlags';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
   const { isEncryptionEnabled, isEncryptionSetup } = useEncryption();
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const debugPanelsEnabled = useFeatureFlag('debugPanels');
 
   // Check if it's the user's first visit to journal page
   useEffect(() => {
@@ -273,8 +275,8 @@ const JournalPage: React.FC = () => {
             <Button onClick={handleCreateNew} leftIcon={<Plus className="h-4 w-4" />} size="lg">
               New Entry
             </Button>
-            {/* Debug button - only show in development */}
-            {process.env.NODE_ENV === 'development' && (
+            {/* Debug button - controlled by feature flag */}
+            {debugPanelsEnabled && (
               <Button 
                 onClick={() => setShowDebug(!showDebug)} 
                 variant="outline"
