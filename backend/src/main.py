@@ -66,14 +66,23 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     sanitized_event = {
         "httpMethod": event.get("httpMethod"),
         "path": event.get("path"),
+        "rawPath": event.get("rawPath"),
+        "resource": event.get("resource"),
         "headers": "<redacted>",
         "requestContext": {
             "requestId": event.get("requestContext", {}).get("requestId"),
             "accountId": event.get("requestContext", {}).get("accountId"),
-            "stage": event.get("requestContext", {}).get("stage")
+            "stage": event.get("requestContext", {}).get("stage"),
+            "path": event.get("requestContext", {}).get("path"),
+            "http": event.get("requestContext", {}).get("http", {})
         } if "requestContext" in event else None
     }
     print(f"Incoming request: {json.dumps(sanitized_event)}")
+    
+    # Additional debug logging
+    print(f"Event keys: {list(event.keys())}")
+    if "requestContext" in event:
+        print(f"RequestContext keys: {list(event['requestContext'].keys())}")
     
     # Try to extract HTTP method and path for both v1 and v2 formats
     # API Gateway v2 (HTTP API) format
@@ -87,6 +96,13 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     elif "httpMethod" in event:
         http_method = event.get("httpMethod", "").upper()
         path = event.get("path", "")
+        
+        # Check if stage is in the path (API Gateway REST API with stages)
+        # Extract stage from requestContext if available
+        stage = event.get("requestContext", {}).get("stage")
+        if stage and path.startswith(f"/{stage}"):
+            print(f"Removing stage '{stage}' from path: {path}")
+            path = path[len(stage)+1:]  # Remove stage prefix
     else:
         # Unknown format, try to get from top-level
         http_method = event.get("httpMethod", event.get("method", "")).upper()
