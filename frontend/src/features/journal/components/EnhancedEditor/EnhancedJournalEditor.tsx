@@ -129,8 +129,67 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
             }
           }
           
-          // Parse content back to sections
-          const parsedSections = enhancedJournalContentUtils.contentToSections(template, contentToParse);
+          // Parse content back to sections with error handling
+          let parsedSections = enhancedJournalContentUtils.contentToSections(template, contentToParse);
+          
+          // Quick patch: Check if parsing failed and we only got default values
+          const hasActualContent = parsedSections.some(section => {
+            const sectionDef = template.sections.find(s => s.id === section.sectionId);
+            if (!sectionDef) return false;
+            
+            // Check if value is not just the default
+            switch (sectionDef.type) {
+              case 'text':
+                return section.value && section.value !== '';
+              case 'scale':
+                return section.value !== 5;
+              case 'emotions':
+              case 'tags':
+              case 'goals':
+                return Array.isArray(section.value) && section.value.length > 0;
+              case 'checklist':
+                return section.value && Object.keys(section.value as Record<string, boolean>).length > 0;
+              default:
+                return section.value && section.value !== '';
+            }
+          });
+          
+          // If no actual content was parsed but we have content, try fallback
+          if (!hasActualContent && contentToParse && contentToParse.trim()) {
+            console.warn('[EnhancedJournalEditor] Parsing may have failed, attempting fallback');
+            
+            // Find first text section and put all content there
+            const textSection = template.sections.find(s => s.type === 'text');
+            if (textSection) {
+              parsedSections = parsedSections.map(section => {
+                if (section.sectionId === textSection.id) {
+                  // Extract plain text from the content
+                  const plainText = contentToParse
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<\/p>\s*<p>/gi, '\n\n')
+                    .replace(/<[^>]+>/g, '')
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'")
+                    .trim();
+                  
+                  return {
+                    ...section,
+                    value: plainText,
+                    metadata: {
+                      ...section.metadata,
+                      wordCount: plainText.split(/\s+/).filter(w => w).length
+                    }
+                  };
+                }
+                return section;
+              });
+            }
+          }
+          
           setSections(parsedSections);
         } finally {
           setIsLoadingEntry(false);

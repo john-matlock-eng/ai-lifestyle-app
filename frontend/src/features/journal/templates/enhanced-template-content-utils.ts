@@ -3,7 +3,7 @@ import type { EnhancedTemplate, SectionResponse } from '../types/enhanced-templa
 
 /**
  * Enhanced utilities to convert between section-based editing and JournalEntry format
- * Now supports both HTML and markdown section markers
+ * Now supports both HTML and markdown section markers with improved error handling
  */
 
 // HTML section format from saved entries
@@ -13,15 +13,28 @@ const HTML_SECTION_REGEX = /<!--SECTION:([^:]+):([^:]+):({.*?})-->([\s\S]*?)<!--
 const SECTION_START_MARKER = '<!--SECTION:';
 const SECTION_END_MARKER = '<!--/SECTION-->';
 
+// Debug logging
+const DEBUG = false;
+const log = (message: string, data?: unknown) => {
+  if (DEBUG) {
+    console.log(`[ContentUtils] ${message}`, data || '');
+  }
+};
+
 export const enhancedJournalContentUtils = {
   /**
    * Convert section responses to HTML content with section markers
    */
   sectionsToContent(template: EnhancedTemplate, sections: SectionResponse[]): string {
+    log('Converting sections to content', { template: template.name, sectionCount: sections.length });
+    
     const htmlSections = sections
       .map(section => {
         const sectionDef = template.sections.find(s => s.id === section.sectionId);
-        if (!sectionDef) return '';
+        if (!sectionDef) {
+          log(`Warning: Section definition not found for ID: ${section.sectionId}`);
+          return '';
+        }
         
         // Create section metadata
         const metadata = {
@@ -106,144 +119,101 @@ export const enhancedJournalContentUtils = {
   
   /**
    * Parse content with section markers back to sections
-   * Now handles both HTML and markdown formats
+   * Enhanced with better error handling and text extraction
    */
   contentToSections(template: EnhancedTemplate, content: string): SectionResponse[] {
+    log('Parsing content to sections', { template: template.name, contentLength: content.length });
+    
     const sections: SectionResponse[] = [];
     
-    // Reset regex to start from beginning
-    HTML_SECTION_REGEX.lastIndex = 0;
-    
-    // Find all sections with markers
-    let match;
-    while ((match = HTML_SECTION_REGEX.exec(content)) !== null) {
-      const [, sectionId, sectionType, metadataStr, sectionContent] = match;
+    try {
+      // Reset regex to start from beginning
+      HTML_SECTION_REGEX.lastIndex = 0;
       
-      // Parse metadata
-      let metadata = {};
-      try {
-        metadata = JSON.parse(metadataStr);
-      } catch (e) {
-        console.warn('Failed to parse section metadata:', e);
+      // Find all sections with markers
+      let match;
+      let matchCount = 0;
+      
+      while ((match = HTML_SECTION_REGEX.exec(content)) !== null) {
+        matchCount++;
+        const [, sectionId, sectionType, metadataStr, sectionContent] = match;
+        
+        log(`Found section match ${matchCount}`, { 
+          sectionId, 
+          sectionType, 
+          contentLength: sectionContent.length 
+        });
+        
+        // Parse metadata
+        let metadata = {};
+        try {
+          metadata = JSON.parse(metadataStr);
+        } catch {
+          log('Failed to parse section metadata:', metadataStr);
+          // Continue with empty metadata
+        }
+        
+        // Find the section definition
+        const sectionDef = template.sections.find(s => s.id === sectionId);
+        if (!sectionDef) {
+          log(`Section definition not found for ID: ${sectionId}`);
+          continue;
+        }
+        
+        // Parse the value based on section type
+        let value: string | number | string[] | Record<string, boolean> = '';
+        
+        try {
+          value = extractSectionValue(sectionType, sectionContent, sectionDef);
+          log(`Extracted value for section ${sectionId}:`, value);
+        } catch (error) {
+          log(`Error extracting value for section ${sectionId}:`, error);
+          value = getDefaultValue(sectionType);
+        }
+        
+        sections.push({
+          sectionId,
+          value,
+          metadata: {
+            ...metadata,
+            wordCount: typeof value === 'string' ? value.split(/\s+/).filter(w => w).length : 0
+          }
+        });
       }
       
-      // Find the section definition
-      const sectionDef = template.sections.find(s => s.id === sectionId);
-      if (!sectionDef) {
-        console.warn(`Section definition not found for ID: ${sectionId}`);
-        continue;
-      }
+      log(`Parsed ${matchCount} sections with markers`);
       
-      // Parse the value based on section type and HTML content
-      let value: string | number | string[] | Record<string, boolean> = '';
-      
-      switch (sectionType) {
-        case 'text': {
-          // Extract text from div or direct content
-          const textMatch = sectionContent.match(/<div[^>]*>([\s\S]*?)<\/div>/);
-          value = textMatch ? textMatch[1].trim() : sectionContent.replace(/<h3>.*?<\/h3>/, '').trim();
-          // Clean up any remaining HTML tags for plain text
-          value = value.replace(/<[^>]+>/g, '');
-          break;
-        }
+      // If no sections found, try alternative parsing
+      if (sections.length === 0) {
+        log('No section markers found, attempting alternative parsing');
         
-        case 'scale': {
-          const ratingMatch = sectionContent.match(/Rating: (\d+)\//);
-          value = ratingMatch ? parseInt(ratingMatch[1]) : 5;
-          break;
-        }
-        
-        case 'mood': {
-          // Extract mood from paragraph
-          const moodMatch = sectionContent.match(/<p>([^<]+)<\/p>/);
-          if (moodMatch) {
-            const moodText = moodMatch[1].trim();
-            // Try to extract emoji and label
-            const emojiMatch = moodText.match(/^[^\s]+ (.+)$/);
-            if (emojiMatch) {
-              const mood = sectionDef.options?.moods?.find(m => m.label === emojiMatch[1]);
-              value = mood?.value || moodText;
-            } else {
-              value = moodText;
-            }
-          }
-          break;
-        }
-        
-        case 'emotions': {
-          const emotionsMatch = sectionContent.match(/Emotions: ([^<]+)/);
-          if (emotionsMatch) {
-            value = emotionsMatch[1].split(', ').map(e => e.trim()).filter(e => e);
-          } else {
-            value = [];
-          }
-          break;
-        }
-        
-        case 'tags': {
-          const tagMatches = sectionContent.match(/<span[^>]*>#(\w+)<\/span>/g);
-          value = tagMatches ? tagMatches.map(tag => {
-            const tagMatch = tag.match(/#(\w+)/);
-            return tagMatch ? tagMatch[1] : '';
-          }).filter(t => t) : [];
-          break;
-        }
-        
-        case 'checklist': {
-          const checklistItems: Record<string, boolean> = {};
-          const listItems = sectionContent.match(/<li>([^<]+)<\/li>/g);
-          if (listItems) {
-            listItems.forEach(item => {
-              const itemMatch = item.match(/<li>([☑☐]) (.+)<\/li>/);
-              if (itemMatch) {
-                checklistItems[itemMatch[2]] = itemMatch[1] === '☑';
+        // Try to extract raw text content
+        const textContent = extractTextFromHtml(content);
+        if (textContent && textContent.trim()) {
+          log('Found raw text content, creating default text section');
+          
+          // Find the first text section in the template
+          const textSection = template.sections.find(s => s.type === 'text');
+          if (textSection) {
+            sections.push({
+              sectionId: textSection.id,
+              value: textContent,
+              metadata: {
+                wordCount: textContent.split(/\s+/).filter(w => w).length
               }
             });
           }
-          value = checklistItems;
-          break;
         }
-        
-        case 'choice': {
-          const choiceMatch = sectionContent.match(/<p>([^<]+)<\/p>/);
-          if (choiceMatch) {
-            const choiceText = choiceMatch[1].trim();
-            const choice = sectionDef.options?.choices?.find(c => c.label === choiceText);
-            value = choice?.value || choiceText;
-          }
-          break;
-        }
-        
-        case 'goals':
-          // Goals are handled separately through linkedGoalIds
-          value = [];
-          break;
-          
-        default:
-          // Fallback to extracting text content
-          value = sectionContent.replace(/<[^>]+>/g, '').trim();
-          break;
       }
       
-      sections.push({
-        sectionId,
-        value,
-        metadata: {
-          ...metadata,
-          wordCount: typeof value === 'string' ? value.split(/\s+/).filter(w => w).length : 0
-        }
-      });
-    }
-    
-    // If no sections found, try legacy format
-    if (sections.length === 0) {
-      console.warn('No section markers found, attempting legacy parsing');
-      return legacyContentToSections(template, content);
+    } catch (error) {
+      log('Error in contentToSections:', error);
     }
     
     // Ensure all template sections are represented
     template.sections.forEach(sectionDef => {
       if (!sections.find(s => s.sectionId === sectionDef.id)) {
+        log(`Adding default value for missing section: ${sectionDef.id}`);
         sections.push({
           sectionId: sectionDef.id,
           value: getDefaultValue(sectionDef.type),
@@ -252,10 +222,146 @@ export const enhancedJournalContentUtils = {
       }
     });
     
+    log('Final sections:', sections);
     return sections;
   }
 };
 
+/**
+ * Extract section value based on type with improved parsing
+ */
+function extractSectionValue(
+  sectionType: string, 
+  sectionContent: string, 
+  sectionDef: { options?: { moods?: Array<{ value: string; label: string; emoji: string }>; choices?: Array<{ value: string; label: string }> } }
+): string | number | string[] | Record<string, boolean> {
+  
+  // Remove the section title first
+  const contentWithoutTitle = sectionContent.replace(/<h3>.*?<\/h3>\s*/i, '');
+  
+  switch (sectionType) {
+    case 'text': {
+      // Try multiple extraction methods
+      let textValue = '';
+      
+      // Method 1: Extract from div.section-content
+      const divMatch = contentWithoutTitle.match(/<div[^>]*class="section-content"[^>]*>([\s\S]*?)<\/div>/i);
+      if (divMatch) {
+        textValue = divMatch[1];
+      } else {
+        // Method 2: Extract from any div
+        const anyDivMatch = contentWithoutTitle.match(/<div[^>]*>([\s\S]*?)<\/div>/i);
+        if (anyDivMatch) {
+          textValue = anyDivMatch[1];
+        } else {
+          // Method 3: Use all content after stripping HTML
+          textValue = contentWithoutTitle;
+        }
+      }
+      
+      // Clean up the text
+      textValue = textValue
+        .replace(/<br\s*\/?>/gi, '\n') // Convert BR tags to newlines
+        .replace(/<\/p>\s*<p>/gi, '\n\n') // Convert paragraph breaks
+        .replace(/<[^>]+>/g, '') // Remove remaining HTML tags
+        .replace(/&nbsp;/g, ' ') // Replace nbsp
+        .replace(/&amp;/g, '&') // Decode ampersands
+        .replace(/&lt;/g, '<') // Decode less than
+        .replace(/&gt;/g, '>') // Decode greater than
+        .replace(/&quot;/g, '"') // Decode quotes
+        .replace(/&#39;/g, "'") // Decode apostrophes
+        .trim();
+      
+      return textValue;
+    }
+    
+    case 'scale': {
+      const ratingMatch = contentWithoutTitle.match(/Rating:\s*(\d+)\s*\//);
+      return ratingMatch ? parseInt(ratingMatch[1]) : 5;
+    }
+    
+    case 'mood': {
+      const moodMatch = contentWithoutTitle.match(/<p>([^<]+)<\/p>/);
+      if (moodMatch) {
+        const moodText = moodMatch[1].trim();
+        // Try to extract emoji and label
+        const emojiMatch = moodText.match(/^([^\s]+)\s+(.+)$/);
+        if (emojiMatch && sectionDef.options?.moods) {
+          const mood = sectionDef.options.moods.find(m => m.label === emojiMatch[2]);
+          return mood?.value || moodText;
+        }
+        return moodText;
+      }
+      return '';
+    }
+    
+    case 'emotions': {
+      const emotionsMatch = contentWithoutTitle.match(/Emotions:\s*([^<]+)/);
+      if (emotionsMatch) {
+        return emotionsMatch[1].split(/,\s*/).map(e => e.trim()).filter(e => e);
+      }
+      return [];
+    }
+    
+    case 'tags': {
+      const tags: string[] = [];
+      const tagRegex = /<span[^>]*>#(\w+)<\/span>/g;
+      let tagMatch;
+      while ((tagMatch = tagRegex.exec(contentWithoutTitle)) !== null) {
+        tags.push(tagMatch[1]);
+      }
+      return tags;
+    }
+    
+    case 'checklist': {
+      const checklistItems: Record<string, boolean> = {};
+      const listItemRegex = /<li>([☑☐])\s+(.+?)<\/li>/g;
+      let itemMatch;
+      while ((itemMatch = listItemRegex.exec(contentWithoutTitle)) !== null) {
+        checklistItems[itemMatch[2]] = itemMatch[1] === '☑';
+      }
+      return checklistItems;
+    }
+    
+    case 'choice': {
+      const choiceMatch = contentWithoutTitle.match(/<p>([^<]+)<\/p>/);
+      if (choiceMatch && sectionDef.options?.choices) {
+        const choiceText = choiceMatch[1].trim();
+        const choice = sectionDef.options.choices.find(c => c.label === choiceText);
+        return choice?.value || choiceText;
+      }
+      return '';
+    }
+    
+    case 'goals':
+      return [];
+      
+    default:
+      // Fallback to extracting text content
+      return contentWithoutTitle.replace(/<[^>]+>/g, '').trim();
+  }
+}
+
+/**
+ * Extract plain text from HTML content
+ */
+function extractTextFromHtml(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>\s*<p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+/**
+ * Get default value for section type
+ */
 function getDefaultValue(type: string): string | number | string[] | Record<string, boolean> {
   switch (type) {
     case 'text': return '';
@@ -264,77 +370,10 @@ function getDefaultValue(type: string): string | number | string[] | Record<stri
     case 'choice': return '';
     case 'tags': return [];
     case 'goals': return [];
+    case 'emotions': return [];
     case 'checklist': return {};
     default: return '';
   }
-}
-
-/**
- * Legacy parser for older content formats
- */
-function legacyContentToSections(template: EnhancedTemplate, content: string): SectionResponse[] {
-  const sections: SectionResponse[] = [];
-  const contentSections = content.split('---').map(s => s.trim());
-  
-  contentSections.forEach(contentSection => {
-    const lines = contentSection.split('\n');
-    const titleLine = lines.find(line => line.startsWith('## '));
-    if (!titleLine) return;
-    
-    const title = titleLine.replace('## ', '').trim();
-    const sectionDef = template.sections.find(s => s.title === title);
-    if (!sectionDef) return;
-    
-    const contentStartIndex = lines.findIndex(line => line.startsWith('## ')) + 1;
-    const sectionContent = lines.slice(contentStartIndex).join('\n').trim();
-    
-    let value: string | number | string[] | Record<string, boolean> = sectionContent;
-    
-    // Parse based on section type (simplified version)
-    switch (sectionDef.type) {
-      case 'scale': {
-        const match = sectionContent.match(/Rating: (\d+)\//);
-        value = match ? parseInt(match[1]) : 5;
-        break;
-      }
-      case 'tags': {
-        value = sectionContent.match(/#(\w+)/g)?.map(tag => tag.substring(1)) || [];
-        break;
-      }
-      case 'checklist': {
-        const checklistItems: Record<string, boolean> = {};
-        sectionContent.split('\n').forEach(line => {
-          const checkMatch = line.match(/- \[([ x])\] (.+)/);
-          if (checkMatch) {
-            checklistItems[checkMatch[2]] = checkMatch[1] === 'x';
-          }
-        });
-        value = checklistItems;
-        break;
-      }
-    }
-    
-    sections.push({
-      sectionId: sectionDef.id,
-      value,
-      metadata: {
-        wordCount: typeof value === 'string' ? value.split(/\s+/).filter(w => w).length : 0
-      }
-    });
-  });
-  
-  // If no sections found through legacy parsing, initialize with defaults
-  if (sections.length === 0) {
-    template.sections.forEach(sectionDef => {
-      sections.push({
-        sectionId: sectionDef.id,
-        value: getDefaultValue(sectionDef.type),
-        metadata: {}
-      });
-    });
-  }
-  
-  return sections;
 }
 
 /**
@@ -351,9 +390,11 @@ export function migrateToEnhancedFormat(
   template: EnhancedTemplate, 
   content: string
 ): string {
-  // Parse using legacy method
-  const sections = legacyContentToSections(template, content);
+  log('Migrating content to enhanced format');
   
-  // Convert back using enhanced format
+  // First try to parse as sections
+  const sections = enhancedJournalContentUtils.contentToSections(template, content);
+  
+  // Then convert back to ensure proper format
   return enhancedJournalContentUtils.sectionsToContent(template, sections);
 }
