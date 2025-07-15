@@ -16,11 +16,13 @@ import {
   Target,
   TrendingUp,
   Users,
-  X
+  X,
+  BookOpen,
+  Maximize2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/common';
-import { getEntry, deleteEntry } from '@/api/journal';
+import { getEntry, deleteEntry, listEntries } from '@/api/journal';
 import { journalStorage } from '../services/JournalStorageService';
 import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
 import ShareDialog from '@/components/encryption/ShareDialog';
@@ -28,10 +30,12 @@ import ShareManagement from '@/components/encryption/ShareManagement';
 import AIShareDialog from '@/components/encryption/AIShareDialog';
 import { JournalActions } from '../components/JournalActions';
 import { JournalEntryRenderer } from '../components/JournalEntryRenderer';
+import { JournalReaderView } from '../components/JournalReaderView';
 import { useEncryption } from '@/contexts/useEncryption';
 import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
 import { getEncryptionService } from '@/services/encryption';
 import { getEmotionById, getEmotionEmoji } from '../components/EmotionSelector/emotionData';
+import '../styles/journal-reader.css';
 
 export const JournalViewPageEnhanced: React.FC = () => {
   const { entryId } = useParams<{ entryId: string }>();
@@ -44,13 +48,38 @@ export const JournalViewPageEnhanced: React.FC = () => {
   const [shareSuccessMessage, setShareSuccessMessage] = useState<string | null>(null);
   const [decryptedEntry, setDecryptedEntry] = useState<typeof entry | null>(null);
   const [isDecrypting, setIsDecrypting] = useState(false);
+  const [showReaderMode, setShowReaderMode] = useState(false);
 
-  // Fetch entry
+  // Fetch current entry
   const { data: entry, isLoading, error, refetch } = useQuery({
     queryKey: ['journal', 'entry', entryId],
     queryFn: () => getEntry(entryId!),
     enabled: !!entryId
   });
+
+  // Fetch all entries for navigation
+  const { data: entriesData } = useQuery({
+    queryKey: ['journal', 'entries', 'navigation'],
+    queryFn: () => listEntries({ limit: 1000 }),
+    enabled: showReaderMode // Only fetch when reader mode is active
+  });
+
+  // Calculate navigation state
+  const navigationInfo = React.useMemo(() => {
+    if (!entriesData?.entries || !entryId) {
+      return { hasPrevious: false, hasNext: false, previousId: null, nextId: null };
+    }
+    
+    const entries = entriesData.entries;
+    const currentIndex = entries.findIndex(e => e.entryId === entryId);
+    
+    return {
+      hasPrevious: currentIndex > 0,
+      hasNext: currentIndex < entries.length - 1,
+      previousId: currentIndex > 0 ? entries[currentIndex - 1].entryId : null,
+      nextId: currentIndex < entries.length - 1 ? entries[currentIndex + 1].entryId : null
+    };
+  }, [entriesData, entryId]);
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -129,6 +158,13 @@ export const JournalViewPageEnhanced: React.FC = () => {
     }
   }, [entry, decryptContent]);
 
+  const handleNavigate = (direction: 'prev' | 'next') => {
+    const targetId = direction === 'prev' ? navigationInfo.previousId : navigationInfo.nextId;
+    if (targetId) {
+      navigate(`/journal/${targetId}`);
+    }
+  };
+
   const getMoodDisplay = (mood?: string) => {
     if (!mood) return null;
     
@@ -189,6 +225,20 @@ export const JournalViewPageEnhanced: React.FC = () => {
     );
   }
 
+  // Show reader mode if enabled
+  if (showReaderMode && decryptedEntry) {
+    return (
+      <JournalReaderView
+        entry={decryptedEntry}
+        onEdit={() => navigate(`/journal/${entryId}/edit`)}
+        onClose={() => setShowReaderMode(false)}
+        onNavigate={handleNavigate}
+        hasPrevious={navigationInfo.hasPrevious}
+        hasNext={navigationInfo.hasNext}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4 max-w-4xl">
@@ -210,6 +260,15 @@ export const JournalViewPageEnhanced: React.FC = () => {
           </Button>
           
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowReaderMode(true)}
+              title="Reader Mode"
+            >
+              <BookOpen className="w-4 h-4 mr-2" />
+              Read
+            </Button>
             {isEncryptionSetup && entry.isEncrypted && (
               <JournalActions
                 entry={entry}
@@ -371,6 +430,14 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
         {/* Actions */}
         <div className="flex items-center justify-center gap-4 mt-8">
+          <Button
+            variant="outline"
+            onClick={() => setShowReaderMode(true)}
+          >
+            <Maximize2 className="w-4 h-4 mr-2" />
+            Reader Mode
+          </Button>
+          
           {isEncryptionSetup && entry.isEncrypted ? (
             <Button
               variant="outline"
