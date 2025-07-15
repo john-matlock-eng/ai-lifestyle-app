@@ -1,299 +1,323 @@
-# CLAUDE.md
+# AI Lifestyle App - Frontend
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Overview
+This document provides comprehensive information about the frontend architecture, types, and patterns used in the AI Lifestyle App. It's designed to help developers (including AI assistants) understand the codebase and avoid common integration issues.
 
-## Common Development Commands
+## Related Documentation
+- **[TypeScript Guide](./TYPESCRIPT_GUIDE.md)** - Deep dive into the type system
+- **[Quick Reference](./QUICK_REFERENCE.md)** - Cheat sheet for common patterns
+- **[Journal Feature Guide](./src/features/journal/JOURNAL_DEVELOPER_GUIDE.md)** - Journal-specific documentation
 
-### Frontend Development
-```bash
-# Development
-npm run dev              # Start development server (Vite)
-npm run build            # Build for production (TypeScript + Vite)
-npm run preview          # Preview production build
+## Tech Stack
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Routing**: React Router v6
+- **State Management**: React Query (TanStack Query)
+- **Styling**: Tailwind CSS with custom glass morphism design system
+- **API Client**: Axios
+- **Date Handling**: date-fns
+- **Forms**: React Hook Form with Zod validation
+- **Encryption**: Web Crypto API with custom encryption service
 
-# Testing
-npm test                 # Run tests (Vitest)
-npm run test:ui          # Run tests with UI
-
-# Code Quality
-npm run lint             # ESLint
-npm run type-check       # TypeScript type checking
-npm run format           # Prettier formatting
-
-# Pre-push Checklist (run these before pushing code)
-npm run lint             # Check for linting errors
-npm run type-check       # Check for TypeScript errors
-npm run build            # Ensure build succeeds
-npm test                 # Run all tests
+## Project Structure
+```
+frontend/
+├── src/
+│   ├── api/                 # API client and endpoints
+│   ├── components/         
+│   │   ├── common/         # Shared UI components
+│   │   └── encryption/     # Encryption-related components
+│   ├── contexts/           # React contexts
+│   ├── features/           # Feature modules
+│   │   ├── journal/       
+│   │   ├── goals/         
+│   │   ├── meals/         
+│   │   └── workouts/      
+│   ├── hooks/              # Custom React hooks
+│   ├── services/           # Business logic services
+│   ├── styles/             # Global styles
+│   ├── types/              # TypeScript type definitions
+│   └── utils/              # Utility functions
+├── public/                 # Static assets
+└── index.html             
 ```
 
-### Backend Development
-```bash
-# Setup and deployment (from backend/ directory)
-make setup               # Set up development environment
-make deploy ENV=dev      # Deploy to development
-make build-lambda        # Build and push Lambda containers
+## Type System
 
-# Testing and validation
-make test                # Run pytest
-make fmt                 # Format with black/isort
-make lint                # Lint with pylint/flake8
-make validate            # Full validation pipeline
+### Important Type Files
+All shared types are defined in `src/types/`:
+- `journal.ts` - Journal entry types
+- `goals.ts` - Goal types
+- `meals.ts` - Meal types
+- `workouts.ts` - Workout types
+- `auth.ts` - Authentication types
+- `encryption.ts` - Encryption types
 
-# Development
-make logs FUNCTION=api-handler  # Tail Lambda logs
-make api-url             # Get API Gateway URL
-```
-
-#### Backend Lambda Functions
-Each API endpoint has its own Lambda function in `backend/src/`:
-- **Journal Operations**:
-  - `create_journal_entry` → `POST /journal`
-  - `list_journal_entries` → `GET /journal`
-  - `get_journal_entry` → `GET /journal/{entryId}`
-  - `update_journal_entry` → `PUT /journal/{entryId}`
-  - `delete_journal_entry` → `DELETE /journal/{entryId}`
-  - `get_journal_stats` → `GET /journal/stats`
-  - **Common module**: `journal_common/` contains shared models and types
-- **Goal Operations**:
-  - `create_goal` → `POST /goals`
-  - `list_goals` → `GET /goals`
-  - `get_goal` → `GET /goals/{goalId}`
-  - `update_goal` → `PUT /goals/{goalId}`
-  - `archive_goal` → `DELETE /goals/{goalId}`
-  - **Common module**: `goals_common/` contains shared models and types
-
-**IMPORTANT**: When creating new services, ensure the common module's `__init__.py` exports all models from `models.py`
-
-#### Adding New API Routes
-**IMPORTANT**: When creating new API endpoints, you must add them to BOTH places:
-1. **Lambda handler** in `backend/src/` directory
-2. **API Gateway routes** in `backend/terraform/main.tf` under the `routes` section
-
-Example for adding a new journal route:
-```hcl
-# In backend/terraform/main.tf
-"POST /journal/templates" = {
-  authorization_type = "JWT"  # or "NONE" for public endpoints
-}
-```
-
-#### Adding New Services
-When creating a new service (like journal, wellness, etc.):
-1. Create Lambda handlers in `backend/src/`
-2. Add routes to `backend/terraform/main.tf`
-3. Create service infrastructure module in `backend/terraform/services/<service>/`
-4. Include the service module in main terraform:
-   ```hcl
-   module "journal_service" {
-     source = "./services/journal"
-     app_name = "ai-lifestyle"
-     environment = var.environment
-     aws_region = var.aws_region
-   }
-   ```
-5. Add necessary environment variables and IAM policies to Lambda configuration
-
-### Full Stack Development
-```bash
-# From project root
-make setup               # Set up both frontend and backend
-make test                # Run all tests
-make dev                 # Start full stack with docker-compose
-```
-
-## Architecture Overview
-
-### Application Structure
-This is a privacy-first wellness platform with:
-- **Frontend**: React 18 + TypeScript + Vite with Material-UI components
-- **Backend**: Python Lambda functions with FastAPI handlers
-- **Database**: DynamoDB with single-table design
-- **Auth**: AWS Cognito with 2FA support
-- **Infrastructure**: Terraform-managed AWS resources
-
-### Key Architectural Patterns
-
-#### Lambda Function Organization
-Each backend feature is a separate Lambda function in `backend/src/`:
-- Functions follow the pattern: `{action}_{resource}/handler.py`
-- Shared code lives in `goals_common/` module
-- Each function has its own Dockerfile for containerized deployment
-
-#### Frontend Feature Organization
-Features are organized by domain in `frontend/src/features/`:
-- `auth/` - Authentication with Cognito integration
-- `goals/` - Enhanced goal system (5 patterns: recurring, milestone, target, streak, limit)
-- `journal/` - Rich text journaling with encryption
-- Each feature contains: `components/`, `hooks/`, `services/`, `types/`
-
-#### State Management
-- **Global State**: Redux Toolkit for app-wide state
-- **Server State**: TanStack Query for API data
-- **Form State**: React Hook Form with Zod validation
-- **Context**: React Context for auth and theme
-
-#### Type Safety
-- Shared types between frontend/backend via OpenAPI contract
-- Backend uses Pydantic models with CamelCase serialization
-- Frontend uses Zod schemas for runtime validation
-- Type definitions in `frontend/src/types/` and `backend/src/goals_common/models.py`
-
-### Core Encryption System
-The app implements zero-knowledge encryption:
-- Client-side encryption before data leaves the browser
-- Symmetric encryption (AES-256-GCM) for data
-- Asymmetric encryption (RSA-4096) for key sharing
-- PBKDF2/Argon2id for key derivation
-- Keys stored in IndexedDB, never sent to server
-
-### Goal System Design
-Enhanced goal system supports 5 patterns:
-1. **Recurring**: "Walk 10k steps daily"
-2. **Milestone**: "Write 50k words total"
-3. **Target**: "Lose 20 lbs by June"
-4. **Streak**: "Meditate 100 days straight"
-5. **Limit**: "Screen time < 2 hours"
-
-### Testing Strategy
-- **Frontend**: Vitest + Testing Library + MSW for API mocking
-- **Backend**: pytest with fixtures for DynamoDB testing
-- **Integration**: End-to-end tests for critical user journeys
-- **Contract**: OpenAPI validation between frontend/backend
-
-### Deployment Pipeline
-- **Development**: Auto-deploy to dev environment on PR
-- **Production**: Manual deployment with approval
-- **Infrastructure**: Terraform manages all AWS resources
-- **Containers**: Lambda functions deployed as container images
-
-#### Deploying New API Routes
-After adding new routes to `backend/terraform/main.tf`:
-1. Commit and push changes
-2. GitHub Actions will run Terraform plan
-3. Review the plan to ensure routes are being added
-4. Terraform apply will update API Gateway with new routes
-5. Lambda functions must be deployed separately via container builds
-
-Note: API Gateway routes can be deployed before the Lambda handlers exist, but will return 5xx errors until the handlers are implemented.
-
-## Important Development Notes
-
-### Authentication Flow
-- Registration requires email verification via Cognito
-- Login supports optional 2FA with TOTP
-- Token refresh handled automatically in AuthContext
-- Session warnings appear 5 minutes before expiry
-
-### API Integration
-- All API calls go through `frontend/src/api/client.ts`
-- Error handling includes retry logic and user feedback
-- Bearer token authentication with automatic refresh
-- OpenAPI contract at `contract/openapi.yaml` is source of truth
-
-#### API Route Patterns
-- **IMPORTANT**: API routes do NOT include `/v1` prefix - this is handled by the base URL
-- Use simple resource paths: `/goals`, `/journal`, `/auth/login`, etc.
-- Examples of correct patterns:
-  - `GET /goals` - List goals
-  - `POST /goals` - Create goal
-  - `GET /goals/{id}` - Get specific goal
-  - `PUT /goals/{id}` - Update goal
-  - `DELETE /goals/{id}` - Delete goal
-  - `GET /journal` - List journal entries
-  - `POST /journal` - Create journal entry
-  - `GET /journal/stats` - Get journal statistics
-
-### Encryption Patterns
-- Encrypt data before sending to server in service layers
-- Decrypt data after receiving from server
-- Use `useEncryption` hook for encryption state management
-- Never store unencrypted sensitive data
-
-### Database Patterns
-- Single DynamoDB table with composite keys
-- PK pattern: `USER#{user_id}`, SK patterns vary by entity type
-- Use GSIs for different access patterns
-- Repository pattern abstracts DynamoDB operations
-
-### Code Style
-- Frontend: ESLint + Prettier with strict TypeScript
-- Backend: Black + isort + pylint with 100-char line length
-- Use absolute imports and barrel exports (`index.ts` files)
-- Component files use PascalCase, utility files use camelCase
-
-## Journal Feature Specifics
-
-### Journal Search Implementation
-The journal search feature uses browser's IndexedDB for local storage with encryption:
-- Full-text search across journal entries
-- Tag-based filtering
-- Journal type filtering
-- Timeframe/date range filtering
-- Search results are decrypted on-the-fly
-
-### Emotion Selector Component
-The `EmotionSelector` component provides two interfaces:
-1. **Emotion Wheel**: Interactive circular visualization with zoom/pan
-2. **Drill-Down List**: Hierarchical list interface
-
-Key features:
-- **Progressive Reveal Mode**: Guides users through 3-step selection (Core → Secondary → Tertiary)
-- **Hierarchical Selection**: Automatically selects parent emotions when selecting children
-- **Multi-selection Support**: Can select multiple emotions across hierarchy
-- **Zoom/Pan**: Mouse wheel zoom (0.8x-4x), click-drag panning when zoomed
-- **Responsive Design**: Adapts to container size with minimum 400px
-
-#### Common Issues and Solutions
-- **Runtime Error "e.some is not a function"**: Ensure `selectedEmotions` prop is always an array
-- **TypeScript Errors**: Add type annotations to array methods: `.filter((id: string) => ...)`
-- **CSS Issues**: Use `@emotion/react` for styled components, avoid inline styles for complex styling
-
-### Rich Text Editor (TipTap)
-The journal uses TipTap editor with:
-- Markdown support with live preview
-- Bubble menu for text formatting (appears on selection)
-- Floating menu for block insertion
-- Character count extension
-- Task lists, code blocks, quotes support
-
-Key configuration:
-- Bubble/Floating menus disabled by default to prevent DOM issues
-- Toolbar always visible for consistent UX
-- Focus management handled properly to prevent selection loss
-
-### Template System
-Journal templates use enhanced template structure:
+### Journal Types Reference
 ```typescript
-interface EnhancedTemplate {
-  id: string;
-  name: string;
-  version: number;
-  sections: SectionDefinition[];
+// From src/types/journal.ts
+export interface JournalEntry {
+  entryId: string;
+  userId: string;
+  title: string;
+  content: string;
+  template: JournalTemplate;
+  wordCount: number;
+  tags: string[];
+  mood?: string;
+  linkedGoalIds: string[];
+  goalProgress: GoalProgress[];
+  createdAt: string;
+  updatedAt: string;
+  isEncrypted: boolean;
+  isShared: boolean;
+  encryptedKey?: string;
+  encryptionIv?: string;
+  sharedWith: string[];
+}
+
+export interface GoalProgress {
+  goalId: string;
+  progressValue?: number;  // Note: This is a number, not string!
+  notes?: string;
+  completed: boolean;
 }
 ```
 
-Templates support:
-- Progressive sections with AI suggestions
-- Privacy levels per section (private, ai, shared, public)
-- Draft management with auto-save
-- Template validation with Zod schemas
+## Component Patterns
 
-### Development Workflow Tips
-1. **Always run the quality check trio**:
-   ```bash
-   npm run lint && npm test -- --run && npm run build
+### Feature Module Structure
+Each feature follows this pattern:
+```
+features/[feature-name]/
+├── components/          # Feature-specific components
+├── pages/              # Page components (routes)
+├── hooks/              # Feature-specific hooks
+├── services/           # Feature-specific services
+├── templates/          # Feature-specific templates
+├── styles/             # Feature-specific styles
+├── utils/              # Feature-specific utilities
+└── index.ts            # Public exports
+```
+
+### Component Guidelines
+
+1. **Always use shared types from `src/types/`**
+   ```typescript
+   // ✅ Good
+   import { JournalEntry } from '@/types/journal';
+   
+   // ❌ Bad - Don't redefine types locally
+   interface JournalEntry { ... }
    ```
-2. **Common test warnings to ignore**:
-   - Template validation errors in tests are intentional (testing invalid templates)
-   - Skipped tests are by design (e.g., auth tests requiring Cognito setup)
 
-3. **When modifying emotion components**:
-   - Test with both progressive reveal on/off
-   - Verify touch events work on mobile
-   - Check zoom boundaries don't break UI
+2. **Import common components from the index**
+   ```typescript
+   // ✅ Good
+   import { Button, Input } from '@/components/common';
+   
+   // ❌ Bad
+   import Button from '@/components/common/Button';
+   ```
 
-4. **Performance considerations**:
-   - Emotion wheel SVG can be large - limit re-renders
-   - Use `useCallback` for event handlers in frequently updated components
-   - Batch DOM updates when possible
+3. **Use feature utilities from the correct location**
+   ```typescript
+   // For journal features
+   import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
+   import { getEmotionById, getEmotionEmoji } from '../components/EmotionSelector/emotionData';
+   ```
+
+## API Integration
+
+### API Client Pattern
+```typescript
+// All API functions are exported from src/api/[module].ts
+import { getEntry, listEntries, createEntry } from '@/api/journal';
+
+// API functions return promises with typed responses
+const entry: JournalEntry = await getEntry(entryId);
+```
+
+### React Query Usage
+```typescript
+// Standard query pattern
+const { data, isLoading, error } = useQuery({
+  queryKey: ['journal', 'entry', entryId],
+  queryFn: () => getEntry(entryId),
+  enabled: !!entryId
+});
+
+// Mutation pattern
+const mutation = useMutation({
+  mutationFn: (data: CreateJournalEntryRequest) => createEntry(data),
+  onSuccess: (newEntry) => {
+    // Handle success
+  }
+});
+```
+
+## Styling System
+
+### Glass Morphism Theme
+The app uses a custom glass morphism design with these CSS classes:
+- `glass` - Main glass effect container
+- `glass-hover` - Glass effect with hover state
+- `surface` - Solid surface background
+- `surface-muted` - Muted surface background
+
+### Tailwind Extensions
+Custom colors available:
+- `background` - Main background color
+- `surface` - Surface color
+- `accent` - Accent color
+- `theme` - Text color
+- `muted` - Muted text color
+
+### Component Styling Pattern
+```tsx
+// Use className for Tailwind classes
+<Button 
+  variant="ghost"
+  size="sm"
+  className="additional-classes"
+>
+  Content
+</Button>
+```
+
+## Common Integration Issues & Solutions
+
+### 1. Type Mismatches
+**Problem**: Local type definitions conflicting with shared types
+**Solution**: Always import types from `@/types/` instead of defining locally
+
+### 2. Missing Imports
+**Problem**: Component not found errors
+**Solution**: Check the feature's index.ts for proper exports
+
+### 3. API Parameter Issues
+**Problem**: API calls failing due to incorrect parameters
+**Solution**: Reference the API function signatures in `src/api/`
+
+### 4. Style Import Errors
+**Problem**: CSS not loading
+**Solution**: Import CSS files at the component level or in the main entry
+
+## Adding New Features
+
+### 1. Create Feature Structure
+```bash
+src/features/new-feature/
+├── components/
+├── pages/
+├── hooks/
+├── services/
+└── index.ts
+```
+
+### 2. Define Types
+Add types to `src/types/new-feature.ts`
+
+### 3. Create API Client
+Add API functions to `src/api/new-feature.ts`
+
+### 4. Export Components
+Update feature's `index.ts` with public exports
+
+## Testing Patterns
+
+### Component Testing
+- Use React Testing Library
+- Mock API calls with MSW
+- Test user interactions, not implementation
+
+### Type Testing
+- TypeScript strict mode is enabled
+- Run `npm run type-check` to verify types
+
+## Build & Deployment
+
+### Development
+```bash
+npm run dev          # Start dev server
+npm run type-check   # Check TypeScript types
+npm run lint         # Run ESLint
+```
+
+### Production Build
+```bash
+npm run build        # Build for production
+npm run preview      # Preview production build
+```
+
+### Environment Variables
+- `VITE_API_URL` - Backend API URL
+- `VITE_APP_VERSION` - App version
+- `VITE_SENTRY_DSN` - Sentry error tracking (optional)
+
+## Encryption System
+
+### Key Points
+- Uses Web Crypto API
+- Master key derived from user password
+- Content encrypted with AES-GCM
+- Keys stored in IndexedDB (encrypted)
+
+### Usage Pattern
+```typescript
+import { useEncryption } from '@/contexts/useEncryption';
+
+const { isEncryptionSetup, encryptContent, decryptContent } = useEncryption();
+```
+
+## Performance Considerations
+
+### Code Splitting
+- Routes are lazy loaded
+- Large components use dynamic imports
+
+### Optimization Patterns
+- Use React.memo for expensive components
+- Use useMemo/useCallback appropriately
+- Implement virtual scrolling for long lists
+
+## Debugging Tips
+
+### React Query DevTools
+Enabled in development - check the floating button
+
+### Console Helpers
+```typescript
+// Log API responses
+console.log('[API]', response);
+
+// Log component renders
+console.log('[Render]', componentName);
+```
+
+### Error Boundaries
+Implemented at the route level to catch component errors
+
+## Common Gotchas
+
+1. **Date Handling**: All dates are ISO strings in the API
+2. **Encryption**: Content must be decrypted before display
+3. **Types**: `progressValue` is a number, not string
+4. **Routing**: Use navigate() from useNavigate, not window.location
+5. **State**: Prefer React Query for server state over useState
+
+## Contributing Guidelines
+
+1. Follow existing patterns
+2. Update types when changing API contracts
+3. Test thoroughly with TypeScript strict mode
+4. Document complex logic with comments
+5. Keep components focused and small
+
+## Resources
+
+- [React Documentation](https://react.dev)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Tailwind CSS Docs](https://tailwindcss.com/docs)
+- [React Query Docs](https://tanstack.com/query/latest)
+- [Vite Guide](https://vitejs.dev/guide/)

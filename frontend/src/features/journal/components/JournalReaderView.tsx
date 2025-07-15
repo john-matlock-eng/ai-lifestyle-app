@@ -23,7 +23,7 @@ import { Button } from '@/components/common';
 import { JournalEntryRenderer } from './JournalEntryRenderer';
 import { getTemplateIcon } from '../templates/template-utils';
 import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
-import { JournalEntry } from '@/types/journal';
+import type { JournalEntry } from '@/types/journal';
 
 interface JournalReaderViewProps {
   entry: JournalEntry;
@@ -405,7 +405,6 @@ export const JournalReaderView: React.FC<JournalReaderViewProps> = ({
           >
             <JournalEntryRenderer 
               entry={entry} 
-              showMetadata={false}
               className={`${
                 readingMode === 'sepia' ? 'text-[#5c4b37]' : ''
               }`}
