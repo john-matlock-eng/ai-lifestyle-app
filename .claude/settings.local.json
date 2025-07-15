@@ -21,7 +21,8 @@
       "Bash(npx tsc:*)",
       "Bash(npx eslint:*)",
       "Bash(npm run format:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(/dev/null)"
     ],
     "deny": []
   }

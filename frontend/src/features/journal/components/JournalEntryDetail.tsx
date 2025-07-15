@@ -269,7 +269,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : decryptedEntry ? (
-          <JournalEntryRenderer entry={decryptedEntry} showMetadata={false} />
+          <JournalEntryRenderer entry={decryptedEntry} />
         ) : (
           <p className="text-muted italic">Content could not be decrypted</p>
         )}

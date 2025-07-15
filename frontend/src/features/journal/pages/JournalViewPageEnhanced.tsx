@@ -320,7 +320,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
               <p className="text-muted">Decrypting content...</p>
             </div>
           ) : decryptedEntry ? (
-            <JournalEntryRenderer entry={decryptedEntry} showMetadata={false} />
+            <JournalEntryRenderer entry={decryptedEntry} />
           ) : entry?.isEncrypted ? (
             <div className="text-center py-12">
               <Lock className="w-12 h-12 text-muted mx-auto mb-4" />
