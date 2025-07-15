@@ -4,13 +4,22 @@ import { enhancedTemplates } from '../../templates/enhanced-templates';
 import type { SectionResponse } from '../../types/enhanced-template.types';
 
 export const JournalParsingDebug: React.FC = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('daily-reflection');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('daily_reflection');
   const [inputContent, setInputContent] = useState<string>('');
   const [parsedSections, setParsedSections] = useState<SectionResponse[] | null>(null);
   const [convertedContent, setConvertedContent] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   const template = enhancedTemplates[selectedTemplate as keyof typeof enhancedTemplates];
+  
+  if (!template) {
+    return (
+      <div className="p-4 space-y-4 bg-gray-50 rounded-lg">
+        <h2 className="text-xl font-bold">Journal Parsing Debug Tool</h2>
+        <p className="text-red-600">Error: Template not found for key: {selectedTemplate}</p>
+      </div>
+    );
+  }
 
   const testParsing = () => {
     try {
@@ -172,12 +181,12 @@ Rating: 8/10`
       <div>
         <h3 className="font-bold mb-2">Template Structure:</h3>
         <pre className="p-3 bg-gray-800 text-white rounded overflow-auto text-sm">
-          {JSON.stringify(template.sections.map(s => ({
+          {JSON.stringify(template?.sections?.map(s => ({
             id: s.id,
             title: s.title,
             type: s.type,
             required: s.required
-          })), null, 2)}
+          })) || [], null, 2)}
         </pre>
       </div>
     </div>
