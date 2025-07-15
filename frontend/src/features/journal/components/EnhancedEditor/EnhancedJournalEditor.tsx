@@ -50,6 +50,8 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
   autoSave = true,
   showEncryption = true,
 }) => {
+  console.log('[Editor v2] === ENHANCED JOURNAL EDITOR LOADED - VERSION 2 ===');
+  console.log('[Editor v2] This version trusts the parser without fallback logic');
   // Get template configuration - use entry's template if editing
   const template = enhancedTemplates[entry?.template || templateId] || enhancedTemplates.blank;
   
@@ -131,7 +133,11 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
           }
           
           // Parse content back to sections
+          console.log('[Editor v2] About to parse content, length:', contentToParse.length);
           const parsedSections = enhancedJournalContentUtils.contentToSections(template, contentToParse);
+          
+          console.log('[Editor v2] TRUSTING PARSER - No fallback logic applied');
+          console.log('[Editor v2] Parsed sections:', parsedSections.map(s => ({ id: s.sectionId, value: s.value })));
           
           // IMPORTANT: Trust the parser! The parser already handles defaults properly
           setSections(parsedSections);

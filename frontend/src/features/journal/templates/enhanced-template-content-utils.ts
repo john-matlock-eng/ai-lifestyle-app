@@ -21,11 +21,32 @@ const log = (message: string, data?: unknown) => {
   }
 };
 
+// Version announcement
+console.log('%c[ContentUtils v2] MODULE LOADED - NEW VERSION WITHOUT DIV WRAPPER', 'background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold');
+console.log('[ContentUtils v2] This version saves text content WITHOUT <div class="section-content"> wrapper');
+
+// Global version check function for debugging
+if (typeof window !== 'undefined') {
+  (window as any).checkJournalVersion = () => {
+    console.log('\n=== JOURNAL SYSTEM VERSION CHECK ===');
+    console.log('ContentUtils Version: 2.0 (No div wrapper)');
+    console.log('Expected save format: <h3>Title</h3>\\nContent');
+    console.log('Old format: <h3>Title</h3>\\n<div class="section-content">Content</div>');
+    console.log('Parser supports: BOTH formats');
+    console.log('Loaded at:', new Date().toISOString());
+    console.log('===================================\n');
+    return 'Version 2.0';
+  };
+  console.log('[ContentUtils v2] Run checkJournalVersion() in console to verify version');
+}
+
 export const enhancedJournalContentUtils = {
   /**
    * Convert section responses to HTML content with section markers
    */
   sectionsToContent(template: EnhancedTemplate, sections: SectionResponse[]): string {
+    console.log('[ContentUtils v2] === VERSION CHECK: NEW CODE WITHOUT DIV WRAPPER ===');
+    console.log('[ContentUtils v2] sectionsToContent called at:', new Date().toISOString());
     log('Converting sections to content', { template: template.name, sectionCount: sections.length });
     
     const htmlSections = sections
@@ -52,6 +73,8 @@ export const enhancedJournalContentUtils = {
         switch (sectionDef.type) {
           case 'text':
             // Store text content directly without wrapping
+            console.log('[ContentUtils v2] SAVING TEXT WITHOUT DIV WRAPPER - New Version Active!');
+            console.log('[ContentUtils v2] Text content:', section.value);
             html += section.value || '';
             break;
             
@@ -247,6 +270,7 @@ function extractSectionValue(
       // Method 1: Extract from div.section-content
       const divMatch = contentWithoutTitle.match(/<div[^>]*class="section-content"[^>]*>([\s\S]*?)<\/div>/i);
       if (divMatch) {
+        console.log('[ContentUtils v2] PARSING: Found old format with div wrapper');
         textValue = divMatch[1];
       } else {
         // Method 2: Extract from any div
