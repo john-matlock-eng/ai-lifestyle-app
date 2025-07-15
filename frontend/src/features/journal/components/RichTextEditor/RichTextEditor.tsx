@@ -92,7 +92,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       }),
       CharacterCount,
     ],
-    content,
+    content: content || '',
     editable: !readOnly,
     editorProps: {
       attributes: {
@@ -119,12 +119,29 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       onChange(markdown);
     },
     onCreate: ({ editor }) => {
+      // If content exists, ensure it's set
+      if (content) {
+        editor.commands.setContent(content, false);
+      }
       // Focus the editor on creation
       setTimeout(() => {
         editor.commands.focus();
       }, 100);
     },
   });
+
+  // Update editor content when prop changes
+  React.useEffect(() => {
+    if (editor && content !== undefined) {
+      const currentMarkdown = editor.storage.markdown.getMarkdown();
+      
+      // Only update if content is different to avoid infinite loops
+      if (currentMarkdown !== content) {
+        // Set content without triggering onChange
+        editor.commands.setContent(content, false);
+      }
+    }
+  }, [content, editor]);
 
   // Cleanup timeout on unmount
   React.useEffect(() => {
