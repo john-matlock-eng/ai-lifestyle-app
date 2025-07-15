@@ -3,6 +3,37 @@
 ## Overview
 This document provides comprehensive information about the frontend architecture, types, and patterns used in the AI Lifestyle App. It's designed to help developers (including AI assistants) understand the codebase and avoid common integration issues.
 
+## ⚠️ CRITICAL: Before Making ANY Changes
+
+### 1. Check CI/CD Pipeline
+The CI/CD pipeline runs these exact commands:
+```bash
+# Run these BEFORE committing any changes:
+npm run lint          # Must pass with 0 errors
+npm run type-check    # Must pass with 0 errors
+npm run test:ci       # Must pass all tests
+npm run build         # Must build successfully
+```
+
+### 2. Current Dependencies Only
+**NEVER add imports for packages not in package.json:**
+- ❌ NO `react-markdown` 
+- ❌ NO `remark-gfm`
+- ❌ NO `react-syntax-highlighter`
+- ✅ Use only packages listed in package.json
+
+### 3. Run Quality Check Trio
+Before ANY commit, run:
+```bash
+npm run format && npm run lint && npm run type-check
+```
+
+### 4. Test Warnings Are NOT Errors
+These stderr messages are EXPECTED in tests:
+- "Template validation failed ZodError" - Testing invalid templates
+- "Failed to fetch feature flags" - Testing error handling
+These are NOT failures - they test error handling!
+
 ## Related Documentation
 - **[TypeScript Guide](./TYPESCRIPT_GUIDE.md)** - Deep dive into the type system
 - **[Quick Reference](./QUICK_REFERENCE.md)** - Cheat sheet for common patterns

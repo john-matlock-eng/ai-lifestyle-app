@@ -24,6 +24,7 @@ import { JournalEntryRenderer } from './JournalEntryRenderer';
 import { getTemplateIcon } from '../templates/template-utils';
 import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
 import type { JournalEntry } from '@/types/journal';
+import '../styles/journal-content.css';
 
 interface JournalReaderViewProps {
   entry: JournalEntry;
@@ -346,7 +347,7 @@ export const JournalReaderView: React.FC<JournalReaderViewProps> = ({
       {/* Main Content */}
       <div 
         ref={scrollContainerRef}
-        className="h-full overflow-y-auto scroll-smooth"
+        className={`h-full overflow-y-auto scroll-smooth reading-mode-${readingMode}`}
         style={{ paddingTop: showSettings ? '140px' : '80px' }}
       >
         <article className="max-w-4xl mx-auto px-6 pb-24">
@@ -395,7 +396,7 @@ export const JournalReaderView: React.FC<JournalReaderViewProps> = ({
           {/* Content with Typography */}
           <div 
             ref={contentRef}
-            className={`prose prose-lg max-w-none ${getFontSizeClass()} ${
+            className={`journal-content prose prose-lg max-w-none ${getFontSizeClass()} ${
               readingMode === 'dark' ? 'prose-invert' : ''
             }`}
             style={{

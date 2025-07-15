@@ -1,4 +1,6 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import '../styles/journal-content.css';
 
 interface JournalEntry {
   content: string;
@@ -24,14 +26,91 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
         return renderStructuredContent(parsed);
       }
     } catch {
-      // If not JSON, treat as markdown/plain text
+      // If not JSON, check if it looks like structured plain text
+      if (entry.template === 'daily_reflection') {
+        const structuredData = parseDailyReflectionText(content);
+        if (structuredData) {
+          return renderStructuredContent(structuredData);
+        }
+      }
     }
     return content;
+  };
+
+  // Parse plain text that looks like daily reflection format
+  const parseDailyReflectionText = (text: string): Record<string, unknown> | null => {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+    const data: Record<string, unknown> = {};
+    
+    let currentSection = '';
+    let currentContent: string[] = [];
+    
+    for (const line of lines) {
+      // Check for section headers
+      if (line.toLowerCase().includes('emotion')) {
+        if (currentSection && currentContent.length) {
+          data[currentSection] = currentContent.join(' ');
+        }
+        currentSection = 'emotions';
+        currentContent = [];
+        // Extract emotion from the line
+        const emotionMatch = line.match(/emotions?:\s*(.+)/i);
+        if (emotionMatch) {
+          data.emotions = emotionMatch[1].trim();
+          currentSection = '';
+        }
+      } else if (line.toLowerCase().includes('grateful for')) {
+        if (currentSection && currentContent.length) {
+          data[currentSection] = currentContent.join(' ');
+        }
+        currentSection = 'gratitude';
+        currentContent = [];
+      } else if (line.toLowerCase().includes('highlight')) {
+        if (currentSection && currentContent.length) {
+          data[currentSection] = currentContent.join(' ');
+        }
+        currentSection = 'highlights';
+        currentContent = [];
+      } else if (line.toLowerCase().includes('challenge') || line.toLowerCase().includes('lesson')) {
+        if (currentSection && currentContent.length) {
+          data[currentSection] = currentContent.join(' ');
+        }
+        currentSection = 'challenges';
+        currentContent = [];
+      } else if (line.toLowerCase().includes('tomorrow')) {
+        if (currentSection && currentContent.length) {
+          data[currentSection] = currentContent.join(' ');
+        }
+        currentSection = 'tomorrow';
+        currentContent = [];
+      } else if (currentSection) {
+        // Add to current section content
+        currentContent.push(line);
+      } else {
+        // Try to match patterns
+        if (line.match(/^\d+$/)) {
+          // Skip standalone numbers
+          continue;
+        }
+        // If no section, treat as notes
+        if (!data.notes) data.notes = '';
+        data.notes += (data.notes ? '\n' : '') + line;
+      }
+    }
+    
+    // Add final section
+    if (currentSection && currentContent.length) {
+      data[currentSection] = currentContent.join(' ');
+    }
+    
+    return Object.keys(data).length > 0 ? data : null;
   };
 
   // Render structured content based on template type
   const renderStructuredContent = (data: Record<string, unknown>) => {
     switch (entry.template) {
+      case 'daily_reflection':
+        return renderDailyReflectionContent(data);
       case 'gratitude':
         return renderGratitudeContent(data);
       case 'goals':
@@ -50,6 +129,76 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
   };
 
   // Template-specific renderers
+  interface DailyReflectionData {
+    emotions?: string;
+    gratitude?: string[] | string;
+    highlights?: string[] | string;
+    challenges?: string;
+    tomorrow?: string;
+    notes?: string;
+  }
+
+  const renderDailyReflectionContent = (data: unknown) => {
+    const reflectionData = data as DailyReflectionData;
+    return (
+      <div className="space-y-8">
+        <section className="journal-section">
+          <h3>Today's Emotions</h3>
+          <p className="emotion-display">{reflectionData.emotions || <span className="journal-empty-content">No emotions recorded</span>}</p>
+        </section>
+        
+        <section className="journal-section">
+          <h3>Three Things I'm Grateful For</h3>
+          {Array.isArray(reflectionData.gratitude) && reflectionData.gratitude.length > 0 ? (
+            <ul className="space-y-3">
+              {reflectionData.gratitude.map((item: string, index: number) => (
+                <li key={index} className="flex items-start gap-3">
+                  <span className="list-icon">🙏</span>
+                  <span className="flex-1">{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>{(typeof reflectionData.gratitude === 'string' && reflectionData.gratitude !== '7' && reflectionData.gratitude.trim() !== '') ? reflectionData.gratitude : <span className="journal-empty-content">No gratitude items added</span>}</p>
+          )}
+        </section>
+        
+        <section className="journal-section">
+          <h3>Today's Highlights</h3>
+          {Array.isArray(reflectionData.highlights) && reflectionData.highlights.length > 0 ? (
+            <ul className="space-y-3">
+              {reflectionData.highlights.map((item: string, index: number) => (
+                <li key={index} className="flex items-start gap-3">
+                  <span className="list-icon">✨</span>
+                  <span className="flex-1">{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>{(typeof reflectionData.highlights === 'string' && reflectionData.highlights !== '7' && reflectionData.highlights.trim() !== '') ? reflectionData.highlights : <span className="journal-empty-content">No highlights added</span>}</p>
+          )}
+        </section>
+        
+        <section className="journal-section">
+          <h3>Challenges & Lessons</h3>
+          <p>{(typeof reflectionData.challenges === 'string' && reflectionData.challenges !== '7' && reflectionData.challenges.trim() !== '') ? reflectionData.challenges : <span className="journal-empty-content">No challenges noted</span>}</p>
+        </section>
+        
+        <section className="journal-section">
+          <h3>Tomorrow's Focus</h3>
+          <p>{(typeof reflectionData.tomorrow === 'string' && reflectionData.tomorrow !== '7' && reflectionData.tomorrow.trim() !== '') ? reflectionData.tomorrow : <span className="journal-empty-content">No focus set for tomorrow</span>}</p>
+        </section>
+        
+        {reflectionData.notes && (
+          <section className="journal-section">
+            <h3>Additional Notes</h3>
+            <p>{reflectionData.notes}</p>
+          </section>
+        )}
+      </div>
+    );
+  };
+
   interface GratitudeData {
     gratitudes?: string[];
     reflection?: string;
@@ -401,11 +550,42 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
 
   const content = parseContent(entry.content);
 
-  // If content is a string, render as HTML
+  // If content is a string, render as markdown
   if (typeof content === 'string') {
     return (
-      <div className={`journal-content ${className} prose prose-theme max-w-none`}>
-        <div dangerouslySetInnerHTML={{ __html: content }} />
+      <div className={`journal-content ${className}`}>
+        <ReactMarkdown
+          components={{
+            h1: ({ children }) => <h1 className="text-3xl font-bold mt-8 mb-4">{children}</h1>,
+            h2: ({ children }) => <h2 className="text-2xl font-semibold mt-6 mb-3">{children}</h2>,
+            h3: ({ children }) => <h3 className="text-xl font-semibold mt-4 mb-2">{children}</h3>,
+            h4: ({ children }) => <h4 className="text-lg font-medium mt-3 mb-2">{children}</h4>,
+            p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+            ul: ({ children }) => <ul className="mb-4 space-y-2 ml-6">{children}</ul>,
+            ol: ({ children }) => <ol className="mb-4 space-y-2 ml-6 list-decimal">{children}</ol>,
+            li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-accent pl-4 py-2 my-4 italic opacity-90">
+                {children}
+              </blockquote>
+            ),
+            code: ({ children, ...props }) => {
+              return (
+                <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm" {...props}>
+                  {children}
+                </code>
+              );
+            },
+            hr: () => <hr className="my-8 border-t border-gray-200" />,
+            a: ({ href, children }) => (
+              <a href={href} className="text-accent hover:underline" target="_blank" rel="noopener noreferrer">
+                {children}
+              </a>
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       </div>
     );
   }
