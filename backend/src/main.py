@@ -225,6 +225,20 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 elif http_method == 'DELETE':
                     handler = delete_journal_entry_handler
         
+        # Check for share-specific routes (generic endpoint)
+        elif len(path_parts) >= 3 and path_parts[1] == 'shares':
+            # /shares/{shareId}
+            share_id = path_parts[2]
+            if 'pathParameters' not in event:
+                event['pathParameters'] = {}
+            event['pathParameters']['shareId'] = share_id
+            if http_method == 'DELETE':
+                handler = revoke_share_handler
+        
+        # Check for AI share routes
+        elif path == '/ai-shares' and http_method == 'POST':
+            handler = create_ai_share_handler
+        
         # Check for encryption-specific routes with parameters
         elif len(path_parts) >= 3 and path_parts[1] == 'encryption':
             if len(path_parts) >= 4 and path_parts[2] == 'check':
