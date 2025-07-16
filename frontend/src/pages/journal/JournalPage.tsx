@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Plus, Calendar, FileText, Edit2, Lock } from 'lucide-react';
+import { Plus, Calendar, FileText, Edit2, Lock, Share2 } from 'lucide-react';
 import { Button } from '../../components/common';
 import { getStats } from '../../api/journal';
 import { EncryptionOnboarding } from '../../components/EncryptionOnboarding';
@@ -13,12 +13,16 @@ import { SearchResultsSummary } from '../../features/journal/components/SearchRe
 import { shouldTreatAsEncrypted, getSafeExcerpt } from '../../utils/encryption-utils';
 import { JournalParsingDebug } from '../../features/journal/components/Debug/JournalParsingDebug';
 import { useFeatureFlag, useFeatureFlags } from '../../hooks/useFeatureFlags';
+import ShareDialog from '../../components/encryption/ShareDialog';
+import type { JournalEntry } from '../../types/journal';
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
   const { isEncryptionEnabled, isEncryptionSetup } = useEncryption();
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const debugPanelsEnabled = useFeatureFlag('debugPanels');
   const { flags, isLoading: flagsLoading, error: flagsError } = useFeatureFlags();
 
@@ -215,15 +219,31 @@ const JournalPage: React.FC = () => {
               )}
 
               <div className="flex items-center justify-between">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/journal/${entry.entryId}`);
-                  }}
-                  className="text-primary-600 hover:text-primary-700"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/journal/${entry.entryId}`);
+                    }}
+                    className="text-primary-600 hover:text-primary-700 p-1"
+                    title="Edit Entry"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                  {shouldTreatAsEncrypted(entry) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedEntry(entry);
+                        setShowShareDialog(true);
+                      }}
+                      className="text-blue-600 hover:text-blue-700 p-1"
+                      title="Share Entry"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
                 {entry.mood && (
                   <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
                     {entry.mood}
@@ -338,6 +358,28 @@ const JournalPage: React.FC = () => {
         <EncryptionOnboarding 
           variant="modal" 
           onDismiss={handleDismissEncryptionModal} 
+        />
+      )}
+      
+      {/* Share Dialog */}
+      {showShareDialog && selectedEntry && (
+        <ShareDialog
+          isOpen={showShareDialog}
+          onClose={() => {
+            setShowShareDialog(false);
+            setSelectedEntry(null);
+          }}
+          items={[{
+            id: selectedEntry.entryId,
+            title: selectedEntry.title,
+            type: 'journal',
+            createdAt: selectedEntry.createdAt,
+            encrypted: shouldTreatAsEncrypted(selectedEntry),
+          }]}
+          onShare={(tokens) => {
+            console.log('Shares created:', tokens);
+            // Optionally refresh the entries or show a success message
+          }}
         />
       )}
     </div>
