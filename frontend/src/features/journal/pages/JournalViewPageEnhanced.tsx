@@ -123,6 +123,10 @@ export const JournalViewPageEnhanced: React.FC = () => {
   const decryptContent = React.useCallback(async () => {
     if (!entry) return;
     
+    console.log('[Decryption] Starting decryption for entry:', entry.entryId);
+    console.log('[Decryption] Entry has encryptedKey:', !!entry.encryptedKey);
+    console.log('[Decryption] Entry has encryptionIv:', !!entry.encryptionIv);
+    
     try {
       setIsDecrypting(true);
       const encryptionService = getEncryptionService();
@@ -132,13 +136,15 @@ export const JournalViewPageEnhanced: React.FC = () => {
         iv: entry.encryptionIv!,
       });
       
+      console.log('[Decryption] Successfully decrypted, content length:', decrypted.length);
+      
       // Create a decrypted version of the entry
       setDecryptedEntry({
         ...entry,
         content: decrypted
       });
     } catch (error) {
-      console.error('Failed to decrypt content:', error);
+      console.error('[Decryption] Failed to decrypt content:', error);
       setDecryptedEntry(null);
     } finally {
       setIsDecrypting(false);
@@ -147,13 +153,22 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
   // Handle decryption when entry loads
   React.useEffect(() => {
-    if (!entry) return;
+    if (!entry) {
+      console.log('[Decryption Effect] No entry yet');
+      return;
+    }
 
     const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
+    console.log('[Decryption Effect] Entry loaded:', entry.entryId);
+    console.log('[Decryption Effect] isEncrypted flag:', entry.isEncrypted);
+    console.log('[Decryption Effect] shouldTreatAsEncrypted:', isActuallyEncrypted);
+    console.log('[Decryption Effect] Has encryptedKey:', !!entry.encryptedKey);
     
     if (isActuallyEncrypted && entry.encryptedKey) {
+      console.log('[Decryption Effect] Starting decryption...');
       decryptContent();
     } else {
+      console.log('[Decryption Effect] Using entry as-is (not encrypted or no key)');
       setDecryptedEntry(entry);
     }
   }, [entry, decryptContent]);
@@ -373,26 +388,59 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
         {/* Content */}
         <div className="glass rounded-2xl p-8 mb-6">
-          {isDecrypting ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
-              <p className="text-muted">Decrypting content...</p>
-            </div>
-          ) : decryptedEntry ? (
-            <JournalEntryRenderer entry={decryptedEntry} />
-          ) : entry?.isEncrypted ? (
-            <div className="text-center py-12">
-              <Lock className="w-12 h-12 text-muted mx-auto mb-4" />
-              <p className="text-muted">This entry is encrypted</p>
-              <p className="text-sm text-muted mt-2">
-                Content could not be decrypted
-              </p>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted">No content available</p>
-            </div>
-          )}
+          {(() => {
+            // Debug logging
+            console.log('[Render] isDecrypting:', isDecrypting);
+            console.log('[Render] decryptedEntry exists:', !!decryptedEntry);
+            console.log('[Render] entry.isEncrypted:', entry?.isEncrypted);
+            console.log('[Render] shouldTreatAsEncrypted:', entry ? shouldTreatAsEncrypted(entry) : false);
+            
+            if (isDecrypting) {
+              return (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+                  <p className="text-muted">Decrypting content...</p>
+                </div>
+              );
+            }
+            
+            // Check if we should treat this as encrypted
+            const isActuallyEncrypted = entry ? shouldTreatAsEncrypted(entry) : false;
+            
+            if (isActuallyEncrypted && !decryptedEntry) {
+              // Entry is encrypted but we don't have decrypted content
+              return (
+                <div className="text-center py-12">
+                  <Lock className="w-12 h-12 text-muted mx-auto mb-4" />
+                  <p className="text-lg font-semibold text-theme mb-2">This entry is encrypted</p>
+                  <p className="text-sm text-muted">
+                    Unable to decrypt content. Please ensure encryption is unlocked.
+                  </p>
+                  {!isEncryptionSetup && (
+                    <p className="text-sm text-muted mt-2">
+                      Encryption needs to be set up to view this content.
+                    </p>
+                  )}
+                </div>
+              );
+            }
+            
+            if (decryptedEntry) {
+              return <JournalEntryRenderer entry={decryptedEntry} />;
+            }
+            
+            // If not encrypted, show the entry as-is
+            if (entry && !isActuallyEncrypted) {
+              return <JournalEntryRenderer entry={entry} />;
+            }
+            
+            // Fallback
+            return (
+              <div className="text-center py-12">
+                <p className="text-muted">No content available</p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Goal Progress */}

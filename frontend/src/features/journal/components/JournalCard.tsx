@@ -127,7 +127,7 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, clas
 
       {/* Content Preview */}
       <p className="text-sm text-muted line-clamp-3 mb-3">
-        {getSafeExcerpt(entry.content, entry.isEncrypted)}
+        {getSafeExcerpt(entry.content, entry.isEncrypted, 150, entry.encryptedKey, entry.encryptionIv)}
       </p>
 
       {/* Footer */}

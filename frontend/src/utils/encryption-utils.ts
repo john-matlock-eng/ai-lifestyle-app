@@ -87,10 +87,12 @@ export function shouldTreatAsEncrypted(entry: {
 export function getSafeExcerpt(
   content: string, 
   isEncryptedFlag: boolean, 
-  maxLength: number = 150
+  maxLength: number = 150,
+  encryptedKey?: string,
+  encryptionIv?: string
 ): string {
-  // Check if content is actually encrypted
-  const actuallyEncrypted = isEncryptedFlag && isContentActuallyEncrypted(content);
+  // Check if entry should be treated as encrypted
+  const actuallyEncrypted = isEncryptedFlag && (encryptedKey && encryptionIv || isContentActuallyEncrypted(content));
   
   if (actuallyEncrypted) {
     return '🔒 This entry is encrypted. Click to view.';
