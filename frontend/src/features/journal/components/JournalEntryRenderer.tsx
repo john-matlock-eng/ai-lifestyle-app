@@ -673,4 +673,3 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
 };
 
 export default JournalEntryRenderer;
-export { JournalEntryRenderer };
