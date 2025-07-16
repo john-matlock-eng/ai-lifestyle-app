@@ -65,12 +65,52 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isLoadingEntry, setIsLoadingEntry] = useState(false);
   
-  // Draft key for this specific entry/template
-  const draftKey = `${DRAFT_KEY_PREFIX}${entry?.entryId || templateId}-${Date.now()}`;
+  // Draft key for this specific entry/template (without timestamp to avoid duplicates)
+  const draftKey = `${DRAFT_KEY_PREFIX}${entry?.entryId || `new-${templateId}`}`;
   
   // Fetch available goals
   const { data: goalsData } = useGoals({ status: ['active'] });
   const availableGoals = goalsData?.goals || [];
+  
+  // Clean old drafts on mount (once per session)
+  useEffect(() => {
+    const cleanupKey = 'journal-draft-cleanup-' + new Date().toDateString();
+    if (!sessionStorage.getItem(cleanupKey)) {
+      console.log('[EnhancedJournalEditor] Running draft cleanup...');
+      
+      // Remove drafts older than 14 days
+      const cutoff = Date.now() - (14 * 24 * 60 * 60 * 1000);
+      let removedCount = 0;
+      const keysToRemove: string[] = [];
+      
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(DRAFT_KEY_PREFIX)) {
+          try {
+            const draftData = JSON.parse(localStorage.getItem(key) || '{}');
+            const lastSaved = draftData.metadata?.lastSavedAt;
+            if (!lastSaved || new Date(lastSaved).getTime() < cutoff) {
+              keysToRemove.push(key);
+            }
+          } catch {
+            // Remove corrupted drafts
+            keysToRemove.push(key);
+          }
+        }
+      }
+      
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        removedCount++;
+      });
+      
+      if (removedCount > 0) {
+        console.log(`[EnhancedJournalEditor] Removed ${removedCount} old drafts`);
+      }
+      
+      sessionStorage.setItem(cleanupKey, 'done');
+    }
+  }, []);
   
   // Helper functions
   const getDefaultValue = useCallback((type: string): string | number | string[] | Record<string, boolean> => {
@@ -160,7 +200,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
     return () => clearInterval(interval);
   }, [startTime]);
   
-  // Auto-save to localStorage
+  // Auto-save to localStorage with better error handling
   useEffect(() => {
     if (!autoSave || isLoadingEntry) return;
     
@@ -175,7 +215,44 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       }
     };
     
-    localStorage.setItem(draftKey, JSON.stringify(draft));
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(draft));
+    } catch (e) {
+      if (e instanceof Error && e.name === 'QuotaExceededError') {
+        console.warn('[EnhancedJournalEditor] Storage quota exceeded, cleaning old drafts...');
+        
+        // Emergency cleanup - remove old drafts
+        const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 days
+        const keysToRemove: string[] = [];
+        
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith(DRAFT_KEY_PREFIX) && key !== draftKey) {
+            try {
+              const draftData = JSON.parse(localStorage.getItem(key) || '{}');
+              const lastSaved = draftData.metadata?.lastSavedAt;
+              if (!lastSaved || new Date(lastSaved).getTime() < cutoff) {
+                keysToRemove.push(key);
+              }
+            } catch {
+              // Remove corrupted drafts
+              keysToRemove.push(key);
+            }
+          }
+        }
+        
+        // Remove old drafts
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        console.log(`[EnhancedJournalEditor] Removed ${keysToRemove.length} old drafts`);
+        
+        // Try saving again
+        try {
+          localStorage.setItem(draftKey, JSON.stringify(draft));
+        } catch (e2) {
+          console.error('[EnhancedJournalEditor] Still cannot save draft after cleanup:', e2);
+        }
+      }
+    }
     
     return () => {
       // Clean up draft on unmount if saved successfully
