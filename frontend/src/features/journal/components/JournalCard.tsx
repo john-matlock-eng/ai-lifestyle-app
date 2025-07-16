@@ -1,20 +1,23 @@
 // JournalCard.tsx
-import React from 'react';
-import { 
-  Calendar, 
-  FileText, 
+import React from "react";
+import {
+  Calendar,
+  FileText,
   Lock,
   Unlock,
   Hash,
   Target,
   Share2,
-  Users
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import type { JournalEntry } from '@/types/journal';
-import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
-import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
-import { shouldTreatAsEncrypted, getSafeExcerpt } from '@/utils/encryption-utils';
+  Users,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import type { JournalEntry } from "@/types/journal";
+import { getTemplateIcon, getTemplateName } from "../templates/template-utils";
+import { getEmotionById, getEmotionEmoji } from "./EmotionSelector/emotionData";
+import {
+  shouldTreatAsEncrypted,
+  getSafeExcerpt,
+} from "@/utils/encryption-utils";
 
 interface JournalCardProps {
   entry: JournalEntry;
@@ -23,28 +26,33 @@ interface JournalCardProps {
   className?: string;
 }
 
-const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, className = '' }) => {
+const JournalCard: React.FC<JournalCardProps> = ({
+  entry,
+  onClick,
+  onShare,
+  className = "",
+}) => {
   const getMoodDisplay = (mood?: string) => {
     if (!mood) return null;
-    
+
     // Check if it's a new emotion ID from the emotion wheel
     const emotion = getEmotionById(mood);
     if (emotion) {
       return {
         emoji: getEmotionEmoji(mood),
-        label: emotion.label
+        label: emotion.label,
       };
     }
-    
+
     // Fallback for old mood values
     const legacyMoodMap: Record<string, { emoji: string; label: string }> = {
-      amazing: { emoji: '🤩', label: 'Amazing' },
-      good: { emoji: '😊', label: 'Good' },
-      okay: { emoji: '😐', label: 'Okay' },
-      stressed: { emoji: '😰', label: 'Stressed' }
+      amazing: { emoji: "🤩", label: "Amazing" },
+      good: { emoji: "😊", label: "Good" },
+      okay: { emoji: "😐", label: "Okay" },
+      stressed: { emoji: "😰", label: "Stressed" },
     };
-    
-    return legacyMoodMap[mood] || { emoji: '💭', label: mood };
+
+    return legacyMoodMap[mood] || { emoji: "💭", label: mood };
   };
 
   // Check if content is actually encrypted
@@ -71,7 +79,9 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, clas
           <div className="flex items-center gap-3 mt-1 text-xs text-muted">
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
-              {formatDistanceToNow(new Date(entry.createdAt), { addSuffix: true })}
+              {formatDistanceToNow(new Date(entry.createdAt), {
+                addSuffix: true,
+              })}
             </span>
             <span className="flex items-center gap-1">
               <FileText className="w-3 h-3" />
@@ -79,20 +89,23 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, clas
             </span>
           </div>
         </div>
-        
+
         {/* Mood & Status indicators */}
         <div className="flex items-center gap-2">
-          {entry.mood && (() => {
-            const moodDisplay = getMoodDisplay(entry.mood);
-            return moodDisplay && (
-              <span 
-                className="text-lg" 
-                title={`Feeling ${moodDisplay.label.toLowerCase()}`}
-              >
-                {moodDisplay.emoji}
-              </span>
-            );
-          })()}
+          {entry.mood &&
+            (() => {
+              const moodDisplay = getMoodDisplay(entry.mood);
+              return (
+                moodDisplay && (
+                  <span
+                    className="text-lg"
+                    title={`Feeling ${moodDisplay.label.toLowerCase()}`}
+                  >
+                    {moodDisplay.emoji}
+                  </span>
+                )
+              );
+            })()}
           {entry.sharedWith && entry.sharedWith.length > 0 && (
             <div className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-600 rounded-full text-xs">
               <Users className="w-3 h-3" />
@@ -100,7 +113,10 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, clas
             </div>
           )}
           {isActuallyEncrypted ? (
-            <div className="p-1.5 bg-accent/20 rounded-lg" title="Encrypted entry">
+            <div
+              className="p-1.5 bg-accent/20 rounded-lg"
+              title="Encrypted entry"
+            >
               <Lock className="w-4 h-4 text-accent" />
             </div>
           ) : (
@@ -127,7 +143,13 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, clas
 
       {/* Content Preview */}
       <p className="text-sm text-muted line-clamp-3 mb-3">
-        {getSafeExcerpt(entry.content, entry.isEncrypted, 150, entry.encryptedKey, entry.encryptionIv)}
+        {getSafeExcerpt(
+          entry.content,
+          entry.isEncrypted,
+          150,
+          entry.encryptedKey,
+          entry.encryptionIv,
+        )}
       </p>
 
       {/* Footer */}
@@ -135,12 +157,14 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, clas
         {/* Template */}
         <div className="flex items-center gap-2">
           <span className="text-sm">{getTemplateIcon(entry.template)}</span>
-          <span className="text-xs text-muted">{getTemplateName(entry.template)}</span>
+          <span className="text-xs text-muted">
+            {getTemplateName(entry.template)}
+          </span>
         </div>
 
         {/* Tags, Goals, and Sharing */}
         <div className="flex items-center gap-2">
-          {entry.tags.slice(0, 2).map(tag => (
+          {entry.tags.slice(0, 2).map((tag) => (
             <span key={tag} className="tag tag-xs">
               <Hash className="w-2 h-2" />
               {tag}

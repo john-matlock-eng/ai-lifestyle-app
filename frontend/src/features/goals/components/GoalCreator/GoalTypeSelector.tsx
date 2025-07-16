@@ -1,7 +1,7 @@
-import React from 'react';
-import { Target, Repeat, Trophy, Flame, ShieldAlert } from 'lucide-react';
-import type { GoalPattern, GoalPatternConfig } from '../../types/goal.types';
-import { GOAL_PATTERN_COLORS } from '../../types/goal.types';
+import React from "react";
+import { Target, Repeat, Trophy, Flame, ShieldAlert } from "lucide-react";
+import type { GoalPattern, GoalPatternConfig } from "../../types/goal.types";
+import { GOAL_PATTERN_COLORS } from "../../types/goal.types";
 
 interface GoalTypeSelectorProps {
   onSelectType: (pattern: GoalPattern) => void;
@@ -10,50 +10,50 @@ interface GoalTypeSelectorProps {
 
 const goalPatternConfigs: GoalPatternConfig[] = [
   {
-    pattern: 'recurring',
-    title: 'Recurring Goal',
-    description: 'Do something regularly',
+    pattern: "recurring",
+    title: "Recurring Goal",
+    description: "Do something regularly",
     icon: Repeat,
     color: GOAL_PATTERN_COLORS.recurring,
-    example: 'Exercise 3 times per week',
+    example: "Exercise 3 times per week",
   },
   {
-    pattern: 'milestone',
-    title: 'Milestone Goal',
-    description: 'Reach a total amount',
+    pattern: "milestone",
+    title: "Milestone Goal",
+    description: "Reach a total amount",
     icon: Trophy,
     color: GOAL_PATTERN_COLORS.milestone,
-    example: 'Write 50,000 words',
+    example: "Write 50,000 words",
   },
   {
-    pattern: 'target',
-    title: 'Target Goal',
-    description: 'Achieve by a specific date',
+    pattern: "target",
+    title: "Target Goal",
+    description: "Achieve by a specific date",
     icon: Target,
     color: GOAL_PATTERN_COLORS.target,
-    example: 'Lose 20 lbs by summer',
+    example: "Lose 20 lbs by summer",
   },
   {
-    pattern: 'streak',
-    title: 'Streak Goal',
-    description: 'Build consecutive habits',
+    pattern: "streak",
+    title: "Streak Goal",
+    description: "Build consecutive habits",
     icon: Flame,
     color: GOAL_PATTERN_COLORS.streak,
-    example: '100 days of meditation',
+    example: "100 days of meditation",
   },
   {
-    pattern: 'limit',
-    title: 'Limit Goal',
-    description: 'Stay within boundaries',
+    pattern: "limit",
+    title: "Limit Goal",
+    description: "Stay within boundaries",
     icon: ShieldAlert,
     color: GOAL_PATTERN_COLORS.limit,
-    example: 'Screen time under 2 hours/day',
+    example: "Screen time under 2 hours/day",
   },
 ];
 
 export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
   onSelectType,
-  className = '',
+  className = "",
 }) => {
   return (
     <div className={`space-y-6 ${className}`}>
@@ -85,11 +85,12 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
               <div className="relative space-y-3">
                 <div
                   className="inline-flex p-3 rounded-lg"
-                  style={{ backgroundColor: `${config.color}20`, color: config.color }}
+                  style={{
+                    backgroundColor: `${config.color}20`,
+                    color: config.color,
+                  }}
                 >
-                  <Icon
-                    className="h-6 w-6"
-                  />
+                  <Icon className="h-6 w-6" />
                 </div>
 
                 <div>
@@ -120,7 +121,7 @@ export const GoalTypeSelector: React.FC<GoalTypeSelectorProps> = ({
 
       <div className="text-center text-sm text-[var(--text-muted)]">
         <p>
-          💡 <strong>Tip:</strong> Not sure which type to choose? Think about{' '}
+          💡 <strong>Tip:</strong> Not sure which type to choose? Think about{" "}
           <span className="font-medium">how you'll measure success</span>
         </p>
       </div>

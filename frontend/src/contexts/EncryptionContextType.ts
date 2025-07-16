@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext } from "react";
 
 export interface EncryptionContextValue {
   isEncryptionEnabled: boolean;
@@ -6,10 +6,14 @@ export interface EncryptionContextValue {
   isEncryptionLocked: boolean;
   encryptionKeyId: string | null;
   isCheckingAutoUnlock: boolean;
+  needsEncryptionReset: boolean;
   unlockEncryption: (password: string) => Promise<void>;
   lockEncryption: () => void;
   checkEncryptionStatus: () => Promise<void>;
   clearStoredPassword: () => void;
+  resetEncryption: (password: string) => Promise<void>;
 }
 
-export const EncryptionContext = createContext<EncryptionContextValue | undefined>(undefined);
+export const EncryptionContext = createContext<
+  EncryptionContextValue | undefined
+>(undefined);

@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { Plus, Calendar, FileText, Edit2, Lock, Share2 } from 'lucide-react';
-import { Button } from '../../components/common';
-import { getStats } from '../../api/journal';
-import { EncryptionOnboarding } from '../../components/EncryptionOnboarding';
-import { useEncryption } from '../../contexts/useEncryption';
-import { useJournalSearch } from '../../features/journal/hooks/useJournalSearch';
-import { JournalSearchBar } from '../../features/journal/components/JournalSearchBar';
-import { SearchResultsSummary } from '../../features/journal/components/SearchResultsSummary';
-import { shouldTreatAsEncrypted, getSafeExcerpt } from '../../utils/encryption-utils';
-import { JournalParsingDebug } from '../../features/journal/components/Debug/JournalParsingDebug';
-import { useFeatureFlag, useFeatureFlags } from '../../hooks/useFeatureFlags';
-import ShareDialog from '../../components/encryption/ShareDialog';
-import type { JournalEntry } from '../../types/journal';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Plus, Calendar, FileText, Edit2, Lock, Share2 } from "lucide-react";
+import { Button } from "../../components/common";
+import { getStats } from "../../api/journal";
+import { EncryptionOnboarding } from "../../components/EncryptionOnboarding";
+import { useEncryption } from "../../contexts/useEncryption";
+import { useJournalSearch } from "../../features/journal/hooks/useJournalSearch";
+import { JournalSearchBar } from "../../features/journal/components/JournalSearchBar";
+import { SearchResultsSummary } from "../../features/journal/components/SearchResultsSummary";
+import {
+  shouldTreatAsEncrypted,
+  getSafeExcerpt,
+} from "../../utils/encryption-utils";
+import { JournalParsingDebug } from "../../features/journal/components/Debug/JournalParsingDebug";
+import { useFeatureFlag, useFeatureFlags } from "../../hooks/useFeatureFlags";
+import ShareDialog from "../../components/encryption/ShareDialog";
+import type { JournalEntry } from "../../types/journal";
 
 const JournalPage: React.FC = () => {
   const navigate = useNavigate();
@@ -23,20 +26,30 @@ const JournalPage: React.FC = () => {
   const [showDebug, setShowDebug] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
-  const debugPanelsEnabled = useFeatureFlag('debugPanels');
-  const { flags, isLoading: flagsLoading, error: flagsError } = useFeatureFlags();
+  const debugPanelsEnabled = useFeatureFlag("debugPanels");
+  const {
+    flags,
+    isLoading: flagsLoading,
+    error: flagsError,
+  } = useFeatureFlags();
 
   // Check if it's the user's first visit to journal page
   useEffect(() => {
-    const hasSeenEncryptionPrompt = localStorage.getItem('hasSeenJournalEncryptionPrompt');
-    if (!hasSeenEncryptionPrompt && !isEncryptionEnabled && !isEncryptionSetup) {
+    const hasSeenEncryptionPrompt = localStorage.getItem(
+      "hasSeenJournalEncryptionPrompt",
+    );
+    if (
+      !hasSeenEncryptionPrompt &&
+      !isEncryptionEnabled &&
+      !isEncryptionSetup
+    ) {
       setShowEncryptionModal(true);
     }
   }, [isEncryptionEnabled, isEncryptionSetup]);
 
   const handleDismissEncryptionModal = () => {
     setShowEncryptionModal(false);
-    localStorage.setItem('hasSeenJournalEncryptionPrompt', 'true');
+    localStorage.setItem("hasSeenJournalEncryptionPrompt", "true");
   };
 
   // Use the new journal search hook
@@ -52,12 +65,12 @@ const JournalPage: React.FC = () => {
     availableTemplates,
     page,
     setPage,
-    hasMore
+    hasMore,
   } = useJournalSearch({ limit: 12 });
 
   // Fetch journal stats
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['journal', 'stats'],
+    queryKey: ["journal", "stats"],
     queryFn: getStats,
   });
 
@@ -66,7 +79,7 @@ const JournalPage: React.FC = () => {
   };
 
   const handleCreateNew = () => {
-    navigate('/journal/new');
+    navigate("/journal/new");
   };
 
   const handleEntryClick = (entryId: string) => {
@@ -102,19 +115,27 @@ const JournalPage: React.FC = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-surface rounded-lg p-4 text-center">
-          <p className="text-3xl font-bold text-primary-600">{stats.totalEntries}</p>
+          <p className="text-3xl font-bold text-primary-600">
+            {stats.totalEntries}
+          </p>
           <p className="text-sm text-muted">Total Entries</p>
         </div>
         <div className="bg-surface rounded-lg p-4 text-center">
-          <p className="text-3xl font-bold text-primary-600">{stats.currentStreak}</p>
+          <p className="text-3xl font-bold text-primary-600">
+            {stats.currentStreak}
+          </p>
           <p className="text-sm text-muted">Current Streak</p>
         </div>
         <div className="bg-surface rounded-lg p-4 text-center">
-          <p className="text-3xl font-bold text-primary-600">{stats.totalWords.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-primary-600">
+            {stats.totalWords.toLocaleString()}
+          </p>
           <p className="text-sm text-muted">Total Words</p>
         </div>
         <div className="bg-surface rounded-lg p-4 text-center">
-          <p className="text-3xl font-bold text-primary-600">{stats.entriesThisWeek}</p>
+          <p className="text-3xl font-bold text-primary-600">
+            {stats.entriesThisWeek}
+          </p>
           <p className="text-sm text-muted">This Week</p>
         </div>
       </div>
@@ -143,7 +164,9 @@ const JournalPage: React.FC = () => {
     if (entriesError) {
       return (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-700">Failed to load journal entries. Please try again.</p>
+          <p className="text-red-700">
+            Failed to load journal entries. Please try again.
+          </p>
         </div>
       );
     }
@@ -153,17 +176,37 @@ const JournalPage: React.FC = () => {
         <div className="bg-surface rounded-lg p-8 text-center">
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">
-            {filters.query || filters.tags?.length || filters.template || filters.mood || filters.startDate || filters.endDate
-              ? 'No matching entries found'
-              : 'No journal entries yet'}
+            {filters.query ||
+            filters.tags?.length ||
+            filters.template ||
+            filters.mood ||
+            filters.startDate ||
+            filters.endDate
+              ? "No matching entries found"
+              : "No journal entries yet"}
           </h3>
           <p className="text-muted mb-4">
-            {filters.query || filters.tags?.length || filters.template || filters.mood || filters.startDate || filters.endDate
-              ? 'Try adjusting your search filters'
-              : 'Start your journaling journey by creating your first entry'}
+            {filters.query ||
+            filters.tags?.length ||
+            filters.template ||
+            filters.mood ||
+            filters.startDate ||
+            filters.endDate
+              ? "Try adjusting your search filters"
+              : "Start your journaling journey by creating your first entry"}
           </p>
-          {!(filters.query || filters.tags?.length || filters.template || filters.mood || filters.startDate || filters.endDate) && (
-            <Button onClick={handleCreateNew} leftIcon={<Plus className="h-4 w-4" />}>
+          {!(
+            filters.query ||
+            filters.tags?.length ||
+            filters.template ||
+            filters.mood ||
+            filters.startDate ||
+            filters.endDate
+          ) && (
+            <Button
+              onClick={handleCreateNew}
+              leftIcon={<Plus className="h-4 w-4" />}
+            >
               Create First Entry
             </Button>
           )}
@@ -181,17 +224,22 @@ const JournalPage: React.FC = () => {
               onClick={() => handleEntryClick(entry.entryId)}
             >
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold truncate flex-1">{entry.title}</h3>
+                <h3 className="text-lg font-semibold truncate flex-1">
+                  {entry.title}
+                </h3>
                 {shouldTreatAsEncrypted(entry) && (
-                  <div className="flex-shrink-0 ml-2" title="End-to-End Encrypted">
+                  <div
+                    className="flex-shrink-0 ml-2"
+                    title="End-to-End Encrypted"
+                  >
                     <Lock className="h-4 w-4 text-blue-600" />
                   </div>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2 text-sm text-muted mb-2">
                 <Calendar className="h-4 w-4" />
-                <span>{format(new Date(entry.createdAt), 'MMM d, yyyy')}</span>
+                <span>{format(new Date(entry.createdAt), "MMM d, yyyy")}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-muted mb-4">
@@ -206,7 +254,10 @@ const JournalPage: React.FC = () => {
               {entry.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {entry.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                    <span
+                      key={tag}
+                      className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -290,11 +341,15 @@ const JournalPage: React.FC = () => {
         {(flagsError || flagsLoading) && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
             <p className="text-sm">
-              Feature Flags Status: {flagsLoading ? 'Loading...' : 'Error loading flags'}
-              {flagsError && <span className="text-red-600 ml-2">{flagsError.message}</span>}
+              Feature Flags Status:{" "}
+              {flagsLoading ? "Loading..." : "Error loading flags"}
+              {flagsError && (
+                <span className="text-red-600 ml-2">{flagsError.message}</span>
+              )}
             </p>
             <p className="text-xs text-gray-600 mt-1">
-              Flags: {JSON.stringify(flags)} | debugPanelsEnabled: {String(debugPanelsEnabled)}
+              Flags: {JSON.stringify(flags)} | debugPanelsEnabled:{" "}
+              {String(debugPanelsEnabled)}
             </p>
           </div>
         )}
@@ -303,20 +358,28 @@ const JournalPage: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-theme">My Journal</h1>
-            <p className="text-muted mt-1">Track your thoughts, progress, and reflections</p>
+            <p className="text-muted mt-1">
+              Track your thoughts, progress, and reflections
+            </p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleCreateNew} leftIcon={<Plus className="h-4 w-4" />} size="lg">
+            <Button
+              onClick={handleCreateNew}
+              leftIcon={<Plus className="h-4 w-4" />}
+              size="lg"
+            >
               New Entry
             </Button>
             {/* Debug button - controlled by feature flag or dev environment */}
-            {(debugPanelsEnabled || window.location.hostname.includes('cloudfront.net') || window.location.hostname === 'localhost') && (
-              <Button 
-                onClick={() => setShowDebug(!showDebug)} 
+            {(debugPanelsEnabled ||
+              window.location.hostname.includes("cloudfront.net") ||
+              window.location.hostname === "localhost") && (
+              <Button
+                onClick={() => setShowDebug(!showDebug)}
                 variant="outline"
                 size="lg"
               >
-                {showDebug ? 'Hide' : 'Show'} Debug
+                {showDebug ? "Hide" : "Show"} Debug
               </Button>
             )}
           </div>
@@ -352,15 +415,15 @@ const JournalPage: React.FC = () => {
         {/* Entries Grid */}
         {renderEntries()}
       </div>
-      
+
       {/* Encryption Onboarding Modal */}
       {showEncryptionModal && (
-        <EncryptionOnboarding 
-          variant="modal" 
-          onDismiss={handleDismissEncryptionModal} 
+        <EncryptionOnboarding
+          variant="modal"
+          onDismiss={handleDismissEncryptionModal}
         />
       )}
-      
+
       {/* Share Dialog */}
       {showShareDialog && selectedEntry && (
         <ShareDialog
@@ -369,15 +432,17 @@ const JournalPage: React.FC = () => {
             setShowShareDialog(false);
             setSelectedEntry(null);
           }}
-          items={[{
-            id: selectedEntry.entryId,
-            title: selectedEntry.title,
-            type: 'journal',
-            createdAt: selectedEntry.createdAt,
-            encrypted: shouldTreatAsEncrypted(selectedEntry),
-          }]}
+          items={[
+            {
+              id: selectedEntry.entryId,
+              title: selectedEntry.title,
+              type: "journal",
+              createdAt: selectedEntry.createdAt,
+              encrypted: shouldTreatAsEncrypted(selectedEntry),
+            },
+          ]}
           onShare={(tokens) => {
-            console.log('Shares created:', tokens);
+            console.log("Shares created:", tokens);
             // Optionally refresh the entries or show a success message
           }}
         />

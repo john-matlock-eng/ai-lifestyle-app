@@ -1,6 +1,6 @@
 // EnhancedJournalEditor.tsx - Fixed version
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
+import React, { useState, useEffect, useCallback } from "react";
+import {
   Save,
   Check,
   Timer,
@@ -8,43 +8,45 @@ import {
   Hash,
   Calendar,
   Lock,
-  Unlock
-} from 'lucide-react';
-import { Button } from '@/components/common';
-import { useGoals } from '@/features/goals/hooks/useGoals';
-import type { Goal } from '@/features/goals/types/api.types';
+  Unlock,
+} from "lucide-react";
+import { Button } from "@/components/common";
+import { useGoals } from "@/features/goals/hooks/useGoals";
+import type { Goal } from "@/features/goals/types/api.types";
 // import { journalStorage } from '../../services/JournalStorageService';
-import type { 
+import type {
   JournalEntry,
   CreateJournalEntryRequest,
   UpdateJournalEntryRequest,
   JournalTemplate as JournalTemplateEnum,
-  GoalProgress
-} from '@/types/journal';
-import type { 
+  GoalProgress,
+} from "@/types/journal";
+import type {
   SectionResponse,
-  JournalDraft
-} from '../../types/enhanced-template.types';
-import { enhancedJournalContentUtils } from '../../templates/enhanced-template-content-utils';
-import { enhancedTemplates } from '../../templates/enhanced-templates';
-import SectionEditor from './SectionEditor';
-import { getEncryptionService } from '@/services/encryption';
-import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
-import { useEncryption } from '@/contexts/useEncryption';
+  JournalDraft,
+} from "../../types/enhanced-template.types";
+import { enhancedJournalContentUtils } from "../../templates/enhanced-template-content-utils";
+import { enhancedTemplates } from "../../templates/enhanced-templates";
+import SectionEditor from "./SectionEditor";
+import { getEncryptionService } from "@/services/encryption";
+import { shouldTreatAsEncrypted } from "@/utils/encryption-utils";
+import { useEncryption } from "@/contexts/useEncryption";
 
 export interface EnhancedJournalEditorProps {
   templateId?: JournalTemplateEnum;
   entry?: JournalEntry;
-  onSave: (request: CreateJournalEntryRequest | UpdateJournalEntryRequest) => Promise<void>;
+  onSave: (
+    request: CreateJournalEntryRequest | UpdateJournalEntryRequest,
+  ) => Promise<void>;
   onCancel?: () => void;
   autoSave?: boolean;
   showEncryption?: boolean;
 }
 
-const DRAFT_KEY_PREFIX = 'journal-draft-';
+const DRAFT_KEY_PREFIX = "journal-draft-";
 
 export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
-  templateId = 'blank',
+  templateId = "blank",
   entry,
   onSave,
   onCancel,
@@ -52,46 +54,49 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
   showEncryption = true,
 }) => {
   // Get template configuration - use entry's template if editing
-  const template = enhancedTemplates[entry?.template || templateId] || enhancedTemplates.blank;
-  
+  const template =
+    enhancedTemplates[entry?.template || templateId] || enhancedTemplates.blank;
+
   // Get encryption context
   const { isEncryptionEnabled, isEncryptionLocked } = useEncryption();
-  
+
   // State
-  const [title, setTitle] = useState(entry?.title || '');
+  const [title, setTitle] = useState(entry?.title || "");
   const [sections, setSections] = useState<SectionResponse[]>([]);
   const [tags, setTags] = useState<string[]>(entry?.tags || []);
   const [isEncrypted, setIsEncrypted] = useState(entry?.isEncrypted || false);
-  const [linkedGoalIds, setLinkedGoalIds] = useState<string[]>(entry?.linkedGoalIds || []);
+  const [linkedGoalIds, setLinkedGoalIds] = useState<string[]>(
+    entry?.linkedGoalIds || [],
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [startTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isLoadingEntry, setIsLoadingEntry] = useState(false);
-  
+
   // Draft key for this specific entry/template (without timestamp to avoid duplicates)
   const draftKey = `${DRAFT_KEY_PREFIX}${entry?.entryId || `new-${templateId}`}`;
-  
+
   // Fetch available goals
-  const { data: goalsData } = useGoals({ status: ['active'] });
+  const { data: goalsData } = useGoals({ status: ["active"] });
   const availableGoals = goalsData?.goals || [];
-  
+
   // Clean old drafts on mount (once per session)
   useEffect(() => {
-    const cleanupKey = 'journal-draft-cleanup-' + new Date().toDateString();
+    const cleanupKey = "journal-draft-cleanup-" + new Date().toDateString();
     if (!sessionStorage.getItem(cleanupKey)) {
-      console.log('[EnhancedJournalEditor] Running draft cleanup...');
-      
+      console.log("[EnhancedJournalEditor] Running draft cleanup...");
+
       // Remove drafts older than 14 days
-      const cutoff = Date.now() - (14 * 24 * 60 * 60 * 1000);
+      const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
       let removedCount = 0;
       const keysToRemove: string[] = [];
-      
+
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith(DRAFT_KEY_PREFIX)) {
           try {
-            const draftData = JSON.parse(localStorage.getItem(key) || '{}');
+            const draftData = JSON.parse(localStorage.getItem(key) || "{}");
             const lastSaved = draftData.metadata?.lastSavedAt;
             if (!lastSaved || new Date(lastSaved).getTime() < cutoff) {
               keysToRemove.push(key);
@@ -102,40 +107,54 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
           }
         }
       }
-      
-      keysToRemove.forEach(key => {
+
+      keysToRemove.forEach((key) => {
         localStorage.removeItem(key);
         removedCount++;
       });
-      
+
       if (removedCount > 0) {
-        console.log(`[EnhancedJournalEditor] Removed ${removedCount} old drafts`);
+        console.log(
+          `[EnhancedJournalEditor] Removed ${removedCount} old drafts`,
+        );
       }
-      
-      sessionStorage.setItem(cleanupKey, 'done');
+
+      sessionStorage.setItem(cleanupKey, "done");
     }
   }, []);
-  
+
   // Helper functions
-  const getDefaultValue = useCallback((type: string): string | number | string[] | Record<string, boolean> => {
-    switch (type) {
-      case 'text': return '';
-      case 'scale': return 5;
-      case 'mood': return '';
-      case 'choice': return '';
-      case 'tags': return [];
-      case 'goals': return [];
-      case 'emotions': return [];
-      case 'checklist': return {};
-      default: return '';
-    }
-  }, []);
-  
+  const getDefaultValue = useCallback(
+    (type: string): string | number | string[] | Record<string, boolean> => {
+      switch (type) {
+        case "text":
+          return "";
+        case "scale":
+          return 5;
+        case "mood":
+          return "";
+        case "choice":
+          return "";
+        case "tags":
+          return [];
+        case "goals":
+          return [];
+        case "emotions":
+          return [];
+        case "checklist":
+          return {};
+        default:
+          return "";
+      }
+    },
+    [],
+  );
+
   const calculateTotalWordCount = useCallback((): number => {
-    const titleWords = title.split(/\s+/).filter(w => w).length;
+    const titleWords = title.split(/\s+/).filter((w) => w).length;
     const contentWords = sections.reduce((total, section) => {
-      if (typeof section.value === 'string') {
-        return total + section.value.split(/\s+/).filter(w => w).length;
+      if (typeof section.value === "string") {
+        return total + section.value.split(/\s+/).filter((w) => w).length;
       }
       return total;
     }, 0);
@@ -149,7 +168,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
         setIsLoadingEntry(true);
         try {
           let contentToParse = entry.content;
-          
+
           // Handle encrypted entries
           if (shouldTreatAsEncrypted(entry) && entry.encryptedKey) {
             try {
@@ -161,22 +180,27 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
               });
               contentToParse = decrypted;
             } catch (error) {
-              console.error('Failed to decrypt content for editing:', error);
+              console.error("Failed to decrypt content for editing:", error);
               // Initialize with empty sections if decryption fails
-              const initialSections: SectionResponse[] = template.sections.map(section => ({
-                sectionId: section.id,
-                value: getDefaultValue(section.type),
-                metadata: {}
-              }));
+              const initialSections: SectionResponse[] = template.sections.map(
+                (section) => ({
+                  sectionId: section.id,
+                  value: getDefaultValue(section.type),
+                  metadata: {},
+                }),
+              );
               setSections(initialSections);
               setIsLoadingEntry(false);
               return;
             }
           }
-          
+
           // Parse content back to sections
-          const parsedSections = enhancedJournalContentUtils.contentToSections(template, contentToParse);
-          
+          const parsedSections = enhancedJournalContentUtils.contentToSections(
+            template,
+            contentToParse,
+          );
+
           // IMPORTANT: Trust the parser! The parser already handles defaults properly
           setSections(parsedSections);
         } finally {
@@ -184,18 +208,20 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
         }
       } else {
         // Initialize empty sections for new entry
-        const initialSections: SectionResponse[] = template.sections.map(section => ({
-          sectionId: section.id,
-          value: getDefaultValue(section.type),
-          metadata: {}
-        }));
+        const initialSections: SectionResponse[] = template.sections.map(
+          (section) => ({
+            sectionId: section.id,
+            value: getDefaultValue(section.type),
+            metadata: {},
+          }),
+        );
         setSections(initialSections);
       }
     };
-    
+
     initializeSections();
   }, [entry, template, getDefaultValue]);
-  
+
   // Timer effect
   useEffect(() => {
     const interval = setInterval(() => {
@@ -203,11 +229,11 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
     }, 1000);
     return () => clearInterval(interval);
   }, [startTime]);
-  
+
   // Auto-save to localStorage with better error handling
   useEffect(() => {
     if (!autoSave || isLoadingEntry) return;
-    
+
     const draft: JournalDraft = {
       template: entry?.template || templateId,
       title,
@@ -215,25 +241,27 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       metadata: {
         startedAt: new Date(startTime).toISOString(),
         lastSavedAt: new Date().toISOString(),
-        totalWordCount: calculateTotalWordCount()
-      }
+        totalWordCount: calculateTotalWordCount(),
+      },
     };
-    
+
     try {
       localStorage.setItem(draftKey, JSON.stringify(draft));
     } catch (e) {
-      if (e instanceof Error && e.name === 'QuotaExceededError') {
-        console.warn('[EnhancedJournalEditor] Storage quota exceeded, cleaning old drafts...');
-        
+      if (e instanceof Error && e.name === "QuotaExceededError") {
+        console.warn(
+          "[EnhancedJournalEditor] Storage quota exceeded, cleaning old drafts...",
+        );
+
         // Emergency cleanup - remove old drafts
-        const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 days
+        const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days
         const keysToRemove: string[] = [];
-        
+
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           if (key && key.startsWith(DRAFT_KEY_PREFIX) && key !== draftKey) {
             try {
-              const draftData = JSON.parse(localStorage.getItem(key) || '{}');
+              const draftData = JSON.parse(localStorage.getItem(key) || "{}");
               const lastSaved = draftData.metadata?.lastSavedAt;
               if (!lastSaved || new Date(lastSaved).getTime() < cutoff) {
                 keysToRemove.push(key);
@@ -244,28 +272,45 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
             }
           }
         }
-        
+
         // Remove old drafts
-        keysToRemove.forEach(key => localStorage.removeItem(key));
-        console.log(`[EnhancedJournalEditor] Removed ${keysToRemove.length} old drafts`);
-        
+        keysToRemove.forEach((key) => localStorage.removeItem(key));
+        console.log(
+          `[EnhancedJournalEditor] Removed ${keysToRemove.length} old drafts`,
+        );
+
         // Try saving again
         try {
           localStorage.setItem(draftKey, JSON.stringify(draft));
         } catch (e2) {
-          console.error('[EnhancedJournalEditor] Still cannot save draft after cleanup:', e2);
+          console.error(
+            "[EnhancedJournalEditor] Still cannot save draft after cleanup:",
+            e2,
+          );
         }
       }
     }
-    
+
     return () => {
       // Clean up draft on unmount if saved successfully
       if (showSuccess) {
         localStorage.removeItem(draftKey);
       }
     };
-  }, [title, sections, tags, autoSave, draftKey, showSuccess, templateId, entry?.template, startTime, calculateTotalWordCount, isLoadingEntry]);
-  
+  }, [
+    title,
+    sections,
+    tags,
+    autoSave,
+    draftKey,
+    showSuccess,
+    templateId,
+    entry?.template,
+    startTime,
+    calculateTotalWordCount,
+    isLoadingEntry,
+  ]);
+
   function extractMetadata() {
     const metadata: {
       mood?: string;
@@ -273,101 +318,131 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       goalProgress: GoalProgress[];
     } = {
       tags: [...tags],
-      goalProgress: []
+      goalProgress: [],
     };
-    
+
     // Extract mood from sections
     if (template.extractors?.mood) {
-      const sectionValues = sections.reduce((acc, section) => {
-        acc[section.sectionId] = section;
-        return acc;
-      }, {} as Record<string, SectionResponse>);
+      const sectionValues = sections.reduce(
+        (acc, section) => {
+          acc[section.sectionId] = section;
+          return acc;
+        },
+        {} as Record<string, SectionResponse>,
+      );
       metadata.mood = template.extractors.mood(sectionValues);
     } else {
       // Default: look for mood section
-      const moodSection = sections.find(s => {
-        const sectionDef = template.sections.find(def => def.id === s.sectionId);
-        return sectionDef?.type === 'mood';
+      const moodSection = sections.find((s) => {
+        const sectionDef = template.sections.find(
+          (def) => def.id === s.sectionId,
+        );
+        return sectionDef?.type === "mood";
       });
-      if (moodSection?.value && typeof moodSection.value === 'string') {
+      if (moodSection?.value && typeof moodSection.value === "string") {
         metadata.mood = moodSection.value;
       }
     }
-    
+
     // Extract additional tags from sections
-    const tagSections = sections.filter(s => {
-      const sectionDef = template.sections.find(def => def.id === s.sectionId);
-      return sectionDef?.type === 'tags';
+    const tagSections = sections.filter((s) => {
+      const sectionDef = template.sections.find(
+        (def) => def.id === s.sectionId,
+      );
+      return sectionDef?.type === "tags";
     });
-    tagSections.forEach(section => {
+    tagSections.forEach((section) => {
       if (Array.isArray(section.value)) {
         metadata.tags.push(...section.value);
       }
     });
-    
+
     // Extract goal progress
     if (template.extractors?.goalProgress) {
-      const sectionValues = sections.reduce((acc, section) => {
-        acc[section.sectionId] = section;
-        return acc;
-      }, {} as Record<string, SectionResponse>);
-      metadata.goalProgress = template.extractors.goalProgress(sectionValues) || [];
+      const sectionValues = sections.reduce(
+        (acc, section) => {
+          acc[section.sectionId] = section;
+          return acc;
+        },
+        {} as Record<string, SectionResponse>,
+      );
+      metadata.goalProgress =
+        template.extractors.goalProgress(sectionValues) || [];
     } else {
       // Default goal progress
-      linkedGoalIds.forEach(goalId => {
+      linkedGoalIds.forEach((goalId) => {
         metadata.goalProgress.push({
           goalId,
           completed: false,
-          notes: `Journal entry on ${new Date().toLocaleDateString()}`
+          notes: `Journal entry on ${new Date().toLocaleDateString()}`,
         });
       });
     }
-    
+
     return metadata;
   }
-  
-  const handleSectionChange = useCallback((sectionId: string, value: string | number | string[] | Record<string, boolean>) => {
-    setSections(prev => prev.map(section => 
-      section.sectionId === sectionId 
-        ? { ...section, value, metadata: { ...section.metadata, completedAt: new Date().toISOString() } }
-        : section
-    ));
-  }, []);
-  
+
+  const handleSectionChange = useCallback(
+    (
+      sectionId: string,
+      value: string | number | string[] | Record<string, boolean>,
+    ) => {
+      setSections((prev) =>
+        prev.map((section) =>
+          section.sectionId === sectionId
+            ? {
+                ...section,
+                value,
+                metadata: {
+                  ...section.metadata,
+                  completedAt: new Date().toISOString(),
+                },
+              }
+            : section,
+        ),
+      );
+    },
+    [],
+  );
+
   const handleSave = async () => {
     setIsSaving(true);
-    
+
     try {
       // Generate content from sections
-      const content = enhancedJournalContentUtils.sectionsToContent(template, sections);
+      const content = enhancedJournalContentUtils.sectionsToContent(
+        template,
+        sections,
+      );
       const wordCount = calculateTotalWordCount();
       const metadata = extractMetadata();
-      
+
       let finalContent = content;
       let encryptionData = {};
-      
+
       // Handle encryption if enabled
       if (isEncrypted && showEncryption) {
         // Check if encryption is locked
         if (isEncryptionEnabled && isEncryptionLocked) {
           // The EncryptionUnlockPrompt will automatically show
-          throw new Error('Please unlock encryption to save encrypted entries');
+          throw new Error("Please unlock encryption to save encrypted entries");
         }
-        
+
         try {
           const encryptionService = getEncryptionService();
-          const encrypted = await encryptionService.encryptContent(finalContent);
+          const encrypted =
+            await encryptionService.encryptContent(finalContent);
           finalContent = encrypted.content;
           encryptionData = {
             encryptedKey: encrypted.encryptedKey,
-            encryptionIv: encrypted.iv
+            encryptionIv: encrypted.iv,
           };
         } catch (error) {
-          console.error('Encryption failed:', error);
-          throw new Error('Failed to encrypt journal entry');
+          console.error("Encryption failed:", error);
+          throw new Error("Failed to encrypt journal entry");
         }
       }
-      
+
       const request: CreateJournalEntryRequest | UpdateJournalEntryRequest = {
         title,
         content: finalContent,
@@ -378,18 +453,18 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
         linkedGoalIds,
         goalProgress: metadata.goalProgress,
         isEncrypted,
-        ...encryptionData
+        ...encryptionData,
       };
-      
+
       await onSave(request);
-      
+
       // Clean up draft
       localStorage.removeItem(draftKey);
-      
+
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (error) {
-      console.error('Failed to save journal entry:', error);
+      console.error("Failed to save journal entry:", error);
       // Show user-friendly error message
       if (error instanceof Error) {
         alert(error.message);
@@ -398,36 +473,40 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       setIsSaving(false);
     }
   };
-  
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
-  
-  const completedSections = sections.filter(s => {
-    const sectionDef = template.sections.find(def => def.id === s.sectionId);
+
+  const completedSections = sections.filter((s) => {
+    const sectionDef = template.sections.find((def) => def.id === s.sectionId);
     if (!sectionDef) return false;
-    
+
     switch (sectionDef.type) {
-      case 'text':
-        return s.value && typeof s.value === 'string' && s.value.trim().length > 0;
-      case 'scale':
-      case 'mood':
-      case 'choice':
-        return s.value !== null && s.value !== undefined && s.value !== '';
-      case 'tags':
-      case 'goals':
+      case "text":
+        return (
+          s.value && typeof s.value === "string" && s.value.trim().length > 0
+        );
+      case "scale":
+      case "mood":
+      case "choice":
+        return s.value !== null && s.value !== undefined && s.value !== "";
+      case "tags":
+      case "goals":
         return Array.isArray(s.value) && s.value.length > 0;
-      case 'checklist':
-        return Object.values(s.value as Record<string, boolean>).some(v => v);
+      case "checklist":
+        return Object.values(s.value as Record<string, boolean>).some((v) => v);
       default:
         return false;
     }
   }).length;
-  
-  const progress = Math.round((completedSections / template.sections.length) * 100);
-  
+
+  const progress = Math.round(
+    (completedSections / template.sections.length) * 100,
+  );
+
   if (isLoadingEntry) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -438,7 +517,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className="enhanced-journal-editor max-w-4xl mx-auto">
       {/* Header */}
@@ -455,7 +534,9 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
             <div className="flex items-center gap-4 mt-2 text-sm text-muted">
               <span className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                {entry ? new Date(entry.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}
+                {entry
+                  ? new Date(entry.createdAt).toLocaleDateString()
+                  : new Date().toLocaleDateString()}
               </span>
               <span className="flex items-center gap-1">
                 <Timer className="w-4 h-4" />
@@ -464,7 +545,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
               <span>{calculateTotalWordCount()} words</span>
             </div>
           </div>
-          
+
           {/* Progress indicator */}
           <div className="text-center">
             <div className="relative w-16 h-16">
@@ -499,7 +580,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
             </p>
           </div>
         </div>
-        
+
         {/* Tags and Goals */}
         <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-surface-muted">
           {/* Tags */}
@@ -510,9 +591,9 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
               placeholder="Add tags..."
               className="text-sm bg-transparent outline-none flex-1"
               onKeyPress={(e) => {
-                if (e.key === 'Enter' && e.currentTarget.value) {
+                if (e.key === "Enter" && e.currentTarget.value) {
                   setTags([...tags, e.currentTarget.value]);
-                  e.currentTarget.value = '';
+                  e.currentTarget.value = "";
                 }
               }}
             />
@@ -528,7 +609,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
               </span>
             ))}
           </div>
-          
+
           {/* Linked Goals */}
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-muted" />
@@ -537,7 +618,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
               onChange={(e) => {
                 if (e.target.value && !linkedGoalIds.includes(e.target.value)) {
                   setLinkedGoalIds([...linkedGoalIds, e.target.value]);
-                  e.target.value = '';
+                  e.target.value = "";
                 }
               }}
             >
@@ -545,16 +626,27 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
               {availableGoals
                 .filter((g: Goal) => !linkedGoalIds.includes(g.goalId))
                 .map((goal: Goal) => (
-                  <option key={goal.goalId} value={goal.goalId}>{goal.title}</option>
+                  <option key={goal.goalId} value={goal.goalId}>
+                    {goal.title}
+                  </option>
                 ))}
             </select>
-            {linkedGoalIds.map(goalId => {
-              const goal = availableGoals.find((g: Goal) => g.goalId === goalId);
+            {linkedGoalIds.map((goalId) => {
+              const goal = availableGoals.find(
+                (g: Goal) => g.goalId === goalId,
+              );
               return goal ? (
-                <span key={goalId} className="tag tag-sm bg-accent/10 text-accent">
+                <span
+                  key={goalId}
+                  className="tag tag-sm bg-accent/10 text-accent"
+                >
                   {goal.title}
                   <button
-                    onClick={() => setLinkedGoalIds(linkedGoalIds.filter(id => id !== goalId))}
+                    onClick={() =>
+                      setLinkedGoalIds(
+                        linkedGoalIds.filter((id) => id !== goalId),
+                      )
+                    }
                     className="ml-1 text-xs hover:text-error"
                   >
                     ×
@@ -563,11 +655,15 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
               ) : null;
             })}
           </div>
-          
+
           {/* Encryption toggle */}
           {showEncryption && (
             <label className="ml-auto flex items-center gap-2 cursor-pointer">
-              {isEncrypted ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+              {isEncrypted ? (
+                <Lock className="w-4 h-4" />
+              ) : (
+                <Unlock className="w-4 h-4" />
+              )}
               <input
                 type="checkbox"
                 checked={isEncrypted}
@@ -576,18 +672,18 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
                 className="sr-only"
               />
               <span className="text-sm">
-                {isEncrypted ? 'Encrypted' : 'Not encrypted'}
-                {isEncryptionEnabled && isEncryptionLocked && ' (Locked)'}
+                {isEncrypted ? "Encrypted" : "Not encrypted"}
+                {isEncryptionEnabled && isEncryptionLocked && " (Locked)"}
               </span>
             </label>
           )}
         </div>
       </div>
-      
+
       {/* Template Sections */}
       <div className="space-y-4 mb-6">
         {template.sections.map((section, index) => {
-          const sectionData = sections.find(s => s.sectionId === section.id);
+          const sectionData = sections.find((s) => s.sectionId === section.id);
           return (
             <SectionEditor
               key={section.id}
@@ -600,7 +696,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
           );
         })}
       </div>
-      
+
       {/* Action buttons */}
       <div className="flex items-center justify-between sticky bottom-4 glass rounded-xl p-4">
         {onCancel && (
@@ -608,11 +704,11 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
             Cancel
           </Button>
         )}
-        
+
         <Button
           onClick={handleSave}
           disabled={isSaving || !title.trim()}
-          className={`ml-auto ${showSuccess ? 'bg-success' : ''}`}
+          className={`ml-auto ${showSuccess ? "bg-success" : ""}`}
         >
           {isSaving ? (
             <>Saving...</>
@@ -624,7 +720,7 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              {entry ? 'Update' : 'Save'} Entry
+              {entry ? "Update" : "Save"} Entry
             </>
           )}
         </Button>

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getGoal, logActivity } from '../../services/goalService';
-import { isApiError } from '../../../../api/client';
-import type { LogActivityRequest, ActivityType } from '../../types/api.types';
-import { formatGoalValue } from '../../types/ui.types';
-import Input from '../../../../components/common/Input';
-import Button from '../../../../components/common/Button';
+import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getGoal, logActivity } from "../../services/goalService";
+import { isApiError } from "../../../../api/client";
+import type { LogActivityRequest, ActivityType } from "../../types/api.types";
+import { formatGoalValue } from "../../types/ui.types";
+import Input from "../../../../components/common/Input";
+import Button from "../../../../components/common/Button";
 
 interface QuickLogModalProps {
   goalId: string;
@@ -13,19 +13,25 @@ interface QuickLogModalProps {
   onClose: () => void;
 }
 
-const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }) => {
+const QuickLogModal: React.FC<QuickLogModalProps> = ({
+  goalId,
+  isOpen,
+  onClose,
+}) => {
   const queryClient = useQueryClient();
-  const [value, setValue] = useState('');
-  const [note, setNote] = useState('');
-  const [activityType, setActivityType] = useState<ActivityType>('progress');
+  const [value, setValue] = useState("");
+  const [note, setNote] = useState("");
+  const [activityType, setActivityType] = useState<ActivityType>("progress");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
-  const [mood, setMood] = useState<string>('');
+  const [activityDate, setActivityDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+  const [mood, setMood] = useState<string>("");
   const [energyLevel, setEnergyLevel] = useState<number>(5);
   const [error, setError] = useState<string | null>(null);
 
   const { data: goal, isLoading: goalLoading } = useQuery({
-    queryKey: ['goal', goalId],
+    queryKey: ["goal", goalId],
     queryFn: () => getGoal(goalId),
     enabled: isOpen,
   });
@@ -33,30 +39,30 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
   const logActivityMutation = useMutation({
     mutationFn: (activity: LogActivityRequest) => logActivity(goalId, activity),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['goals'] });
-      queryClient.invalidateQueries({ queryKey: ['goal', goalId] });
-      queryClient.invalidateQueries({ queryKey: ['goal-activities', goalId] });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal", goalId] });
+      queryClient.invalidateQueries({ queryKey: ["goal-activities", goalId] });
       onClose();
       // Reset form
-      setValue('');
-      setNote('');
-      setActivityType('progress');
+      setValue("");
+      setNote("");
+      setActivityType("progress");
       setShowAdvanced(false);
-      setActivityDate(new Date().toISOString().split('T')[0]);
-      setMood('');
+      setActivityDate(new Date().toISOString().split("T")[0]);
+      setMood("");
       setEnergyLevel(5);
       setError(null);
     },
     onError: (error: unknown) => {
-      console.error('Activity log error:', error);
-      let errorMessage = 'Failed to log activity';
-      
+      console.error("Activity log error:", error);
+      let errorMessage = "Failed to log activity";
+
       if (isApiError(error)) {
         errorMessage = error.response?.data?.message || errorMessage;
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
+
       setError(`Backend Error: ${errorMessage}`);
     },
   });
@@ -70,14 +76,19 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
       unit: goal.target.unit,
       activityType,
       note: note.trim() || undefined,
-      activityDate: activityDate !== new Date().toISOString().split('T')[0] ? activityDate : undefined,
-      context: showAdvanced ? {
-        mood: mood || undefined,
-        energyLevel: energyLevel || undefined,
-      } : undefined,
+      activityDate:
+        activityDate !== new Date().toISOString().split("T")[0]
+          ? activityDate
+          : undefined,
+      context: showAdvanced
+        ? {
+            mood: mood || undefined,
+            energyLevel: energyLevel || undefined,
+          }
+        : undefined,
     };
 
-    console.log('Sending activity log per contract:', activity);
+    console.log("Sending activity log per contract:", activity);
     setError(null);
     logActivityMutation.mutate(activity);
   };
@@ -91,7 +102,10 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
           <div className="absolute inset-0 bg-black/60" onClick={onClose}></div>
         </div>
 
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
           &#8203;
         </span>
 
@@ -111,7 +125,8 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
                   <p className="text-sm text-red-800">{error}</p>
                   <p className="text-xs text-red-600 mt-1">
-                    The backend is not compliant with the API contract. Frontend implementation is correct.
+                    The backend is not compliant with the API contract. Frontend
+                    implementation is correct.
                   </p>
                 </div>
               )}
@@ -123,7 +138,14 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                     Activity Type
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {(['progress', 'completed', 'skipped', 'partial'] as ActivityType[]).map((type) => (
+                    {(
+                      [
+                        "progress",
+                        "completed",
+                        "skipped",
+                        "partial",
+                      ] as ActivityType[]
+                    ).map((type) => (
                       <button
                         key={type}
                         type="button"
@@ -132,8 +154,8 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                           px-3 py-2 rounded-md text-sm font-medium capitalize transition-all
                           ${
                             activityType === type
-                              ? 'bg-primary-100 text-primary-800 border-primary-300'
-                              : 'bg-surface text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)] dark:hover:bg-gray-700'
+                              ? "bg-primary-100 text-primary-800 border-primary-300"
+                              : "bg-surface text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)] dark:hover:bg-gray-700"
                           }
                           border
                         `}
@@ -164,7 +186,9 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                   </div>
                   {goal.target.period && (
                     <p className="mt-1 text-xs text-muted">
-                      Target: {formatGoalValue(goal.target.value, goal.target.unit)} per {goal.target.period}
+                      Target:{" "}
+                      {formatGoalValue(goal.target.value, goal.target.unit)} per{" "}
+                      {goal.target.period}
                     </p>
                   )}
                 </div>
@@ -178,7 +202,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                     type="date"
                     value={activityDate}
                     onChange={(e) => setActivityDate(e.target.value)}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={new Date().toISOString().split("T")[0]}
                   />
                 </div>
 
@@ -203,15 +227,20 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                     onClick={() => setShowAdvanced(!showAdvanced)}
                     className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
                   >
-                    <svg 
-                      className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
+                    <svg
+                      className={`w-4 h-4 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
-                    {showAdvanced ? 'Hide' : 'Show'} Advanced Options
+                    {showAdvanced ? "Hide" : "Show"} Advanced Options
                   </button>
                 </div>
 
@@ -225,11 +254,11 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                       </label>
                       <div className="flex gap-2">
                         {[
-                          { emoji: '😔', label: 'low' },
-                          { emoji: '😐', label: 'neutral' },
-                          { emoji: '😊', label: 'good' },
-                          { emoji: '😄', label: 'great' },
-                          { emoji: '🤩', label: 'amazing' },
+                          { emoji: "😔", label: "low" },
+                          { emoji: "😐", label: "neutral" },
+                          { emoji: "😊", label: "good" },
+                          { emoji: "😄", label: "great" },
+                          { emoji: "🤩", label: "amazing" },
                         ].map((moodOption) => (
                           <button
                             key={moodOption.label}
@@ -237,14 +266,17 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                             onClick={() => setMood(moodOption.label)}
                             className={`
                               flex flex-col items-center p-2 rounded-lg border-2 transition-all
-                              ${mood === moodOption.label 
-                                ? 'border-primary-500 bg-primary-50' 
-                                : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)]'
+                              ${
+                                mood === moodOption.label
+                                  ? "border-primary-500 bg-primary-50"
+                                  : "border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)]"
                               }
                             `}
                           >
                             <span className="text-2xl">{moodOption.emoji}</span>
-                            <span className="text-xs mt-1">{moodOption.label}</span>
+                            <span className="text-xs mt-1">
+                              {moodOption.label}
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -263,7 +295,7 @@ const QuickLogModal: React.FC<QuickLogModalProps> = ({ goalId, isOpen, onClose }
                         onChange={(e) => setEnergyLevel(Number(e.target.value))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         style={{
-                          background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(energyLevel - 1) * 11.11}%, #E5E7EB ${(energyLevel - 1) * 11.11}%, #E5E7EB 100%)`
+                          background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(energyLevel - 1) * 11.11}%, #E5E7EB ${(energyLevel - 1) * 11.11}%, #E5E7EB 100%)`,
                         }}
                       />
                       <div className="flex justify-between text-xs text-muted mt-1">

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Download, Upload, Key, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { Download, Upload, Key, AlertCircle, CheckCircle } from "lucide-react";
 
 interface KeyManagementProps {
   hasBackup: boolean;
@@ -15,7 +15,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
-  const [restoreKey, setRestoreKey] = useState('');
+  const [restoreKey, setRestoreKey] = useState("");
   const [backupSuccess, setBackupSuccess] = useState(false);
   const [restoreSuccess, setRestoreSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +30,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
       setBackupSuccess(true);
       setTimeout(() => setBackupSuccess(false), 3000);
     } catch {
-      setError('Failed to create backup. Please try again.');
+      setError("Failed to create backup. Please try again.");
     } finally {
       setIsBackingUp(false);
     }
@@ -38,7 +38,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
 
   const handleRestore = async () => {
     if (!restoreKey.trim()) {
-      setError('Please enter your backup key');
+      setError("Please enter your backup key");
       return;
     }
 
@@ -50,10 +50,12 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
       await onRestore(restoreKey);
       setRestoreSuccess(true);
       setShowRestoreDialog(false);
-      setRestoreKey('');
+      setRestoreKey("");
       setTimeout(() => setRestoreSuccess(false), 3000);
     } catch {
-      setError('Failed to restore from backup. Please check your key and try again.');
+      setError(
+        "Failed to restore from backup. Please check your key and try again.",
+      );
     } finally {
       setIsRestoring(false);
     }
@@ -63,12 +65,14 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
     <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[var(--surface-muted)] p-6">
       <div className="flex items-center gap-3 mb-4">
         <Key className="w-6 h-6 text-[var(--accent)]" />
-        <h3 className="text-lg font-semibold text-[var(--text)]">Key Management</h3>
+        <h3 className="text-lg font-semibold text-[var(--text)]">
+          Key Management
+        </h3>
       </div>
 
       <p className="text-sm text-[var(--text-muted)] mb-6">
-        Backup your encryption keys to ensure you never lose access to your encrypted data.
-        Store your backup in a secure location.
+        Backup your encryption keys to ensure you never lose access to your
+        encrypted data. Store your backup in a secure location.
       </p>
 
       {error && (
@@ -96,16 +100,17 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
         {/* Backup Status */}
         <div className="flex items-center justify-between p-4 bg-[var(--surface-muted)] rounded-lg">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${hasBackup ? 'bg-[var(--success)]' : 'bg-[var(--warning)]'}`} />
+            <div
+              className={`w-3 h-3 rounded-full ${hasBackup ? "bg-[var(--success)]" : "bg-[var(--warning)]"}`}
+            />
             <div>
               <p className="text-sm font-medium text-[var(--text)]">
-                {hasBackup ? 'Backup exists' : 'No backup found'}
+                {hasBackup ? "Backup exists" : "No backup found"}
               </p>
               <p className="text-xs text-[var(--text-muted)]">
-                {hasBackup 
-                  ? 'Your keys are backed up securely' 
-                  : 'Create a backup to protect your data'
-                }
+                {hasBackup
+                  ? "Your keys are backed up securely"
+                  : "Create a backup to protect your data"}
               </p>
             </div>
           </div>
@@ -119,7 +124,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[var(--accent)] text-white rounded-md hover:bg-[var(--accent)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
-            {isBackingUp ? 'Creating backup...' : 'Create Backup'}
+            {isBackingUp ? "Creating backup..." : "Create Backup"}
           </button>
 
           <button
@@ -139,10 +144,10 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
             <h4 className="text-lg font-semibold text-[var(--text)] mb-4">
               Restore from Backup
             </h4>
-            
+
             <p className="text-sm text-[var(--text-muted)] mb-4">
-              Enter your backup key to restore your encryption keys. This will replace
-              your current keys.
+              Enter your backup key to restore your encryption keys. This will
+              replace your current keys.
             </p>
 
             <textarea
@@ -157,7 +162,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
               <button
                 onClick={() => {
                   setShowRestoreDialog(false);
-                  setRestoreKey('');
+                  setRestoreKey("");
                   setError(null);
                 }}
                 disabled={isRestoring}
@@ -170,7 +175,7 @@ const KeyManagement: React.FC<KeyManagementProps> = ({
                 disabled={isRestoring || !restoreKey.trim()}
                 className="flex-1 px-4 py-2 bg-[var(--accent)] text-white rounded-md hover:bg-[var(--accent)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isRestoring ? 'Restoring...' : 'Restore'}
+                {isRestoring ? "Restoring..." : "Restore"}
               </button>
             </div>
           </div>

@@ -1,9 +1,9 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from "msw";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 // Mock data store with persistence
-const STORAGE_KEY = 'msw-mock-users';
+const STORAGE_KEY = "msw-mock-users";
 
 // Initialize users from sessionStorage or with default data
 const initializeUsers = () => {
@@ -11,36 +11,36 @@ const initializeUsers = () => {
   if (stored) {
     return new Map(JSON.parse(stored));
   }
-  
+
   // Default users for testing
   const defaultUsers = new Map();
-  
+
   // User without MFA (for testing regular login)
-  defaultUsers.set('user@example.com', {
-    userId: 'existing-user-123',
-    email: 'user@example.com',
-    firstName: 'Existing',
-    lastName: 'User',
-    password: 'ExistingP@ss123',
+  defaultUsers.set("user@example.com", {
+    userId: "existing-user-123",
+    email: "user@example.com",
+    firstName: "Existing",
+    lastName: "User",
+    password: "ExistingP@ss123",
     emailVerified: true,
     mfaEnabled: false,
-    createdAt: new Date('2024-01-01').toISOString(),
-    updatedAt: new Date('2024-01-01').toISOString(),
+    createdAt: new Date("2024-01-01").toISOString(),
+    updatedAt: new Date("2024-01-01").toISOString(),
   });
-  
+
   // User with MFA enabled (for testing MFA flow)
-  defaultUsers.set('mfa@example.com', {
-    userId: 'mfa-user-456',
-    email: 'mfa@example.com',
-    firstName: 'MFA',
-    lastName: 'User',
-    password: 'MfaUserP@ss123',
+  defaultUsers.set("mfa@example.com", {
+    userId: "mfa-user-456",
+    email: "mfa@example.com",
+    firstName: "MFA",
+    lastName: "User",
+    password: "MfaUserP@ss123",
     emailVerified: true,
     mfaEnabled: true,
-    createdAt: new Date('2024-01-01').toISOString(),
-    updatedAt: new Date('2024-01-01').toISOString(),
+    createdAt: new Date("2024-01-01").toISOString(),
+    updatedAt: new Date("2024-01-01").toISOString(),
   });
-  
+
   return defaultUsers;
 };
 
@@ -49,7 +49,10 @@ const sessions = new Map();
 
 // Save users to sessionStorage whenever it changes
 const saveUsers = () => {
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(users.entries())));
+  sessionStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(Array.from(users.entries())),
+  );
 };
 
 export const authHandlers = [
@@ -69,34 +72,34 @@ export const authHandlers = [
   // Utility endpoint to clear mock data (for testing)
   http.delete(`${API_URL}/test/clear-users`, () => {
     users.clear();
-    
+
     // Re-add default users
-    users.set('user@example.com', {
-      userId: 'existing-user-123',
-      email: 'user@example.com',
-      firstName: 'Existing',
-      lastName: 'User',
-      password: 'ExistingP@ss123',
+    users.set("user@example.com", {
+      userId: "existing-user-123",
+      email: "user@example.com",
+      firstName: "Existing",
+      lastName: "User",
+      password: "ExistingP@ss123",
       emailVerified: true,
       mfaEnabled: false,
-      createdAt: new Date('2024-01-01').toISOString(),
-      updatedAt: new Date('2024-01-01').toISOString(),
+      createdAt: new Date("2024-01-01").toISOString(),
+      updatedAt: new Date("2024-01-01").toISOString(),
     });
-    
-    users.set('mfa@example.com', {
-      userId: 'mfa-user-456',
-      email: 'mfa@example.com',
-      firstName: 'MFA',
-      lastName: 'User',
-      password: 'MfaUserP@ss123',
+
+    users.set("mfa@example.com", {
+      userId: "mfa-user-456",
+      email: "mfa@example.com",
+      firstName: "MFA",
+      lastName: "User",
+      password: "MfaUserP@ss123",
       emailVerified: true,
       mfaEnabled: true,
-      createdAt: new Date('2024-01-01').toISOString(),
-      updatedAt: new Date('2024-01-01').toISOString(),
+      createdAt: new Date("2024-01-01").toISOString(),
+      updatedAt: new Date("2024-01-01").toISOString(),
     });
-    
+
     saveUsers();
-    return HttpResponse.json({ message: 'Mock data reset' });
+    return HttpResponse.json({ message: "Mock data reset" });
   }),
 
   // Register endpoint - NOW ON AWS
@@ -204,22 +207,22 @@ export const authHandlers = [
 
   // MFA verification endpoint
   http.post(`${API_URL}/auth/mfa/verify`, async ({ request }) => {
-    console.log('[MSW] Intercepting MFA verification');
+    console.log("[MSW] Intercepting MFA verification");
     interface MfaVerifyRequest {
       sessionToken: string;
       code: string;
     }
-    const body = await request.json() as MfaVerifyRequest;
+    const body = (await request.json()) as MfaVerifyRequest;
 
     const session = sessions.get(body.sessionToken);
     if (!session) {
       return HttpResponse.json(
         {
-          error: 'INVALID_SESSION',
-          message: 'Invalid or expired session',
+          error: "INVALID_SESSION",
+          message: "Invalid or expired session",
           timestamp: new Date().toISOString(),
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -227,36 +230,38 @@ export const authHandlers = [
     if (!body.code || body.code.length !== 6 || !/^\d+$/.test(body.code)) {
       return HttpResponse.json(
         {
-          error: 'INVALID_CODE',
-          message: 'Invalid verification code',
+          error: "INVALID_CODE",
+          message: "Invalid verification code",
           timestamp: new Date().toISOString(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Special codes for testing
-    if (body.code === '000000') {
+    if (body.code === "000000") {
       return HttpResponse.json(
         {
-          error: 'INVALID_CODE',
-          message: 'Invalid verification code',
+          error: "INVALID_CODE",
+          message: "Invalid verification code",
           timestamp: new Date().toISOString(),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Get user from session
-    const user = Array.from(users.values()).find(u => u.userId === session.userId);
+    const user = Array.from(users.values()).find(
+      (u) => u.userId === session.userId,
+    );
     if (!user) {
       return HttpResponse.json(
         {
-          error: 'USER_NOT_FOUND',
-          message: 'User not found',
+          error: "USER_NOT_FOUND",
+          message: "User not found",
           timestamp: new Date().toISOString(),
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -273,7 +278,7 @@ export const authHandlers = [
     return HttpResponse.json({
       accessToken,
       refreshToken,
-      tokenType: 'Bearer',
+      tokenType: "Bearer",
       expiresIn: 3600,
       user: userProfile,
     });

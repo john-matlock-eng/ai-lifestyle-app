@@ -1,68 +1,74 @@
 // Example: Using the Enhanced Journal System
-import React, { useState } from 'react';
-import { 
+import React, { useState } from "react";
+import {
   EnhancedJournalEditor,
   EnhancedTemplatePicker,
-  DraftManager
-} from './';
-import { JournalTemplate } from '@/types/journal';
-import type { CreateJournalEntryRequest, UpdateJournalEntryRequest } from '@/types/journal';
+  DraftManager,
+} from "./";
+import { JournalTemplate } from "@/types/journal";
+import type {
+  CreateJournalEntryRequest,
+  UpdateJournalEntryRequest,
+} from "@/types/journal";
 
 /**
  * Example implementation showing how to use the enhanced journal system
  * This replaces the old JournalTemplateDemo
  */
 export const JournalDemo: React.FC = () => {
-  const [view, setView] = useState<'picker' | 'editor' | 'drafts'>('picker');
-  const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
-  
-  const handleSave = async (request: CreateJournalEntryRequest | UpdateJournalEntryRequest) => {
-    console.log('Saving journal entry:', {
+  const [view, setView] = useState<"picker" | "editor" | "drafts">("picker");
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<JournalTemplate | null>(null);
+
+  const handleSave = async (
+    request: CreateJournalEntryRequest | UpdateJournalEntryRequest,
+  ) => {
+    console.log("Saving journal entry:", {
       title: request.title,
       template: request.template,
       wordCount: request.wordCount,
       tags: request.tags,
       mood: request.mood,
-      linkedGoals: request.linkedGoalIds
+      linkedGoals: request.linkedGoalIds,
     });
-    
+
     // In a real app, you would:
     // 1. Call your API to save the entry
     // 2. Update IndexedDB for search
     // 3. Navigate to the saved entry
-    
-    alert('Journal entry saved! Check console for details.');
-    
+
+    alert("Journal entry saved! Check console for details.");
+
     // Reset for demo
-    setView('picker');
+    setView("picker");
     setSelectedTemplate(null);
   };
-  
+
   const handleTemplateSelect = (templateId: JournalTemplate) => {
     setSelectedTemplate(templateId);
-    setView('editor');
+    setView("editor");
   };
-  
+
   const handleDraftSelect = (draftKey: string) => {
     // Load draft and open editor
     const draft = localStorage.getItem(draftKey);
     if (draft) {
       const parsed = JSON.parse(draft);
       setSelectedTemplate(parsed.template);
-      setView('editor');
+      setView("editor");
     }
   };
-  
+
   // Render current view
   switch (view) {
-    case 'editor':
+    case "editor":
       return (
         <div className="min-h-screen bg-background p-8">
           <EnhancedJournalEditor
             templateId={selectedTemplate || JournalTemplate.BLANK}
             onSave={handleSave}
             onCancel={() => {
-              setView('picker');
+              setView("picker");
               setSelectedTemplate(null);
             }}
             autoSave={true}
@@ -70,12 +76,12 @@ export const JournalDemo: React.FC = () => {
           />
         </div>
       );
-      
-    case 'drafts':
+
+    case "drafts":
       return (
         <div className="min-h-screen bg-background p-8">
           <button
-            onClick={() => setView('picker')}
+            onClick={() => setView("picker")}
             className="mb-4 text-muted hover:text-theme"
           >
             ← Back
@@ -84,13 +90,13 @@ export const JournalDemo: React.FC = () => {
           <DraftManager onSelectDraft={handleDraftSelect} />
         </div>
       );
-      
+
     default:
       return (
         <div className="min-h-screen bg-background p-8">
           <div className="mb-6 flex justify-end">
             <button
-              onClick={() => setView('drafts')}
+              onClick={() => setView("drafts")}
               className="text-muted hover:text-theme"
             >
               View Drafts →

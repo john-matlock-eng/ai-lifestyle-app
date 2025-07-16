@@ -1,13 +1,18 @@
 // RichTextEditor.tsx - Fixed to prevent DOM manipulation errors and menu overlapping
-import React, { useCallback, useRef } from 'react';
-import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
-import Link from '@tiptap/extension-link';
-import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
-import { Markdown } from 'tiptap-markdown';
-import { CharacterCount } from './extensions';
+import React, { useCallback, useRef } from "react";
+import {
+  useEditor,
+  EditorContent,
+  BubbleMenu,
+  FloatingMenu,
+} from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import Link from "@tiptap/extension-link";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import { Markdown } from "tiptap-markdown";
+import { CharacterCount } from "./extensions";
 import {
   Bold,
   Italic,
@@ -24,9 +29,9 @@ import {
   Redo,
   CheckSquare,
   Minus,
-  ListChecks
-} from 'lucide-react';
-import './rich-text-editor.css';
+  ListChecks,
+} from "lucide-react";
+import "./rich-text-editor.css";
 
 export interface RichTextEditorProps {
   content: string;
@@ -44,10 +49,10 @@ export interface RichTextEditorProps {
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   content,
   onChange,
-  placeholder = 'Start writing...',
-  className = '',
-  minHeight = '200px',
-  maxHeight = '500px',
+  placeholder = "Start writing...",
+  className = "",
+  minHeight = "200px",
+  maxHeight = "500px",
   readOnly = false,
   showToolbar = true,
   showFloatingMenu = false, // Disabled by default to prevent overlap
@@ -66,33 +71,33 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       }),
       Placeholder.configure({
         placeholder,
-        emptyEditorClass: 'is-editor-empty',
+        emptyEditorClass: "is-editor-empty",
       }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-accent hover:underline cursor-pointer',
+          class: "text-accent hover:underline cursor-pointer",
         },
       }),
       TaskList.configure({
         HTMLAttributes: {
-          class: 'task-list',
+          class: "task-list",
         },
       }),
       TaskItem.configure({
         nested: true,
         HTMLAttributes: {
-          class: 'task-item',
+          class: "task-item",
         },
       }),
       Markdown.configure({
         html: false,
         transformCopiedText: true,
-        bulletListMarker: '-',
+        bulletListMarker: "-",
       }),
       CharacterCount,
     ],
-    content: content || '',
+    content: content || "",
     editable: !readOnly,
     editorProps: {
       attributes: {
@@ -102,12 +107,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       handleKeyDown: () => {
         // Set typing state
         setIsTyping(true);
-        
+
         // Clear any existing timeout
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
         }
-        
+
         // Reset typing state after user stops typing
         typingTimeoutRef.current = setTimeout(() => {
           setIsTyping(false);
@@ -134,7 +139,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   React.useEffect(() => {
     if (editor && content !== undefined) {
       const currentMarkdown = editor.storage.markdown.getMarkdown();
-      
+
       // Only update if content is different to avoid infinite loops
       if (currentMarkdown !== content) {
         // Set content without triggering onChange
@@ -154,44 +159,47 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const setLink = useCallback(() => {
     if (!editor) return;
-    
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL', previousUrl);
+
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("URL", previousUrl);
 
     if (url === null) {
       return;
     }
 
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
       return;
     }
 
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }, [editor]);
 
   // Focus editor when clicking toolbar buttons
-  const executeCommand = useCallback((command: () => boolean | void) => {
-    // Ensure editor has focus before executing command
-    editor?.chain().focus();
-    command();
-  }, [editor]);
+  const executeCommand = useCallback(
+    (command: () => boolean | void) => {
+      // Ensure editor has focus before executing command
+      editor?.chain().focus();
+      command();
+    },
+    [editor],
+  );
 
   if (!editor) {
     return null;
   }
 
-  const ToolbarButton = ({ 
-    onClick, 
-    isActive = false, 
+  const ToolbarButton = ({
+    onClick,
+    isActive = false,
     disabled = false,
-    children, 
-    title 
-  }: { 
-    onClick: () => void; 
-    isActive?: boolean; 
+    children,
+    title,
+  }: {
+    onClick: () => void;
+    isActive?: boolean;
     disabled?: boolean;
-    children: React.ReactNode; 
+    children: React.ReactNode;
     title: string;
   }) => (
     <button
@@ -207,8 +215,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       title={title}
       className={`
         journal-toolbar-btn
-        ${isActive ? 'active' : ''}
-        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        ${isActive ? "active" : ""}
+        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
       `}
     >
       {children}
@@ -224,29 +232,45 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             {/* Text Formatting */}
             <div className="flex items-center gap-1 pr-2 border-r border-surface-muted">
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleBold().run())}
-                isActive={editor.isActive('bold')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleBold().run(),
+                  )
+                }
+                isActive={editor.isActive("bold")}
                 title="Bold (⌘B)"
               >
                 <Bold className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleItalic().run())}
-                isActive={editor.isActive('italic')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleItalic().run(),
+                  )
+                }
+                isActive={editor.isActive("italic")}
                 title="Italic (⌘I)"
               >
                 <Italic className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleStrike().run())}
-                isActive={editor.isActive('strike')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleStrike().run(),
+                  )
+                }
+                isActive={editor.isActive("strike")}
                 title="Strikethrough"
               >
                 <Strikethrough className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleCode().run())}
-                isActive={editor.isActive('code')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleCode().run(),
+                  )
+                }
+                isActive={editor.isActive("code")}
                 title="Inline Code (⌘E)"
               >
                 <Code className="w-4 h-4" />
@@ -256,22 +280,34 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             {/* Headings */}
             <div className="flex items-center gap-1 px-2 border-r border-surface-muted">
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleHeading({ level: 1 }).run())}
-                isActive={editor.isActive('heading', { level: 1 })}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleHeading({ level: 1 }).run(),
+                  )
+                }
+                isActive={editor.isActive("heading", { level: 1 })}
                 title="Heading 1 (⌘⌥1)"
               >
                 <Heading1 className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleHeading({ level: 2 }).run())}
-                isActive={editor.isActive('heading', { level: 2 })}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleHeading({ level: 2 }).run(),
+                  )
+                }
+                isActive={editor.isActive("heading", { level: 2 })}
                 title="Heading 2 (⌘⌥2)"
               >
                 <Heading2 className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleHeading({ level: 3 }).run())}
-                isActive={editor.isActive('heading', { level: 3 })}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleHeading({ level: 3 }).run(),
+                  )
+                }
+                isActive={editor.isActive("heading", { level: 3 })}
                 title="Heading 3 (⌘⌥3)"
               >
                 <Heading3 className="w-4 h-4" />
@@ -281,22 +317,34 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             {/* Lists */}
             <div className="flex items-center gap-1 px-2 border-r border-surface-muted">
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleBulletList().run())}
-                isActive={editor.isActive('bulletList')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleBulletList().run(),
+                  )
+                }
+                isActive={editor.isActive("bulletList")}
                 title="Bullet List (⌘⇧8)"
               >
                 <List className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleOrderedList().run())}
-                isActive={editor.isActive('orderedList')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleOrderedList().run(),
+                  )
+                }
+                isActive={editor.isActive("orderedList")}
                 title="Numbered List (⌘⇧7)"
               >
                 <ListOrdered className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleTaskList().run())}
-                isActive={editor.isActive('taskList')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleTaskList().run(),
+                  )
+                }
+                isActive={editor.isActive("taskList")}
                 title="Task List (⌘⇧9)"
               >
                 <ListChecks className="w-4 h-4" />
@@ -306,21 +354,33 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             {/* Block Elements */}
             <div className="flex items-center gap-1 px-2 border-r border-surface-muted">
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleBlockquote().run())}
-                isActive={editor.isActive('blockquote')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleBlockquote().run(),
+                  )
+                }
+                isActive={editor.isActive("blockquote")}
                 title="Quote (⌘⇧B)"
               >
                 <Quote className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().toggleCodeBlock().run())}
-                isActive={editor.isActive('codeBlock')}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().toggleCodeBlock().run(),
+                  )
+                }
+                isActive={editor.isActive("codeBlock")}
                 title="Code Block (⌘⌥C)"
               >
                 <Code className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().setHorizontalRule().run())}
+                onClick={() =>
+                  executeCommand(() =>
+                    editor.chain().focus().setHorizontalRule().run(),
+                  )
+                }
                 title="Divider (---)"
               >
                 <Minus className="w-4 h-4" />
@@ -331,20 +391,24 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             <div className="flex items-center gap-1 px-2">
               <ToolbarButton
                 onClick={() => executeCommand(setLink)}
-                isActive={editor.isActive('link')}
+                isActive={editor.isActive("link")}
                 title="Insert Link (⌘K)"
               >
                 <LinkIcon className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().undo().run())}
+                onClick={() =>
+                  executeCommand(() => editor.chain().focus().undo().run())
+                }
                 disabled={!editor.can().undo()}
                 title="Undo (⌘Z)"
               >
                 <Undo className="w-4 h-4" />
               </ToolbarButton>
               <ToolbarButton
-                onClick={() => executeCommand(() => editor.chain().focus().redo().run())}
+                onClick={() =>
+                  executeCommand(() => editor.chain().focus().redo().run())
+                }
                 disabled={!editor.can().redo()}
                 title="Redo (⌘⇧Z)"
               >
@@ -369,13 +433,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* Bubble Menu - appears when text is selected */}
       {showBubbleMenu && !readOnly && !isTyping && (
-        <BubbleMenu 
-          editor={editor} 
-          tippyOptions={{ 
+        <BubbleMenu
+          editor={editor}
+          tippyOptions={{
             duration: 100,
             delay: [1000, 0], // Long delay to avoid interference
             interactive: true,
-            placement: 'top',
+            placement: "top",
             offset: [0, 15], // Add offset to avoid overlapping text
             zIndex: 9999,
           }}
@@ -387,28 +451,28 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         >
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBold().run()}
-            isActive={editor.isActive('bold')}
+            isActive={editor.isActive("bold")}
             title="Bold"
           >
             <Bold className="w-3 h-3" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            isActive={editor.isActive('italic')}
+            isActive={editor.isActive("italic")}
             title="Italic"
           >
             <Italic className="w-3 h-3" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            isActive={editor.isActive('strike')}
+            isActive={editor.isActive("strike")}
             title="Strikethrough"
           >
             <Strikethrough className="w-3 h-3" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleCode().run()}
-            isActive={editor.isActive('code')}
+            isActive={editor.isActive("code")}
             title="Code"
           >
             <Code className="w-3 h-3" />
@@ -416,7 +480,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <div className="w-px h-4 bg-surface-muted mx-1" />
           <ToolbarButton
             onClick={setLink}
-            isActive={editor.isActive('link')}
+            isActive={editor.isActive("link")}
             title="Link"
           >
             <LinkIcon className="w-3 h-3" />
@@ -426,11 +490,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* Floating Menu - appears for new lines */}
       {showFloatingMenu && !readOnly && !isTyping && (
-        <FloatingMenu 
-          editor={editor} 
-          tippyOptions={{ 
+        <FloatingMenu
+          editor={editor}
+          tippyOptions={{
             duration: 100,
-            placement: 'left',
+            placement: "left",
             offset: [-20, 0], // Offset to the left to avoid text area
             zIndex: 9999,
           }}
@@ -439,40 +503,48 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             // Only show for empty paragraphs
             const { $from } = editor.state.selection;
             const node = $from.parent;
-            return node.type.name === 'paragraph' && node.content.size === 0 && !isTyping;
+            return (
+              node.type.name === "paragraph" &&
+              node.content.size === 0 &&
+              !isTyping
+            );
           }}
         >
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            isActive={editor.isActive('heading', { level: 1 })}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 1 }).run()
+            }
+            isActive={editor.isActive("heading", { level: 1 })}
             title="Heading 1"
           >
             <Heading1 className="w-3 h-3" />
           </ToolbarButton>
           <ToolbarButton
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            isActive={editor.isActive('heading', { level: 2 })}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
+            }
+            isActive={editor.isActive("heading", { level: 2 })}
             title="Heading 2"
           >
             <Heading2 className="w-3 h-3" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            isActive={editor.isActive('bulletList')}
+            isActive={editor.isActive("bulletList")}
             title="Bullet List"
           >
             <List className="w-3 h-3" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            isActive={editor.isActive('orderedList')}
+            isActive={editor.isActive("orderedList")}
             title="Ordered List"
           >
             <ListOrdered className="w-3 h-3" />
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleTaskList().run()}
-            isActive={editor.isActive('taskList')}
+            isActive={editor.isActive("taskList")}
             title="Task List"
           >
             <CheckSquare className="w-3 h-3" />

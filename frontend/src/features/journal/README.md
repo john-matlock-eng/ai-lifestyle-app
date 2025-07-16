@@ -38,6 +38,7 @@ src/features/journal/
 ### 1. Enhanced Templates
 
 Seven built-in templates with rich input types:
+
 - **Daily Reflection**: Mood, gratitude, highlights
 - **Gratitude Journal**: Focused gratitude practice
 - **Goal Progress**: Track goal advancement
@@ -59,6 +60,7 @@ Seven built-in templates with rich input types:
 ### 3. Advanced Search
 
 Powered by IndexedDB with:
+
 - Full-text search on content
 - Filter by tags, mood, template
 - Date range filtering
@@ -91,8 +93,8 @@ Powered by IndexedDB with:
 ### Creating an Entry
 
 ```tsx
-import { EnhancedJournalEditor } from '@/features/journal/components/EnhancedEditor';
-import { createEntry } from '@/api/journal';
+import { EnhancedJournalEditor } from "@/features/journal/components/EnhancedEditor";
+import { createEntry } from "@/api/journal";
 
 <EnhancedJournalEditor
   templateId={JournalTemplate.DAILY_REFLECTION}
@@ -102,29 +104,23 @@ import { createEntry } from '@/api/journal';
   }}
   autoSave={true}
   showEncryption={true}
-/>
+/>;
 ```
 
 ### Searching Entries
 
 ```tsx
-import { useJournalSearch } from '@/features/journal/hooks/useJournalSearch';
+import { useJournalSearch } from "@/features/journal/hooks/useJournalSearch";
 
-const {
-  entries,
-  total,
-  filters,
-  setFilters,
-  availableTags,
-  availableMoods
-} = useJournalSearch();
+const { entries, total, filters, setFilters, availableTags, availableMoods } =
+  useJournalSearch();
 
 // Apply filters
 setFilters({
-  query: 'gratitude',
-  mood: 'good',
-  tags: ['productivity'],
-  startDate: new Date('2024-01-01')
+  query: "gratitude",
+  mood: "good",
+  tags: ["productivity"],
+  startDate: new Date("2024-01-01"),
 });
 ```
 
@@ -135,20 +131,20 @@ Add custom templates in `enhanced-templates.ts`:
 ```typescript
 export const myTemplate: EnhancedTemplate = {
   id: JournalTemplate.CUSTOM,
-  name: 'My Custom Template',
+  name: "My Custom Template",
   sections: [
     {
-      id: 'custom-section',
-      title: 'Custom Input',
-      prompt: 'Your prompt here',
-      type: 'text',
-      required: true
-    }
+      id: "custom-section",
+      title: "Custom Input",
+      prompt: "Your prompt here",
+      type: "text",
+      required: true,
+    },
   ],
   extractors: {
-    tags: (responses) => ['custom-tag'],
-    mood: (responses) => responses.mood
-  }
+    tags: (responses) => ["custom-tag"],
+    mood: (responses) => responses.mood,
+  },
 };
 ```
 
@@ -197,16 +193,11 @@ DELETE /api/journal/:entryId
 
 ```css
 /* Required CSS variables */
---background: /* Page background */
---surface: /* Card background */
---surface-hover: /* Hover state */
---surface-muted: /* Disabled state */
---theme: /* Primary text */
---muted: /* Secondary text */
---accent: /* Primary color */
---success: /* Success state */
---warning: /* Warning state */
---error: /* Error state */
+--background: /* Page background */ --surface: /* Card background */
+  --surface-hover: /* Hover state */ --surface-muted: /* Disabled state */
+  --theme: /* Primary text */ --muted: /* Secondary text */
+  --accent: /* Primary color */ --success: /* Success state */
+  --warning: /* Warning state */ --error: /* Error state */;
 ```
 
 ### Extending Input Types
@@ -225,18 +216,21 @@ DELETE /api/journal/:entryId
 ## Testing
 
 ### Unit Tests
+
 - Template validation
 - Metadata extraction
 - Content compilation
 - Search filters
 
 ### Integration Tests
+
 - Create → Search → Find flow
 - Draft save/load cycle
 - Goal linking
 - Encryption/decryption
 
 ### E2E Tests
+
 - Complete journal entry flow
 - Search with filters
 - Draft recovery
@@ -247,21 +241,25 @@ DELETE /api/journal/:entryId
 ### Common Issues
 
 **Search not working**
+
 - Check IndexedDB in DevTools
 - Verify entries are being saved
 - Clear and rebuild index
 
 **Templates not loading**
+
 - Check template ID matches enum
 - Verify import paths
 - Check console for errors
 
 **Drafts not saving**
+
 - Check localStorage quota
 - Verify draft key format
 - Clear old drafts
 
 **Styles broken**
+
 - Ensure Tailwind is configured
 - Check theme variables
 - Verify component classes

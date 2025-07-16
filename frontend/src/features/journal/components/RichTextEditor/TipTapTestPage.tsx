@@ -1,6 +1,6 @@
 // TipTapTestPage.tsx - Test page for the fixed editor
-import React, { useState } from 'react';
-import RichTextEditor from './RichTextEditor';
+import React, { useState } from "react";
+import RichTextEditor from "./RichTextEditor";
 
 const TipTapTestPage: React.FC = () => {
   const [content, setContent] = useState(`# Welcome to the Fixed Editor!

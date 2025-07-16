@@ -1,5 +1,8 @@
 // Enhanced template types that work with existing JournalEntry structure
-import type { JournalTemplate as JournalTemplateEnum, GoalProgress } from '@/types/journal';
+import type {
+  JournalTemplate as JournalTemplateEnum,
+  GoalProgress,
+} from "@/types/journal";
 
 export interface EnhancedTemplate {
   id: JournalTemplateEnum;
@@ -11,7 +14,9 @@ export interface EnhancedTemplate {
   extractors?: {
     mood?: (responses: Record<string, SectionResponse>) => string | undefined;
     tags?: (responses: Record<string, SectionResponse>) => string[];
-    goalProgress?: (responses: Record<string, SectionResponse>) => GoalProgress[];
+    goalProgress?: (
+      responses: Record<string, SectionResponse>,
+    ) => GoalProgress[];
   };
 }
 
@@ -19,7 +24,15 @@ export interface SectionDefinition {
   id: string;
   title: string;
   prompt: string;
-  type: 'text' | 'scale' | 'mood' | 'choice' | 'tags' | 'goals' | 'checklist' | 'emotions';
+  type:
+    | "text"
+    | "scale"
+    | "mood"
+    | "choice"
+    | "tags"
+    | "goals"
+    | "checklist"
+    | "emotions";
   required?: boolean;
   options?: {
     min?: number;
@@ -28,7 +41,7 @@ export interface SectionDefinition {
     moods?: Array<{ value: string; label: string; emoji: string }>;
     items?: Array<{ id: string; label: string }>;
     maxSelections?: number;
-    mode?: 'wheel' | 'list' | 'both';
+    mode?: "wheel" | "list" | "both";
   };
 }
 

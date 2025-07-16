@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import Button from '../../../components/common/Button';
+import React, { useState } from "react";
+import Button from "../../../components/common/Button";
 
 interface QRCodeDisplayProps {
   qrCode: string;
@@ -20,16 +20,13 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
     <div className="space-y-6">
       <div className="text-center">
         <p className="text-sm text-muted mb-4">
-          Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
+          Scan this QR code with your authenticator app (Google Authenticator,
+          Authy, etc.)
         </p>
-        
+
         {/* QR Code Image */}
         <div className="inline-block p-4 bg-[var(--surface)] border-2 border-[color:var(--surface-muted)] rounded-lg">
-          <img
-            src={qrCode}
-            alt="2FA QR Code"
-            className="w-48 h-48"
-          />
+          <img src={qrCode} alt="2FA QR Code" className="w-48 h-48" />
         </div>
       </div>
 
@@ -42,7 +39,7 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
         >
           Can't scan? Enter code manually
         </button>
-        
+
         {showSecret && (
           <div className="mt-3 p-3 bg-[var(--surface-muted)] rounded-md">
             <p className="text-xs text-muted mb-2">
@@ -58,7 +55,12 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
                 className="ml-2 p-1 text-gray-400 hover:text-muted"
                 title="Copy to clipboard"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -90,9 +92,7 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button onClick={onContinue}>
-          I've Added It
-        </Button>
+        <Button onClick={onContinue}>I've Added It</Button>
       </div>
     </div>
   );

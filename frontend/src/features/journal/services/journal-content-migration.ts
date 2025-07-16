@@ -1,11 +1,11 @@
 // journal-content-migration.ts
-import { useState, useCallback } from 'react';
-import type { JournalEntry } from '@/types/journal';
-import { enhancedTemplates } from '../templates/enhanced-templates';
-import { 
-  hasEnhancedSectionMarkers, 
-  migrateToEnhancedFormat 
-} from '../templates/enhanced-template-content-utils';
+import { useState, useCallback } from "react";
+import type { JournalEntry } from "@/types/journal";
+import { enhancedTemplates } from "../templates/enhanced-templates";
+import {
+  hasEnhancedSectionMarkers,
+  migrateToEnhancedFormat,
+} from "../templates/enhanced-template-content-utils";
 
 /**
  * Service to migrate journal entries to the enhanced content format
@@ -19,11 +19,11 @@ export class JournalContentMigrationService {
     if (entry.isEncrypted) {
       return false;
     }
-    
+
     // Check if content already has enhanced section markers
     return !hasEnhancedSectionMarkers(entry.content);
   }
-  
+
   /**
    * Migrate a single journal entry to enhanced format
    */
@@ -32,30 +32,32 @@ export class JournalContentMigrationService {
     if (!this.needsMigration(entry)) {
       return entry;
     }
-    
+
     // Get the template
     const template = enhancedTemplates[entry.template];
     if (!template) {
-      console.warn(`Template not found for entry ${entry.entryId}: ${entry.template}`);
+      console.warn(
+        `Template not found for entry ${entry.entryId}: ${entry.template}`,
+      );
       return entry;
     }
-    
+
     // Migrate the content
     const enhancedContent = migrateToEnhancedFormat(template, entry.content);
-    
+
     return {
       ...entry,
       content: enhancedContent,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
   }
-  
+
   /**
    * Migrate multiple journal entries
    */
   static async migrateEntries(
     entries: JournalEntry[],
-    onProgress?: (current: number, total: number) => void
+    onProgress?: (current: number, total: number) => void,
   ): Promise<{
     migrated: JournalEntry[];
     skipped: JournalEntry[];
@@ -64,10 +66,10 @@ export class JournalContentMigrationService {
     const migrated: JournalEntry[] = [];
     const skipped: JournalEntry[] = [];
     const errors: Array<{ entry: JournalEntry; error: Error }> = [];
-    
+
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
-      
+
       try {
         if (!this.needsMigration(entry)) {
           skipped.push(entry);
@@ -78,35 +80,37 @@ export class JournalContentMigrationService {
       } catch (error) {
         errors.push({
           entry,
-          error: error instanceof Error ? error : new Error(String(error))
+          error: error instanceof Error ? error : new Error(String(error)),
         });
       }
-      
+
       // Report progress
       if (onProgress) {
         onProgress(i + 1, entries.length);
       }
     }
-    
+
     return { migrated, skipped, errors };
   }
-  
+
   /**
    * Generate a migration report
    */
   static generateReport(
-    result: Awaited<ReturnType<typeof JournalContentMigrationService.migrateEntries>>
+    result: Awaited<
+      ReturnType<typeof JournalContentMigrationService.migrateEntries>
+    >,
   ): string {
     const { migrated, skipped, errors } = result;
     const total = migrated.length + skipped.length + errors.length;
-    
+
     let report = `Journal Content Migration Report\n`;
     report += `================================\n\n`;
     report += `Total entries processed: ${total}\n`;
     report += `Successfully migrated: ${migrated.length}\n`;
     report += `Skipped (already migrated or encrypted): ${skipped.length}\n`;
     report += `Errors: ${errors.length}\n\n`;
-    
+
     if (errors.length > 0) {
       report += `Error Details:\n`;
       report += `--------------\n`;
@@ -114,7 +118,7 @@ export class JournalContentMigrationService {
         report += `Entry ${entry.entryId} (${entry.title}): ${error.message}\n`;
       });
     }
-    
+
     return report;
   }
 }
@@ -125,36 +129,39 @@ export class JournalContentMigrationService {
 export function useJournalMigration() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
-  const [result, setResult] = useState<Awaited<ReturnType<typeof JournalContentMigrationService.migrateEntries>> | null>(null);
-  
+  const [result, setResult] = useState<Awaited<
+    ReturnType<typeof JournalContentMigrationService.migrateEntries>
+  > | null>(null);
+
   const migrateEntries = useCallback(async (entries: JournalEntry[]) => {
     setIsRunning(true);
     setProgress({ current: 0, total: entries.length });
-    
+
     try {
-      const migrationResult = await JournalContentMigrationService.migrateEntries(
-        entries,
-        (current, total) => setProgress({ current, total })
-      );
-      
+      const migrationResult =
+        await JournalContentMigrationService.migrateEntries(
+          entries,
+          (current, total) => setProgress({ current, total }),
+        );
+
       setResult(migrationResult);
       return migrationResult;
     } finally {
       setIsRunning(false);
     }
   }, []);
-  
+
   const reset = useCallback(() => {
     setProgress({ current: 0, total: 0 });
     setResult(null);
   }, []);
-  
+
   return {
     migrateEntries,
     isRunning,
     progress,
     result,
-    reset
+    reset,
   };
 }
 

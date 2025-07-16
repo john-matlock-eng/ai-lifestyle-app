@@ -1,6 +1,6 @@
 // extensions.ts
-import { Extension } from '@tiptap/core';
-import type { Editor } from '@tiptap/core';
+import { Extension } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
 
 interface CharacterCountStorage {
   characters: () => number;
@@ -8,7 +8,7 @@ interface CharacterCountStorage {
 }
 
 export const CharacterCount = Extension.create<object, CharacterCountStorage>({
-  name: 'characterCount',
+  name: "characterCount",
 
   addStorage() {
     return {
@@ -19,7 +19,7 @@ export const CharacterCount = Extension.create<object, CharacterCountStorage>({
 
   onUpdate(this: { editor: Editor; storage: CharacterCountStorage }) {
     const text = this.editor.state.doc.textContent;
-    
+
     this.storage.characters = () => text.length;
     this.storage.words = () => {
       const words = text.split(/\s+/).filter((word: string) => word.length > 0);

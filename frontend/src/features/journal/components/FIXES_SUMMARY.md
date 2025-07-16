@@ -3,11 +3,14 @@
 ## Problems Identified and Fixed
 
 ### 1. Emotion Wheel Issues
+
 **Problems:**
+
 - Zoom level persisted even when user wanted to reset
 - Zoom controls became inaccessible when zoomed in
 
 **Solutions:**
+
 - Added ESC key handler to reset zoom
 - Added click-outside detection to reset zoom
 - Moved zoom controls outside the zoomable container (positioned above)
@@ -15,12 +18,15 @@
 - Smooth transitions for better UX
 
 ### 2. Rich Text Editor Issues
+
 **Problems:**
+
 - Floating/bubble menus appeared over the text input area
 - Typing caused DOM manipulation errors and crashed the page
 - React and TipTap were fighting over DOM control
 
 **Solutions:**
+
 - Disabled bubble and floating menus by default
 - Added typing detection to hide menus during input
 - Improved focus management and event handling
@@ -30,6 +36,7 @@
 ## Implementation Details
 
 ### Emotion Wheel (`EmotionWheel.tsx`)
+
 - Added `resetZoom()` function
 - Implemented keyboard event listener for ESC key
 - Added click-outside event listener
@@ -37,6 +44,7 @@
 - Updated CSS for proper spacing
 
 ### Rich Text Editor (`RichTextEditor.tsx`)
+
 - Changed default props: `showBubbleMenu={false}`, `showFloatingMenu={false}`
 - Added `isTyping` state with debounced timeout
 - Improved `executeCommand` to maintain focus
@@ -44,12 +52,14 @@
 - Fixed event handling to prevent focus loss
 
 ### Section Editor (`SectionEditor.tsx`)
+
 - Updated to use safe defaults for RichTextEditor
 - Disabled problematic menus by default
 
 ## Testing
 
 Use the provided test pages to verify fixes:
+
 - `EmotionWheelDemo.tsx` - Test emotion wheel zoom functionality
 - `RichTextEditorTestPage.tsx` - Test editor without crashes
 

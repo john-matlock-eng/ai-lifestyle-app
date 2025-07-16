@@ -1,11 +1,11 @@
-import type { JournalEntry } from '../../../types/journal';
-import { getEncryptionService } from '@/services/encryption';
-import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
+import type { JournalEntry } from "../../../types/journal";
+import { getEncryptionService } from "@/services/encryption";
+import { shouldTreatAsEncrypted } from "@/utils/encryption-utils";
 
-const DB_NAME = 'ai-lifestyle-journal';
-const STORE_NAME = 'journal-entries';
-const DECRYPTED_STORE_NAME = 'decrypted-entries';
-const SETTINGS_STORE_NAME = 'journal-settings';
+const DB_NAME = "ai-lifestyle-journal";
+const STORE_NAME = "journal-entries";
+const DECRYPTED_STORE_NAME = "decrypted-entries";
+const SETTINGS_STORE_NAME = "journal-settings";
 const DB_VERSION = 3;
 
 export interface SearchFilters {
@@ -37,49 +37,58 @@ interface DecryptedEntry {
 class JournalStorageService {
   private db: IDBDatabase | null = null;
   private settings: JournalSettings = {
-    cacheDecryptedContent: false
+    cacheDecryptedContent: false,
   };
 
   async initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
-      
+
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        
+
         // Create journal entries store if it doesn't exist
         if (!db.objectStoreNames.contains(STORE_NAME)) {
-          const store = db.createObjectStore(STORE_NAME, { keyPath: 'entryId' });
-          
+          const store = db.createObjectStore(STORE_NAME, {
+            keyPath: "entryId",
+          });
+
           // Create indexes for efficient searching
-          store.createIndex('userId', 'userId', { unique: false });
-          store.createIndex('createdAt', 'createdAt', { unique: false });
-          store.createIndex('updatedAt', 'updatedAt', { unique: false });
-          store.createIndex('template', 'template', { unique: false });
-          store.createIndex('mood', 'mood', { unique: false });
-          store.createIndex('isEncrypted', 'isEncrypted', { unique: false });
-          store.createIndex('tags', 'tags', { unique: false, multiEntry: true });
+          store.createIndex("userId", "userId", { unique: false });
+          store.createIndex("createdAt", "createdAt", { unique: false });
+          store.createIndex("updatedAt", "updatedAt", { unique: false });
+          store.createIndex("template", "template", { unique: false });
+          store.createIndex("mood", "mood", { unique: false });
+          store.createIndex("isEncrypted", "isEncrypted", { unique: false });
+          store.createIndex("tags", "tags", {
+            unique: false,
+            multiEntry: true,
+          });
         }
-        
+
         // Create decrypted content store if it doesn't exist
         if (!db.objectStoreNames.contains(DECRYPTED_STORE_NAME)) {
-          const decryptedStore = db.createObjectStore(DECRYPTED_STORE_NAME, { keyPath: 'entryId' });
-          decryptedStore.createIndex('decryptedAt', 'decryptedAt', { unique: false });
+          const decryptedStore = db.createObjectStore(DECRYPTED_STORE_NAME, {
+            keyPath: "entryId",
+          });
+          decryptedStore.createIndex("decryptedAt", "decryptedAt", {
+            unique: false,
+          });
         }
-        
+
         // Create settings store if it doesn't exist
         if (!db.objectStoreNames.contains(SETTINGS_STORE_NAME)) {
-          db.createObjectStore(SETTINGS_STORE_NAME, { keyPath: 'id' });
+          db.createObjectStore(SETTINGS_STORE_NAME, { keyPath: "id" });
         }
       };
-      
+
       request.onsuccess = async () => {
         this.db = request.result;
         // Load settings
         await this.loadSettings();
         resolve();
       };
-      
+
       request.onerror = () => {
         reject(request.error);
       };
@@ -95,19 +104,19 @@ class JournalStorageService {
 
   private async loadSettings(): Promise<void> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve) => {
-      const tx = db.transaction(SETTINGS_STORE_NAME, 'readonly');
+      const tx = db.transaction(SETTINGS_STORE_NAME, "readonly");
       const store = tx.objectStore(SETTINGS_STORE_NAME);
-      const request = store.get('journal-settings');
-      
+      const request = store.get("journal-settings");
+
       request.onsuccess = () => {
         if (request.result) {
           this.settings = request.result.settings;
         }
         resolve();
       };
-      
+
       request.onerror = () => resolve(); // Use defaults on error
     });
   }
@@ -115,12 +124,15 @@ class JournalStorageService {
   async updateSettings(settings: Partial<JournalSettings>): Promise<void> {
     const db = await this.ensureDb();
     this.settings = { ...this.settings, ...settings };
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(SETTINGS_STORE_NAME, 'readwrite');
+      const tx = db.transaction(SETTINGS_STORE_NAME, "readwrite");
       const store = tx.objectStore(SETTINGS_STORE_NAME);
-      const request = store.put({ id: 'journal-settings', settings: this.settings });
-      
+      const request = store.put({
+        id: "journal-settings",
+        settings: this.settings,
+      });
+
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
@@ -132,28 +144,38 @@ class JournalStorageService {
 
   async saveEntry(entry: JournalEntry, decryptForCache = true): Promise<void> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction([STORE_NAME, DECRYPTED_STORE_NAME], 'readwrite');
+      const tx = db.transaction(
+        [STORE_NAME, DECRYPTED_STORE_NAME],
+        "readwrite",
+      );
       const store = tx.objectStore(STORE_NAME);
-      
+
       // Save the entry
       store.put(entry);
-      
+
       // If caching is enabled and entry is encrypted, cache decrypted content
-      if (this.settings.cacheDecryptedContent && decryptForCache && shouldTreatAsEncrypted(entry)) {
-        this.cacheDecryptedContent(entry, tx).catch(error => {
-          console.warn('Failed to cache decrypted content:', error);
+      if (
+        this.settings.cacheDecryptedContent &&
+        decryptForCache &&
+        shouldTreatAsEncrypted(entry)
+      ) {
+        this.cacheDecryptedContent(entry, tx).catch((error) => {
+          console.warn("Failed to cache decrypted content:", error);
           // Don't fail the save operation if caching fails
         });
       }
-      
+
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
   }
 
-  private async cacheDecryptedContent(entry: JournalEntry, transaction?: IDBTransaction): Promise<void> {
+  private async cacheDecryptedContent(
+    entry: JournalEntry,
+    transaction?: IDBTransaction,
+  ): Promise<void> {
     if (!shouldTreatAsEncrypted(entry) || !entry.encryptedKey) {
       return;
     }
@@ -169,7 +191,7 @@ class JournalStorageService {
       const decryptedEntry: DecryptedEntry = {
         entryId: entry.entryId,
         content: decryptedContent,
-        decryptedAt: new Date().toISOString()
+        decryptedAt: new Date().toISOString(),
       };
 
       if (transaction) {
@@ -177,24 +199,24 @@ class JournalStorageService {
         decryptedStore.put(decryptedEntry);
       } else {
         const db = await this.ensureDb();
-        const tx = db.transaction(DECRYPTED_STORE_NAME, 'readwrite');
+        const tx = db.transaction(DECRYPTED_STORE_NAME, "readwrite");
         const store = tx.objectStore(DECRYPTED_STORE_NAME);
         store.put(decryptedEntry);
       }
     } catch (error) {
-      console.error('Failed to decrypt content for caching:', error);
+      console.error("Failed to decrypt content for caching:", error);
       throw error;
     }
   }
 
   async clearDecryptedCache(): Promise<void> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(DECRYPTED_STORE_NAME, 'readwrite');
+      const tx = db.transaction(DECRYPTED_STORE_NAME, "readwrite");
       const store = tx.objectStore(DECRYPTED_STORE_NAME);
       const request = store.clear();
-      
+
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
@@ -202,12 +224,12 @@ class JournalStorageService {
 
   async removeDecryptedEntry(entryId: string): Promise<void> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(DECRYPTED_STORE_NAME, 'readwrite');
+      const tx = db.transaction(DECRYPTED_STORE_NAME, "readwrite");
       const store = tx.objectStore(DECRYPTED_STORE_NAME);
       const request = store.delete(entryId);
-      
+
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
@@ -219,12 +241,12 @@ class JournalStorageService {
     }
 
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(DECRYPTED_STORE_NAME, 'readonly');
+      const tx = db.transaction(DECRYPTED_STORE_NAME, "readonly");
       const store = tx.objectStore(DECRYPTED_STORE_NAME);
       const request = store.get(entryId);
-      
+
       request.onsuccess = () => {
         const result = request.result as DecryptedEntry | undefined;
         resolve(result ? result.content : null);
@@ -235,22 +257,31 @@ class JournalStorageService {
 
   async saveEntries(entries: JournalEntry[]): Promise<void> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction([STORE_NAME, DECRYPTED_STORE_NAME], 'readwrite');
+      const tx = db.transaction(
+        [STORE_NAME, DECRYPTED_STORE_NAME],
+        "readwrite",
+      );
       const store = tx.objectStore(STORE_NAME);
-      
+
       for (const entry of entries) {
         store.put(entry);
-        
+
         // Cache decrypted content if enabled
-        if (this.settings.cacheDecryptedContent && shouldTreatAsEncrypted(entry)) {
-          this.cacheDecryptedContent(entry, tx).catch(error => {
-            console.warn(`Failed to cache decrypted content for entry ${entry.entryId}:`, error);
+        if (
+          this.settings.cacheDecryptedContent &&
+          shouldTreatAsEncrypted(entry)
+        ) {
+          this.cacheDecryptedContent(entry, tx).catch((error) => {
+            console.warn(
+              `Failed to cache decrypted content for entry ${entry.entryId}:`,
+              error,
+            );
           });
         }
       }
-      
+
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
@@ -258,12 +289,12 @@ class JournalStorageService {
 
   async getEntry(entryId: string): Promise<JournalEntry | null> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
+      const tx = db.transaction(STORE_NAME, "readonly");
       const store = tx.objectStore(STORE_NAME);
       const request = store.get(entryId);
-      
+
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
@@ -271,17 +302,20 @@ class JournalStorageService {
 
   async deleteEntry(entryId: string): Promise<void> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction([STORE_NAME, DECRYPTED_STORE_NAME], 'readwrite');
-      
+      const tx = db.transaction(
+        [STORE_NAME, DECRYPTED_STORE_NAME],
+        "readwrite",
+      );
+
       // Delete from both stores
       const journalStore = tx.objectStore(STORE_NAME);
       journalStore.delete(entryId);
-      
+
       const decryptedStore = tx.objectStore(DECRYPTED_STORE_NAME);
       decryptedStore.delete(entryId);
-      
+
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
@@ -289,12 +323,12 @@ class JournalStorageService {
 
   async getAllEntries(): Promise<JournalEntry[]> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
+      const tx = db.transaction(STORE_NAME, "readonly");
       const store = tx.objectStore(STORE_NAME);
       const request = store.getAll();
-      
+
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
     });
@@ -303,9 +337,9 @@ class JournalStorageService {
   async searchEntries(filters: SearchFilters): Promise<SearchResult> {
     await this.ensureDb();
     const allEntries = await this.getAllEntries();
-    
+
     let filteredEntries = [...allEntries];
-    
+
     // Apply search query (full-text search on title and content)
     if (filters.query) {
       const query = filters.query.toLowerCase();
@@ -314,58 +348,65 @@ class JournalStorageService {
         if (entry.title.toLowerCase().includes(query)) {
           return entry;
         }
-        
+
         // For encrypted entries, try to search decrypted content if cached
         if (entry.isEncrypted) {
-          const decryptedContent = await this.getDecryptedContent(entry.entryId);
-          if (decryptedContent && decryptedContent.toLowerCase().includes(query)) {
+          const decryptedContent = await this.getDecryptedContent(
+            entry.entryId,
+          );
+          if (
+            decryptedContent &&
+            decryptedContent.toLowerCase().includes(query)
+          ) {
             return entry;
           }
           return null;
         }
-        
+
         // For unencrypted entries, search content directly
         if (entry.content.toLowerCase().includes(query)) {
           return entry;
         }
-        
+
         return null;
       });
-      
+
       const searchResults = await Promise.all(searchPromises);
-      filteredEntries = searchResults.filter((entry): entry is JournalEntry => entry !== null);
+      filteredEntries = searchResults.filter(
+        (entry): entry is JournalEntry => entry !== null,
+      );
     }
-    
+
     // Filter by tags
     if (filters.tags && filters.tags.length > 0) {
-      filteredEntries = filteredEntries.filter(entry =>
-        filters.tags!.some(tag => entry.tags.includes(tag))
+      filteredEntries = filteredEntries.filter((entry) =>
+        filters.tags!.some((tag) => entry.tags.includes(tag)),
       );
     }
-    
+
     // Filter by template
     if (filters.template) {
-      filteredEntries = filteredEntries.filter(entry =>
-        entry.template === filters.template
+      filteredEntries = filteredEntries.filter(
+        (entry) => entry.template === filters.template,
       );
     }
-    
+
     // Filter by mood
     if (filters.mood) {
-      filteredEntries = filteredEntries.filter(entry =>
-        entry.mood === filters.mood
+      filteredEntries = filteredEntries.filter(
+        (entry) => entry.mood === filters.mood,
       );
     }
-    
+
     // Filter by date range
     if (filters.startDate || filters.endDate) {
-      filteredEntries = filteredEntries.filter(entry => {
+      filteredEntries = filteredEntries.filter((entry) => {
         const entryDate = new Date(entry.createdAt);
-        
+
         if (filters.startDate && entryDate < filters.startDate) {
           return false;
         }
-        
+
         if (filters.endDate) {
           // Include entries up to the end of the endDate
           const endOfDay = new Date(filters.endDate);
@@ -374,58 +415,64 @@ class JournalStorageService {
             return false;
           }
         }
-        
+
         return true;
       });
     }
-    
+
     // Filter by encryption status
     if (filters.isEncrypted !== undefined) {
-      filteredEntries = filteredEntries.filter(entry =>
-        entry.isEncrypted === filters.isEncrypted
+      filteredEntries = filteredEntries.filter(
+        (entry) => entry.isEncrypted === filters.isEncrypted,
       );
     }
-    
+
     // Sort by most recent first
-    filteredEntries.sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    filteredEntries.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
-    
+
     return {
       entries: filteredEntries,
-      total: filteredEntries.length
+      total: filteredEntries.length,
     };
   }
 
-  async getUniqueValues(field: 'tags' | 'mood' | 'template'): Promise<string[]> {
+  async getUniqueValues(
+    field: "tags" | "mood" | "template",
+  ): Promise<string[]> {
     const entries = await this.getAllEntries();
     const values = new Set<string>();
-    
-    entries.forEach(entry => {
-      if (field === 'tags') {
-        entry.tags.forEach(tag => values.add(tag));
-      } else if (field === 'mood' && entry.mood) {
+
+    entries.forEach((entry) => {
+      if (field === "tags") {
+        entry.tags.forEach((tag) => values.add(tag));
+      } else if (field === "mood" && entry.mood) {
         values.add(entry.mood);
-      } else if (field === 'template') {
+      } else if (field === "template") {
         values.add(entry.template);
       }
     });
-    
+
     return Array.from(values).sort();
   }
 
   async clearAll(): Promise<void> {
     const db = await this.ensureDb();
-    
+
     return new Promise((resolve, reject) => {
-      const tx = db.transaction([STORE_NAME, DECRYPTED_STORE_NAME], 'readwrite');
-      
+      const tx = db.transaction(
+        [STORE_NAME, DECRYPTED_STORE_NAME],
+        "readwrite",
+      );
+
       const journalStore = tx.objectStore(STORE_NAME);
       journalStore.clear();
-      
+
       const decryptedStore = tx.objectStore(DECRYPTED_STORE_NAME);
       decryptedStore.clear();
-      
+
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
@@ -444,9 +491,11 @@ class JournalStorageService {
 
     const entries = await this.getAllEntries();
     const encryptedEntries = entries.filter(shouldTreatAsEncrypted);
-    
-    console.log(`Rebuilding decrypted cache for ${encryptedEntries.length} encrypted entries...`);
-    
+
+    console.log(
+      `Rebuilding decrypted cache for ${encryptedEntries.length} encrypted entries...`,
+    );
+
     for (const entry of encryptedEntries) {
       try {
         await this.cacheDecryptedContent(entry);
@@ -454,9 +503,9 @@ class JournalStorageService {
         console.error(`Failed to cache entry ${entry.entryId}:`, error);
       }
     }
-    
+
     await this.updateSettings({ lastCacheUpdate: new Date().toISOString() });
-    console.log('Decrypted cache rebuild complete');
+    console.log("Decrypted cache rebuild complete");
   }
 
   async getCacheStats(): Promise<{
@@ -468,25 +517,25 @@ class JournalStorageService {
   }> {
     const db = await this.ensureDb();
     const entries = await this.getAllEntries();
-    
+
     const encryptedEntries = entries.filter(shouldTreatAsEncrypted);
-    
+
     // Count cached entries
     const cachedCount = await new Promise<number>((resolve, reject) => {
-      const tx = db.transaction(DECRYPTED_STORE_NAME, 'readonly');
+      const tx = db.transaction(DECRYPTED_STORE_NAME, "readonly");
       const store = tx.objectStore(DECRYPTED_STORE_NAME);
       const request = store.count();
-      
+
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-    
+
     return {
       totalEntries: entries.length,
       encryptedEntries: encryptedEntries.length,
       cachedEntries: cachedCount,
       cacheEnabled: this.settings.cacheDecryptedContent,
-      lastCacheUpdate: this.settings.lastCacheUpdate
+      lastCacheUpdate: this.settings.lastCacheUpdate,
     };
   }
 }

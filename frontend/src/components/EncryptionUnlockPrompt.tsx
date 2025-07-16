@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
-import { Lock } from 'lucide-react';
-import { useEncryption } from '../contexts/useEncryption';
-import { Button } from './common';
-import { useNavigate } from 'react-router-dom';
-import { securePasswordStorage } from '../services/encryption/securePasswordStorage';
+import React, { useState } from "react";
+import { Lock } from "lucide-react";
+import { useEncryption } from "../contexts/useEncryption";
+import { Button } from "./common";
+import { useNavigate } from "react-router-dom";
+import { securePasswordStorage } from "../services/encryption/securePasswordStorage";
 
 export const EncryptionUnlockPrompt: React.FC = () => {
-  const { isEncryptionEnabled, isEncryptionSetup, isEncryptionLocked, unlockEncryption } = useEncryption();
+  const {
+    isEncryptionEnabled,
+    isEncryptionSetup,
+    isEncryptionLocked,
+    unlockEncryption,
+  } = useEncryption();
   const navigate = useNavigate();
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [rememberPassword, setRememberPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isUnlocking, setIsUnlocking] = useState(false);
 
   // Only show if encryption is enabled and locked
@@ -20,32 +25,32 @@ export const EncryptionUnlockPrompt: React.FC = () => {
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsUnlocking(true);
 
     try {
       await unlockEncryption(password);
-      
+
       // Store password if remember checkbox is checked
       if (rememberPassword) {
         try {
           await securePasswordStorage.storePassword(password);
         } catch (storageError) {
-          console.error('Failed to store password:', storageError);
+          console.error("Failed to store password:", storageError);
           // Don't block unlock if storage fails
         }
       }
-      
-      setPassword('');
+
+      setPassword("");
     } catch {
-      setError('Invalid password. Please try again.');
+      setError("Invalid password. Please try again.");
     } finally {
       setIsUnlocking(false);
     }
   };
 
   const handleGoToSettings = () => {
-    navigate('/settings');
+    navigate("/settings");
   };
 
   return (
@@ -60,7 +65,8 @@ export const EncryptionUnlockPrompt: React.FC = () => {
           {isEncryptionSetup ? (
             <>
               <p className="text-gray-600">
-                Enter your master encryption password to access encrypted content.
+                Enter your master encryption password to access encrypted
+                content.
               </p>
 
               <form onSubmit={handleUnlock} className="space-y-4">
@@ -87,7 +93,10 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                     onChange={(e) => setRememberPassword(e.target.checked)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="rememberPassword" className="ml-2 text-sm text-gray-700">
+                  <label
+                    htmlFor="rememberPassword"
+                    className="ml-2 text-sm text-gray-700"
+                  >
                     Remember password on this device (30 days)
                   </label>
                 </div>
@@ -106,8 +115,8 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                   >
                     Forgot password?
                   </button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={!password || isUnlocking}
                     isLoading={isUnlocking}
                   >
@@ -119,7 +128,8 @@ export const EncryptionUnlockPrompt: React.FC = () => {
           ) : (
             <>
               <p className="text-gray-600">
-                Your encryption is set up on another device. Enter your master password to access encrypted content on this device.
+                Your encryption is set up on another device. Enter your master
+                password to access encrypted content on this device.
               </p>
 
               <form onSubmit={handleUnlock} className="space-y-4">
@@ -146,7 +156,10 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                     onChange={(e) => setRememberPassword(e.target.checked)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="rememberPassword" className="ml-2 text-sm text-gray-700">
+                  <label
+                    htmlFor="rememberPassword"
+                    className="ml-2 text-sm text-gray-700"
+                  >
                     Remember password on this device (30 days)
                   </label>
                 </div>
@@ -165,8 +178,8 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                   >
                     Reset encryption
                   </button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={!password || isUnlocking}
                     isLoading={isUnlocking}
                   >

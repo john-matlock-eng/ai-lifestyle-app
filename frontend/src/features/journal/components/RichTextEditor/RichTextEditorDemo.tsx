@@ -1,8 +1,8 @@
 // RichTextEditorDemo.tsx
-import React, { useState } from 'react';
-import RichTextEditor from './RichTextEditor';
-import { Copy, Eye, Code } from 'lucide-react';
-import { Button } from '@/components/common';
+import React, { useState } from "react";
+import RichTextEditor from "./RichTextEditor";
+import { Copy, Eye, Code } from "lucide-react";
+import { Button } from "@/components/common";
 
 const initialContent = `# Welcome to the Rich Text Editor!
 
@@ -81,7 +81,7 @@ export const RichTextEditorDemo: React.FC = () => {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(content);
-    alert('Markdown copied to clipboard!');
+    alert("Markdown copied to clipboard!");
   };
 
   return (
@@ -89,9 +89,12 @@ export const RichTextEditorDemo: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-theme mb-2">Rich Text Editor Demo</h1>
+          <h1 className="text-4xl font-bold text-theme mb-2">
+            Rich Text Editor Demo
+          </h1>
           <p className="text-muted">
-            A beautiful TipTap editor with full markdown support and real-time formatting
+            A beautiful TipTap editor with full markdown support and real-time
+            formatting
           </p>
         </div>
 
@@ -103,7 +106,7 @@ export const RichTextEditorDemo: React.FC = () => {
             onClick={() => setShowMarkdown(!showMarkdown)}
           >
             <Code className="w-4 h-4 mr-2" />
-            {showMarkdown ? 'Hide' : 'Show'} Markdown
+            {showMarkdown ? "Hide" : "Show"} Markdown
           </Button>
           <Button
             variant="ghost"
@@ -111,13 +114,9 @@ export const RichTextEditorDemo: React.FC = () => {
             onClick={() => setShowPreview(!showPreview)}
           >
             <Eye className="w-4 h-4 mr-2" />
-            {showPreview ? 'Hide' : 'Show'} Preview
+            {showPreview ? "Hide" : "Show"} Preview
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={copyToClipboard}
-          >
+          <Button variant="ghost" size="sm" onClick={copyToClipboard}>
             <Copy className="w-4 h-4 mr-2" />
             Copy Markdown
           </Button>
@@ -147,7 +146,9 @@ export const RichTextEditorDemo: React.FC = () => {
             {/* Markdown Output */}
             {showMarkdown && (
               <div>
-                <h2 className="text-xl font-semibold text-theme mb-4">Markdown Output</h2>
+                <h2 className="text-xl font-semibold text-theme mb-4">
+                  Markdown Output
+                </h2>
                 <div className="glass rounded-xl p-6">
                   <pre className="whitespace-pre-wrap text-sm font-mono text-muted overflow-auto max-h-96">
                     {content}
@@ -159,22 +160,26 @@ export const RichTextEditorDemo: React.FC = () => {
             {/* Preview */}
             {showPreview && (
               <div>
-                <h2 className="text-xl font-semibold text-theme mb-4">Preview</h2>
+                <h2 className="text-xl font-semibold text-theme mb-4">
+                  Preview
+                </h2>
                 <div className="glass rounded-xl p-6">
                   <div className="prose prose-lg dark:prose-invert max-w-none">
-                    <div dangerouslySetInnerHTML={{ 
-                      __html: content
-                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                        .replace(/~~(.+?)~~/g, '<del>$1</del>')
-                        .replace(/`(.+?)`/g, '<code>$1</code>')
-                        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-                        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-                        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-                        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-                        .replace(/^- (.+)$/gm, '<li>$1</li>')
-                        .replace(/\n/g, '<br />')
-                    }} />
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: content
+                          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                          .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                          .replace(/~~(.+?)~~/g, "<del>$1</del>")
+                          .replace(/`(.+?)`/g, "<code>$1</code>")
+                          .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+                          .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+                          .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+                          .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
+                          .replace(/^- (.+)$/gm, "<li>$1</li>")
+                          .replace(/\n/g, "<br />"),
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -182,24 +187,34 @@ export const RichTextEditorDemo: React.FC = () => {
 
             {/* Features */}
             <div>
-              <h2 className="text-xl font-semibold text-theme mb-4">Features</h2>
+              <h2 className="text-xl font-semibold text-theme mb-4">
+                Features
+              </h2>
               <div className="glass rounded-xl p-6">
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <span className="text-accent">✓</span>
-                    <span className="text-sm">Full markdown support with live preview</span>
+                    <span className="text-sm">
+                      Full markdown support with live preview
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">✓</span>
-                    <span className="text-sm">Keyboard shortcuts for all formatting</span>
+                    <span className="text-sm">
+                      Keyboard shortcuts for all formatting
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">✓</span>
-                    <span className="text-sm">Bubble menu for selected text</span>
+                    <span className="text-sm">
+                      Bubble menu for selected text
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">✓</span>
-                    <span className="text-sm">Floating menu for new paragraphs</span>
+                    <span className="text-sm">
+                      Floating menu for new paragraphs
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">✓</span>
@@ -207,7 +222,9 @@ export const RichTextEditorDemo: React.FC = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">✓</span>
-                    <span className="text-sm">Code blocks with syntax highlighting</span>
+                    <span className="text-sm">
+                      Code blocks with syntax highlighting
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">✓</span>
@@ -223,7 +240,9 @@ export const RichTextEditorDemo: React.FC = () => {
 
             {/* Keyboard Shortcuts */}
             <div>
-              <h2 className="text-xl font-semibold text-theme mb-4">Keyboard Shortcuts</h2>
+              <h2 className="text-xl font-semibold text-theme mb-4">
+                Keyboard Shortcuts
+              </h2>
               <div className="glass rounded-xl p-6">
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="font-mono">⌘ + B</div>

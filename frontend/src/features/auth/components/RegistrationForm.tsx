@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
-import { registerSchema } from '../utils/validation';
-import type { RegisterFormData } from '../utils/validation';
-import { authService } from '../services/authService';
-import { isValidationError } from '../../../api/client';
-import Input from '../../../components/common/Input';
-import Button from '../../../components/common/Button';
-import PasswordInput from './PasswordInput';
-import PasswordStrengthMeter from './PasswordStrengthMeter';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import { registerSchema } from "../utils/validation";
+import type { RegisterFormData } from "../utils/validation";
+import { authService } from "../services/authService";
+import { isValidationError } from "../../../api/client";
+import Input from "../../../components/common/Input";
+import Button from "../../../components/common/Button";
+import PasswordInput from "./PasswordInput";
+import PasswordStrengthMeter from "./PasswordStrengthMeter";
 
 const RegistrationForm: React.FC = () => {
   const navigate = useNavigate();
-  const [generalError, setGeneralError] = useState<string>('');
+  const [generalError, setGeneralError] = useState<string>("");
 
   const {
     register,
@@ -24,27 +24,34 @@ const RegistrationForm: React.FC = () => {
     setError,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    mode: 'onBlur',
+    mode: "onBlur",
   });
 
   const registerMutation = useMutation({
-    mutationFn: (data: Omit<RegisterFormData, 'confirmPassword'>) => authService.register(data),
+    mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
+      authService.register(data),
     onSuccess: (data) => {
       // Navigate to success page or show success message
-      navigate('/register/success', { 
-        state: { 
+      navigate("/register/success", {
+        state: {
           email: data.email,
-          message: data.message 
-        } 
+          message: data.message,
+        },
       });
     },
     onError: (error) => {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       if (isValidationError(error)) {
         // Handle field-specific validation errors from the API
         error.response?.data.validation_errors.forEach((validationError) => {
           const field = validationError.field as keyof RegisterFormData;
-          if (field === 'email' || field === 'password' || field === 'firstName' || field === 'lastName' || field === 'confirmPassword') {
+          if (
+            field === "email" ||
+            field === "password" ||
+            field === "firstName" ||
+            field === "lastName" ||
+            field === "confirmPassword"
+          ) {
             setError(field, {
               message: validationError.message,
             });
@@ -61,22 +68,25 @@ const RegistrationForm: React.FC = () => {
           };
           code?: string;
         };
-        
+
         if (axiosError.response?.status === 409) {
           // Email already exists
-          setError('email', {
-            message: 'An account with this email already exists',
+          setError("email", {
+            message: "An account with this email already exists",
           });
-        } else if (axiosError.code === 'ERR_NETWORK' || axiosError.code === 'ERR_CONNECTION_REFUSED') {
+        } else if (
+          axiosError.code === "ERR_NETWORK" ||
+          axiosError.code === "ERR_CONNECTION_REFUSED"
+        ) {
           // Network error - backend not available
           setGeneralError(
-            'Unable to connect to the server. Make sure the backend is running or MSW is properly configured.'
+            "Unable to connect to the server. Make sure the backend is running or MSW is properly configured.",
           );
         } else {
           // General error
           setGeneralError(
-            axiosError.response?.data?.message || 
-            'Something went wrong. Please try again.'
+            axiosError.response?.data?.message ||
+              "Something went wrong. Please try again.",
           );
         }
       }
@@ -84,13 +94,13 @@ const RegistrationForm: React.FC = () => {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
-    setGeneralError('');
+    setGeneralError("");
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
   };
 
-  const password = watch('password');
+  const password = watch("password");
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -100,7 +110,7 @@ const RegistrationForm: React.FC = () => {
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-muted">
-            Already have an account?{' '}
+            Already have an account?{" "}
             <Link
               to="/login"
               className="font-medium text-primary-600 hover:text-primary-500"
@@ -117,9 +127,10 @@ const RegistrationForm: React.FC = () => {
               role="alert"
             >
               <div>{generalError}</div>
-              {generalError.includes('Unable to connect') && (
+              {generalError.includes("Unable to connect") && (
                 <div className="mt-2 text-xs">
-                  <strong>Quick Fix:</strong> Restart the dev server (Ctrl+C then npm run dev)
+                  <strong>Quick Fix:</strong> Restart the dev server (Ctrl+C
+                  then npm run dev)
                 </div>
               )}
             </div>
@@ -129,7 +140,7 @@ const RegistrationForm: React.FC = () => {
             <Input
               label="First name"
               isRequired
-              {...register('firstName')}
+              {...register("firstName")}
               error={errors.firstName?.message}
               autoComplete="given-name"
             />
@@ -137,7 +148,7 @@ const RegistrationForm: React.FC = () => {
             <Input
               label="Last name"
               isRequired
-              {...register('lastName')}
+              {...register("lastName")}
               error={errors.lastName?.message}
               autoComplete="family-name"
             />
@@ -147,11 +158,16 @@ const RegistrationForm: React.FC = () => {
             label="Email address"
             type="email"
             isRequired
-            {...register('email')}
+            {...register("email")}
             error={errors.email?.message}
             autoComplete="email"
             leftIcon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -166,18 +182,18 @@ const RegistrationForm: React.FC = () => {
             <PasswordInput
               label="Password"
               isRequired
-              {...register('password')}
+              {...register("password")}
               error={errors.password?.message}
               autoComplete="new-password"
               hint="Must be at least 8 characters with uppercase, lowercase, number, and special character"
             />
-            <PasswordStrengthMeter password={password || ''} />
+            <PasswordStrengthMeter password={password || ""} />
           </div>
 
           <PasswordInput
             label="Confirm password"
             isRequired
-            {...register('confirmPassword')}
+            {...register("confirmPassword")}
             error={errors.confirmPassword?.message}
             autoComplete="new-password"
           />
@@ -190,16 +206,19 @@ const RegistrationForm: React.FC = () => {
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
                 required
               />
-              <label htmlFor="terms" className="ml-2 block text-sm text-[var(--text)]">
-                I agree to the{' '}
+              <label
+                htmlFor="terms"
+                className="ml-2 block text-sm text-[var(--text)]"
+              >
+                I agree to the{" "}
                 <Link
                   to="/terms"
                   className="font-medium text-primary-600 hover:text-primary-500"
                   target="_blank"
                 >
                   Terms and Conditions
-                </Link>{' '}
-                and{' '}
+                </Link>{" "}
+                and{" "}
                 <Link
                   to="/privacy"
                   className="font-medium text-primary-600 hover:text-primary-500"
@@ -228,7 +247,9 @@ const RegistrationForm: React.FC = () => {
               <div className="w-full border-t border-[color:var(--surface-muted)]" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[var(--surface)] text-gray-500">Or continue with</span>
+              <span className="px-2 bg-[var(--surface)] text-gray-500">
+                Or continue with
+              </span>
             </div>
           </div>
 

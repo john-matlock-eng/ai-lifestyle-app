@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import axios, { AxiosError } from 'axios';
+import React, { useState } from "react";
+import axios, { AxiosError } from "axios";
 
 interface ApiResponse {
   status: number;
@@ -21,45 +21,49 @@ interface ApiErrorResponse {
   };
 }
 
-type HttpMethod = 'GET' | 'POST' | 'OPTIONS';
+type HttpMethod = "GET" | "POST" | "OPTIONS";
 
 const ApiDebugger: React.FC = () => {
-  const [response, setResponse] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [response, setResponse] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
-  const testEndpoint = async (path: string, method: HttpMethod = 'GET', data?: Record<string, unknown>) => {
+  const testEndpoint = async (
+    path: string,
+    method: HttpMethod = "GET",
+    data?: Record<string, unknown>,
+  ) => {
     setLoading(true);
-    setResponse('');
-    setError('');
+    setResponse("");
+    setError("");
 
     const apiUrl = import.meta.env.VITE_API_URL;
     const fullUrl = `${apiUrl}${path}`;
 
     try {
       console.log(`Testing ${method} ${fullUrl}`, data);
-      
+
       const config = {
         method,
         url: fullUrl,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        data: method === 'POST' ? data : undefined,
+        data: method === "POST" ? data : undefined,
       };
 
       const result = await axios(config);
-      
+
       const apiResponse: ApiResponse = {
         status: result.status,
         headers: result.headers as Record<string, string>,
-        data: result.data
+        data: result.data,
       };
-      
+
       setResponse(JSON.stringify(apiResponse, null, 2));
     } catch (err) {
-      console.error('API Test Error:', err);
-      
+      console.error("API Test Error:", err);
+
       const axiosError = err as AxiosError;
       const errorResponse: ApiErrorResponse = {
         message: axiosError.message,
@@ -71,10 +75,10 @@ const ApiDebugger: React.FC = () => {
           url: axiosError.config?.url,
           method: axiosError.config?.method,
           headers: axiosError.config?.headers as Record<string, string>,
-          data: axiosError.config?.data
-        }
+          data: axiosError.config?.data,
+        },
       };
-      
+
       setError(JSON.stringify(errorResponse, null, 2));
     } finally {
       setLoading(false);
@@ -83,40 +87,46 @@ const ApiDebugger: React.FC = () => {
 
   const tests = [
     {
-      name: 'Test API Base URL',
-      action: () => testEndpoint('/', 'GET')
+      name: "Test API Base URL",
+      action: () => testEndpoint("/", "GET"),
     },
     {
-      name: 'Test Health Check',
-      action: () => testEndpoint('/health', 'GET')
+      name: "Test Health Check",
+      action: () => testEndpoint("/health", "GET"),
     },
     {
-      name: 'Test Auth Login (with test data)',
-      action: () => testEndpoint('/auth/login', 'POST', {
-        email: 'test@example.com',
-        password: 'Test123!'
-      })
+      name: "Test Auth Login (with test data)",
+      action: () =>
+        testEndpoint("/auth/login", "POST", {
+          email: "test@example.com",
+          password: "Test123!",
+        }),
     },
     {
-      name: 'Test Auth Login (username variant)',
-      action: () => testEndpoint('/auth/login', 'POST', {
-        username: 'test@example.com',
-        password: 'Test123!'
-      })
+      name: "Test Auth Login (username variant)",
+      action: () =>
+        testEndpoint("/auth/login", "POST", {
+          username: "test@example.com",
+          password: "Test123!",
+        }),
     },
     {
-      name: 'Test OPTIONS (CORS preflight)',
-      action: () => testEndpoint('/auth/login', 'OPTIONS')
-    }
+      name: "Test OPTIONS (CORS preflight)",
+      action: () => testEndpoint("/auth/login", "OPTIONS"),
+    },
   ];
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">API Debugger</h2>
-      
+
       <div className="mb-4 p-4 bg-[var(--surface-muted)] rounded">
-        <p className="font-semibold">API URL: {import.meta.env.VITE_API_URL || 'Not configured'}</p>
-        <p className="text-sm text-muted">Environment: {import.meta.env.VITE_ENVIRONMENT}</p>
+        <p className="font-semibold">
+          API URL: {import.meta.env.VITE_API_URL || "Not configured"}
+        </p>
+        <p className="text-sm text-muted">
+          Environment: {import.meta.env.VITE_ENVIRONMENT}
+        </p>
       </div>
 
       <div className="space-y-2 mb-6">
@@ -140,7 +150,9 @@ const ApiDebugger: React.FC = () => {
 
       {response && (
         <div className="mb-4">
-          <h3 className="font-semibold text-green-600 mb-2">Success Response:</h3>
+          <h3 className="font-semibold text-green-600 mb-2">
+            Success Response:
+          </h3>
           <pre className="p-4 bg-green-50 rounded overflow-auto text-sm">
             {response}
           </pre>

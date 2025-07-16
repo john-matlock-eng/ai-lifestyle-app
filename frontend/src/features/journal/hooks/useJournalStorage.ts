@@ -3,8 +3,8 @@ export interface JournalEntry {
   content: string;
 }
 
-const DB_NAME = 'journal-db';
-const STORE_NAME = 'entries';
+const DB_NAME = "journal-db";
+const STORE_NAME = "entries";
 const DB_VERSION = 1;
 
 function openDB(): Promise<IDBDatabase> {
@@ -13,7 +13,10 @@ function openDB(): Promise<IDBDatabase> {
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        db.createObjectStore(STORE_NAME, {
+          keyPath: "id",
+          autoIncrement: true,
+        });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -24,7 +27,7 @@ function openDB(): Promise<IDBDatabase> {
 export async function getAllEntries(): Promise<JournalEntry[]> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
+    const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
     const req = store.getAll();
     req.onsuccess = () => resolve(req.result as JournalEntry[]);
@@ -35,7 +38,7 @@ export async function getAllEntries(): Promise<JournalEntry[]> {
 export async function addEntry(content: string): Promise<JournalEntry> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
     const req = store.add({ content });
     req.onsuccess = () => resolve({ id: req.result as number, content });
@@ -46,7 +49,7 @@ export async function addEntry(content: string): Promise<JournalEntry> {
 export async function updateEntry(entry: JournalEntry): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
     const req = store.put(entry);
     req.onsuccess = () => resolve();
@@ -57,7 +60,7 @@ export async function updateEntry(entry: JournalEntry): Promise<void> {
 export async function deleteEntry(id: number): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
     const req = store.delete(id);
     req.onsuccess = () => resolve();

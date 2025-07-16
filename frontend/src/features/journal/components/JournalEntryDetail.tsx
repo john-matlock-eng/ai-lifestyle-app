@@ -1,11 +1,11 @@
 // JournalEntryDetail.tsx - Fixed version
-import React, { useState, useEffect } from 'react';
-import { 
-  Share2, 
-  Brain, 
-  Shield, 
-  Lock, 
-  Calendar, 
+import React, { useState, useEffect } from "react";
+import {
+  Share2,
+  Brain,
+  Shield,
+  Lock,
+  Calendar,
   FileText,
   Hash,
   ArrowLeft,
@@ -13,19 +13,19 @@ import {
   Edit,
   Trash2,
   X,
-  AlertCircle
-} from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
-import ShareDialog from '../../../components/encryption/ShareDialog';
-import AIShareDialog from '../../../components/encryption/AIShareDialog';
-import ShareManagement from '../../../components/encryption/ShareManagement';
-import { getEncryptionService } from '../../../services/encryption';
-import { useEncryption } from '../../../contexts/useEncryption';
-import type { JournalEntry } from '@/types/journal';
-import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
-import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
-import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
-import { JournalEntryRenderer } from './JournalEntryRenderer';
+  AlertCircle,
+} from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import ShareDialog from "../../../components/encryption/ShareDialog";
+import AIShareDialog from "../../../components/encryption/AIShareDialog";
+import ShareManagement from "../../../components/encryption/ShareManagement";
+import { getEncryptionService } from "../../../services/encryption";
+import { useEncryption } from "../../../contexts/useEncryption";
+import type { JournalEntry } from "@/types/journal";
+import { getTemplateIcon, getTemplateName } from "../templates/template-utils";
+import { getEmotionById, getEmotionEmoji } from "./EmotionSelector/emotionData";
+import { shouldTreatAsEncrypted } from "@/utils/encryption-utils";
+import { JournalEntryRenderer } from "./JournalEntryRenderer";
 
 interface JournalEntryDetailProps {
   entry: JournalEntry;
@@ -44,13 +44,16 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   const [showAIShareDialog, setShowAIShareDialog] = useState(false);
   const [showShareManagement, setShowShareManagement] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [decryptedEntry, setDecryptedEntry] = useState<JournalEntry | null>(null);
+  const [decryptedEntry, setDecryptedEntry] = useState<JournalEntry | null>(
+    null,
+  );
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [decryptionError, setDecryptionError] = useState<string | null>(null);
-  
+
   // Use the encryption context to ensure encryption is set up
-  const { isEncryptionSetup, isEncryptionLocked, isCheckingAutoUnlock } = useEncryption();
-  
+  const { isEncryptionSetup, isEncryptionLocked, isCheckingAutoUnlock } =
+    useEncryption();
+
   const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
   const isSharedWithMe = entry.shareAccess !== undefined;
 
@@ -59,17 +62,21 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     if (isCheckingAutoUnlock) {
       return;
     }
-    
+
     if (isActuallyEncrypted && entry.encryptedKey) {
       // Only attempt decryption if encryption is set up and unlocked
       if (isEncryptionSetup && !isEncryptionLocked) {
         decryptContent();
       } else if (isSharedWithMe && !isEncryptionSetup) {
         // If this is a shared entry and encryption isn't set up, show an error
-        setDecryptionError('Encryption must be set up to view shared encrypted content. Please set up encryption in your profile.');
+        setDecryptionError(
+          "Encryption must be set up to view shared encrypted content. Please set up encryption in your profile.",
+        );
       } else if (isEncryptionSetup && isEncryptionLocked) {
         // Encryption is set up but locked
-        setDecryptionError('Encryption is locked. Please unlock encryption to view encrypted content.');
+        setDecryptionError(
+          "Encryption is locked. Please unlock encryption to view encrypted content.",
+        );
       }
     } else {
       setDecryptedEntry(entry);
@@ -80,40 +87,47 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     try {
       setIsDecrypting(true);
       setDecryptionError(null);
-      
+
       const encryptionService = getEncryptionService();
-      
+
       // Check if encryption service is initialized
       const isSetup = await encryptionService.checkSetup();
       if (!isSetup) {
-        throw new Error('Encryption not set up. Please set up encryption in your profile to view encrypted content.');
+        throw new Error(
+          "Encryption not set up. Please set up encryption in your profile to view encrypted content.",
+        );
       }
-      
+
       const decrypted = await encryptionService.decryptContent({
         content: entry.content,
         encryptedKey: entry.encryptedKey!,
         iv: entry.encryptionIv!,
       });
-      
+
       // Create a decrypted version of the entry
       setDecryptedEntry({
         ...entry,
-        content: decrypted
+        content: decrypted,
       });
     } catch (error) {
-      console.error('Failed to decrypt content:', error);
-      
-      let errorMessage = 'Failed to decrypt content.';
+      console.error("Failed to decrypt content:", error);
+
+      let errorMessage = "Failed to decrypt content.";
       if (error instanceof Error) {
-        if (error.message.includes('Encryption not initialized') || error.message.includes('Encryption not set up')) {
-          errorMessage = 'Encryption must be set up to view encrypted content. Please set up encryption in your profile.';
-        } else if (error.message.includes('OperationError')) {
-          errorMessage = 'Decryption failed. This may happen if the content was encrypted with a different password.';
+        if (
+          error.message.includes("Encryption not initialized") ||
+          error.message.includes("Encryption not set up")
+        ) {
+          errorMessage =
+            "Encryption must be set up to view encrypted content. Please set up encryption in your profile.";
+        } else if (error.message.includes("OperationError")) {
+          errorMessage =
+            "Decryption failed. This may happen if the content was encrypted with a different password.";
         } else {
           errorMessage = error.message;
         }
       }
-      
+
       setDecryptionError(errorMessage);
       setDecryptedEntry(null);
     } finally {
@@ -121,36 +135,43 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     }
   };
 
-  const handleShare = async (tokens: Array<{ id: string; recipientEmail: string; permissions: string[]; expiresAt: string }>) => {
+  const handleShare = async (
+    tokens: Array<{
+      id: string;
+      recipientEmail: string;
+      permissions: string[];
+      expiresAt: string;
+    }>,
+  ) => {
     // In a real implementation, this would update the entry's share status
-    console.log('Shares created:', tokens);
+    console.log("Shares created:", tokens);
   };
 
   const handleAIAnalysis = async (analysisId: string) => {
     // Navigate to AI analysis results
-    console.log('AI analysis started:', analysisId);
+    console.log("AI analysis started:", analysisId);
   };
 
   const getMoodDisplay = (mood?: string) => {
     if (!mood) return null;
-    
+
     const emotion = getEmotionById(mood);
     if (emotion) {
       return {
         emoji: getEmotionEmoji(mood),
-        label: emotion.label
+        label: emotion.label,
       };
     }
-    
+
     // Fallback for old mood values
     const legacyMoodMap: Record<string, { emoji: string; label: string }> = {
-      amazing: { emoji: '🤩', label: 'Amazing' },
-      good: { emoji: '😊', label: 'Good' },
-      okay: { emoji: '😐', label: 'Okay' },
-      stressed: { emoji: '😰', label: 'Stressed' }
+      amazing: { emoji: "🤩", label: "Amazing" },
+      good: { emoji: "😊", label: "Good" },
+      okay: { emoji: "😐", label: "Okay" },
+      stressed: { emoji: "😰", label: "Stressed" },
     };
-    
-    return legacyMoodMap[mood] || { emoji: '💭', label: mood };
+
+    return legacyMoodMap[mood] || { emoji: "💭", label: mood };
   };
 
   const moodDisplay = getMoodDisplay(entry.mood);
@@ -173,12 +194,14 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
 
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-theme mb-2">{entry.title}</h1>
-            
+            <h1 className="text-3xl font-bold text-theme mb-2">
+              {entry.title}
+            </h1>
+
             <div className="flex items-center gap-4 text-sm text-muted">
               <span className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
+                {format(new Date(entry.createdAt), "MMMM d, yyyy")}
               </span>
               <span className="flex items-center gap-1">
                 <FileText className="w-4 h-4" />
@@ -238,7 +261,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                         <Edit className="w-4 h-4" />
                         Edit Entry
                       </button>
-                      
+
                       {canShare && (
                         <>
                           <button
@@ -251,7 +274,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                             <Share2 className="w-4 h-4" />
                             Share with Friends
                           </button>
-                          
+
                           <button
                             onClick={() => {
                               setShowMenu(false);
@@ -262,7 +285,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                             <Brain className="w-4 h-4" />
                             AI Analysis
                           </button>
-                          
+
                           {entry.isShared && (
                             <button
                               onClick={() => {
@@ -277,13 +300,17 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                           )}
                         </>
                       )}
-                      
+
                       <hr className="my-1 border-surface-muted" />
-                      
+
                       <button
                         onClick={() => {
                           setShowMenu(false);
-                          if (confirm('Are you sure you want to delete this entry?')) {
+                          if (
+                            confirm(
+                              "Are you sure you want to delete this entry?",
+                            )
+                          ) {
                             onDelete();
                           }
                         }}
@@ -294,7 +321,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                       </button>
                     </>
                   )}
-                  
+
                   {!canEdit && (
                     <div className="px-4 py-2 text-sm text-muted">
                       This is a shared entry
@@ -315,9 +342,15 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
             <span className="font-medium">Shared with you</span>
           </div>
           <p className="text-sm text-blue-700 mt-1">
-            Permissions: {entry.shareAccess.permissions.join(', ')}
+            Permissions: {entry.shareAccess.permissions.join(", ")}
             {entry.shareAccess.expiresAt && (
-              <> • Expires {formatDistanceToNow(new Date(entry.shareAccess.expiresAt), { addSuffix: true })}</>
+              <>
+                {" "}
+                • Expires{" "}
+                {formatDistanceToNow(new Date(entry.shareAccess.expiresAt), {
+                  addSuffix: true,
+                })}
+              </>
             )}
           </p>
         </div>
@@ -326,7 +359,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
       {/* Tags - shown at top level, not in renderer */}
       {entry.tags.length > 0 && (
         <div className="flex items-center gap-2 mb-6">
-          {entry.tags.map(tag => (
+          {entry.tags.map((tag) => (
             <span key={tag} className="tag">
               <Hash className="w-3 h-3" />
               {tag}
@@ -347,8 +380,12 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
             <div className="flex items-start gap-3">
               <Lock className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div>
-                <p className="text-yellow-800 font-medium">Encryption is locked</p>
-                <p className="text-yellow-700 text-sm mt-1">Please unlock encryption to view this encrypted content.</p>
+                <p className="text-yellow-800 font-medium">
+                  Encryption is locked
+                </p>
+                <p className="text-yellow-700 text-sm mt-1">
+                  Please unlock encryption to view this encrypted content.
+                </p>
               </div>
             </div>
           </div>
@@ -361,7 +398,9 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
               <div>
-                <p className="text-red-800 font-medium">Unable to decrypt content</p>
+                <p className="text-red-800 font-medium">
+                  Unable to decrypt content
+                </p>
                 <p className="text-red-700 text-sm mt-1">{decryptionError}</p>
               </div>
             </div>
@@ -395,7 +434,8 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
       {/* Footer */}
       <div className="border-t pt-4 text-sm text-muted">
         <p>
-          Last updated {formatDistanceToNow(new Date(entry.updatedAt), { addSuffix: true })}
+          Last updated{" "}
+          {formatDistanceToNow(new Date(entry.updatedAt), { addSuffix: true })}
         </p>
       </div>
 
@@ -403,26 +443,30 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
       <ShareDialog
         isOpen={showShareDialog}
         onClose={() => setShowShareDialog(false)}
-        items={[{
-          id: entry.entryId,
-          title: entry.title,
-          type: 'journal',
-          createdAt: entry.createdAt,
-          encrypted: isActuallyEncrypted,
-        }]}
+        items={[
+          {
+            id: entry.entryId,
+            title: entry.title,
+            type: "journal",
+            createdAt: entry.createdAt,
+            encrypted: isActuallyEncrypted,
+          },
+        ]}
         onShare={handleShare}
       />
 
       <AIShareDialog
         isOpen={showAIShareDialog}
         onClose={() => setShowAIShareDialog(false)}
-        items={[{
-          id: entry.entryId,
-          title: entry.title,
-          type: 'journal',
-          createdAt: entry.createdAt,
-          encrypted: isActuallyEncrypted,
-        }]}
+        items={[
+          {
+            id: entry.entryId,
+            title: entry.title,
+            type: "journal",
+            createdAt: entry.createdAt,
+            encrypted: isActuallyEncrypted,
+          },
+        ]}
         onAnalysisComplete={handleAIAnalysis}
       />
 
@@ -439,7 +483,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <ShareManagement 
+              <ShareManagement
                 itemType="journal"
                 onShareRevoked={() => {
                   // Refresh entry data

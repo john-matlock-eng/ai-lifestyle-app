@@ -1,6 +1,6 @@
-import React from 'react';
-import type { JournalTemplate } from '../../types/template.types';
-import { useTemplateRegistry } from '../../hooks/useTemplateRegistry';
+import React from "react";
+import type { JournalTemplate } from "../../types/template.types";
+import { useTemplateRegistry } from "../../hooks/useTemplateRegistry";
 
 interface TemplatePickerProps {
   onSelect: (template: JournalTemplate | null) => void;
@@ -9,7 +9,11 @@ interface TemplatePickerProps {
 const TemplatePicker: React.FC<TemplatePickerProps> = ({ onSelect }) => {
   const { templates, loading, error } = useTemplateRegistry();
   if (loading) {
-    return <div className="p-4" role="status">Loading templates...</div>;
+    return (
+      <div className="p-4" role="status">
+        Loading templates...
+      </div>
+    );
   }
   if (error) {
     return (

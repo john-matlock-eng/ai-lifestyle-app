@@ -1,5 +1,5 @@
-import React from 'react';
-import GoalWizard from '../../features/goals/components/creation/GoalWizard';
+import React from "react";
+import GoalWizard from "../../features/goals/components/creation/GoalWizard";
 
 const CreateGoalPage: React.FC = () => {
   return (

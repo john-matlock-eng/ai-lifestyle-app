@@ -1,53 +1,53 @@
-import React from 'react';
-import { Shield, Lock, Unlock, AlertCircle } from 'lucide-react';
+import React from "react";
+import { Shield, Lock, Unlock, AlertCircle } from "lucide-react";
 
 interface EncryptionIndicatorProps {
-  status: 'encrypted' | 'unencrypted' | 'partial' | 'error';
+  status: "encrypted" | "unencrypted" | "partial" | "error";
   module?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showLabel?: boolean;
   className?: string;
 }
 
 const sizeClasses = {
-  sm: 'h-4 w-4',
-  md: 'h-5 w-5',
-  lg: 'h-6 w-6',
+  sm: "h-4 w-4",
+  md: "h-5 w-5",
+  lg: "h-6 w-6",
 };
 
 const statusConfig = {
   encrypted: {
     icon: Shield,
-    color: 'text-[var(--success)]',
-    bgColor: 'bg-[var(--success-bg)]',
-    label: 'Fully encrypted',
+    color: "text-[var(--success)]",
+    bgColor: "bg-[var(--success-bg)]",
+    label: "Fully encrypted",
   },
   unencrypted: {
     icon: Unlock,
-    color: 'text-[var(--text-muted)]',
-    bgColor: 'bg-[var(--surface-muted)]',
-    label: 'Not encrypted',
+    color: "text-[var(--text-muted)]",
+    bgColor: "bg-[var(--surface-muted)]",
+    label: "Not encrypted",
   },
   partial: {
     icon: Lock,
-    color: 'text-[var(--warning)]',
-    bgColor: 'bg-[var(--warning-bg)]',
-    label: 'Partially encrypted',
+    color: "text-[var(--warning)]",
+    bgColor: "bg-[var(--warning-bg)]",
+    label: "Partially encrypted",
   },
   error: {
     icon: AlertCircle,
-    color: 'text-[var(--error)]',
-    bgColor: 'bg-[var(--error-bg)]',
-    label: 'Encryption error',
+    color: "text-[var(--error)]",
+    bgColor: "bg-[var(--error-bg)]",
+    label: "Encryption error",
   },
 };
 
 export const EncryptionIndicator: React.FC<EncryptionIndicatorProps> = ({
   status,
   module,
-  size = 'md',
+  size = "md",
   showLabel = false,
-  className = '',
+  className = "",
 }) => {
   const config = statusConfig[status];
   const Icon = config.icon;
@@ -64,7 +64,7 @@ export const EncryptionIndicator: React.FC<EncryptionIndicatorProps> = ({
       >
         <Icon className={`${iconSize} ${config.color}`} aria-hidden="true" />
       </div>
-      
+
       {showLabel && (
         <span className={`text-sm font-medium ${config.color}`}>
           {config.label}
@@ -78,7 +78,7 @@ export const EncryptionIndicator: React.FC<EncryptionIndicatorProps> = ({
 interface ModuleEncryptionStatus {
   moduleId: string;
   moduleName: string;
-  status: 'encrypted' | 'unencrypted' | 'partial' | 'error';
+  status: "encrypted" | "unencrypted" | "partial" | "error";
 }
 
 interface EncryptionStatusListProps {
@@ -88,18 +88,22 @@ interface EncryptionStatusListProps {
 
 export const EncryptionStatusList: React.FC<EncryptionStatusListProps> = ({
   modules,
-  className = '',
+  className = "",
 }) => {
   return (
     <div className={`space-y-2 ${className}`}>
-      <h3 className="text-sm font-semibold text-[var(--text)]">Encryption Status</h3>
+      <h3 className="text-sm font-semibold text-[var(--text)]">
+        Encryption Status
+      </h3>
       <ul className="space-y-1">
         {modules.map((module) => (
           <li
             key={module.moduleId}
             className="flex items-center justify-between py-1"
           >
-            <span className="text-sm text-[var(--text-muted)]">{module.moduleName}</span>
+            <span className="text-sm text-[var(--text-muted)]">
+              {module.moduleName}
+            </span>
             <EncryptionIndicator
               status={module.status}
               size="sm"

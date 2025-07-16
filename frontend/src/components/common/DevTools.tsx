@@ -1,6 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../contexts';
-import { getAccessToken, getRefreshToken } from '../../features/auth/utils/tokenManager';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../../contexts";
+import {
+  getAccessToken,
+  getRefreshToken,
+} from "../../features/auth/utils/tokenManager";
 
 const DevTools: React.FC = () => {
   const { user } = useAuth();
@@ -13,7 +16,7 @@ const DevTools: React.FC = () => {
 
   useEffect(() => {
     // Only show in development
-    if (import.meta.env.MODE !== 'development') {
+    if (import.meta.env.MODE !== "development") {
       return;
     }
 
@@ -27,12 +30,12 @@ const DevTools: React.FC = () => {
     loadTokens();
 
     // Check MSW status
-    if ('serviceWorker' in navigator) {
+    if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .getRegistrations()
         .then((registrations) => {
           const mswRegistration = registrations.find((reg) =>
-            reg.active?.scriptURL.includes('mockServiceWorker.js')
+            reg.active?.scriptURL.includes("mockServiceWorker.js"),
           );
           setIsMSWActive(!!mswRegistration);
         })
@@ -43,12 +46,12 @@ const DevTools: React.FC = () => {
   }, [user]);
 
   // Don't render in production
-  if (import.meta.env.MODE !== 'development') {
+  if (import.meta.env.MODE !== "development") {
     return null;
   }
 
   const truncateToken = (token: string | null) => {
-    if (!token) return 'Not available';
+    if (!token) return "Not available";
     return `${token.substring(0, 20)}...${token.substring(token.length - 20)}`;
   };
 
@@ -86,7 +89,9 @@ const DevTools: React.FC = () => {
       {isOpen && (
         <div className="fixed bottom-20 right-4 bg-[var(--surface)] rounded-lg shadow-xl p-4 w-96 max-h-[600px] overflow-y-auto z-50 border border-[color:var(--surface-muted)]">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-[var(--text)]">Dev Tools</h3>
+            <h3 className="text-lg font-semibold text-[var(--text)]">
+              Dev Tools
+            </h3>
             <button
               onClick={() => setIsOpen(false)}
               className="text-gray-400 hover:text-muted"
@@ -111,67 +116,71 @@ const DevTools: React.FC = () => {
           {/* MSW Status */}
           <div className="mb-4 p-3 bg-[var(--surface-muted)] rounded">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">MSW Status:</span>
+              <span className="text-sm font-medium text-gray-700">
+                MSW Status:
+              </span>
               <span
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   isMSWActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
                 }`}
               >
-                {isMSWActive ? 'Active' : 'Inactive'}
+                {isMSWActive ? "Active" : "Inactive"}
               </span>
             </div>
           </div>
 
           {/* User Info */}
           <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">User Info</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">
+              User Info
+            </h4>
             <div className="space-y-1 text-sm">
               <div>
-                <span className="text-gray-500">Status:</span>{' '}
+                <span className="text-gray-500">Status:</span>{" "}
                 <span
                   className={`font-medium ${
-                    user ? 'text-green-600' : 'text-red-600'
+                    user ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {user ? 'Authenticated' : 'Not authenticated'}
+                  {user ? "Authenticated" : "Not authenticated"}
                 </span>
               </div>
               {user && (
                 <>
                   <div>
-                    <span className="text-gray-500">Email:</span>{' '}
+                    <span className="text-gray-500">Email:</span>{" "}
                     <span className="font-medium">{user.email}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Name:</span>{' '}
+                    <span className="text-gray-500">Name:</span>{" "}
                     <span className="font-medium">
                       {user.firstName} {user.lastName}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500">User ID:</span>{' '}
+                    <span className="text-gray-500">User ID:</span>{" "}
                     <span className="font-mono text-xs">{user.userId}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Email Verified:</span>{' '}
+                    <span className="text-gray-500">Email Verified:</span>{" "}
                     <span
                       className={`font-medium ${
-                        user.emailVerified ? 'text-green-600' : 'text-amber-600'
+                        user.emailVerified ? "text-green-600" : "text-amber-600"
                       }`}
                     >
-                      {user.emailVerified ? 'Yes' : 'No'}
+                      {user.emailVerified ? "Yes" : "No"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500">MFA Enabled:</span>{' '}
+                    <span className="text-gray-500">MFA Enabled:</span>{" "}
                     <span
                       className={`font-medium ${
-                        user.mfaEnabled ? 'text-green-600' : 'text-muted'
+                        user.mfaEnabled ? "text-green-600" : "text-muted"
                       }`}
                     >
-                      {user.mfaEnabled ? 'Yes' : 'No'}
+                      {user.mfaEnabled ? "Yes" : "No"}
                     </span>
                   </div>
                 </>
@@ -194,12 +203,12 @@ const DevTools: React.FC = () => {
                       onClick={() => setShowAccessToken(!showAccessToken)}
                       className="text-xs text-purple-600 hover:text-purple-700"
                     >
-                      {showAccessToken ? 'Hide' : 'Show'}
+                      {showAccessToken ? "Hide" : "Show"}
                     </button>
                   </div>
                   <div className="text-xs font-mono break-all">
                     {showAccessToken
-                      ? accessToken || 'Not available'
+                      ? accessToken || "Not available"
                       : truncateToken(accessToken)}
                   </div>
                 </div>
@@ -214,12 +223,12 @@ const DevTools: React.FC = () => {
                       onClick={() => setShowRefreshToken(!showRefreshToken)}
                       className="text-xs text-purple-600 hover:text-purple-700"
                     >
-                      {showRefreshToken ? 'Hide' : 'Show'}
+                      {showRefreshToken ? "Hide" : "Show"}
                     </button>
                   </div>
                   <div className="text-xs font-mono break-all">
                     {showRefreshToken
-                      ? refreshToken || 'Not available'
+                      ? refreshToken || "Not available"
                       : truncateToken(refreshToken)}
                   </div>
                 </div>
@@ -251,7 +260,7 @@ const DevTools: React.FC = () => {
               </button>
               <button
                 onClick={() => {
-                  console.log('Current State:', {
+                  console.log("Current State:", {
                     user,
                     accessToken,
                     refreshToken,

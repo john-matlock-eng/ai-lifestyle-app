@@ -1,8 +1,8 @@
-import React from 'react';
-import { Shield, Trash2 } from 'lucide-react';
-import { Button } from '../common';
-import { useEncryption } from '../../contexts/useEncryption';
-import { securePasswordStorage } from '../../services/encryption/securePasswordStorage';
+import React from "react";
+import { Shield, Trash2 } from "lucide-react";
+import { Button } from "../common";
+import { useEncryption } from "../../contexts/useEncryption";
+import { securePasswordStorage } from "../../services/encryption/securePasswordStorage";
 
 export const EncryptionSettings: React.FC = () => {
   const { isEncryptionEnabled } = useEncryption();
@@ -14,7 +14,11 @@ export const EncryptionSettings: React.FC = () => {
   }, []);
 
   const handleClearStoredPassword = () => {
-    if (window.confirm('Are you sure you want to clear the stored password? You will need to enter it again next time.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to clear the stored password? You will need to enter it again next time.",
+      )
+    ) {
       securePasswordStorage.clearStoredPassword();
       setHasStoredPassword(false);
     }
@@ -35,11 +39,12 @@ export const EncryptionSettings: React.FC = () => {
         {/* Stored Password Management */}
         <div className="border-t pt-4">
           <h3 className="text-lg font-medium mb-2">Password Storage</h3>
-          
+
           {hasStoredPassword ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-800 mb-3">
-                Your master password is securely stored on this device. It will automatically expire after 30 days for security.
+                Your master password is securely stored on this device. It will
+                automatically expire after 30 days for security.
               </p>
               <Button
                 variant="danger"
@@ -54,7 +59,8 @@ export const EncryptionSettings: React.FC = () => {
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <p className="text-sm text-gray-700">
-                No password is stored on this device. You can choose to remember your password when unlocking encryption.
+                No password is stored on this device. You can choose to remember
+                your password when unlocking encryption.
               </p>
             </div>
           )}
@@ -64,18 +70,10 @@ export const EncryptionSettings: React.FC = () => {
         <div className="border-t pt-4">
           <h3 className="text-lg font-medium mb-2">Security Information</h3>
           <div className="space-y-2 text-sm text-gray-600">
-            <p>
-              • Stored passwords are encrypted using device-specific keys
-            </p>
-            <p>
-              • Passwords expire automatically after 30 days
-            </p>
-            <p>
-              • Clearing browser data will remove stored passwords
-            </p>
-            <p>
-              • Each device stores its own password independently
-            </p>
+            <p>• Stored passwords are encrypted using device-specific keys</p>
+            <p>• Passwords expire automatically after 30 days</p>
+            <p>• Clearing browser data will remove stored passwords</p>
+            <p>• Each device stores its own password independently</p>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { configureStore } from '@reduxjs/toolkit';
-import encryptionReducer from './slices/encryptionSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import encryptionReducer from "./slices/encryptionSlice";
 
 export const store = configureStore({
   reducer: {

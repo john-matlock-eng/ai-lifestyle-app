@@ -1,7 +1,7 @@
-import React from 'react';
-import { X } from 'lucide-react';
-import type { SearchFilters } from '../services/JournalStorageService';
-import { JournalTemplate } from '../../../types/journal';
+import React from "react";
+import { X } from "lucide-react";
+import type { SearchFilters } from "../services/JournalStorageService";
+import { JournalTemplate } from "../../../types/journal";
 
 interface SearchResultsSummaryProps {
   filters: SearchFilters;
@@ -11,13 +11,13 @@ interface SearchResultsSummaryProps {
 }
 
 const templateLabels: Record<string, string> = {
-  [JournalTemplate.DAILY_REFLECTION]: 'Daily Reflection',
-  [JournalTemplate.GRATITUDE]: 'Gratitude',
-  [JournalTemplate.GOAL_PROGRESS]: 'Goal Progress',
-  [JournalTemplate.MOOD_TRACKER]: 'Mood Tracker',
-  [JournalTemplate.HABIT_TRACKER]: 'Habit Tracker',
-  [JournalTemplate.CREATIVE_WRITING]: 'Creative Writing',
-  [JournalTemplate.BLANK]: 'Blank',
+  [JournalTemplate.DAILY_REFLECTION]: "Daily Reflection",
+  [JournalTemplate.GRATITUDE]: "Gratitude",
+  [JournalTemplate.GOAL_PROGRESS]: "Goal Progress",
+  [JournalTemplate.MOOD_TRACKER]: "Mood Tracker",
+  [JournalTemplate.HABIT_TRACKER]: "Habit Tracker",
+  [JournalTemplate.CREATIVE_WRITING]: "Creative Writing",
+  [JournalTemplate.BLANK]: "Blank",
 };
 
 export const SearchResultsSummary: React.FC<SearchResultsSummaryProps> = ({
@@ -26,51 +26,59 @@ export const SearchResultsSummary: React.FC<SearchResultsSummaryProps> = ({
   onClearFilter,
   onClearAll,
 }) => {
-  const activeFilters: Array<{ type: keyof SearchFilters; label: string; value: string }> = [];
+  const activeFilters: Array<{
+    type: keyof SearchFilters;
+    label: string;
+    value: string;
+  }> = [];
 
   if (filters.query) {
-    activeFilters.push({ type: 'query', label: 'Search', value: filters.query });
+    activeFilters.push({
+      type: "query",
+      label: "Search",
+      value: filters.query,
+    });
   }
 
   if (filters.tags && filters.tags.length > 0) {
-    filters.tags.forEach(tag => {
-      activeFilters.push({ type: 'tags', label: 'Tag', value: tag });
+    filters.tags.forEach((tag) => {
+      activeFilters.push({ type: "tags", label: "Tag", value: tag });
     });
   }
 
   if (filters.template) {
-    activeFilters.push({ 
-      type: 'template', 
-      label: 'Template', 
-      value: templateLabels[filters.template] || filters.template 
+    activeFilters.push({
+      type: "template",
+      label: "Template",
+      value: templateLabels[filters.template] || filters.template,
     });
   }
 
   if (filters.mood) {
-    activeFilters.push({ type: 'mood', label: 'Mood', value: filters.mood });
+    activeFilters.push({ type: "mood", label: "Mood", value: filters.mood });
   }
 
   if (filters.startDate) {
-    activeFilters.push({ 
-      type: 'startDate', 
-      label: 'From', 
-      value: filters.startDate.toLocaleDateString() 
+    activeFilters.push({
+      type: "startDate",
+      label: "From",
+      value: filters.startDate.toLocaleDateString(),
     });
   }
 
   if (filters.endDate) {
-    activeFilters.push({ 
-      type: 'endDate', 
-      label: 'To', 
-      value: filters.endDate.toLocaleDateString() 
+    activeFilters.push({
+      type: "endDate",
+      label: "To",
+      value: filters.endDate.toLocaleDateString(),
     });
   }
 
   if (filters.isEncrypted !== undefined) {
-    activeFilters.push({ 
-      type: 'isEncrypted', 
-      label: 'Encryption', 
-      value: filters.isEncrypted ? 'Encrypted' : 'Unencrypted' 
+    activeFilters.push({
+      type: "isEncrypted",
+      label: "Encryption",
+      value: filters.isEncrypted ? "Encrypted" : "Unencrypted",
     });
   }
 
@@ -82,7 +90,8 @@ export const SearchResultsSummary: React.FC<SearchResultsSummaryProps> = ({
     <div className="mb-4 p-3 bg-gray-50 rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm text-gray-700">
-          Found <span className="font-semibold">{total}</span> {total === 1 ? 'entry' : 'entries'}
+          Found <span className="font-semibold">{total}</span>{" "}
+          {total === 1 ? "entry" : "entries"}
         </span>
         <button
           onClick={onClearAll}
@@ -102,10 +111,12 @@ export const SearchResultsSummary: React.FC<SearchResultsSummaryProps> = ({
             <span className="font-medium">{filter.value}</span>
             <button
               onClick={() => {
-                if (filter.type === 'tags' && filters.tags) {
+                if (filter.type === "tags" && filters.tags) {
                   // Special handling for tags array
-                  const newTags = filters.tags.filter(t => t !== filter.value);
-                  onClearFilter(newTags.length > 0 ? 'tags' : 'tags');
+                  const newTags = filters.tags.filter(
+                    (t) => t !== filter.value,
+                  );
+                  onClearFilter(newTags.length > 0 ? "tags" : "tags");
                 } else {
                   onClearFilter(filter.type);
                 }

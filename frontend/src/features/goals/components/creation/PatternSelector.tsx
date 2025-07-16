@@ -1,19 +1,26 @@
-import React from 'react';
-import type { GoalPattern } from '../../types/api.types';
-import { GOAL_PATTERNS } from '../../types/ui.types';
-import './pattern-selector-override.css';
+import React from "react";
+import type { GoalPattern } from "../../types/api.types";
+import { GOAL_PATTERNS } from "../../types/ui.types";
+import "./pattern-selector-override.css";
 
 interface PatternSelectorProps {
   onSelect: (pattern: GoalPattern) => void;
   selectedPattern?: GoalPattern;
 }
 
-const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPattern }) => {
+const PatternSelector: React.FC<PatternSelectorProps> = ({
+  onSelect,
+  selectedPattern,
+}) => {
   return (
     <div className="pattern-selector space-y-4">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-[var(--text)]">What kind of goal do you want to set?</h2>
-        <p className="mt-2 text-muted">Choose the pattern that best fits what you want to achieve</p>
+        <h2 className="text-2xl font-bold text-[var(--text)]">
+          What kind of goal do you want to set?
+        </h2>
+        <p className="mt-2 text-muted">
+          Choose the pattern that best fits what you want to achieve
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -27,12 +34,13 @@ const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPat
               ${
                 selectedPattern === pattern.id
                   ? `${pattern.borderColor} ${pattern.bgColor} ring-2 ring-offset-2`
-                  : 'border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)] bg-[var(--surface)]'
+                  : "border-[color:var(--surface-muted)] hover:border-[color:var(--surface-muted)] bg-[var(--surface)]"
               }
             `}
             style={{
-              borderColor: selectedPattern === pattern.id ? pattern.color : undefined,
-              ...({ '--tw-ring-color': pattern.color } as React.CSSProperties),
+              borderColor:
+                selectedPattern === pattern.id ? pattern.color : undefined,
+              ...({ "--tw-ring-color": pattern.color } as React.CSSProperties),
             }}
           >
             {/* Pattern Icon */}
@@ -44,13 +52,13 @@ const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPat
             </h3>
 
             {/* Pattern Description */}
-            <p className="text-sm text-muted mb-3">
-              {pattern.description}
-            </p>
+            <p className="text-sm text-muted mb-3">{pattern.description}</p>
 
             {/* Examples */}
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Examples:</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                Examples:
+              </p>
               <ul className="text-sm text-gray-700 space-y-1">
                 {pattern.examples.map((example, index) => (
                   <li key={index} className="flex items-start">
@@ -101,23 +109,28 @@ const PatternSelector: React.FC<PatternSelectorProps> = ({ onSelect, selectedPat
             </svg>
           </div>
           <div className="ml-3">
-            <h4 className="text-sm font-medium text-blue-900">Not sure which to choose?</h4>
+            <h4 className="text-sm font-medium text-blue-900">
+              Not sure which to choose?
+            </h4>
             <div className="mt-2 text-sm text-blue-700">
               <ul className="list-disc list-inside space-y-1">
                 <li>
-                  <strong>Recurring</strong> - Best for daily habits and routines
+                  <strong>Recurring</strong> - Best for daily habits and
+                  routines
                 </li>
                 <li>
                   <strong>Milestone</strong> - Great for long-term achievements
                 </li>
                 <li>
-                  <strong>Target</strong> - Perfect when you have a specific deadline
+                  <strong>Target</strong> - Perfect when you have a specific
+                  deadline
                 </li>
                 <li>
                   <strong>Streak</strong> - Ideal for building consistency
                 </li>
                 <li>
-                  <strong>Limit</strong> - Helpful for reducing or controlling something
+                  <strong>Limit</strong> - Helpful for reducing or controlling
+                  something
                 </li>
               </ul>
             </div>

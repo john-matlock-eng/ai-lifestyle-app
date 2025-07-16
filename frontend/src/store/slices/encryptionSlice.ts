@@ -1,5 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
 // Types
 interface EncryptionModuleState {
@@ -27,7 +27,7 @@ interface EncryptionState {
   globalSettings: {
     autoBackupEnabled: boolean;
     backupReminderDays: number;
-    shareExpirationDefault: '1h' | '24h' | '7d' | '30d';
+    shareExpirationDefault: "1h" | "24h" | "7d" | "30d";
   };
 }
 
@@ -40,13 +40,13 @@ const initialState: EncryptionState = {
   globalSettings: {
     autoBackupEnabled: true,
     backupReminderDays: 30,
-    shareExpirationDefault: '7d',
+    shareExpirationDefault: "7d",
   },
 };
 
 // Slice
 const encryptionSlice = createSlice({
-  name: 'encryption',
+  name: "encryption",
   initialState,
   reducers: {
     // Global initialization
@@ -66,9 +66,14 @@ const encryptionSlice = createSlice({
         isEnabled: boolean;
         hasBackup?: boolean;
         publicKeyId?: string;
-      }>
+      }>,
     ) => {
-      const { moduleId, isEnabled, hasBackup = false, publicKeyId } = action.payload;
+      const {
+        moduleId,
+        isEnabled,
+        hasBackup = false,
+        publicKeyId,
+      } = action.payload;
       state.modules[moduleId] = {
         isEnabled,
         isInitialized: true,
@@ -82,7 +87,7 @@ const encryptionSlice = createSlice({
       action: PayloadAction<{
         moduleId: string;
         isEnabled: boolean;
-      }>
+      }>,
     ) => {
       const { moduleId, isEnabled } = action.payload;
       if (state.modules[moduleId]) {
@@ -96,7 +101,7 @@ const encryptionSlice = createSlice({
         moduleId: string;
         hasBackup: boolean;
         lastBackupDate?: string;
-      }>
+      }>,
     ) => {
       const { moduleId, hasBackup, lastBackupDate } = action.payload;
       if (state.modules[moduleId]) {
@@ -116,9 +121,10 @@ const encryptionSlice = createSlice({
         itemIds: string[];
         expiresAt: string;
         permissions: string[];
-      }>
+      }>,
     ) => {
-      const { shareId, moduleId, itemIds, expiresAt, permissions } = action.payload;
+      const { shareId, moduleId, itemIds, expiresAt, permissions } =
+        action.payload;
       state.activeShares[shareId] = {
         id: shareId,
         moduleId,
@@ -145,7 +151,7 @@ const encryptionSlice = createSlice({
     // Global settings
     updateGlobalSettings: (
       state,
-      action: PayloadAction<Partial<EncryptionState['globalSettings']>>
+      action: PayloadAction<Partial<EncryptionState["globalSettings"]>>,
     ) => {
       state.globalSettings = {
         ...state.globalSettings,
@@ -173,21 +179,30 @@ export const {
 } = encryptionSlice.actions;
 
 // Selectors
-export const selectEncryptionState = (state: { encryption: EncryptionState }) => state.encryption;
+export const selectEncryptionState = (state: { encryption: EncryptionState }) =>
+  state.encryption;
 
-export const selectModuleEncryption = (moduleId: string) => (state: { encryption: EncryptionState }) => 
-  state.encryption.modules[moduleId] || null;
+export const selectModuleEncryption =
+  (moduleId: string) => (state: { encryption: EncryptionState }) =>
+    state.encryption.modules[moduleId] || null;
 
-export const selectIsModuleEncrypted = (moduleId: string) => (state: { encryption: EncryptionState }) => 
-  state.encryption.modules[moduleId]?.isEnabled || false;
+export const selectIsModuleEncrypted =
+  (moduleId: string) => (state: { encryption: EncryptionState }) =>
+    state.encryption.modules[moduleId]?.isEnabled || false;
 
-export const selectActiveSharesForModule = (moduleId: string) => (state: { encryption: EncryptionState }) => 
-  Object.values(state.encryption.activeShares).filter(share => share.moduleId === moduleId);
+export const selectActiveSharesForModule =
+  (moduleId: string) => (state: { encryption: EncryptionState }) =>
+    Object.values(state.encryption.activeShares).filter(
+      (share) => share.moduleId === moduleId,
+    );
 
-export const selectNeedsBackupReminder = (state: { encryption: EncryptionState }) => {
+export const selectNeedsBackupReminder = (state: {
+  encryption: EncryptionState;
+}) => {
   const { modules, globalSettings } = state.encryption;
-  const reminderThreshold = Date.now() - (globalSettings.backupReminderDays * 24 * 60 * 60 * 1000);
-  
+  const reminderThreshold =
+    Date.now() - globalSettings.backupReminderDays * 24 * 60 * 60 * 1000;
+
   return Object.entries(modules).some(([, module]) => {
     if (!module.isEnabled || !module.hasBackup) return false;
     if (!module.lastBackupDate) return true;

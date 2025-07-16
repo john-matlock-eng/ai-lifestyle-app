@@ -1,11 +1,13 @@
-import { useContext } from 'react';
-import { FeatureFlagsContext } from '../contexts/FeatureFlagsContext.context';
-import type { FeatureFlags } from '../contexts/FeatureFlagsContext.types';
+import { useContext } from "react";
+import { FeatureFlagsContext } from "../contexts/FeatureFlagsContext.context";
+import type { FeatureFlags } from "../contexts/FeatureFlagsContext.types";
 
 export const useFeatureFlags = () => {
   const context = useContext(FeatureFlagsContext);
   if (context === undefined) {
-    throw new Error('useFeatureFlags must be used within a FeatureFlagsProvider');
+    throw new Error(
+      "useFeatureFlags must be used within a FeatureFlagsProvider",
+    );
   }
   return context;
 };

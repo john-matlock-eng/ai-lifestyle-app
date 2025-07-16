@@ -1,59 +1,62 @@
-import React, { useState } from 'react';
-import { Key, Users, HelpCircle, Copy, Check } from 'lucide-react';
-import { getEncryptionService } from '../../services/encryption';
+import React, { useState } from "react";
+import { Key, Users, HelpCircle, Copy, Check } from "lucide-react";
+import { getEncryptionService } from "../../services/encryption";
 
 interface RecoverySetupProps {
   onComplete: () => void;
 }
 
-type RecoveryMethod = 'mnemonic' | 'social' | 'questions';
+type RecoveryMethod = "mnemonic" | "social" | "questions";
 
 const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
-  const [selectedMethod, setSelectedMethod] = useState<RecoveryMethod | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<RecoveryMethod | null>(
+    null,
+  );
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Mnemonic state
-  const [mnemonicPhrase, setMnemonicPhrase] = useState('');
+  const [mnemonicPhrase, setMnemonicPhrase] = useState("");
   const [phraseConfirmed, setPhraseConfirmed] = useState(false);
   const [copiedPhrase, setCopiedPhrase] = useState(false);
-  
+
   // Social recovery state
-  const [guardians, setGuardians] = useState<string[]>(['', '', '']);
+  const [guardians, setGuardians] = useState<string[]>(["", "", ""]);
   const [threshold, setThreshold] = useState(2);
-  
+
   // Security questions state
   const [questions, setQuestions] = useState([
-    { question: '', answer: '' },
-    { question: '', answer: '' },
-    { question: '', answer: '' },
+    { question: "", answer: "" },
+    { question: "", answer: "" },
+    { question: "", answer: "" },
   ]);
 
   const recoveryMethods = [
     {
-      id: 'mnemonic' as RecoveryMethod,
-      name: 'Recovery Phrase',
-      description: '24-word recovery phrase you can write down and store safely',
+      id: "mnemonic" as RecoveryMethod,
+      name: "Recovery Phrase",
+      description:
+        "24-word recovery phrase you can write down and store safely",
       icon: Key,
-      color: 'text-[var(--success)]',
-      bgColor: 'bg-[var(--success-bg)]',
+      color: "text-[var(--success)]",
+      bgColor: "bg-[var(--success-bg)]",
     },
     {
-      id: 'social' as RecoveryMethod,
-      name: 'Social Recovery',
-      description: 'Trusted friends or family can help you recover access',
+      id: "social" as RecoveryMethod,
+      name: "Social Recovery",
+      description: "Trusted friends or family can help you recover access",
       icon: Users,
-      color: 'text-[var(--accent)]',
-      bgColor: 'bg-[var(--button-hover-bg)]',
+      color: "text-[var(--accent)]",
+      bgColor: "bg-[var(--button-hover-bg)]",
     },
     {
-      id: 'questions' as RecoveryMethod,
-      name: 'Security Questions',
-      description: 'Answer personal questions only you know',
+      id: "questions" as RecoveryMethod,
+      name: "Security Questions",
+      description: "Answer personal questions only you know",
       icon: HelpCircle,
-      color: 'text-[var(--accent)]',
-      bgColor: 'bg-[var(--button-hover-bg)]',
+      color: "text-[var(--accent)]",
+      bgColor: "bg-[var(--button-hover-bg)]",
     },
   ];
 
@@ -63,8 +66,8 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
       const phrase = await encryptionService.generateRecoveryPhrase();
       setMnemonicPhrase(phrase);
     } catch (err) {
-      setError('Failed to generate recovery phrase');
-      console.error('Mnemonic generation error:', err);
+      setError("Failed to generate recovery phrase");
+      console.error("Mnemonic generation error:", err);
     }
   };
 
@@ -76,7 +79,7 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
 
   const setupRecovery = async () => {
     if (!selectedMethod) return;
-    
+
     setIsProcessing(true);
     setError(null);
 
@@ -85,20 +88,20 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
       let recoveryData = {};
 
       switch (selectedMethod) {
-        case 'mnemonic': {
+        case "mnemonic": {
           if (!phraseConfirmed) {
-            setError('Please confirm you have saved the recovery phrase');
+            setError("Please confirm you have saved the recovery phrase");
             setIsProcessing(false);
             return;
           }
           recoveryData = { mnemonicPhrase };
           break;
         }
-          
-        case 'social': {
-          const validGuardians = guardians.filter(g => g.trim());
+
+        case "social": {
+          const validGuardians = guardians.filter((g) => g.trim());
           if (validGuardians.length < 3) {
-            setError('Please add at least 3 guardians');
+            setError("Please add at least 3 guardians");
             setIsProcessing(false);
             return;
           }
@@ -108,11 +111,13 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
           };
           break;
         }
-          
-        case 'questions': {
-          const validQuestions = questions.filter(q => q.question && q.answer);
+
+        case "questions": {
+          const validQuestions = questions.filter(
+            (q) => q.question && q.answer,
+          );
           if (validQuestions.length < 3) {
-            setError('Please complete all 3 security questions');
+            setError("Please complete all 3 security questions");
             setIsProcessing(false);
             return;
           }
@@ -124,8 +129,8 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
       await encryptionService.setupRecovery(selectedMethod, recoveryData);
       onComplete();
     } catch (err) {
-      setError('Failed to set up recovery method');
-      console.error('Recovery setup error:', err);
+      setError("Failed to set up recovery method");
+      console.error("Recovery setup error:", err);
     } finally {
       setIsProcessing(false);
     }
@@ -136,7 +141,7 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
       <h3 className="text-lg font-semibold text-[var(--text)] mb-4">
         Choose a recovery method
       </h3>
-      
+
       {recoveryMethods.map((method) => {
         const Icon = method.icon;
         return (
@@ -145,14 +150,14 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
             onClick={() => {
               setSelectedMethod(method.id);
               setCurrentStep(2);
-              if (method.id === 'mnemonic') {
+              if (method.id === "mnemonic") {
                 generateMnemonicPhrase();
               }
             }}
             className={`w-full flex items-start gap-4 p-4 rounded-lg border-2 text-left transition-all hover:border-[var(--accent)] ${
               selectedMethod === method.id
-                ? 'border-[var(--accent)] ' + method.bgColor
-                : 'border-[var(--surface-muted)]'
+                ? "border-[var(--accent)] " + method.bgColor
+                : "border-[var(--surface-muted)]"
             }`}
           >
             <div className={`p-3 rounded-lg ${method.bgColor}`}>
@@ -160,7 +165,9 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
             </div>
             <div className="flex-1">
               <h4 className="font-medium text-[var(--text)]">{method.name}</h4>
-              <p className="text-sm text-[var(--text-muted)] mt-1">{method.description}</p>
+              <p className="text-sm text-[var(--text-muted)] mt-1">
+                {method.description}
+              </p>
             </div>
           </button>
         );
@@ -181,14 +188,18 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
 
       <div className="bg-[var(--surface-muted)] rounded-lg p-4">
         <div className="grid grid-cols-3 gap-3 mb-4">
-          {mnemonicPhrase.split(' ').map((word, index) => (
+          {mnemonicPhrase.split(" ").map((word, index) => (
             <div key={index} className="flex items-center gap-2">
-              <span className="text-xs text-[var(--text-muted)] w-6">{index + 1}.</span>
-              <span className="font-mono text-sm text-[var(--text)]">{word}</span>
+              <span className="text-xs text-[var(--text-muted)] w-6">
+                {index + 1}.
+              </span>
+              <span className="font-mono text-sm text-[var(--text)]">
+                {word}
+              </span>
             </div>
           ))}
         </div>
-        
+
         <button
           onClick={copyPhrase}
           className="flex items-center gap-2 text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
@@ -209,8 +220,9 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
 
       <div className="bg-[var(--warning-bg)] border border-[var(--warning)] rounded-lg p-4">
         <p className="text-sm text-[var(--warning)]">
-          <strong>Important:</strong> This is the only time you'll see this phrase. 
-          If you lose it, you won't be able to recover your encrypted data.
+          <strong>Important:</strong> This is the only time you'll see this
+          phrase. If you lose it, you won't be able to recover your encrypted
+          data.
         </p>
       </div>
 
@@ -235,8 +247,8 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
           Add Recovery Guardians
         </h3>
         <p className="text-sm text-[var(--text-muted)]">
-          Choose trusted people who can help you recover access. They cannot access 
-          your data, only help with recovery.
+          Choose trusted people who can help you recover access. They cannot
+          access your data, only help with recovery.
         </p>
       </div>
 
@@ -259,9 +271,9 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
             />
           </div>
         ))}
-        
+
         <button
-          onClick={() => setGuardians([...guardians, ''])}
+          onClick={() => setGuardians([...guardians, ""])}
           className="text-sm text-[var(--accent)] hover:text-[var(--accent-hover)]"
         >
           + Add another guardian
@@ -277,9 +289,12 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
           onChange={(e) => setThreshold(Number(e.target.value))}
           className="w-full px-3 py-2 border border-[var(--surface-muted)] rounded-md focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] bg-[var(--surface)] text-[var(--text)]"
         >
-          {Array.from({ length: Math.max(2, guardians.filter(g => g).length - 1) }, (_, i) => i + 2).map(n => (
+          {Array.from(
+            { length: Math.max(2, guardians.filter((g) => g).length - 1) },
+            (_, i) => i + 2,
+          ).map((n) => (
             <option key={n} value={n}>
-              {n} out of {guardians.filter(g => g).length} guardians
+              {n} out of {guardians.filter((g) => g).length} guardians
             </option>
           ))}
         </select>
@@ -297,8 +312,8 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
           Security Questions
         </h3>
         <p className="text-sm text-[var(--text-muted)]">
-          Choose questions with answers only you would know. Avoid information that 
-          could be found on social media.
+          Choose questions with answers only you would know. Avoid information
+          that could be found on social media.
         </p>
       </div>
 
@@ -336,8 +351,9 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
 
       <div className="bg-[var(--button-hover-bg)] border border-[var(--accent)] rounded-lg p-4">
         <p className="text-sm text-[var(--accent)]">
-          <strong>Tip:</strong> Use answers that are memorable to you but not easily 
-          guessable. Consider using full sentences rather than single words.
+          <strong>Tip:</strong> Use answers that are memorable to you but not
+          easily guessable. Consider using full sentences rather than single
+          words.
         </p>
       </div>
     </div>
@@ -350,8 +366,8 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
           Set Up Account Recovery
         </h2>
         <p className="text-[var(--text-muted)]">
-          Protect your encrypted data by setting up a recovery method in case you 
-          forget your password.
+          Protect your encrypted data by setting up a recovery method in case
+          you forget your password.
         </p>
       </div>
 
@@ -362,10 +378,14 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
       )}
 
       {currentStep === 1 && renderMethodSelection()}
-      
-      {currentStep === 2 && selectedMethod === 'mnemonic' && renderMnemonicSetup()}
-      {currentStep === 2 && selectedMethod === 'social' && renderSocialSetup()}
-      {currentStep === 2 && selectedMethod === 'questions' && renderQuestionsSetup()}
+
+      {currentStep === 2 &&
+        selectedMethod === "mnemonic" &&
+        renderMnemonicSetup()}
+      {currentStep === 2 && selectedMethod === "social" && renderSocialSetup()}
+      {currentStep === 2 &&
+        selectedMethod === "questions" &&
+        renderQuestionsSetup()}
 
       {currentStep === 2 && (
         <div className="flex items-center justify-between mt-8">
@@ -379,7 +399,7 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
           >
             Back
           </button>
-          
+
           <button
             onClick={setupRecovery}
             disabled={isProcessing}
@@ -388,7 +408,7 @@ const RecoverySetup: React.FC<RecoverySetupProps> = ({ onComplete }) => {
             {isProcessing && (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             )}
-            {isProcessing ? 'Setting up...' : 'Complete Setup'}
+            {isProcessing ? "Setting up..." : "Complete Setup"}
           </button>
         </div>
       )}

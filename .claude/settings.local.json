@@ -22,7 +22,10 @@
       "Bash(npx eslint:*)",
       "Bash(npm run format:*)",
       "Bash(echo:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(touch:*)",
+      "Bash(npx prettier:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

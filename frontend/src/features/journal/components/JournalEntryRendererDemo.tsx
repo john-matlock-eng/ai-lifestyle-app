@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { JournalEntryRenderer } from './JournalEntryRenderer';
-import { JournalTemplate } from '@/types/journal';
+import React, { useState } from "react";
+import { JournalEntryRenderer } from "./JournalEntryRenderer";
+import { JournalTemplate } from "@/types/journal";
 
 // Sample entries with section markers for different templates
 const sampleEntries = {
@@ -32,7 +32,7 @@ const sampleEntries = {
 <p>Review feedback from today's presentation and start implementing the suggested improvements.</p>
 <!--/SECTION-->`,
     template: JournalTemplate.DAILY_REFLECTION,
-    wordCount: 120
+    wordCount: 120,
   },
 
   mood_tracker: {
@@ -61,7 +61,7 @@ const sampleEntries = {
 <span class="tag-item">excitement</span>
 <!--/SECTION-->`,
     template: JournalTemplate.MOOD_TRACKER,
-    wordCount: 80
+    wordCount: 80,
   },
 
   habit_tracker: {
@@ -94,7 +94,7 @@ const sampleEntries = {
 <p>Focus on getting the morning exercise done - it's been the most challenging habit to maintain consistently.</p>
 <!--/SECTION-->`,
     template: JournalTemplate.HABIT_TRACKER,
-    wordCount: 90
+    wordCount: 90,
   },
 
   goal_progress: {
@@ -127,7 +127,7 @@ Side Project: Finished the user authentication module and started working on the
 <p>8</p>
 <!--/SECTION-->`,
     template: JournalTemplate.GOAL_PROGRESS,
-    wordCount: 150
+    wordCount: 150,
   },
 
   creative_writing: {
@@ -166,7 +166,7 @@ Your Past Self</p>
 <span class="tag">relationships</span>
 <!--/SECTION-->`,
     template: JournalTemplate.CREATIVE_WRITING,
-    wordCount: 200
+    wordCount: 200,
   },
 
   gratitude: {
@@ -193,7 +193,7 @@ Your Past Self</p>
 <p>9</p>
 <!--/SECTION-->`,
     template: JournalTemplate.GRATITUDE,
-    wordCount: 180
+    wordCount: 180,
   },
 
   blank: {
@@ -219,12 +219,13 @@ It's not about filling every moment with activity, but about being present and a
 <span class="tag">mindfulness</span>
 <!--/SECTION-->`,
     template: JournalTemplate.BLANK,
-    wordCount: 160
-  }
+    wordCount: 160,
+  },
 };
 
 const JournalEntryRendererDemo: React.FC = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('daily_reflection');
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<string>("daily_reflection");
   const [showLegacyFormat, setShowLegacyFormat] = useState(false);
 
   const currentEntry = showLegacyFormat
@@ -239,8 +240,8 @@ const JournalEntryRendererDemo: React.FC = () => {
 <p>Learned to delegate tasks more effectively</p>
 <h3>Tomorrow's Focus</h3>
 <p>Start the new project phase with fresh energy</p>`,
-        template: 'daily_reflection',
-        wordCount: 50
+        template: "daily_reflection",
+        wordCount: 50,
       }
     : sampleEntries[selectedTemplate as keyof typeof sampleEntries];
 
@@ -250,7 +251,9 @@ const JournalEntryRendererDemo: React.FC = () => {
 
       <div className="mb-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Select Template:</label>
+          <label className="block text-sm font-medium mb-2">
+            Select Template:
+          </label>
           <select
             value={selectedTemplate}
             onChange={(e) => setSelectedTemplate(e.target.value)}
@@ -274,7 +277,9 @@ const JournalEntryRendererDemo: React.FC = () => {
               onChange={(e) => setShowLegacyFormat(e.target.checked)}
               className="rounded"
             />
-            <span className="text-sm">Show Legacy Format (without section markers)</span>
+            <span className="text-sm">
+              Show Legacy Format (without section markers)
+            </span>
           </label>
         </div>
       </div>
@@ -298,10 +303,15 @@ const JournalEntryRendererDemo: React.FC = () => {
       </div>
 
       <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="font-semibold text-blue-900 mb-2">Features Demonstrated:</h3>
+        <h3 className="font-semibold text-blue-900 mb-2">
+          Features Demonstrated:
+        </h3>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>✓ Section marker parsing for all template types</li>
-          <li>✓ Dynamic rendering based on section type (text, emotions, scale, checklist, etc.)</li>
+          <li>
+            ✓ Dynamic rendering based on section type (text, emotions, scale,
+            checklist, etc.)
+          </li>
           <li>✓ Emotion display with colors and emojis</li>
           <li>✓ Scale visualization with progress bars</li>
           <li>✓ Checklist rendering with completion states</li>

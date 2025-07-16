@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from './index';
-import { getEncryptionService } from '../services/encryption';
-import apiClient from '../api/client';
-import { EncryptionContext } from './EncryptionContextType';
-import type { EncryptionContextValue } from './EncryptionContextType';
-import type { UserProfile as BaseUserProfile } from '../features/auth/services/authService';
-import { securePasswordStorage } from '../services/encryption/securePasswordStorage';
+import React, { useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "./index";
+import { getEncryptionService } from "../services/encryption";
+import apiClient from "../api/client";
+import { EncryptionContext } from "./EncryptionContextType";
+import type { EncryptionContextValue } from "./EncryptionContextType";
+import type { UserProfile as BaseUserProfile } from "../features/auth/services/authService";
+import { securePasswordStorage } from "../services/encryption/securePasswordStorage";
 
 interface UserProfile extends BaseUserProfile {
   encryptionEnabled: boolean;
@@ -19,7 +19,9 @@ interface EncryptionProviderProps {
   children: ReactNode;
 }
 
-export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children }) => {
+export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
+  children,
+}) => {
   const { user } = useAuth();
   const [isEncryptionSetup, setIsEncryptionSetup] = useState(false);
   const [isEncryptionLocked, setIsEncryptionLocked] = useState(true);
@@ -29,9 +31,9 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
 
   // Fetch user profile to check encryption status
   const { data: profile } = useQuery<UserProfile>({
-    queryKey: ['userProfile', user?.userId],
+    queryKey: ["userProfile", user?.userId],
     queryFn: async () => {
-      const { data } = await apiClient.get<UserProfile>('/users/profile');
+      const { data } = await apiClient.get<UserProfile>("/users/profile");
       return data;
     },
     enabled: !!user,
@@ -46,42 +48,52 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
 
   // Auto-unlock with stored password when encryption is setup but locked
   useEffect(() => {
-    if (isEncryptionSetup && isEncryptionLocked && !hasAttemptedAutoUnlock && user?.userId) {
+    if (
+      isEncryptionSetup &&
+      isEncryptionLocked &&
+      !hasAttemptedAutoUnlock &&
+      user?.userId
+    ) {
       attemptAutoUnlock();
     }
-  }, [isEncryptionSetup, isEncryptionLocked, hasAttemptedAutoUnlock, user?.userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    isEncryptionSetup,
+    isEncryptionLocked,
+    hasAttemptedAutoUnlock,
+    user?.userId,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const attemptAutoUnlock = async () => {
     setHasAttemptedAutoUnlock(true);
     setIsCheckingAutoUnlock(true);
-    
+
     try {
       // Check if we have a stored password
       if (securePasswordStorage.hasStoredPassword()) {
         const storedPassword = await securePasswordStorage.retrievePassword();
-        
+
         if (storedPassword && user?.userId) {
           try {
             // Try to unlock with stored password
             const encryptionService = getEncryptionService();
             await encryptionService.initialize(storedPassword, user.userId);
-            
+
             const keyId = await encryptionService.getPublicKeyId();
             setEncryptionKeyId(keyId);
             setIsEncryptionSetup(true);
             setIsEncryptionLocked(false);
-            
+
             // Extend expiration on successful unlock
             await securePasswordStorage.extendExpiration();
           } catch (error) {
             // Stored password is invalid, clear it
-            console.error('Stored password is invalid:', error);
+            console.error("Stored password is invalid:", error);
             securePasswordStorage.clearStoredPassword();
           }
         }
       }
     } catch (error) {
-      console.error('Failed to auto-unlock encryption:', error);
+      console.error("Failed to auto-unlock encryption:", error);
     } finally {
       setIsCheckingAutoUnlock(false);
     }
@@ -91,18 +103,18 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
     try {
       const encryptionService = getEncryptionService();
       const hasLocalSetup = await encryptionService.checkSetup();
-      
+
       setIsEncryptionSetup(hasLocalSetup);
-      
+
       if (hasLocalSetup) {
         // Get the key ID
         const keyId = await encryptionService.getPublicKeyId();
         setEncryptionKeyId(keyId);
-        
+
         // Even if we have local setup, encryption starts locked after refresh
         // User must enter password to unlock (unless we auto-unlock)
         setIsEncryptionLocked(true);
-        
+
         // Trigger auto-unlock if not already attempted
         if (!hasAttemptedAutoUnlock && user?.userId) {
           attemptAutoUnlock();
@@ -113,25 +125,25 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
         setIsEncryptionLocked(true);
       }
     } catch (error) {
-      console.error('Failed to check encryption status:', error);
+      console.error("Failed to check encryption status:", error);
     }
   };
 
   const unlockEncryption = async (password: string) => {
     try {
       if (!user?.userId) {
-        throw new Error('User ID not available');
+        throw new Error("User ID not available");
       }
-      
+
       const encryptionService = getEncryptionService();
       await encryptionService.initialize(password, user.userId);
-      
+
       const keyId = await encryptionService.getPublicKeyId();
       setEncryptionKeyId(keyId);
       setIsEncryptionSetup(true);
       setIsEncryptionLocked(false);
     } catch (error) {
-      console.error('Failed to unlock encryption:', error);
+      console.error("Failed to unlock encryption:", error);
       throw error;
     }
   };
@@ -146,16 +158,36 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
     securePasswordStorage.clearStoredPassword();
   };
 
+  const resetEncryption = async (password: string) => {
+    if (!user?.userId) throw new Error("User not authenticated");
+
+    try {
+      const encryptionService = getEncryptionService();
+      await encryptionService.forceResync(password, user.userId);
+
+      // Update local state
+      const keyId = await encryptionService.getPublicKeyId();
+      setEncryptionKeyId(keyId);
+      setIsEncryptionSetup(true);
+      setIsEncryptionLocked(false);
+    } catch (error) {
+      console.error("Failed to reset encryption:", error);
+      throw error;
+    }
+  };
+
   const value: EncryptionContextValue = {
     isEncryptionEnabled: profile?.encryptionEnabled || false,
     isEncryptionSetup,
     isEncryptionLocked,
     encryptionKeyId,
     isCheckingAutoUnlock,
+    needsEncryptionReset: false, // This will be determined by the mismatch detection hook
     unlockEncryption,
     lockEncryption,
     checkEncryptionStatus,
     clearStoredPassword,
+    resetEncryption,
   };
 
   return (

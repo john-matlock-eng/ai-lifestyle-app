@@ -4,8 +4,8 @@
  */
 
 class SecurePasswordStorage {
-  private readonly STORAGE_KEY = 'ai-lifestyle-enc-pwd';
-  private readonly DEVICE_KEY = 'ai-lifestyle-device-key';
+  private readonly STORAGE_KEY = "ai-lifestyle-enc-pwd";
+  private readonly DEVICE_KEY = "ai-lifestyle-device-key";
   private readonly EXPIRY_DAYS = 30; // Password expires after 30 days
 
   /**
@@ -22,31 +22,31 @@ class SecurePasswordStorage {
       screen.height.toString(),
       screen.colorDepth.toString(),
       // Add a random component that persists for this device
-      this.getOrCreateDeviceId()
-    ].join('|');
+      this.getOrCreateDeviceId(),
+    ].join("|");
 
     // Convert fingerprint to key material
     const encoder = new TextEncoder();
     const keyMaterial = await crypto.subtle.importKey(
-      'raw',
+      "raw",
       encoder.encode(fingerprint),
-      'PBKDF2',
+      "PBKDF2",
       false,
-      ['deriveBits', 'deriveKey']
+      ["deriveBits", "deriveKey"],
     );
 
     // Derive encryption key
     return crypto.subtle.deriveKey(
       {
-        name: 'PBKDF2',
-        salt: encoder.encode('ai-lifestyle-secure-storage'),
+        name: "PBKDF2",
+        salt: encoder.encode("ai-lifestyle-secure-storage"),
         iterations: 100000,
-        hash: 'SHA-256'
+        hash: "SHA-256",
       },
       keyMaterial,
-      { name: 'AES-GCM', length: 256 },
+      { name: "AES-GCM", length: 256 },
       false,
-      ['encrypt', 'decrypt']
+      ["encrypt", "decrypt"],
     );
   }
 
@@ -55,16 +55,16 @@ class SecurePasswordStorage {
    */
   private getOrCreateDeviceId(): string {
     let deviceId = localStorage.getItem(this.DEVICE_KEY);
-    
+
     if (!deviceId) {
       // Generate a random device ID
       const bytes = crypto.getRandomValues(new Uint8Array(32));
       deviceId = Array.from(bytes)
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
       localStorage.setItem(this.DEVICE_KEY, deviceId);
     }
-    
+
     return deviceId;
   }
 
@@ -82,24 +82,24 @@ class SecurePasswordStorage {
       // Encrypt password
       const encoder = new TextEncoder();
       const encryptedData = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
+        { name: "AES-GCM", iv },
         deviceKey,
-        encoder.encode(password)
+        encoder.encode(password),
       );
 
       // Prepare storage data
       const storageData = {
         encryptedPassword: this.arrayBufferToBase64(encryptedData),
         iv: this.arrayBufferToBase64(iv),
-        expiresAt: Date.now() + (this.EXPIRY_DAYS * 24 * 60 * 60 * 1000),
-        version: 1
+        expiresAt: Date.now() + this.EXPIRY_DAYS * 24 * 60 * 60 * 1000,
+        version: 1,
       };
 
       // Store in localStorage
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(storageData));
     } catch (error) {
-      console.error('Failed to store password securely:', error);
-      throw new Error('Failed to store password');
+      console.error("Failed to store password securely:", error);
+      throw new Error("Failed to store password");
     }
   }
 
@@ -124,19 +124,21 @@ class SecurePasswordStorage {
       const deviceKey = await this.generateDeviceKey();
 
       // Decrypt password
-      const encryptedData = this.base64ToArrayBuffer(storedData.encryptedPassword);
+      const encryptedData = this.base64ToArrayBuffer(
+        storedData.encryptedPassword,
+      );
       const iv = this.base64ToArrayBuffer(storedData.iv);
 
       const decryptedData = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv },
+        { name: "AES-GCM", iv },
         deviceKey,
-        encryptedData
+        encryptedData,
       );
 
       const decoder = new TextDecoder();
       return decoder.decode(decryptedData);
     } catch (error) {
-      console.error('Failed to retrieve password:', error);
+      console.error("Failed to retrieve password:", error);
       // Clear corrupted data
       this.clearStoredPassword();
       return null;
@@ -180,7 +182,7 @@ class SecurePasswordStorage {
    */
   private arrayBufferToBase64(buffer: ArrayBuffer): string {
     const bytes = new Uint8Array(buffer);
-    let binary = '';
+    let binary = "";
     for (let i = 0; i < bytes.length; i++) {
       binary += String.fromCharCode(bytes[i]);
     }

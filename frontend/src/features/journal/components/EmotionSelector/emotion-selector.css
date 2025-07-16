@@ -84,7 +84,9 @@
 
 /* Emotion segment transitions */
 .emotion-segment {
-  transition: opacity 0.2s ease, filter 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease;
 }
 
 .emotion-segment:hover {
@@ -157,7 +159,7 @@
 }
 
 .emotion-list-item::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -178,11 +180,11 @@
     max-width: 100vw;
     padding: 0.5rem;
   }
-  
+
   .emotion-text-tertiary {
     display: none;
   }
-  
+
   .emotion-text-secondary {
     font-size: 0.75rem !important;
   }
@@ -193,7 +195,7 @@
   .emotion-wheel-zoom-controls {
     display: none;
   }
-  
+
   .emotion-wheel-container {
     page-break-inside: avoid;
   }
@@ -213,7 +215,7 @@
   .emotion-segment {
     stroke-width: 3 !important;
   }
-  
+
   .emotion-text-core,
   .emotion-text-secondary,
   .emotion-text-tertiary {
@@ -223,7 +225,8 @@
 
 /* Core emotion pulse animation when no selections */
 @keyframes core-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.8;
     filter: brightness(1);
   }
@@ -358,7 +361,8 @@
 
 /* Subtle pulse animation for complete buttons */
 @keyframes pulse-subtle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -375,13 +379,15 @@
 /* Complete buttons container */
 .emotion-complete-buttons {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); /* Blue accent fallback */
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  box-shadow: 0 4px 12px
+    color-mix(in srgb, var(--color-accent) 20%, transparent);
   transition: all 0.3s ease;
 }
 
 .emotion-complete-buttons:hover {
   box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  box-shadow: 0 6px 16px
+    color-mix(in srgb, var(--color-accent) 30%, transparent);
   transform: translateY(-1px);
 }
 

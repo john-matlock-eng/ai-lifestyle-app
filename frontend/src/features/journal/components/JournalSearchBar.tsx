@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import { Search, Filter, X, Calendar, Tag, FileText, Heart, Settings } from 'lucide-react';
-import { format } from 'date-fns';
-import type { SearchFilters } from '../services/JournalStorageService';
-import { JournalTemplate } from '../../../types/journal';
-import { JournalSearchSettings } from './JournalSearchSettings';
+import React, { useState } from "react";
+import {
+  Search,
+  Filter,
+  X,
+  Calendar,
+  Tag,
+  FileText,
+  Heart,
+  Settings,
+} from "lucide-react";
+import { format } from "date-fns";
+import type { SearchFilters } from "../services/JournalStorageService";
+import { JournalTemplate } from "../../../types/journal";
+import { JournalSearchSettings } from "./JournalSearchSettings";
 
 interface JournalSearchBarProps {
   filters: SearchFilters;
@@ -14,13 +23,13 @@ interface JournalSearchBarProps {
 }
 
 const templateLabels: Record<string, string> = {
-  [JournalTemplate.DAILY_REFLECTION]: 'Daily Reflection',
-  [JournalTemplate.GRATITUDE]: 'Gratitude',
-  [JournalTemplate.GOAL_PROGRESS]: 'Goal Progress',
-  [JournalTemplate.MOOD_TRACKER]: 'Mood Tracker',
-  [JournalTemplate.HABIT_TRACKER]: 'Habit Tracker',
-  [JournalTemplate.CREATIVE_WRITING]: 'Creative Writing',
-  [JournalTemplate.BLANK]: 'Blank',
+  [JournalTemplate.DAILY_REFLECTION]: "Daily Reflection",
+  [JournalTemplate.GRATITUDE]: "Gratitude",
+  [JournalTemplate.GOAL_PROGRESS]: "Goal Progress",
+  [JournalTemplate.MOOD_TRACKER]: "Mood Tracker",
+  [JournalTemplate.HABIT_TRACKER]: "Habit Tracker",
+  [JournalTemplate.CREATIVE_WRITING]: "Creative Writing",
+  [JournalTemplate.BLANK]: "Blank",
 };
 
 export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
@@ -32,7 +41,9 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>(filters.tags || []);
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    filters.tags || [],
+  );
 
   const handleSearchChange = (query: string) => {
     onFiltersChange({ ...filters, query });
@@ -40,34 +51,37 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
 
   const handleTagToggle = (tag: string) => {
     const newTags = selectedTags.includes(tag)
-      ? selectedTags.filter(t => t !== tag)
+      ? selectedTags.filter((t) => t !== tag)
       : [...selectedTags, tag];
-    
+
     setSelectedTags(newTags);
-    onFiltersChange({ ...filters, tags: newTags.length > 0 ? newTags : undefined });
+    onFiltersChange({
+      ...filters,
+      tags: newTags.length > 0 ? newTags : undefined,
+    });
   };
 
   const handleTemplateChange = (template: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      template: template === 'all' ? undefined : template 
+    onFiltersChange({
+      ...filters,
+      template: template === "all" ? undefined : template,
     });
   };
 
   const handleMoodChange = (mood: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      mood: mood === 'all' ? undefined : mood 
+    onFiltersChange({
+      ...filters,
+      mood: mood === "all" ? undefined : mood,
     });
   };
 
-  const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
+  const handleDateChange = (field: "startDate" | "endDate", value: string) => {
     const date = value ? new Date(value) : undefined;
     onFiltersChange({ ...filters, [field]: date });
   };
 
   const handleEncryptionToggle = (value: string) => {
-    const isEncrypted = value === 'all' ? undefined : value === 'encrypted';
+    const isEncrypted = value === "all" ? undefined : value === "encrypted";
     onFiltersChange({ ...filters, isEncrypted });
   };
 
@@ -77,7 +91,7 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
     setShowAdvanced(false);
   };
 
-  const hasActiveFilters = 
+  const hasActiveFilters =
     filters.query ||
     (filters.tags && filters.tags.length > 0) ||
     filters.template ||
@@ -95,7 +109,7 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
           <input
             type="text"
             placeholder="Search journal entries..."
-            value={filters.query || ''}
+            value={filters.query || ""}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full pl-10 pr-28 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
@@ -111,7 +125,7 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
             )}
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className={`p-1 ${showAdvanced ? 'text-primary-600' : 'text-gray-500'} hover:text-primary-700`}
+              className={`p-1 ${showAdvanced ? "text-primary-600" : "text-gray-500"} hover:text-primary-700`}
               title="Advanced filters"
             >
               <Filter className="h-4 w-4" />
@@ -134,17 +148,19 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Tag className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">Tags</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Tags
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {availableTags.map(tag => (
+                  {availableTags.map((tag) => (
                     <button
                       key={tag}
                       onClick={() => handleTagToggle(tag)}
                       className={`px-3 py-1 text-sm rounded-full transition-colors ${
                         selectedTags.includes(tag)
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? "bg-primary-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >
                       {tag}
@@ -160,15 +176,17 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <FileText className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">Template</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Template
+                  </span>
                 </div>
                 <select
-                  value={filters.template || 'all'}
+                  value={filters.template || "all"}
                   onChange={(e) => handleTemplateChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="all">All Templates</option>
-                  {availableTemplates.map(template => (
+                  {availableTemplates.map((template) => (
                     <option key={template} value={template}>
                       {templateLabels[template] || template}
                     </option>
@@ -181,15 +199,17 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Heart className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">Mood</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Mood
+                    </span>
                   </div>
                   <select
-                    value={filters.mood || 'all'}
+                    value={filters.mood || "all"}
                     onChange={(e) => handleMoodChange(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="all">All Moods</option>
-                    {availableMoods.map(mood => (
+                    {availableMoods.map((mood) => (
                       <option key={mood} value={mood}>
                         {mood}
                       </option>
@@ -205,12 +225,20 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">From</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    From
+                  </span>
                 </div>
                 <input
                   type="date"
-                  value={filters.startDate ? format(filters.startDate, 'yyyy-MM-dd') : ''}
-                  onChange={(e) => handleDateChange('startDate', e.target.value)}
+                  value={
+                    filters.startDate
+                      ? format(filters.startDate, "yyyy-MM-dd")
+                      : ""
+                  }
+                  onChange={(e) =>
+                    handleDateChange("startDate", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
@@ -223,8 +251,10 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
                 </div>
                 <input
                   type="date"
-                  value={filters.endDate ? format(filters.endDate, 'yyyy-MM-dd') : ''}
-                  onChange={(e) => handleDateChange('endDate', e.target.value)}
+                  value={
+                    filters.endDate ? format(filters.endDate, "yyyy-MM-dd") : ""
+                  }
+                  onChange={(e) => handleDateChange("endDate", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
@@ -232,10 +262,18 @@ export const JournalSearchBar: React.FC<JournalSearchBarProps> = ({
               {/* Encryption Status */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-700">Encryption</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Encryption
+                  </span>
                 </div>
                 <select
-                  value={filters.isEncrypted === undefined ? 'all' : filters.isEncrypted ? 'encrypted' : 'unencrypted'}
+                  value={
+                    filters.isEncrypted === undefined
+                      ? "all"
+                      : filters.isEncrypted
+                        ? "encrypted"
+                        : "unencrypted"
+                  }
                   onChange={(e) => handleEncryptionToggle(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >

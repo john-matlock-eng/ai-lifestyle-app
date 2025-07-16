@@ -1,7 +1,7 @@
-import React from 'react';
-import type { Goal } from '../../types/api.types';
-import GoalCard from './GoalCard';
-import EmptyState from './EmptyState';
+import React from "react";
+import type { Goal } from "../../types/api.types";
+import GoalCard from "./GoalCard";
+import EmptyState from "./EmptyState";
 
 interface GoalListProps {
   goals: Goal[];
@@ -9,15 +9,25 @@ interface GoalListProps {
   onQuickLog?: (goalId: string) => void;
   onEdit?: (goal: Goal) => void;
   onArchive?: (goalId: string) => void;
-  onStatusChange?: (goalId: string, status: 'active' | 'paused') => void;
+  onStatusChange?: (goalId: string, status: "active" | "paused") => void;
 }
 
-const GoalList: React.FC<GoalListProps> = ({ goals, isLoading, onQuickLog, onEdit, onArchive, onStatusChange }) => {
+const GoalList: React.FC<GoalListProps> = ({
+  goals,
+  isLoading,
+  onQuickLog,
+  onEdit,
+  onArchive,
+  onStatusChange,
+}) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-[var(--surface)] rounded-lg shadow-sm border-2 p-4 animate-pulse">
+          <div
+            key={i}
+            className="bg-[var(--surface)] rounded-lg shadow-sm border-2 p-4 animate-pulse"
+          >
             <div className="flex items-start justify-between">
               <div className="flex-1 space-y-3">
                 <div className="flex items-center gap-2">
@@ -45,9 +55,9 @@ const GoalList: React.FC<GoalListProps> = ({ goals, isLoading, onQuickLog, onEdi
   return (
     <div className="space-y-4">
       {goals.map((goal) => (
-        <GoalCard 
-          key={goal.goalId} 
-          goal={goal} 
+        <GoalCard
+          key={goal.goalId}
+          goal={goal}
           onQuickLog={onQuickLog}
           onEdit={onEdit}
           onArchive={onArchive}

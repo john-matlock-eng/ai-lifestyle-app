@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -61,7 +61,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/dashboard"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/dashboard') ? 'text-[var(--text)] bg-[var(--surface-muted)]' : 'text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]'
+              isActive("/dashboard")
+                ? "text-[var(--text)] bg-[var(--surface-muted)]"
+                : "text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]"
             }`}
             onClick={onClose}
           >
@@ -70,7 +72,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/goals"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/goals') ? 'text-[var(--text)] bg-[var(--surface-muted)]' : 'text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]'
+              isActive("/goals")
+                ? "text-[var(--text)] bg-[var(--surface-muted)]"
+                : "text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]"
             }`}
             onClick={onClose}
           >
@@ -79,7 +83,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/meals"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/meals') ? 'text-[var(--text)] bg-[var(--surface-muted)]' : 'text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]'
+              isActive("/meals")
+                ? "text-[var(--text)] bg-[var(--surface-muted)]"
+                : "text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]"
             }`}
             onClick={onClose}
           >
@@ -88,7 +94,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/workouts"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/workouts') ? 'text-[var(--text)] bg-[var(--surface-muted)]' : 'text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]'
+              isActive("/workouts")
+                ? "text-[var(--text)] bg-[var(--surface-muted)]"
+                : "text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]"
             }`}
             onClick={onClose}
           >
@@ -97,7 +105,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           <Link
             to="/journal"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/journal') ? 'text-[var(--text)] bg-[var(--surface-muted)]' : 'text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]'
+              isActive("/journal")
+                ? "text-[var(--text)] bg-[var(--surface-muted)]"
+                : "text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]"
             }`}
             onClick={onClose}
           >

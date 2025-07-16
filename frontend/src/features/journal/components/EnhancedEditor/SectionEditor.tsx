@@ -1,22 +1,17 @@
 // Updated SectionEditor.tsx with RichTextEditor
-import React from 'react';
-import RichTextEditor from '../RichTextEditor';
-import { EmotionSelector } from '../EmotionSelector';
-import {
-  ChevronDown,
-  Check,
-  Plus,
-  X,
-  Tag,
-  Target
-} from 'lucide-react';
-import type { SectionDefinition } from '../../types/enhanced-template.types';
-import type { Goal } from '@/features/goals/types/api.types';
+import React from "react";
+import RichTextEditor from "../RichTextEditor";
+import { EmotionSelector } from "../EmotionSelector";
+import { ChevronDown, Check, Plus, X, Tag, Target } from "lucide-react";
+import type { SectionDefinition } from "../../types/enhanced-template.types";
+import type { Goal } from "@/features/goals/types/api.types";
 
 export interface SectionEditorProps {
   section: SectionDefinition;
   value: string | number | string[] | Record<string, boolean>;
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
   isCompleted?: boolean;
   availableGoals?: Goal[];
 }
@@ -26,39 +21,90 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   value,
   onChange,
   isCompleted = false,
-  availableGoals = []
+  availableGoals = [],
 }) => {
   const [isExpanded, setIsExpanded] = React.useState(true);
 
   const renderInput = () => {
     switch (section.type) {
-      case 'text':
-        return <TextInput section={section} value={value as string} onChange={onChange} />;
-      case 'scale':
-        return <ScaleInput section={section} value={value as number} onChange={onChange} />;
-      case 'mood':
-        return <MoodInput section={section} value={value as string} onChange={onChange} />;
-      case 'choice':
-        return <ChoiceInput section={section} value={value as string} onChange={onChange} />;
-      case 'tags':
-        return <TagsInput section={section} value={value as string[]} onChange={onChange} />;
-      case 'goals':
-        return <GoalsInput section={section} value={value as string[]} onChange={onChange} availableGoals={availableGoals} />;
-      case 'checklist':
-        return <ChecklistInput section={section} value={value as Record<string, boolean>} onChange={onChange} />;
-      case 'emotions':
-        return <EmotionsInput section={section} value={value as string[]} onChange={onChange} />;
+      case "text":
+        return (
+          <TextInput
+            section={section}
+            value={value as string}
+            onChange={onChange}
+          />
+        );
+      case "scale":
+        return (
+          <ScaleInput
+            section={section}
+            value={value as number}
+            onChange={onChange}
+          />
+        );
+      case "mood":
+        return (
+          <MoodInput
+            section={section}
+            value={value as string}
+            onChange={onChange}
+          />
+        );
+      case "choice":
+        return (
+          <ChoiceInput
+            section={section}
+            value={value as string}
+            onChange={onChange}
+          />
+        );
+      case "tags":
+        return (
+          <TagsInput
+            section={section}
+            value={value as string[]}
+            onChange={onChange}
+          />
+        );
+      case "goals":
+        return (
+          <GoalsInput
+            section={section}
+            value={value as string[]}
+            onChange={onChange}
+            availableGoals={availableGoals}
+          />
+        );
+      case "checklist":
+        return (
+          <ChecklistInput
+            section={section}
+            value={value as Record<string, boolean>}
+            onChange={onChange}
+          />
+        );
+      case "emotions":
+        return (
+          <EmotionsInput
+            section={section}
+            value={value as string[]}
+            onChange={onChange}
+          />
+        );
       default:
         return <div>Unsupported input type: {section.type}</div>;
     }
   };
 
   return (
-    <div className={`
+    <div
+      className={`
       section-editor rounded-xl border transition-all duration-300
-      ${isCompleted ? 'border-success/50 bg-success/5' : 'border-surface-muted bg-surface'}
-      ${isExpanded ? 'shadow-sm' : ''}
-    `}>
+      ${isCompleted ? "border-success/50 bg-success/5" : "border-surface-muted bg-surface"}
+      ${isExpanded ? "shadow-sm" : ""}
+    `}
+    >
       <div
         className="px-4 py-3 flex items-center justify-between cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -70,10 +116,12 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
             {section.required && <span className="text-error ml-1">*</span>}
           </h3>
         </div>
-        <ChevronDown className={`
+        <ChevronDown
+          className={`
           w-4 h-4 text-muted transition-transform
-          ${isExpanded ? 'rotate-180' : ''}
-        `} />
+          ${isExpanded ? "rotate-180" : ""}
+        `}
+        />
       </div>
 
       {isExpanded && (
@@ -90,11 +138,13 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 const TextInput: React.FC<{
   section: SectionDefinition;
   value: string;
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
 }> = ({ section, value, onChange }) => {
   return (
     <RichTextEditor
-      content={value || ''}
+      content={value || ""}
       onChange={(markdown) => onChange(markdown)}
       placeholder={section.prompt}
       minHeight="200px"
@@ -110,7 +160,9 @@ const TextInput: React.FC<{
 const ScaleInput: React.FC<{
   section: SectionDefinition;
   value: number;
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
 }> = ({ section, value, onChange }) => {
   const min = section.options?.min || 1;
   const max = section.options?.max || 10;
@@ -126,15 +178,16 @@ const ScaleInput: React.FC<{
         className="w-full h-2 bg-surface-muted rounded-lg appearance-none cursor-pointer slider"
       />
       <div className="flex justify-between">
-        {Array.from({ length: max - min + 1 }, (_, i) => min + i).map(n => (
+        {Array.from({ length: max - min + 1 }, (_, i) => min + i).map((n) => (
           <button
             key={n}
             onClick={() => onChange(n)}
             className={`
               w-10 h-10 rounded-full text-sm font-medium transition-all
-              ${value === n 
-                ? 'bg-accent text-white scale-110' 
-                : 'bg-surface-muted hover:bg-surface-hover'
+              ${
+                value === n
+                  ? "bg-accent text-white scale-110"
+                  : "bg-surface-muted hover:bg-surface-hover"
               }
             `}
           >
@@ -150,21 +203,24 @@ const ScaleInput: React.FC<{
 const MoodInput: React.FC<{
   section: SectionDefinition;
   value: string;
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
 }> = ({ section, value, onChange }) => {
   const moods = section.options?.moods || [];
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-      {moods.map(mood => (
+      {moods.map((mood) => (
         <button
           key={mood.value}
           onClick={() => onChange(mood.value)}
           className={`
             p-3 rounded-xl text-center transition-all
-            ${value === mood.value 
-              ? 'bg-accent/10 ring-2 ring-accent scale-105' 
-              : 'bg-surface-muted hover:bg-surface-hover'
+            ${
+              value === mood.value
+                ? "bg-accent/10 ring-2 ring-accent scale-105"
+                : "bg-surface-muted hover:bg-surface-hover"
             }
           `}
         >
@@ -180,20 +236,23 @@ const MoodInput: React.FC<{
 const ChoiceInput: React.FC<{
   section: SectionDefinition;
   value: string;
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
 }> = ({ section, value, onChange }) => {
   const choices = section.options?.choices || [];
 
   return (
     <div className="space-y-2">
-      {choices.map(choice => (
+      {choices.map((choice) => (
         <label
           key={choice.value}
           className={`
             block p-3 rounded-lg cursor-pointer transition-all
-            ${value === choice.value 
-              ? 'bg-accent/10 ring-2 ring-accent' 
-              : 'bg-surface-muted hover:bg-surface-hover'
+            ${
+              value === choice.value
+                ? "bg-accent/10 ring-2 ring-accent"
+                : "bg-surface-muted hover:bg-surface-hover"
             }
           `}
         >
@@ -208,7 +267,9 @@ const ChoiceInput: React.FC<{
           <div className="flex items-center gap-2">
             {choice.icon && <span>{choice.icon}</span>}
             <span className="flex-1">{choice.label}</span>
-            {value === choice.value && <Check className="w-4 h-4 ml-auto text-accent" />}
+            {value === choice.value && (
+              <Check className="w-4 h-4 ml-auto text-accent" />
+            )}
           </div>
         </label>
       ))}
@@ -220,22 +281,27 @@ const ChoiceInput: React.FC<{
 const TagsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
 }> = ({ value = [], onChange }) => {
-  const [inputValue, setInputValue] = React.useState('');
+  const [inputValue, setInputValue] = React.useState("");
 
   const addTag = () => {
-    const trimmed = inputValue.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const trimmed = inputValue
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-");
     if (trimmed && !value.includes(trimmed)) {
       onChange([...value, trimmed]);
-      setInputValue('');
+      setInputValue("");
     }
   };
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        {value.map(tag => (
+        {value.map((tag) => (
           <span
             key={tag}
             className="inline-flex items-center gap-1 px-3 py-1 bg-accent/10 text-accent rounded-full text-sm"
@@ -243,7 +309,7 @@ const TagsInput: React.FC<{
             <Tag className="w-3 h-3" />
             {tag}
             <button
-              onClick={() => onChange(value.filter(t => t !== tag))}
+              onClick={() => onChange(value.filter((t) => t !== tag))}
               className="ml-1 hover:text-error"
             >
               <X className="w-3 h-3" />
@@ -256,7 +322,9 @@ const TagsInput: React.FC<{
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+          onKeyPress={(e) =>
+            e.key === "Enter" && (e.preventDefault(), addTag())
+          }
           placeholder="Add a tag..."
           className="flex-1 px-3 py-2 rounded-lg bg-surface-hover border border-surface-muted focus:border-accent outline-none"
         />
@@ -275,23 +343,28 @@ const TagsInput: React.FC<{
 const GoalsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
   availableGoals: Goal[];
 }> = ({ value = [], onChange, availableGoals }) => {
   return (
     <div className="space-y-2">
       {availableGoals.length === 0 ? (
-        <p className="text-sm text-muted">No active goals available. Create some goals first!</p>
+        <p className="text-sm text-muted">
+          No active goals available. Create some goals first!
+        </p>
       ) : (
         <>
-          {availableGoals.map(goal => (
+          {availableGoals.map((goal) => (
             <label
               key={goal.goalId}
               className={`
                 flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all
-                ${value.includes(goal.goalId) 
-                  ? 'bg-accent/10 ring-2 ring-accent' 
-                  : 'bg-surface-muted hover:bg-surface-hover'
+                ${
+                  value.includes(goal.goalId)
+                    ? "bg-accent/10 ring-2 ring-accent"
+                    : "bg-surface-muted hover:bg-surface-hover"
                 }
               `}
             >
@@ -302,7 +375,7 @@ const GoalsInput: React.FC<{
                   if (e.target.checked) {
                     onChange([...value, goal.goalId]);
                   } else {
-                    onChange(value.filter(id => id !== goal.goalId));
+                    onChange(value.filter((id) => id !== goal.goalId));
                   }
                 }}
                 className="sr-only"
@@ -310,9 +383,13 @@ const GoalsInput: React.FC<{
               <Target className="w-4 h-4 text-accent" />
               <div className="flex-1">
                 <div className="font-medium">{goal.title}</div>
-                {goal.category && <div className="text-xs text-muted">{goal.category}</div>}
+                {goal.category && (
+                  <div className="text-xs text-muted">{goal.category}</div>
+                )}
               </div>
-              {value.includes(goal.goalId) && <Check className="w-4 h-4 text-accent" />}
+              {value.includes(goal.goalId) && (
+                <Check className="w-4 h-4 text-accent" />
+              )}
             </label>
           ))}
         </>
@@ -325,17 +402,19 @@ const GoalsInput: React.FC<{
 const ChecklistInput: React.FC<{
   section: SectionDefinition;
   value: Record<string, boolean>;
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
 }> = ({ section, value = {}, onChange }) => {
   const items = section.options?.items || [];
 
   return (
     <div className="space-y-2">
-      {items.map(item => {
+      {items.map((item) => {
         // Support both { id, label } and { label } formats
         const itemKey = item.id || item.label;
         const itemLabel = item.label;
-        
+
         return (
           <label
             key={itemKey}
@@ -344,10 +423,12 @@ const ChecklistInput: React.FC<{
             <input
               type="checkbox"
               checked={value[itemLabel] || false}
-              onChange={(e) => onChange({ ...value, [itemLabel]: e.target.checked })}
+              onChange={(e) =>
+                onChange({ ...value, [itemLabel]: e.target.checked })
+              }
               className="w-4 h-4 rounded border-surface-muted text-accent focus:ring-accent"
             />
-            <span className={value[itemLabel] ? 'line-through text-muted' : ''}>
+            <span className={value[itemLabel] ? "line-through text-muted" : ""}>
               {itemLabel}
             </span>
           </label>
@@ -361,13 +442,15 @@ const ChecklistInput: React.FC<{
 const EmotionsInput: React.FC<{
   section: SectionDefinition;
   value: string[];
-  onChange: (value: string | number | string[] | Record<string, boolean>) => void;
+  onChange: (
+    value: string | number | string[] | Record<string, boolean>,
+  ) => void;
 }> = ({ section, value = [], onChange }) => {
   return (
     <EmotionSelector
       value={value}
       onChange={(emotions) => onChange(emotions)}
-      mode={section.options?.mode || 'both'}
+      mode={section.options?.mode || "both"}
       maxSelections={section.options?.maxSelections}
     />
   );

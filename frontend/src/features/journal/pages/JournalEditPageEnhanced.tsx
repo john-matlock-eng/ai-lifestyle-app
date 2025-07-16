@@ -1,13 +1,13 @@
 // JournalEditPageEnhanced.tsx
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/common';
-import { getEntry, updateEntry } from '@/api/journal';
-import { journalStorage } from '../services/JournalStorageService';
-import { EnhancedJournalEditor } from '../components/EnhancedEditor';
-import type { UpdateJournalEntryRequest } from '@/types/journal';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/common";
+import { getEntry, updateEntry } from "@/api/journal";
+import { journalStorage } from "../services/JournalStorageService";
+import { EnhancedJournalEditor } from "../components/EnhancedEditor";
+import type { UpdateJournalEntryRequest } from "@/types/journal";
 
 export const JournalEditPageEnhanced: React.FC = () => {
   const { entryId } = useParams<{ entryId: string }>();
@@ -15,20 +15,25 @@ export const JournalEditPageEnhanced: React.FC = () => {
   const [isReady, setIsReady] = useState(false);
 
   // Fetch entry
-  const { data: entry, isLoading, error } = useQuery({
-    queryKey: ['journal', 'entry', entryId],
+  const {
+    data: entry,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["journal", "entry", entryId],
     queryFn: () => getEntry(entryId!),
-    enabled: !!entryId
+    enabled: !!entryId,
   });
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: (request: UpdateJournalEntryRequest) => updateEntry(entryId!, request),
+    mutationFn: (request: UpdateJournalEntryRequest) =>
+      updateEntry(entryId!, request),
     onSuccess: async (data) => {
       // Update IndexedDB for search
       await journalStorage.saveEntry(data);
       navigate(`/journal/${data.entryId}`);
-    }
+    },
   });
 
   // Initialize storage
@@ -53,7 +58,7 @@ export const JournalEditPageEnhanced: React.FC = () => {
         <div className="container mx-auto py-8 px-4">
           <div className="text-center py-12">
             <p className="text-error mb-4">Failed to load journal entry</p>
-            <Button onClick={() => navigate('/journal')}>
+            <Button onClick={() => navigate("/journal")}>
               Back to Journals
             </Button>
           </div>

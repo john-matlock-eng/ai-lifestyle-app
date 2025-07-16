@@ -1,4 +1,4 @@
-import apiClient from './client';
+import apiClient from "./client";
 import type {
   JournalEntry,
   JournalStats,
@@ -6,18 +6,21 @@ import type {
   UpdateJournalEntryRequest,
   SharedJournalsResponse,
   SharedJournalItem,
-} from '../types/journal';
+} from "../types/journal";
 
 interface ListJournalEntriesParams {
   page?: number;
   limit?: number;
   goalId?: string;
-  filter?: 'owned' | 'shared-with-me' | 'shared-by-me' | 'all';
+  filter?: "owned" | "shared-with-me" | "shared-by-me" | "all";
 }
 
 const journalApi = {
   async createEntry(data: CreateJournalEntryRequest): Promise<JournalEntry> {
-    const { data: response } = await apiClient.post<JournalEntry>('/journal', data);
+    const { data: response } = await apiClient.post<JournalEntry>(
+      "/journal",
+      data,
+    );
     return response;
   },
 
@@ -26,13 +29,23 @@ const journalApi = {
     return data;
   },
 
-  async listEntries(params?: ListJournalEntriesParams): Promise<SharedJournalsResponse> {
-    const { data } = await apiClient.get<SharedJournalsResponse>('/journal', { params });
+  async listEntries(
+    params?: ListJournalEntriesParams,
+  ): Promise<SharedJournalsResponse> {
+    const { data } = await apiClient.get<SharedJournalsResponse>("/journal", {
+      params,
+    });
     return data;
   },
 
-  async updateEntry(entryId: string, data: UpdateJournalEntryRequest): Promise<JournalEntry> {
-    const { data: response } = await apiClient.put<JournalEntry>(`/journal/${entryId}`, data);
+  async updateEntry(
+    entryId: string,
+    data: UpdateJournalEntryRequest,
+  ): Promise<JournalEntry> {
+    const { data: response } = await apiClient.put<JournalEntry>(
+      `/journal/${entryId}`,
+      data,
+    );
     return response;
   },
 
@@ -41,24 +54,37 @@ const journalApi = {
   },
 
   async getStats(): Promise<JournalStats> {
-    const { data } = await apiClient.get<JournalStats>('/journal/stats');
+    const { data } = await apiClient.get<JournalStats>("/journal/stats");
     return data;
   },
 
   // Deprecated - use listEntries with filter parameter instead
   async getSharedJournals(filter?: string): Promise<SharedJournalItem[]> {
-    const response = await listEntries({ filter: (filter as 'owned' | 'shared-with-me' | 'shared-by-me' | 'all') || 'all' });
-    return response.entries.filter((e): e is SharedJournalItem => 
-      'shareInfo' in e && e.shareInfo !== undefined
+    const response = await listEntries({
+      filter:
+        (filter as "owned" | "shared-with-me" | "shared-by-me" | "all") ||
+        "all",
+    });
+    return response.entries.filter(
+      (e): e is SharedJournalItem =>
+        "shareInfo" in e && e.shareInfo !== undefined,
     );
   },
 
-  async shareJournal(entryId: string, recipientEmail: string, permissions: string[], expiresInHours: number): Promise<{ shareId: string }> {
-    const { data } = await apiClient.post<{ shareId: string }>(`/journal/${entryId}/share`, {
-      recipientEmail,
-      permissions,
-      expiresInHours
-    });
+  async shareJournal(
+    entryId: string,
+    recipientEmail: string,
+    permissions: string[],
+    expiresInHours: number,
+  ): Promise<{ shareId: string }> {
+    const { data } = await apiClient.post<{ shareId: string }>(
+      `/journal/${entryId}/share`,
+      {
+        recipientEmail,
+        permissions,
+        expiresInHours,
+      },
+    );
     return data;
   },
 

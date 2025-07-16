@@ -1,16 +1,39 @@
 // Generated from OpenAPI contract - DO NOT EDIT MANUALLY
 // These types match the backend API exactly
 
-export type GoalPattern = 'recurring' | 'milestone' | 'target' | 'streak' | 'limit';
-export type GoalStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived';
-export type GoalVisibility = 'private' | 'friends' | 'public';
-export type Metric = 'count' | 'duration' | 'amount' | 'weight' | 'distance' | 'calories' | 'money' | 'custom';
-export type Period = 'day' | 'week' | 'month' | 'quarter' | 'year';
-export type Direction = 'increase' | 'decrease' | 'maintain';
-export type TargetType = 'minimum' | 'maximum' | 'exact' | 'range';
-export type Trend = 'improving' | 'stable' | 'declining';
-export type ActivityType = 'progress' | 'completed' | 'skipped' | 'partial';
-export type TimeOfDay = 'early-morning' | 'morning' | 'afternoon' | 'evening' | 'night';
+export type GoalPattern =
+  | "recurring"
+  | "milestone"
+  | "target"
+  | "streak"
+  | "limit";
+export type GoalStatus =
+  | "draft"
+  | "active"
+  | "paused"
+  | "completed"
+  | "archived";
+export type GoalVisibility = "private" | "friends" | "public";
+export type Metric =
+  | "count"
+  | "duration"
+  | "amount"
+  | "weight"
+  | "distance"
+  | "calories"
+  | "money"
+  | "custom";
+export type Period = "day" | "week" | "month" | "quarter" | "year";
+export type Direction = "increase" | "decrease" | "maintain";
+export type TargetType = "minimum" | "maximum" | "exact" | "range";
+export type Trend = "improving" | "stable" | "declining";
+export type ActivityType = "progress" | "completed" | "skipped" | "partial";
+export type TimeOfDay =
+  | "early-morning"
+  | "morning"
+  | "afternoon"
+  | "evening"
+  | "night";
 
 export interface Goal {
   goalId: string;
@@ -49,10 +72,10 @@ export interface GoalTarget {
 }
 
 export interface GoalSchedule {
-  frequency?: 'daily' | 'weekly' | 'monthly' | 'custom';
+  frequency?: "daily" | "weekly" | "monthly" | "custom";
   daysOfWeek?: number[]; // 0=Sunday, 6=Saturday
   preferredTimes?: string[]; // HH:MM format
-  checkInFrequency?: 'daily' | 'weekly' | 'monthly';
+  checkInFrequency?: "daily" | "weekly" | "monthly";
   allowSkipDays?: number;
   catchUpAllowed?: boolean;
 }
@@ -127,7 +150,7 @@ export interface UpdateGoalRequest {
   schedule?: GoalSchedule;
   context?: GoalContext;
   rewards?: GoalRewards;
-  status?: 'active' | 'paused';
+  status?: "active" | "paused";
   visibility?: GoalVisibility;
   metadata?: Record<string, unknown>;
 }
@@ -146,7 +169,7 @@ export interface GoalActivity {
   context?: ActivityContext;
   note?: string;
   attachments?: ActivityAttachment[];
-  source?: 'manual' | 'device' | 'integration' | 'import';
+  source?: "manual" | "device" | "integration" | "import";
   deviceInfo?: DeviceInfo;
 }
 
@@ -159,11 +182,11 @@ export interface LogActivityRequest {
   context?: ActivityContext;
   note?: string;
   attachments?: ActivityAttachmentRequest[];
-  source?: 'manual' | 'device' | 'integration' | 'import';
+  source?: "manual" | "device" | "integration" | "import";
 }
 
 export interface ActivityLocation {
-  type?: 'home' | 'work' | 'gym' | 'outdoors' | 'travel';
+  type?: "home" | "work" | "gym" | "outdoors" | "travel";
   city?: string;
   coordinates?: [number, number]; // [longitude, latitude]
 }
@@ -178,7 +201,7 @@ export interface ActivityContext {
   sleepHours?: number;
   stressLevel?: number; // 1-10
   withOthers?: boolean;
-  socialContext?: 'alone' | 'partner' | 'friends' | 'group' | 'online';
+  socialContext?: "alone" | "partner" | "friends" | "group" | "online";
   previousActivity?: string;
   nextActivity?: string;
   duration?: number; // minutes
@@ -194,13 +217,13 @@ export interface WeatherInfo {
 }
 
 export interface ActivityAttachment {
-  type: 'image' | 'link' | 'reference';
+  type: "image" | "link" | "reference";
   url: string;
   entityId?: string;
 }
 
 export interface ActivityAttachmentRequest {
-  type: 'image' | 'link' | 'reference';
+  type: "image" | "link" | "reference";
   url?: string;
   entityId?: string;
 }
@@ -213,7 +236,7 @@ export interface DeviceInfo {
 
 export interface GoalProgress {
   goalId: string;
-  period: 'current' | 'week' | 'month' | 'quarter' | 'year' | 'all';
+  period: "current" | "week" | "month" | "quarter" | "year" | "all";
   progress: GoalProgressDetails;
   statistics: GoalStatistics;
   insights?: GoalInsights;
@@ -261,6 +284,6 @@ export interface GoalFilters {
 }
 
 export interface GoalSortOption {
-  field: 'created_at' | 'updated_at' | 'title';
-  order: 'asc' | 'desc';
+  field: "created_at" | "updated_at" | "title";
+  order: "asc" | "desc";
 }

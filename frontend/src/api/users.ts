@@ -1,4 +1,4 @@
-import apiClient from './client';
+import apiClient from "./client";
 
 interface User {
   userId: string;
@@ -9,7 +9,9 @@ interface User {
 
 const usersApi = {
   async getUserByEmail(email: string): Promise<User> {
-    const { data } = await apiClient.get<User>(`/users/by-email/${encodeURIComponent(email)}`);
+    const { data } = await apiClient.get<User>(
+      `/users/by-email/${encodeURIComponent(email)}`,
+    );
     return data;
   },
 
@@ -25,7 +27,4 @@ const usersApi = {
 
 export default usersApi;
 
-export const {
-  getUserByEmail,
-  checkUserExists,
-} = usersApi;
+export const { getUserByEmail, checkUserExists } = usersApi;

@@ -1,6 +1,7 @@
 # Journal Reader Enhancement Integration Guide
 
 ## Overview
+
 This guide will help you integrate the enhanced journal reading experience into your existing application.
 
 ## Files Created
@@ -25,7 +26,7 @@ Add the CSS import to your main journal component or global styles:
 
 ```tsx
 // In your JournalViewPageEnhanced.tsx or main styles
-import '../styles/journal-reader.css';
+import "../styles/journal-reader.css";
 ```
 
 ### 3. Verify Component Imports
@@ -33,28 +34,32 @@ import '../styles/journal-reader.css';
 Your `JournalViewPageEnhanced.tsx` already has the correct imports:
 
 ```tsx
-import { JournalReaderView } from '../components/JournalReaderView';
-import { JournalEntryRenderer } from '../components/JournalEntryRenderer';
+import { JournalReaderView } from "../components/JournalReaderView";
+import { JournalEntryRenderer } from "../components/JournalEntryRenderer";
 ```
 
 ## Features Implemented
 
 ### 1. **Reading Modes**
+
 - Dark mode (default)
-- Light mode 
+- Light mode
 - Sepia mode (comfortable for long reading)
 
 ### 2. **Font Controls**
+
 - 4 font size options (small, medium, large, xlarge)
 - Optimized typography with serif fonts
 - Adjustable line height
 
 ### 3. **Navigation**
+
 - Keyboard navigation (arrow keys, space to scroll, ESC to exit)
 - Previous/Next entry navigation
 - Smooth scrolling
 
 ### 4. **Reading Experience**
+
 - Progress indicator bar
 - Reading time estimation
 - Auto-hiding controls
@@ -62,6 +67,7 @@ import { JournalEntryRenderer } from '../components/JournalEntryRenderer';
 - Distraction-free reading
 
 ### 5. **Template Support**
+
 - Gratitude journal formatting
 - Goals with progress bars
 - Reflection sections
@@ -93,9 +99,15 @@ Update the theme configuration in `config/reader-theme.ts`:
 
 ```tsx
 export const readerThemes = {
-  dark: { /* ... */ },
-  light: { /* ... */ },
-  sepia: { /* ... */ },
+  dark: {
+    /* ... */
+  },
+  light: {
+    /* ... */
+  },
+  sepia: {
+    /* ... */
+  },
   // Add custom themes here
 };
 ```
@@ -125,10 +137,10 @@ Modify the `getFontSizeClass()` function in `JournalReaderView.tsx`:
 ```tsx
 const getFontSizeClass = () => {
   switch (fontSize) {
-    case 'small':
-      return 'text-base leading-relaxed';
-    case 'large':
-      return 'text-xl leading-relaxed';
+    case "small":
+      return "text-base leading-relaxed";
+    case "large":
+      return "text-xl leading-relaxed";
     // Add more sizes as needed
   }
 };
@@ -158,20 +170,25 @@ const getFontSizeClass = () => {
 ## Troubleshooting
 
 ### If markdown rendering doesn't work:
+
 Ensure you have installed the required dependencies:
+
 ```bash
 npm install react-markdown remark-gfm react-syntax-highlighter
 ```
 
 ### If styles aren't applied:
+
 Check that the CSS file is imported in your component or global styles.
 
 ### If theme switching doesn't persist:
+
 The theme preference is saved to localStorage. Check browser console for any localStorage errors.
 
 ## Future Enhancements
 
 Consider adding:
+
 - Bookmarking functionality
 - Text highlighting
 - Note-taking while reading

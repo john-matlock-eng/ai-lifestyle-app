@@ -18,13 +18,13 @@ I've implemented a secure local caching system for encrypted journal entries tha
 Add the journal sync hook to your main journal page or app component:
 
 ```tsx
-import { useJournalSync } from '@/features/journal/hooks';
+import { useJournalSync } from "@/features/journal/hooks";
 
 function JournalPage() {
   // Initialize journal sync
   const { isLoading, forceSync } = useJournalSync({
     enabled: true,
-    syncInterval: 5 * 60 * 1000 // 5 minutes
+    syncInterval: 5 * 60 * 1000, // 5 minutes
   });
 
   // Your journal UI...
@@ -45,12 +45,12 @@ The search bar now includes a settings button (gear icon) that opens the search 
 The search automatically uses cached decrypted content when available:
 
 ```tsx
-import { useJournalSearch } from '@/features/journal/hooks';
+import { useJournalSearch } from "@/features/journal/hooks";
 
 function JournalSearchResults() {
   const [filters, setFilters] = useState<SearchFilters>({});
   const { results, isSearching } = useJournalSearch(filters);
-  
+
   // Results will include encrypted entries if their cached content matches
 }
 ```
@@ -63,7 +63,7 @@ function JournalSearchResults() {
 4. **Clear on Logout**: Consider clearing the cache when users log out:
 
 ```tsx
-import { journalStorage } from '@/features/journal/services/JournalStorageService';
+import { journalStorage } from "@/features/journal/services/JournalStorageService";
 
 async function handleLogout() {
   // Clear all journal data including cache
@@ -98,13 +98,13 @@ await journalStorage.clearAll();
 
 ```typescript
 const {
-  isLoading,         // Is syncing with server
-  error,            // Sync error if any
-  lastSync,         // Date of last successful sync
-  forceSync,        // Function to force a sync
+  isLoading, // Is syncing with server
+  error, // Sync error if any
+  lastSync, // Date of last successful sync
+  forceSync, // Function to force a sync
   enableDecryptedCache, // Function to enable/disable cache
-  getCacheStats,    // Function to get cache statistics
-  totalEntries      // Total number of entries
+  getCacheStats, // Function to get cache statistics
+  totalEntries, // Total number of entries
 } = useJournalSync(options);
 ```
 
@@ -126,26 +126,26 @@ const {
 Here's a complete example of integrating the search with settings:
 
 ```tsx
-import React, { useEffect } from 'react';
-import { 
-  JournalSearchBar, 
-  JournalCard, 
-  SearchResultsSummary 
-} from '@/features/journal/components';
-import { useJournalSearch, useJournalSync } from '@/features/journal/hooks';
+import React, { useEffect } from "react";
+import {
+  JournalSearchBar,
+  JournalCard,
+  SearchResultsSummary,
+} from "@/features/journal/components";
+import { useJournalSearch, useJournalSync } from "@/features/journal/hooks";
 
 export function JournalSearchPage() {
   // Initialize sync
   const { isLoading: isSyncing } = useJournalSync({ enabled: true });
-  
+
   // Search state
   const [filters, setFilters] = useState<SearchFilters>({});
   const { results, isSearching, uniqueValues } = useJournalSearch(filters);
-  
+
   if (isSyncing && !results) {
     return <div>Syncing journal entries...</div>;
   }
-  
+
   return (
     <div>
       <JournalSearchBar
@@ -155,16 +155,13 @@ export function JournalSearchPage() {
         availableMoods={uniqueValues.moods}
         availableTemplates={uniqueValues.templates}
       />
-      
-      <SearchResultsSummary 
-        total={results.total}
-        isSearching={isSearching}
-      />
-      
+
+      <SearchResultsSummary total={results.total} isSearching={isSearching} />
+
       <div className="grid gap-4">
-        {results.entries.map(entry => (
-          <JournalCard 
-            key={entry.entryId} 
+        {results.entries.map((entry) => (
+          <JournalCard
+            key={entry.entryId}
             entry={entry}
             onClick={() => navigate(`/journal/${entry.entryId}`)}
           />

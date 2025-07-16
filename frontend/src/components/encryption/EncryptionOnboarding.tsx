@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { Shield, Lock, Key, ArrowRight, Check, AlertTriangle } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Shield,
+  Lock,
+  Key,
+  ArrowRight,
+  Check,
+  AlertTriangle,
+} from "lucide-react";
 
 interface EncryptionOnboardingProps {
   onComplete: (settings: OnboardingSettings) => void;
@@ -15,27 +22,43 @@ export interface OnboardingSettings {
 
 const steps = [
   {
-    id: 'intro',
-    title: 'Welcome to Encryption',
+    id: "intro",
+    title: "Welcome to Encryption",
     icon: Shield,
   },
   {
-    id: 'setup',
-    title: 'Choose Your Settings',
+    id: "setup",
+    title: "Choose Your Settings",
     icon: Lock,
   },
   {
-    id: 'backup',
-    title: 'Backup Your Key',
+    id: "backup",
+    title: "Backup Your Key",
     icon: Key,
   },
 ];
 
 const availableModules = [
-  { id: 'journal', name: 'Journal Entries', description: 'Personal thoughts and reflections' },
-  { id: 'health', name: 'Health Records', description: 'Medical information and vitals' },
-  { id: 'finance', name: 'Financial Data', description: 'Transactions and budgets' },
-  { id: 'wellness', name: 'Wellness Tracking', description: 'Mental health and habits' },
+  {
+    id: "journal",
+    name: "Journal Entries",
+    description: "Personal thoughts and reflections",
+  },
+  {
+    id: "health",
+    name: "Health Records",
+    description: "Medical information and vitals",
+  },
+  {
+    id: "finance",
+    name: "Financial Data",
+    description: "Transactions and budgets",
+  },
+  {
+    id: "wellness",
+    name: "Wellness Tracking",
+    description: "Mental health and habits",
+  },
 ];
 
 export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
@@ -47,7 +70,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
   const [settings, setSettings] = useState<OnboardingSettings>({
     enableEncryption: true,
     createBackup: true,
-    modules: ['journal', 'health'], // Default selections
+    modules: ["journal", "health"], // Default selections
   });
 
   const handleNext = () => {
@@ -65,10 +88,10 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
   };
 
   const toggleModule = (moduleId: string) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       modules: prev.modules.includes(moduleId)
-        ? prev.modules.filter(id => id !== moduleId)
+        ? prev.modules.filter((id) => id !== moduleId)
         : [...prev.modules, moduleId],
     }));
   };
@@ -84,14 +107,15 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
             {steps.map((step, index) => (
               <div
                 key={step.id}
-                className={`flex items-center ${index < steps.length - 1 ? 'flex-1' : ''}`}
+                className={`flex items-center ${index < steps.length - 1 ? "flex-1" : ""}`}
               >
                 <div
                   className={`
                     flex items-center justify-center w-10 h-10 rounded-full
-                    ${index <= currentStep
-                      ? 'bg-[var(--accent)] text-white'
-                      : 'bg-[var(--surface-muted)] text-[var(--text-muted)]'
+                    ${
+                      index <= currentStep
+                        ? "bg-[var(--accent)] text-white"
+                        : "bg-[var(--surface-muted)] text-[var(--text-muted)]"
                     }
                   `}
                 >
@@ -104,7 +128,9 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                 {index < steps.length - 1 && (
                   <div
                     className={`flex-1 h-1 mx-2 ${
-                      index < currentStep ? 'bg-[var(--accent)]' : 'bg-[var(--surface-muted)]'
+                      index < currentStep
+                        ? "bg-[var(--accent)]"
+                        : "bg-[var(--surface-muted)]"
                     }`}
                   />
                 )}
@@ -136,29 +162,35 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
             <div className="space-y-6">
               <div className="text-center space-y-4">
                 <p className="text-[var(--text-muted)]">
-                  Protect your personal data with end-to-end encryption.
-                  Only you can decrypt your information.
+                  Protect your personal data with end-to-end encryption. Only
+                  you can decrypt your information.
                 </p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="bg-[var(--accent-bg)] rounded-lg p-4">
                   <Shield className="h-8 w-8 text-[var(--accent)] mb-2" />
-                  <h3 className="font-semibold text-[var(--text)] mb-1">Private & Secure</h3>
+                  <h3 className="font-semibold text-[var(--text)] mb-1">
+                    Private & Secure
+                  </h3>
                   <p className="text-sm text-[var(--text-muted)]">
                     Your data is encrypted locally before storage
                   </p>
                 </div>
                 <div className="bg-[var(--accent-bg)] rounded-lg p-4">
                   <Lock className="h-8 w-8 text-[var(--accent)] mb-2" />
-                  <h3 className="font-semibold text-[var(--text)] mb-1">You Control Access</h3>
+                  <h3 className="font-semibold text-[var(--text)] mb-1">
+                    You Control Access
+                  </h3>
                   <p className="text-sm text-[var(--text-muted)]">
                     Share specific data temporarily when needed
                   </p>
                 </div>
                 <div className="bg-[var(--accent-bg)] rounded-lg p-4">
                   <Key className="h-8 w-8 text-[var(--accent)] mb-2" />
-                  <h3 className="font-semibold text-[var(--text)] mb-1">Backup Available</h3>
+                  <h3 className="font-semibold text-[var(--text)] mb-1">
+                    Backup Available
+                  </h3>
                   <p className="text-sm text-[var(--text-muted)]">
                     Secure key backup ensures you never lose access
                   </p>
@@ -186,8 +218,12 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                         className="h-5 w-5 text-[var(--accent)] rounded border-[var(--surface-muted)] mt-0.5"
                       />
                       <div className="ml-3 flex-1">
-                        <div className="font-medium text-[var(--text)]">{module.name}</div>
-                        <div className="text-sm text-[var(--text-muted)]">{module.description}</div>
+                        <div className="font-medium text-[var(--text)]">
+                          {module.name}
+                        </div>
+                        <div className="text-sm text-[var(--text-muted)]">
+                          {module.description}
+                        </div>
                       </div>
                     </label>
                   ))}
@@ -196,8 +232,8 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
 
               <div className="p-4 bg-[var(--info-bg)] rounded-lg">
                 <p className="text-sm text-[var(--info)]">
-                  <strong>Tip:</strong> You can always change these settings later.
-                  Start with the most sensitive data.
+                  <strong>Tip:</strong> You can always change these settings
+                  later. Start with the most sensitive data.
                 </p>
               </div>
             </div>
@@ -213,8 +249,9 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                       Important: Backup your encryption key
                     </h3>
                     <p className="text-sm text-[var(--warning-text)]">
-                      Without a backup, you could lose access to your encrypted data if you forget your password
-                      or lose your device. We strongly recommend creating a backup now.
+                      Without a backup, you could lose access to your encrypted
+                      data if you forget your password or lose your device. We
+                      strongly recommend creating a backup now.
                     </p>
                   </div>
                 </div>
@@ -225,10 +262,12 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                   <input
                     type="checkbox"
                     checked={settings.createBackup}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      createBackup: e.target.checked,
-                    })}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        createBackup: e.target.checked,
+                      })
+                    }
                     className="h-5 w-5 text-[var(--accent)] rounded border-[var(--surface-muted)] mt-0.5"
                   />
                   <div className="ml-3">
@@ -244,8 +283,9 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                 {!settings.createBackup && (
                   <div className="p-4 bg-[var(--error-bg)] rounded-lg">
                     <p className="text-sm text-[var(--error)]">
-                      <strong>Warning:</strong> Without a backup, you risk permanent data loss.
-                      Are you sure you want to continue without creating a backup?
+                      <strong>Warning:</strong> Without a backup, you risk
+                      permanent data loss. Are you sure you want to continue
+                      without creating a backup?
                     </p>
                   </div>
                 )}
@@ -280,7 +320,9 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                 onClick={handleNext}
                 className="flex items-center gap-2 px-6 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent)]/90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)] transition-colors"
               >
-                {currentStep === steps.length - 1 ? 'Complete Setup' : 'Continue'}
+                {currentStep === steps.length - 1
+                  ? "Complete Setup"
+                  : "Continue"}
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>

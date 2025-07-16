@@ -1,12 +1,12 @@
 // JournalViewPageEnhanced.tsx
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  Share2, 
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Share2,
   Lock,
   Unlock,
   Calendar,
@@ -19,25 +19,28 @@ import {
   X,
   BookOpen,
   Maximize2,
-  Info
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { Button } from '@/components/common';
-import { deleteEntry } from '@/api/journal';
-import { journalStorage } from '../services/JournalStorageService';
-import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
-import ShareDialog from '@/components/encryption/ShareDialog';
-import ShareManagement from '@/components/encryption/ShareManagement';
-import AIShareDialog from '@/components/encryption/AIShareDialog';
-import { JournalActions } from '../components/JournalActions';
-import { JournalEntryRenderer } from '../components/JournalEntryRenderer';
-import { JournalReaderView } from '../components/JournalReaderView';
-import { useEncryption } from '@/contexts/useEncryption';
-import { getJournalService } from '../services/journal-service';
-import { getEmotionById, getEmotionEmoji } from '../components/EmotionSelector/emotionData';
-import { useJournalEntry, useJournalEntries } from '../hooks';
-import { useAuth } from '@/contexts/useAuth';
-import '../styles/journal-reader.css';
+  Info,
+} from "lucide-react";
+import { format } from "date-fns";
+import { Button } from "@/components/common";
+import { deleteEntry } from "@/api/journal";
+import { journalStorage } from "../services/JournalStorageService";
+import { getTemplateIcon, getTemplateName } from "../templates/template-utils";
+import ShareDialog from "@/components/encryption/ShareDialog";
+import ShareManagement from "@/components/encryption/ShareManagement";
+import AIShareDialog from "@/components/encryption/AIShareDialog";
+import { JournalActions } from "../components/JournalActions";
+import { JournalEntryRenderer } from "../components/JournalEntryRenderer";
+import { JournalReaderView } from "../components/JournalReaderView";
+import { useEncryption } from "@/contexts/useEncryption";
+import { getJournalService } from "../services/journal-service";
+import {
+  getEmotionById,
+  getEmotionEmoji,
+} from "../components/EmotionSelector/emotionData";
+import { useJournalEntry, useJournalEntries } from "../hooks";
+import { useAuth } from "@/contexts/useAuth";
+import "../styles/journal-reader.css";
 
 export const JournalViewPageEnhanced: React.FC = () => {
   const { entryId } = useParams<{ entryId: string }>();
@@ -46,12 +49,14 @@ export const JournalViewPageEnhanced: React.FC = () => {
   const { isEncryptionSetup } = useEncryption();
   const { user } = useAuth();
   const journalService = getJournalService();
-  
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showShareManagement, setShowShareManagement] = useState(false);
   const [showAIShareDialog, setShowAIShareDialog] = useState(false);
-  const [shareSuccessMessage, setShareSuccessMessage] = useState<string | null>(null);
+  const [shareSuccessMessage, setShareSuccessMessage] = useState<string | null>(
+    null,
+  );
   const [showReaderMode, setShowReaderMode] = useState(false);
 
   // Fetch current entry (with decryption)
@@ -60,7 +65,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
   // Fetch all entries for navigation (only in reader mode)
   const { data: entriesData } = useJournalEntries({
     limit: 1000,
-    filter: 'all' // Include shared entries in navigation
+    filter: "all", // Include shared entries in navigation
   });
 
   // Check access permissions
@@ -81,21 +86,29 @@ export const JournalViewPageEnhanced: React.FC = () => {
   // Calculate navigation state
   const navigationInfo = React.useMemo(() => {
     if (!entriesData?.entries || !entryId) {
-      return { hasPrevious: false, hasNext: false, previousId: null, nextId: null };
+      return {
+        hasPrevious: false,
+        hasNext: false,
+        previousId: null,
+        nextId: null,
+      };
     }
-    
+
     // Extract entries from the response (could be JournalEntry or SharedJournalItem)
-    const entries = entriesData.entries.map(item => 
-      'entry' in item ? item.entry : item
+    const entries = entriesData.entries.map((item) =>
+      "entry" in item ? item.entry : item,
     );
-    
-    const currentIndex = entries.findIndex(e => e.entryId === entryId);
-    
+
+    const currentIndex = entries.findIndex((e) => e.entryId === entryId);
+
     return {
       hasPrevious: currentIndex > 0,
       hasNext: currentIndex < entries.length - 1,
       previousId: currentIndex > 0 ? entries[currentIndex - 1].entryId : null,
-      nextId: currentIndex < entries.length - 1 ? entries[currentIndex + 1].entryId : null
+      nextId:
+        currentIndex < entries.length - 1
+          ? entries[currentIndex + 1].entryId
+          : null,
     };
   }, [entriesData, entryId]);
 
@@ -106,14 +119,14 @@ export const JournalViewPageEnhanced: React.FC = () => {
       // Remove from IndexedDB
       await journalStorage.deleteEntry(entryId!);
       // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['journal-entries'] });
-      navigate('/journal');
-    }
+      queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
+      navigate("/journal");
+    },
   });
 
   const handleDelete = () => {
     if (!canEdit) return;
-    
+
     if (showDeleteConfirm) {
       deleteMutation.mutate();
     } else {
@@ -122,28 +135,40 @@ export const JournalViewPageEnhanced: React.FC = () => {
     }
   };
 
-  const handleShare = (tokens: Array<{ id: string; recipientEmail: string; permissions: string[]; expiresAt: string }>) => {
-    console.log('Created shares:', tokens);
-    setShareSuccessMessage(`Successfully shared with ${tokens.length} recipient${tokens.length > 1 ? 's' : ''}`);
+  const handleShare = (
+    tokens: Array<{
+      id: string;
+      recipientEmail: string;
+      permissions: string[];
+      expiresAt: string;
+    }>,
+  ) => {
+    console.log("Created shares:", tokens);
+    setShareSuccessMessage(
+      `Successfully shared with ${tokens.length} recipient${tokens.length > 1 ? "s" : ""}`,
+    );
     setTimeout(() => setShareSuccessMessage(null), 3000);
-    queryClient.invalidateQueries({ queryKey: ['journal-entry', entryId] });
+    queryClient.invalidateQueries({ queryKey: ["journal-entry", entryId] });
   };
 
   const handleAIAnalysis = (analysisId: string) => {
-    console.log('AI analysis started:', analysisId);
-    setShareSuccessMessage('AI analysis has been initiated. Results will be available soon.');
+    console.log("AI analysis started:", analysisId);
+    setShareSuccessMessage(
+      "AI analysis has been initiated. Results will be available soon.",
+    );
     setTimeout(() => setShareSuccessMessage(null), 5000);
   };
 
   const handleShareRevoked = (shareId: string) => {
-    console.log('Revoked share:', shareId);
-    setShareSuccessMessage('Share access has been revoked.');
+    console.log("Revoked share:", shareId);
+    setShareSuccessMessage("Share access has been revoked.");
     setTimeout(() => setShareSuccessMessage(null), 3000);
-    queryClient.invalidateQueries({ queryKey: ['journal-entry', entryId] });
+    queryClient.invalidateQueries({ queryKey: ["journal-entry", entryId] });
   };
 
-  const handleNavigate = (direction: 'prev' | 'next') => {
-    const targetId = direction === 'prev' ? navigationInfo.previousId : navigationInfo.nextId;
+  const handleNavigate = (direction: "prev" | "next") => {
+    const targetId =
+      direction === "prev" ? navigationInfo.previousId : navigationInfo.nextId;
     if (targetId) {
       navigate(`/journal/${targetId}`);
     }
@@ -151,36 +176,36 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
   const getMoodDisplay = (mood?: string) => {
     if (!mood) return null;
-    
+
     const emotion = getEmotionById(mood);
     if (emotion) {
       return {
         emoji: getEmotionEmoji(mood),
-        label: emotion.label
+        label: emotion.label,
       };
     }
-    
+
     // Fallback for old mood values
     const legacyMoodMap: Record<string, { emoji: string; label: string }> = {
-      amazing: { emoji: '🤩', label: 'Amazing' },
-      good: { emoji: '😊', label: 'Good' },
-      okay: { emoji: '😐', label: 'Okay' },
-      stressed: { emoji: '😰', label: 'Stressed' },
-      sad: { emoji: '😢', label: 'Sad' },
-      joyful: { emoji: '😊', label: 'Joyful' },
-      content: { emoji: '😌', label: 'Content' },
-      anxious: { emoji: '😰', label: 'Anxious' },
-      angry: { emoji: '😠', label: 'Angry' },
-      tired: { emoji: '😴', label: 'Tired' },
-      inspired: { emoji: '✨', label: 'Inspired' },
-      relaxed: { emoji: '😌', label: 'Relaxed' },
-      energized: { emoji: '⚡', label: 'Energized' },
-      thoughtful: { emoji: '🤔', label: 'Thoughtful' },
-      emotional: { emoji: '💭', label: 'Emotional' },
-      grateful: { emoji: '🙏', label: 'Grateful' }
+      amazing: { emoji: "🤩", label: "Amazing" },
+      good: { emoji: "😊", label: "Good" },
+      okay: { emoji: "😐", label: "Okay" },
+      stressed: { emoji: "😰", label: "Stressed" },
+      sad: { emoji: "😢", label: "Sad" },
+      joyful: { emoji: "😊", label: "Joyful" },
+      content: { emoji: "😌", label: "Content" },
+      anxious: { emoji: "😰", label: "Anxious" },
+      angry: { emoji: "😠", label: "Angry" },
+      tired: { emoji: "😴", label: "Tired" },
+      inspired: { emoji: "✨", label: "Inspired" },
+      relaxed: { emoji: "😌", label: "Relaxed" },
+      energized: { emoji: "⚡", label: "Energized" },
+      thoughtful: { emoji: "🤔", label: "Thoughtful" },
+      emotional: { emoji: "💭", label: "Emotional" },
+      grateful: { emoji: "🙏", label: "Grateful" },
     };
-    
-    return legacyMoodMap[mood] || { emoji: '💭', label: mood };
+
+    return legacyMoodMap[mood] || { emoji: "💭", label: mood };
   };
 
   if (isLoading) {
@@ -203,7 +228,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
             <p className="text-sm text-muted mb-4">
               The entry may not exist or your share access may have expired.
             </p>
-            <Button onClick={() => navigate('/journal')}>
+            <Button onClick={() => navigate("/journal")}>
               Back to Journals
             </Button>
           </div>
@@ -246,10 +271,9 @@ export const JournalViewPageEnhanced: React.FC = () => {
                   This journal was shared with you
                 </p>
                 <p className="text-xs text-muted mt-1">
-                  {entry.shareAccess.expiresAt 
-                    ? `Access expires: ${format(new Date(entry.shareAccess.expiresAt), 'MMM d, yyyy at h:mm a')}`
-                    : 'No expiration date'
-                  }
+                  {entry.shareAccess.expiresAt
+                    ? `Access expires: ${format(new Date(entry.shareAccess.expiresAt), "MMM d, yyyy at h:mm a")}`
+                    : "No expiration date"}
                 </p>
               </div>
             </div>
@@ -258,14 +282,11 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
         {/* Navigation */}
         <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/journal')}
-          >
+          <Button variant="ghost" onClick={() => navigate("/journal")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Journals
           </Button>
-          
+
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -298,10 +319,10 @@ export const JournalViewPageEnhanced: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleDelete}
-                  className={showDeleteConfirm ? 'text-error' : ''}
+                  className={showDeleteConfirm ? "text-error" : ""}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  {showDeleteConfirm ? 'Confirm Delete?' : 'Delete'}
+                  {showDeleteConfirm ? "Confirm Delete?" : "Delete"}
                 </Button>
               </>
             )}
@@ -312,25 +333,31 @@ export const JournalViewPageEnhanced: React.FC = () => {
         <div className="glass rounded-2xl p-8 mb-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-theme mb-4">{entry.title}</h1>
-              
+              <h1 className="text-3xl font-bold text-theme mb-4">
+                {entry.title}
+              </h1>
+
               {/* Metadata */}
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {format(new Date(entry.createdAt), 'MMMM d, yyyy')}
+                  {format(new Date(entry.createdAt), "MMMM d, yyyy")}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  {format(new Date(entry.createdAt), 'h:mm a')}
+                  {format(new Date(entry.createdAt), "h:mm a")}
                 </span>
                 <span className="flex items-center gap-1">
                   <FileText className="w-4 h-4" />
                   {entry.wordCount} words
                 </span>
                 <span className="flex items-center gap-1">
-                  {entry.isEncrypted ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                  {entry.isEncrypted ? 'Encrypted' : 'Not encrypted'}
+                  {entry.isEncrypted ? (
+                    <Lock className="w-4 h-4" />
+                  ) : (
+                    <Unlock className="w-4 h-4" />
+                  )}
+                  {entry.isEncrypted ? "Encrypted" : "Not encrypted"}
                 </span>
                 {entry.sharedWith && entry.sharedWith.length > 0 && (
                   <span className="flex items-center gap-1">
@@ -339,31 +366,40 @@ export const JournalViewPageEnhanced: React.FC = () => {
                   </span>
                 )}
               </div>
-              
+
               {/* Template & Mood */}
               <div className="flex items-center gap-4 mt-4">
                 <div className="flex items-center gap-2 px-3 py-1 bg-surface-muted rounded-full">
-                  <span className="text-lg">{getTemplateIcon(entry.template)}</span>
-                  <span className="text-sm font-medium">{getTemplateName(entry.template)}</span>
+                  <span className="text-lg">
+                    {getTemplateIcon(entry.template)}
+                  </span>
+                  <span className="text-sm font-medium">
+                    {getTemplateName(entry.template)}
+                  </span>
                 </div>
-                
+
                 {(() => {
                   const moodDisplay = getMoodDisplay(entry.mood);
                   return moodDisplay ? (
                     <div className="flex items-center gap-2 px-3 py-1 bg-surface-muted rounded-full">
                       <span className="text-lg">{moodDisplay.emoji}</span>
-                      <span className="text-sm font-medium">{moodDisplay.label}</span>
+                      <span className="text-sm font-medium">
+                        {moodDisplay.label}
+                      </span>
                     </div>
                   ) : null;
                 })()}
               </div>
             </div>
-            
+
             {/* Stats Card */}
-            {(entry.linkedGoalIds.length > 0 || entry.goalProgress.length > 0) && (
+            {(entry.linkedGoalIds.length > 0 ||
+              entry.goalProgress.length > 0) && (
               <div className="glass rounded-xl p-4 text-center">
                 <Target className="w-8 h-8 text-accent mx-auto mb-2" />
-                <p className="text-2xl font-bold text-theme">{entry.linkedGoalIds.length}</p>
+                <p className="text-2xl font-bold text-theme">
+                  {entry.linkedGoalIds.length}
+                </p>
                 <p className="text-xs text-muted">Linked Goals</p>
               </div>
             )}
@@ -373,7 +409,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
         {/* Tags */}
         {entry.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
-            {entry.tags.map(tag => (
+            {entry.tags.map((tag) => (
               <span key={tag} className="tag">
                 <Hash className="w-3 h-3" />
                 {tag}
@@ -396,21 +432,32 @@ export const JournalViewPageEnhanced: React.FC = () => {
             </h2>
             <div className="space-y-3">
               {entry.goalProgress.map((progress, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 bg-surface rounded-lg">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    progress.completed ? 'bg-success text-white' : 'bg-surface-muted'
-                  }`}>
-                    {progress.completed && '✓'}
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-3 bg-surface rounded-lg"
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                      progress.completed
+                        ? "bg-success text-white"
+                        : "bg-surface-muted"
+                    }`}
+                  >
+                    {progress.completed && "✓"}
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">Goal #{index + 1}</p>
                     {progress.notes && (
-                      <p className="text-sm text-muted mt-1">{progress.notes}</p>
+                      <p className="text-sm text-muted mt-1">
+                        {progress.notes}
+                      </p>
                     )}
                   </div>
                   {progress.progressValue && (
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-accent">{progress.progressValue}</p>
+                      <p className="text-2xl font-bold text-accent">
+                        {progress.progressValue}
+                      </p>
                       <p className="text-xs text-muted">Progress</p>
                     </div>
                   )}
@@ -422,41 +469,37 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
         {/* Actions */}
         <div className="flex items-center justify-center gap-4 mt-8">
-          <Button
-            variant="outline"
-            onClick={() => setShowReaderMode(true)}
-          >
+          <Button variant="outline" onClick={() => setShowReaderMode(true)}>
             <Maximize2 className="w-4 h-4 mr-2" />
             Reader Mode
           </Button>
-          
+
           {canShare && isEncryptionSetup && entry.isEncrypted ? (
-            <Button
-              variant="outline"
-              onClick={() => setShowShareDialog(true)}
-            >
+            <Button variant="outline" onClick={() => setShowShareDialog(true)}>
               <Share2 className="w-4 h-4 mr-2" />
               Share Encrypted
             </Button>
-          ) : !isSharedAccess && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                // Basic browser share API
-                if (navigator.share) {
-                  navigator.share({
-                    title: entry.title,
-                    text: `Check out my journal entry: ${entry.title}`,
-                    url: window.location.href
-                  });
-                }
-              }}
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
+          ) : (
+            !isSharedAccess && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  // Basic browser share API
+                  if (navigator.share) {
+                    navigator.share({
+                      title: entry.title,
+                      text: `Check out my journal entry: ${entry.title}`,
+                      url: window.location.href,
+                    });
+                  }
+                }}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+            )
           )}
-          
+
           {canShare && entry.sharedWith && entry.sharedWith.length > 0 && (
             <Button
               variant="ghost"
@@ -466,11 +509,9 @@ export const JournalViewPageEnhanced: React.FC = () => {
               Manage Shares
             </Button>
           )}
-          
+
           {canEdit && (
-            <Button
-              onClick={() => navigate(`/journal/${entryId}/edit`)}
-            >
+            <Button onClick={() => navigate(`/journal/${entryId}/edit`)}>
               <Edit className="w-4 h-4 mr-2" />
               Edit Entry
             </Button>
@@ -483,13 +524,15 @@ export const JournalViewPageEnhanced: React.FC = () => {
         <ShareDialog
           isOpen={showShareDialog}
           onClose={() => setShowShareDialog(false)}
-          items={[{
-            id: entry.entryId,
-            title: entry.title,
-            type: 'journal',
-            createdAt: entry.createdAt,
-            encrypted: entry.isEncrypted
-          }]}
+          items={[
+            {
+              id: entry.entryId,
+              title: entry.title,
+              type: "journal",
+              createdAt: entry.createdAt,
+              encrypted: entry.isEncrypted,
+            },
+          ]}
           onShare={handleShare}
         />
       )}
@@ -499,13 +542,15 @@ export const JournalViewPageEnhanced: React.FC = () => {
         <AIShareDialog
           isOpen={showAIShareDialog}
           onClose={() => setShowAIShareDialog(false)}
-          items={[{
-            id: entry.entryId,
-            title: entry.title,
-            type: 'journal',
-            createdAt: entry.createdAt,
-            encrypted: entry.isEncrypted
-          }]}
+          items={[
+            {
+              id: entry.entryId,
+              title: entry.title,
+              type: "journal",
+              createdAt: entry.createdAt,
+              encrypted: entry.isEncrypted,
+            },
+          ]}
           onAnalysisComplete={handleAIAnalysis}
         />
       )}
@@ -516,15 +561,15 @@ export const JournalViewPageEnhanced: React.FC = () => {
           <div className="bg-surface rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">Manage Shares</h2>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => setShowShareManagement(false)}
               >
                 <X className="w-5 h-5" />
               </Button>
             </div>
-            <ShareManagement 
+            <ShareManagement
               itemType="journal"
               onShareRevoked={handleShareRevoked}
             />

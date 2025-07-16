@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { Shield, Lock, X, ChevronRight, Eye } from 'lucide-react';
-import { Button } from './common';
-import { useNavigate } from 'react-router-dom';
-import { useEncryption } from '../contexts/useEncryption';
+import React, { useState } from "react";
+import { Shield, Lock, X, ChevronRight, Eye } from "lucide-react";
+import { Button } from "./common";
+import { useNavigate } from "react-router-dom";
+import { useEncryption } from "../contexts/useEncryption";
 
 interface EncryptionOnboardingProps {
   onDismiss?: () => void;
-  variant?: 'banner' | 'modal';
+  variant?: "banner" | "modal";
 }
 
-export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({ 
-  onDismiss, 
-  variant = 'banner' 
+export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
+  onDismiss,
+  variant = "banner",
 }) => {
   const navigate = useNavigate();
   const { isEncryptionEnabled } = useEncryption();
@@ -23,7 +23,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
   }
 
   const handleSetupClick = () => {
-    navigate('/settings', { state: { openEncryption: true } });
+    navigate("/settings", { state: { openEncryption: true } });
   };
 
   const handleDismiss = () => {
@@ -32,7 +32,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
     }
   };
 
-  if (variant === 'banner') {
+  if (variant === "banner") {
     return (
       <div className="bg-blue-50 border-b border-blue-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
@@ -45,7 +45,8 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                 </p>
                 {showDetails && (
                   <p className="text-sm text-blue-700 mt-1">
-                    Your entries will be encrypted before leaving your device. Only you can decrypt them with your master password.
+                    Your entries will be encrypted before leaving your device.
+                    Only you can decrypt them with your master password.
                   </p>
                 )}
               </div>
@@ -55,7 +56,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
                 onClick={() => setShowDetails(!showDetails)}
                 className="text-sm text-blue-600 hover:text-blue-700 px-2 py-1"
               >
-                {showDetails ? 'Less info' : 'Learn more'}
+                {showDetails ? "Less info" : "Learn more"}
               </button>
               <Button
                 size="sm"
@@ -90,7 +91,9 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
             <Shield className="h-8 w-8 text-blue-600 mr-3" />
             <div>
               <h2 className="text-xl font-bold">Protect Your Privacy</h2>
-              <p className="text-sm text-gray-600">Set up encryption for your journal</p>
+              <p className="text-sm text-gray-600">
+                Set up encryption for your journal
+              </p>
             </div>
           </div>
           {onDismiss && (
@@ -106,15 +109,21 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
 
         <div className="space-y-4">
           <div className="bg-blue-50 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-2">Why use encryption?</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">
+              Why use encryption?
+            </h3>
             <ul className="space-y-2 text-sm text-blue-800">
               <li className="flex items-start">
                 <Lock className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
-                <span>Your journal entries are encrypted before leaving your device</span>
+                <span>
+                  Your journal entries are encrypted before leaving your device
+                </span>
               </li>
               <li className="flex items-start">
                 <Eye className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
-                <span>Only you can read your entries with your master password</span>
+                <span>
+                  Only you can read your entries with your master password
+                </span>
               </li>
               <li className="flex items-start">
                 <Shield className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
@@ -125,8 +134,9 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <p className="text-sm text-yellow-800">
-              <strong>Important:</strong> You'll create a master password separate from your login password. 
-              Store it safely - we cannot recover encrypted entries if you forget it.
+              <strong>Important:</strong> You'll create a master password
+              separate from your login password. Store it safely - we cannot
+              recover encrypted entries if you forget it.
             </p>
           </div>
 
@@ -137,10 +147,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
             >
               Maybe later
             </button>
-            <Button
-              onClick={handleSetupClick}
-              className="flex items-center"
-            >
+            <Button onClick={handleSetupClick} className="flex items-center">
               Set up encryption
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>

@@ -10,10 +10,11 @@ export const JournalTemplate = {
   MOOD_TRACKER: "mood_tracker",
   HABIT_TRACKER: "habit_tracker",
   CREATIVE_WRITING: "creative_writing",
-  BLANK: "blank"
+  BLANK: "blank",
 } as const;
 
-export type JournalTemplate = typeof JournalTemplate[keyof typeof JournalTemplate];
+export type JournalTemplate =
+  (typeof JournalTemplate)[keyof typeof JournalTemplate];
 
 export interface GoalProgress {
   goalId: string;
@@ -32,32 +33,32 @@ export interface JournalEntry {
   // Identification
   entryId: string;
   userId: string;
-  
+
   // Core Content
   title: string;
   content: string; // May be encrypted
   template: JournalTemplate;
   wordCount: number;
-  
+
   // Organization
   tags: string[];
   mood?: string;
-  
+
   // Goal Integration
   linkedGoalIds: string[];
   goalProgress: GoalProgress[];
-  
+
   // Timestamps
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
-  
+
   // Privacy & Security
   isEncrypted: boolean;
   isShared: boolean;
   encryptedKey?: string; // Base64 encrypted content key
   encryptionIv?: string; // Base64 initialization vector
   sharedWith: string[]; // User IDs this entry is shared with
-  
+
   // Share access info when accessing via share
   shareAccess?: ShareAccess;
 }
@@ -72,19 +73,19 @@ export interface JournalStats {
   // Overall Statistics
   totalEntries: number;
   totalWords: number;
-  
+
   // Streak Tracking
   currentStreak: number;
   longestStreak: number;
   lastEntryDate?: string; // ISO string
-  
+
   // Goal Integration
   goalsTracked: number;
   goalsCompleted: number;
-  
+
   // Template Usage
   templateUsage: TemplateUsage[];
-  
+
   // Recent Activity
   entriesThisWeek: number;
   entriesThisMonth: number;
@@ -96,14 +97,14 @@ export interface CreateJournalEntryRequest {
   content: string; // May be encrypted
   template?: JournalTemplate;
   wordCount?: number; // Required if content is encrypted
-  
+
   tags?: string[];
   mood?: string;
-  
+
   // Goal Integration
   linkedGoalIds?: string[];
   goalProgress?: GoalProgress[];
-  
+
   // Privacy Settings
   isEncrypted: boolean;
   encryptedKey?: string; // Required if content is encrypted
@@ -116,14 +117,14 @@ export interface UpdateJournalEntryRequest {
   content?: string; // May be encrypted
   template?: JournalTemplate;
   wordCount?: number; // Required if content is encrypted
-  
+
   tags?: string[];
   mood?: string;
-  
+
   // Goal Integration
   linkedGoalIds?: string[];
   goalProgress?: GoalProgress[];
-  
+
   // Privacy Settings
   isEncrypted?: boolean;
   encryptedKey?: string; // Required if content is encrypted
@@ -160,5 +161,5 @@ export interface SharedJournalsResponse {
   page: number;
   limit: number;
   hasMore: boolean;
-  filter: 'owned' | 'shared-with-me' | 'shared-by-me' | 'all';
+  filter: "owned" | "shared-with-me" | "shared-by-me" | "all";
 }

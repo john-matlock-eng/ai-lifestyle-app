@@ -1,4 +1,4 @@
-import apiClient from './client';
+import apiClient from "./client";
 
 export interface FeatureFlags {
   debugPanels: boolean;
@@ -9,6 +9,6 @@ export interface FeatureFlags {
  * Fetch feature flags from the backend
  */
 export const getFeatureFlags = async (): Promise<FeatureFlags> => {
-  const response = await apiClient.get<FeatureFlags>('/config/features');
+  const response = await apiClient.get<FeatureFlags>("/config/features");
   return response.data;
 };

@@ -1,25 +1,29 @@
 // JournalSearchSettings.tsx
-import React, { useState, useEffect } from 'react';
-import { 
-  Settings, 
-  Shield, 
-  Search, 
-  RefreshCw, 
+import React, { useState, useEffect } from "react";
+import {
+  Settings,
+  Shield,
+  Search,
+  RefreshCw,
   Trash2,
   Info,
   Check,
-  AlertCircle
-} from 'lucide-react';
-import { journalStorage } from '../services/JournalStorageService';
-import { Button } from '@/components/common';
-import type { JournalSettings } from '../services/JournalStorageService';
+  AlertCircle,
+} from "lucide-react";
+import { journalStorage } from "../services/JournalStorageService";
+import { Button } from "@/components/common";
+import type { JournalSettings } from "../services/JournalStorageService";
 
 interface JournalSearchSettingsProps {
   onClose?: () => void;
 }
 
-export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ onClose }) => {
-  const [settings, setSettings] = useState<JournalSettings>({ cacheDecryptedContent: false });
+export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({
+  onClose,
+}) => {
+  const [settings, setSettings] = useState<JournalSettings>({
+    cacheDecryptedContent: false,
+  });
   const [cacheStats, setCacheStats] = useState<{
     totalEntries: number;
     encryptedEntries: number;
@@ -41,13 +45,13 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
       setIsLoading(true);
       const [currentSettings, stats] = await Promise.all([
         journalStorage.getSettings(),
-        journalStorage.getCacheStats()
+        journalStorage.getCacheStats(),
       ]);
       setSettings(currentSettings);
       setCacheStats(stats);
     } catch (err) {
-      console.error('Failed to load settings:', err);
-      setError('Failed to load settings');
+      console.error("Failed to load settings:", err);
+      setError("Failed to load settings");
     } finally {
       setIsLoading(false);
     }
@@ -57,22 +61,26 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
     try {
       setError(null);
       const newValue = !settings.cacheDecryptedContent;
-      
+
       await journalStorage.updateSettings({ cacheDecryptedContent: newValue });
       setSettings({ ...settings, cacheDecryptedContent: newValue });
-      
+
       // If enabling, offer to rebuild cache
-      if (newValue && cacheStats?.encryptedEntries && cacheStats.encryptedEntries > 0) {
+      if (
+        newValue &&
+        cacheStats?.encryptedEntries &&
+        cacheStats.encryptedEntries > 0
+      ) {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
       }
-      
+
       // Reload stats
       const stats = await journalStorage.getCacheStats();
       setCacheStats(stats);
     } catch (err) {
-      console.error('Failed to update settings:', err);
-      setError('Failed to update settings');
+      console.error("Failed to update settings:", err);
+      setError("Failed to update settings");
     }
   };
 
@@ -81,39 +89,45 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
       setIsRebuilding(true);
       setError(null);
       await journalStorage.rebuildDecryptedCache();
-      
+
       // Reload stats
       const stats = await journalStorage.getCacheStats();
       setCacheStats(stats);
-      
+
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err) {
-      console.error('Failed to rebuild cache:', err);
-      setError('Failed to rebuild cache. Make sure you have your encryption keys set up.');
+      console.error("Failed to rebuild cache:", err);
+      setError(
+        "Failed to rebuild cache. Make sure you have your encryption keys set up.",
+      );
     } finally {
       setIsRebuilding(false);
     }
   };
 
   const handleClearCache = async () => {
-    if (!confirm('Are you sure you want to clear all cached decrypted content? This will not affect your encrypted entries.')) {
+    if (
+      !confirm(
+        "Are you sure you want to clear all cached decrypted content? This will not affect your encrypted entries.",
+      )
+    ) {
       return;
     }
 
     try {
       setError(null);
       await journalStorage.clearDecryptedCache();
-      
+
       // Reload stats
       const stats = await journalStorage.getCacheStats();
       setCacheStats(stats);
-      
+
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err) {
-      console.error('Failed to clear cache:', err);
-      setError('Failed to clear cache');
+      console.error("Failed to clear cache:", err);
+      setError("Failed to clear cache");
     }
   };
 
@@ -144,7 +158,9 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
       {showSuccess && (
         <div className="mb-4 p-3 bg-success/10 border border-success/20 rounded-lg flex items-center gap-2">
           <Check className="w-5 h-5 text-success" />
-          <p className="text-sm text-success">Operation completed successfully!</p>
+          <p className="text-sm text-success">
+            Operation completed successfully!
+          </p>
         </div>
       )}
 
@@ -158,7 +174,8 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
                 Enable Encrypted Content Search
               </h3>
               <p className="text-sm text-muted mt-1">
-                Cache decrypted journal content locally to enable full-text search on encrypted entries.
+                Cache decrypted journal content locally to enable full-text
+                search on encrypted entries.
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer ml-4">
@@ -176,10 +193,12 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
             <Info className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
             <div className="text-xs text-muted">
               <p className="mb-1">
-                <strong>Privacy Note:</strong> Cached content is stored locally in your browser's IndexedDB and never leaves your device.
+                <strong>Privacy Note:</strong> Cached content is stored locally
+                in your browser's IndexedDB and never leaves your device.
               </p>
               <p>
-                The cache is encrypted at rest by your browser and cleared when you clear browser data.
+                The cache is encrypted at rest by your browser and cleared when
+                you clear browser data.
               </p>
             </div>
           </div>
@@ -199,7 +218,9 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Encrypted Entries:</span>
-                <span className="font-medium">{cacheStats.encryptedEntries}</span>
+                <span className="font-medium">
+                  {cacheStats.encryptedEntries}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted">Cached for Search:</span>
@@ -237,12 +258,15 @@ export const JournalSearchSettings: React.FC<JournalSearchSettingsProps> = ({ on
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Rebuild Cache ({cacheStats.encryptedEntries - cacheStats.cachedEntries} missing)
+                    Rebuild Cache (
+                    {cacheStats.encryptedEntries -
+                      cacheStats.cachedEntries}{" "}
+                    missing)
                   </>
                 )}
               </Button>
             )}
-            
+
             {cacheStats.cachedEntries > 0 && (
               <Button
                 variant="ghost"

@@ -1,41 +1,48 @@
 // JournalPageEnhanced.tsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { 
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import {
   Plus,
   FileText,
   Edit3,
   Sparkles,
   Clock,
   TrendingUp,
-  Share2
-} from 'lucide-react';
-import { JournalTemplate } from '@/types/journal';
-import type { CreateJournalEntryRequest, UpdateJournalEntryRequest, JournalEntry } from '@/types/journal';
-import { Button } from '@/components/common';
-import { createEntry } from '@/api/journal';
-import { journalStorage } from '../services/JournalStorageService';
-import { useJournalSearch } from '../hooks/useJournalSearch';
-import { EnhancedJournalEditor } from '../components/EnhancedEditor';
-import { EnhancedTemplatePicker } from '../components/EnhancedTemplatePicker';
-import { DraftManager } from '../components/DraftManager';
-import { JournalSearchBar } from '../components/JournalSearchBar';
-import JournalCard from '../components/JournalCard';
-import { SearchResultsSummary } from '../components/SearchResultsSummary';
-import ShareDialog from '@/components/encryption/ShareDialog';
-import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
+  Share2,
+} from "lucide-react";
+import { JournalTemplate } from "@/types/journal";
+import type {
+  CreateJournalEntryRequest,
+  UpdateJournalEntryRequest,
+  JournalEntry,
+} from "@/types/journal";
+import { Button } from "@/components/common";
+import { createEntry } from "@/api/journal";
+import { journalStorage } from "../services/JournalStorageService";
+import { useJournalSearch } from "../hooks/useJournalSearch";
+import { EnhancedJournalEditor } from "../components/EnhancedEditor";
+import { EnhancedTemplatePicker } from "../components/EnhancedTemplatePicker";
+import { DraftManager } from "../components/DraftManager";
+import { JournalSearchBar } from "../components/JournalSearchBar";
+import JournalCard from "../components/JournalCard";
+import { SearchResultsSummary } from "../components/SearchResultsSummary";
+import ShareDialog from "@/components/encryption/ShareDialog";
+import { shouldTreatAsEncrypted } from "@/utils/encryption-utils";
 
-type ViewMode = 'list' | 'create' | 'drafts';
+type ViewMode = "list" | "create" | "drafts";
 
 export const JournalPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<JournalTemplate | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_selectedDraftKey, _setSelectedDraftKey] = useState<string | null>(null);
+  const [_selectedDraftKey, _setSelectedDraftKey] = useState<string | null>(
+    null,
+  );
 
   // Search functionality
   const {
@@ -50,12 +57,12 @@ export const JournalPageEnhanced: React.FC = () => {
     availableTemplates,
     page,
     setPage,
-    hasMore
+    hasMore,
   } = useJournalSearch({ limit: 12 });
 
   // Stats query
   const { data: stats } = useQuery({
-    queryKey: ['journal', 'stats'],
+    queryKey: ["journal", "stats"],
     queryFn: async () => {
       // This would fetch from your API
       return {
@@ -67,9 +74,9 @@ export const JournalPageEnhanced: React.FC = () => {
         goalsCompleted: 2,
         entriesThisWeek: 7,
         entriesThisMonth: 23,
-        averageWordsPerEntry: 350
+        averageWordsPerEntry: 350,
       };
-    }
+    },
   });
 
   // Create entry mutation
@@ -78,27 +85,27 @@ export const JournalPageEnhanced: React.FC = () => {
     onSuccess: async (data) => {
       // Save to IndexedDB for search
       await journalStorage.saveEntry(data);
-      
+
       // Reset view and show success
-      setViewMode('list');
+      setViewMode("list");
       setSelectedTemplate(null);
-      
+
       // Refresh the search results
       window.location.reload(); // In production, you'd invalidate the query
-    }
+    },
   });
 
   // Handle template selection
   const handleTemplateSelect = (templateId: JournalTemplate) => {
     setSelectedTemplate(templateId);
-    setViewMode('create');
+    setViewMode("create");
   };
 
   // Handle draft selection
   const handleDraftSelect = (draftKey: string) => {
     _setSelectedDraftKey(draftKey);
-    setViewMode('create');
-    
+    setViewMode("create");
+
     // Load draft data
     const draftData = localStorage.getItem(draftKey);
     if (draftData) {
@@ -110,33 +117,39 @@ export const JournalPageEnhanced: React.FC = () => {
   // Clean up old drafts on mount
   useEffect(() => {
     const cleanupDrafts = () => {
-      const draftsList = JSON.parse(localStorage.getItem('journal-drafts-list') || '[]');
+      const draftsList = JSON.parse(
+        localStorage.getItem("journal-drafts-list") || "[]",
+      );
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const filtered = draftsList.filter((d: {key: string; lastSaved: string}) => {
-        const lastSaved = new Date(d.lastSaved);
-        if (lastSaved < thirtyDaysAgo) {
-          localStorage.removeItem(d.key);
-          return false;
-        }
-        return true;
-      });
-      
-      localStorage.setItem('journal-drafts-list', JSON.stringify(filtered));
+
+      const filtered = draftsList.filter(
+        (d: { key: string; lastSaved: string }) => {
+          const lastSaved = new Date(d.lastSaved);
+          if (lastSaved < thirtyDaysAgo) {
+            localStorage.removeItem(d.key);
+            return false;
+          }
+          return true;
+        },
+      );
+
+      localStorage.setItem("journal-drafts-list", JSON.stringify(filtered));
     };
-    
+
     cleanupDrafts();
   }, []);
 
   // Handle save for both create and update
-  const handleSave = async (request: CreateJournalEntryRequest | UpdateJournalEntryRequest) => {
+  const handleSave = async (
+    request: CreateJournalEntryRequest | UpdateJournalEntryRequest,
+  ) => {
     // For now, we only support create
     await createMutation.mutateAsync(request as CreateJournalEntryRequest);
   };
 
   // Render based on view mode
-  if (viewMode === 'create' && selectedTemplate) {
+  if (viewMode === "create" && selectedTemplate) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto py-8 px-4">
@@ -144,7 +157,7 @@ export const JournalPageEnhanced: React.FC = () => {
             templateId={selectedTemplate}
             onSave={handleSave}
             onCancel={() => {
-              setViewMode('list');
+              setViewMode("list");
               setSelectedTemplate(null);
               _setSelectedDraftKey(null);
             }}
@@ -156,37 +169,35 @@ export const JournalPageEnhanced: React.FC = () => {
     );
   }
 
-  if (viewMode === 'create' && !selectedTemplate) {
+  if (viewMode === "create" && !selectedTemplate) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto py-8 px-4">
           <EnhancedTemplatePicker
             onSelect={handleTemplateSelect}
-            onCancel={() => setViewMode('list')}
+            onCancel={() => setViewMode("list")}
           />
         </div>
       </div>
     );
   }
 
-  if (viewMode === 'drafts') {
+  if (viewMode === "drafts") {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto py-8 px-4">
           <div className="mb-6">
             <Button
               variant="ghost"
-              onClick={() => setViewMode('list')}
+              onClick={() => setViewMode("list")}
               className="mb-4"
             >
               ← Back to Journals
             </Button>
             <h1 className="text-3xl font-bold text-theme">Your Drafts</h1>
           </div>
-          
-          <DraftManager
-            onSelectDraft={handleDraftSelect}
-          />
+
+          <DraftManager onSelectDraft={handleDraftSelect} />
         </div>
       </div>
     );
@@ -200,13 +211,15 @@ export const JournalPageEnhanced: React.FC = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-theme mb-2">My Journal</h1>
-            <p className="text-muted">Document your journey, track your progress</p>
+            <p className="text-muted">
+              Document your journey, track your progress
+            </p>
           </div>
-          
+
           <div className="flex flex-wrap gap-3">
             <Button
               variant="ghost"
-              onClick={() => navigate('/journal/shared')}
+              onClick={() => navigate("/journal/shared")}
               className="hover-lift"
             >
               <Share2 className="w-4 h-4 mr-2" />
@@ -214,14 +227,14 @@ export const JournalPageEnhanced: React.FC = () => {
             </Button>
             <Button
               variant="ghost"
-              onClick={() => setViewMode('drafts')}
+              onClick={() => setViewMode("drafts")}
               className="hover-lift"
             >
               <Edit3 className="w-4 h-4 mr-2" />
               Drafts
             </Button>
             <Button
-              onClick={() => setViewMode('create')}
+              onClick={() => setViewMode("create")}
               className="bg-gradient hover-lift"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -239,43 +252,51 @@ export const JournalPageEnhanced: React.FC = () => {
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-theme">{stats.totalEntries}</p>
+                  <p className="text-2xl font-bold text-theme">
+                    {stats.totalEntries}
+                  </p>
                   <p className="text-xs text-muted">Total Entries</p>
                 </div>
               </div>
             </div>
-            
+
             <div className="glass rounded-xl p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-success/10 text-success">
                   <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-theme">{stats.currentStreak}</p>
+                  <p className="text-2xl font-bold text-theme">
+                    {stats.currentStreak}
+                  </p>
                   <p className="text-xs text-muted">Day Streak</p>
                 </div>
               </div>
             </div>
-            
+
             <div className="glass rounded-xl p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-warning/10 text-warning">
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-theme">{stats.entriesThisWeek}</p>
+                  <p className="text-2xl font-bold text-theme">
+                    {stats.entriesThisWeek}
+                  </p>
                   <p className="text-xs text-muted">This Week</p>
                 </div>
               </div>
             </div>
-            
+
             <div className="glass rounded-xl p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-theme">{stats.averageWordsPerEntry}</p>
+                  <p className="text-2xl font-bold text-theme">
+                    {stats.averageWordsPerEntry}
+                  </p>
                   <p className="text-xs text-muted">Avg Words</p>
                 </div>
               </div>
@@ -295,7 +316,12 @@ export const JournalPageEnhanced: React.FC = () => {
         </div>
 
         {/* Search Results Summary */}
-        {(filters.query || filters.tags?.length || filters.mood || filters.template || filters.startDate || filters.endDate) && (
+        {(filters.query ||
+          filters.tags?.length ||
+          filters.mood ||
+          filters.template ||
+          filters.startDate ||
+          filters.endDate) && (
           <SearchResultsSummary
             filters={filters}
             total={total}
@@ -321,17 +347,17 @@ export const JournalPageEnhanced: React.FC = () => {
             <FileText className="w-16 h-16 text-muted mx-auto mb-4" />
             <p className="text-muted mb-4">
               {filters.query || Object.keys(filters).length > 0
-                ? 'No entries match your search'
-                : 'No journal entries yet'}
+                ? "No entries match your search"
+                : "No journal entries yet"}
             </p>
-            <Button onClick={() => setViewMode('create')}>
+            <Button onClick={() => setViewMode("create")}>
               Create Your First Entry
             </Button>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {entries.map(entry => (
+              {entries.map((entry) => (
                 <JournalCard
                   key={entry.entryId}
                   entry={entry}
@@ -358,7 +384,7 @@ export const JournalPageEnhanced: React.FC = () => {
             )}
           </>
         )}
-        
+
         {/* Share Dialog */}
         {showShareDialog && selectedEntry && (
           <ShareDialog
@@ -367,15 +393,17 @@ export const JournalPageEnhanced: React.FC = () => {
               setShowShareDialog(false);
               setSelectedEntry(null);
             }}
-            items={[{
-              id: selectedEntry.entryId,
-              title: selectedEntry.title,
-              type: 'journal',
-              createdAt: selectedEntry.createdAt,
-              encrypted: shouldTreatAsEncrypted(selectedEntry),
-            }]}
+            items={[
+              {
+                id: selectedEntry.entryId,
+                title: selectedEntry.title,
+                type: "journal",
+                createdAt: selectedEntry.createdAt,
+                encrypted: shouldTreatAsEncrypted(selectedEntry),
+              },
+            ]}
             onShare={(tokens) => {
-              console.log('Shares created:', tokens);
+              console.log("Shares created:", tokens);
               // Optionally refresh the entries or show a success message
               setShowShareDialog(false);
               setSelectedEntry(null);

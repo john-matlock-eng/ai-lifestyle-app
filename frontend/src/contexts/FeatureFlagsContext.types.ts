@@ -1,4 +1,4 @@
-import type { FeatureFlags } from '../api/config';
+import type { FeatureFlags } from "../api/config";
 
 export type { FeatureFlags };
 

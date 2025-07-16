@@ -1,10 +1,11 @@
 // TemplatePickerTest.tsx - Test component to verify glass overlay fixes
-import React, { useState } from 'react';
-import { EnhancedTemplatePicker } from './EnhancedTemplatePicker';
-import { JournalTemplate } from '@/types/journal';
+import React, { useState } from "react";
+import { EnhancedTemplatePicker } from "./EnhancedTemplatePicker";
+import { JournalTemplate } from "@/types/journal";
 
 const TemplatePickerTest: React.FC = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<JournalTemplate | null>(null);
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -33,7 +34,7 @@ const TemplatePickerTest: React.FC = () => {
           <EnhancedTemplatePicker
             onSelect={(template) => {
               setSelectedTemplate(template);
-              console.log('Selected template:', template);
+              console.log("Selected template:", template);
             }}
             showBlank={true}
           />

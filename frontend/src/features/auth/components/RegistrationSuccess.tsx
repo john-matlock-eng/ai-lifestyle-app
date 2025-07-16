@@ -1,6 +1,6 @@
-import React from 'react';
-import { useLocation, Navigate, Link } from 'react-router-dom';
-import Button from '../../../components/common/Button';
+import React from "react";
+import { useLocation, Navigate, Link } from "react-router-dom";
+import Button from "../../../components/common/Button";
 
 const RegistrationSuccess: React.FC = () => {
   const location = useLocation();
@@ -41,7 +41,7 @@ const RegistrationSuccess: React.FC = () => {
               <p className="text-sm text-muted">
                 {state.message || `We've sent a verification email to:`}
               </p>
-              
+
               <p className="text-sm font-medium text-[var(--text)]">
                 {state.email}
               </p>
@@ -78,22 +78,19 @@ const RegistrationSuccess: React.FC = () => {
 
               <div className="mt-6 space-y-3">
                 <Link to="/login" className="block w-full">
-                  <Button
-                    fullWidth
-                    variant="primary"
-                  >
+                  <Button fullWidth variant="primary">
                     Go to Sign In
                   </Button>
                 </Link>
 
                 <p className="text-xs text-gray-500 text-center">
-                  Didn't receive the email? Check your spam folder or{' '}
+                  Didn't receive the email? Check your spam folder or{" "}
                   <button
                     type="button"
                     className="font-medium text-primary-600 hover:text-primary-500"
                     onClick={() => {
                       // TODO: Implement resend verification email
-                      console.log('Resend verification email');
+                      console.log("Resend verification email");
                     }}
                   >
                     resend verification email

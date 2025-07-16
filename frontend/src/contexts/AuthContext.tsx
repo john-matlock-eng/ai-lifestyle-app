@@ -1,25 +1,22 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import type { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { authService } from '../features/auth/services/authService';
-import type { UserProfile } from '../features/auth/services/authService';
-import { 
-  getAccessToken, 
-  getRefreshToken, 
-  clearTokens, 
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { authService } from "../features/auth/services/authService";
+import type { UserProfile } from "../features/auth/services/authService";
+import {
+  getAccessToken,
+  getRefreshToken,
+  clearTokens,
   refreshAccessToken,
-  getTokenExpiry
-} from '../features/auth/utils/tokenManager';
-import { AuthContext } from './AuthContextType';
-import type { AuthContextValue } from './AuthContextType';
-
+  getTokenExpiry,
+} from "../features/auth/utils/tokenManager";
+import { AuthContext } from "./AuthContextType";
+import type { AuthContextValue } from "./AuthContextType";
 
 interface AuthProviderProps {
   children: ReactNode;
 }
-
-
 
 // Session timeout settings
 const SESSION_WARNING_TIME = 5 * 60 * 1000; // 5 minutes before expiry
@@ -32,7 +29,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSessionWarningActive, setIsSessionWarningActive] = useState(false);
   const [sessionExpiry, setSessionExpiry] = useState<Date | null>(null);
-  
+
   // Refs for timeout management
   const sessionCheckIntervalRef = useRef<number | undefined>(undefined);
   const idleTimeoutRef = useRef<number | undefined>(undefined);
@@ -40,8 +37,12 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const lastActivityRef = useRef<number>(Date.now());
 
   // Check if user has a valid token on mount
-  const { data: user, isLoading: isLoadingUser, error } = useQuery({
-    queryKey: ['currentUser'],
+  const {
+    data: user,
+    isLoading: isLoadingUser,
+    error,
+  } = useQuery({
+    queryKey: ["currentUser"],
     queryFn: authService.getCurrentUser,
     enabled: !!getAccessToken() && isInitialized,
     retry: (failureCount, error: unknown) => {
@@ -68,7 +69,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initializeAuth = async () => {
       const accessToken = getAccessToken();
       const refreshToken = getRefreshToken();
-      
+
       if (accessToken && refreshToken) {
         // Check token validity
         const expiry = getTokenExpiry();
@@ -110,11 +111,13 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       lastActivityRef.current = Date.now();
     };
 
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-    events.forEach(event => window.addEventListener(event, updateActivity));
+    const events = ["mousedown", "keydown", "scroll", "touchstart"];
+    events.forEach((event) => window.addEventListener(event, updateActivity));
 
     return () => {
-      events.forEach(event => window.removeEventListener(event, updateActivity));
+      events.forEach((event) =>
+        window.removeEventListener(event, updateActivity),
+      );
     };
   }, []);
 
@@ -132,9 +135,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     idleTimeoutRef.current = setInterval(() => {
       const now = Date.now();
       const idleTime = now - lastActivityRef.current;
-      
+
       if (idleTime > IDLE_TIMEOUT) {
-        logout('timeout');
+        logout("timeout");
       }
     }, 60000) as unknown as number; // Check every minute
 
@@ -181,10 +184,10 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const now = new Date();
     const expiryDate = new Date(expiry);
     const timeUntilExpiry = expiryDate.getTime() - now.getTime();
-    
+
     // Refresh token 5 minutes before expiry
     const refreshTime = Math.max(timeUntilExpiry - SESSION_WARNING_TIME, 0);
-    
+
     if (refreshTimeoutRef.current) {
       clearTimeout(refreshTimeoutRef.current);
     }
@@ -204,16 +207,16 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setSessionExpiry(new Date(newExpiry));
         }
         // Refetch user data
-        await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
         // Schedule next refresh
         scheduleTokenRefresh();
         setIsSessionWarningActive(false);
       } else {
-        logout('timeout');
+        logout("timeout");
       }
     } catch (error) {
-      console.error('Token refresh failed:', error);
-      logout('timeout');
+      console.error("Token refresh failed:", error);
+      logout("timeout");
     }
   }, [queryClient]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -236,25 +239,28 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return Promise.resolve();
   };
 
-  const logout = useCallback((reason: 'manual' | 'timeout' | 'security' = 'manual') => {
-    // Stop all session management
-    stopSessionManagement();
-    
-    // Clear auth data
-    authService.logout();
-    clearTokens();
-    queryClient.clear();
-    setSessionExpiry(null);
-    
-    // Navigate based on logout reason
-    if (reason === 'timeout') {
-      navigate('/login?message=session_expired');
-    } else if (reason === 'security') {
-      navigate('/login?message=security_logout');
-    } else {
-      navigate('/login');
-    }
-  }, [navigate, queryClient, stopSessionManagement]);
+  const logout = useCallback(
+    (reason: "manual" | "timeout" | "security" = "manual") => {
+      // Stop all session management
+      stopSessionManagement();
+
+      // Clear auth data
+      authService.logout();
+      clearTokens();
+      queryClient.clear();
+      setSessionExpiry(null);
+
+      // Navigate based on logout reason
+      if (reason === "timeout") {
+        navigate("/login?message=session_expired");
+      } else if (reason === "security") {
+        navigate("/login?message=security_logout");
+      } else {
+        navigate("/login");
+      }
+    },
+    [navigate, queryClient, stopSessionManagement],
+  );
 
   const refreshToken = useCallback(async () => {
     await handleTokenRefresh();
@@ -271,10 +277,13 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const updateUser = (updates: Partial<UserProfile>) => {
-    queryClient.setQueryData(['currentUser'], (oldData: UserProfile | undefined) => {
-      if (!oldData) return oldData;
-      return { ...oldData, ...updates };
-    });
+    queryClient.setQueryData(
+      ["currentUser"],
+      (oldData: UserProfile | undefined) => {
+        if (!oldData) return oldData;
+        return { ...oldData, ...updates };
+      },
+    );
   };
 
   // Clean up on unmount

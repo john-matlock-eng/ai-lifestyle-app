@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Brain, Shield, Clock, X, AlertCircle } from 'lucide-react';
-import { getEncryptionService } from '../../services/encryption';
-import { analysisTypes } from './analysisTypes';
+import React, { useState } from "react";
+import { Brain, Shield, Clock, X, AlertCircle } from "lucide-react";
+import { getEncryptionService } from "../../services/encryption";
+import { analysisTypes } from "./analysisTypes";
 
 interface ShareableItem {
   id: string;
@@ -18,7 +18,6 @@ interface AIShareDialogProps {
   onAnalysisComplete: (analysisId: string) => void;
 }
 
-
 const AIShareDialog: React.FC<AIShareDialogProps> = ({
   isOpen,
   onClose,
@@ -26,8 +25,8 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
   onAnalysisComplete,
 }) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [selectedAnalysis, setSelectedAnalysis] = useState('');
-  const [context, setContext] = useState('');
+  const [selectedAnalysis, setSelectedAnalysis] = useState("");
+  const [context, setContext] = useState("");
   const [isSharing, setIsSharing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,12 +34,12 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
 
   const handleShare = async () => {
     if (selectedItems.length === 0) {
-      setError('Please select at least one item to analyze');
+      setError("Please select at least one item to analyze");
       return;
     }
 
     if (!selectedAnalysis) {
-      setError('Please select an analysis type');
+      setError("Please select an analysis type");
       return;
     }
 
@@ -49,13 +48,13 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
 
     try {
       const encryptionService = getEncryptionService();
-      
+
       // Create AI shares
       const result = await encryptionService.shareWithAI(
         items[0].type, // Assuming all items are of the same type
         selectedItems,
         selectedAnalysis,
-        context || undefined
+        context || undefined,
       );
 
       // Close dialog and notify parent
@@ -63,8 +62,8 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
       resetForm();
       onClose();
     } catch (err) {
-      setError('Failed to create AI analysis. Please try again.');
-      console.error('AI share error:', err);
+      setError("Failed to create AI analysis. Please try again.");
+      console.error("AI share error:", err);
     } finally {
       setIsSharing(false);
     }
@@ -72,16 +71,16 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
 
   const resetForm = () => {
     setSelectedItems([]);
-    setSelectedAnalysis('');
-    setContext('');
+    setSelectedAnalysis("");
+    setContext("");
     setError(null);
   };
 
   const toggleItemSelection = (itemId: string) => {
-    setSelectedItems(prev =>
+    setSelectedItems((prev) =>
       prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
+        ? prev.filter((id) => id !== itemId)
+        : [...prev, itemId],
     );
   };
 
@@ -92,7 +91,9 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <Brain className="w-6 h-6 text-[var(--accent)]" />
-            <h2 className="text-xl font-semibold text-[var(--text)]">AI Analysis</h2>
+            <h2 className="text-xl font-semibold text-[var(--text)]">
+              AI Analysis
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -117,7 +118,7 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
               Select items to analyze
             </h3>
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {items.map(item => (
+              {items.map((item) => (
                 <label
                   key={item.id}
                   className="flex items-center gap-3 p-3 bg-[var(--surface-muted)] rounded-lg hover:bg-[var(--surface)] cursor-pointer transition-colors"
@@ -150,13 +151,13 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
               Choose analysis type
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {analysisTypes.map(type => (
+              {analysisTypes.map((type) => (
                 <label
                   key={type.id}
                   className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     selectedAnalysis === type.id
-                      ? 'border-[var(--accent)] bg-[var(--accent-bg)]'
-                      : 'border-[var(--surface-muted)] hover:border-[var(--border)]'
+                      ? "border-[var(--accent)] bg-[var(--accent-bg)]"
+                      : "border-[var(--surface-muted)] hover:border-[var(--border)]"
                   }`}
                 >
                   <input
@@ -169,8 +170,12 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
                   />
                   <span className="text-2xl">{type.icon}</span>
                   <div className="flex-1">
-                    <p className="font-medium text-[var(--text)]">{type.name}</p>
-                    <p className="text-sm text-[var(--text-muted)] mt-1">{type.description}</p>
+                    <p className="font-medium text-[var(--text)]">
+                      {type.name}
+                    </p>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">
+                      {type.description}
+                    </p>
                   </div>
                 </label>
               ))}
@@ -199,7 +204,9 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
                 <Clock className="w-5 h-5 text-[var(--info)]" />
               </div>
               <div className="text-sm text-[var(--info)]">
-                <p className="font-medium mb-1">Privacy-preserving AI analysis</p>
+                <p className="font-medium mb-1">
+                  Privacy-preserving AI analysis
+                </p>
                 <ul className="space-y-1 list-disc list-inside">
                   <li>Your data remains encrypted during analysis</li>
                   <li>AI has temporary access only (30 minutes)</li>
@@ -222,13 +229,15 @@ const AIShareDialog: React.FC<AIShareDialogProps> = ({
           </button>
           <button
             onClick={handleShare}
-            disabled={isSharing || selectedItems.length === 0 || !selectedAnalysis}
+            disabled={
+              isSharing || selectedItems.length === 0 || !selectedAnalysis
+            }
             className="px-4 py-2 bg-[var(--accent)] text-white rounded-md hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isSharing && (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             )}
-            {isSharing ? 'Analyzing...' : 'Start Analysis'}
+            {isSharing ? "Analyzing..." : "Start Analysis"}
           </button>
         </div>
       </div>

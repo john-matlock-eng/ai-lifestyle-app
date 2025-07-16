@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import Button from '../../../components/common/Button';
+import React, { useState } from "react";
+import Button from "../../../components/common/Button";
 
 interface BackupCodesDisplayProps {
   codes: string[];
@@ -20,16 +20,16 @@ Generated on: ${new Date().toLocaleString()}
 IMPORTANT: Keep these codes in a safe place. Each code can only be used once.
 
 Your backup codes:
-${codes.map((code, index) => `${index + 1}. ${code}`).join('\n')}
+${codes.map((code, index) => `${index + 1}. ${code}`).join("\n")}
 
 Use these codes if you lose access to your authenticator app.
 `;
 
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], { type: "text/plain" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'ai-lifestyle-2fa-backup-codes.txt';
+    a.download = "ai-lifestyle-2fa-backup-codes.txt";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -38,14 +38,14 @@ Use these codes if you lose access to your authenticator app.
   };
 
   const handleCopy = async () => {
-    const content = codes.join('\n');
+    const content = codes.join("\n");
     await navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
         <!DOCTYPE html>
@@ -68,7 +68,7 @@ Use these codes if you lose access to your authenticator app.
               <strong>⚠️ Important:</strong> Keep these codes in a safe place. Each code can only be used once.
             </div>
             <div class="codes">
-              ${codes.map((code, index) => `<div class="code">${index + 1}. ${code}</div>`).join('')}
+              ${codes.map((code, index) => `<div class="code">${index + 1}. ${code}</div>`).join("")}
             </div>
             <p>Use these codes if you lose access to your authenticator app.</p>
           </body>
@@ -85,7 +85,11 @@ Use these codes if you lose access to your authenticator app.
       <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
         <div className="flex">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+            <svg
+              className="h-5 w-5 text-amber-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
               <path
                 fillRule="evenodd"
                 d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -98,8 +102,8 @@ Use these codes if you lose access to your authenticator app.
               Save Your Backup Codes
             </h3>
             <p className="mt-2 text-sm text-amber-700">
-              Store these codes somewhere safe. You'll need them if you lose access to your authenticator app.
-              Each code can only be used once.
+              Store these codes somewhere safe. You'll need them if you lose
+              access to your authenticator app. Each code can only be used once.
             </p>
           </div>
         </div>
@@ -127,7 +131,12 @@ Use these codes if you lose access to your authenticator app.
           onClick={handleDownload}
           className="flex items-center"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -145,7 +154,12 @@ Use these codes if you lose access to your authenticator app.
           onClick={handleCopy}
           className="flex items-center"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -153,7 +167,7 @@ Use these codes if you lose access to your authenticator app.
               d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
             />
           </svg>
-          {copied ? 'Copied!' : 'Copy All'}
+          {copied ? "Copied!" : "Copy All"}
         </Button>
 
         <Button
@@ -162,7 +176,12 @@ Use these codes if you lose access to your authenticator app.
           onClick={handlePrint}
           className="flex items-center"
         >
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -190,11 +209,7 @@ Use these codes if you lose access to your authenticator app.
           </label>
         </div>
 
-        <Button
-          fullWidth
-          className="mt-4"
-          onClick={onComplete}
-        >
+        <Button fullWidth className="mt-4" onClick={onComplete}>
           Complete Setup
         </Button>
       </div>

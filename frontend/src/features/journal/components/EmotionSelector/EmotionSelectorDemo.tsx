@@ -1,12 +1,12 @@
 // EmotionSelectorDemo.tsx
-import React, { useState } from 'react';
-import EmotionSelector from './EmotionSelector';
+import React, { useState } from "react";
+import EmotionSelector from "./EmotionSelector";
 
 const EmotionSelectorDemo: React.FC = () => {
   const [demo1Emotions, setDemo1Emotions] = useState<string[]>([]);
   const [demo2Emotions, setDemo2Emotions] = useState<string[]>([]);
   const [demo3Emotions, setDemo3Emotions] = useState<string[]>([]);
-  
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -15,23 +15,28 @@ const EmotionSelectorDemo: React.FC = () => {
             Emotion Selector Component
           </h1>
           <p className="text-muted">
-            A reusable component for selecting emotions with both wheel and drill-down interfaces
+            A reusable component for selecting emotions with both wheel and
+            drill-down interfaces
           </p>
         </div>
-        
+
         {/* Demo 1: Both modes available */}
         <div className="bg-surface rounded-lg shadow-lg p-6 border border-surface-muted">
-          <h2 className="text-xl font-semibold mb-4">Full Feature Demo (Both Modes)</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Full Feature Demo (Both Modes)
+          </h2>
           <EmotionSelector
             value={demo1Emotions}
             onChange={setDemo1Emotions}
             mode="both"
           />
         </div>
-        
+
         {/* Demo 2: List mode only with max selections */}
         <div className="bg-surface rounded-lg shadow-lg p-6 border border-surface-muted">
-          <h2 className="text-xl font-semibold mb-4">List Mode Only (Max 3 Emotions)</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            List Mode Only (Max 3 Emotions)
+          </h2>
           <EmotionSelector
             value={demo2Emotions}
             onChange={setDemo2Emotions}
@@ -39,7 +44,7 @@ const EmotionSelectorDemo: React.FC = () => {
             maxSelections={3}
           />
         </div>
-        
+
         {/* Demo 3: Wheel mode only */}
         <div className="bg-surface rounded-lg shadow-lg p-6 border border-surface-muted">
           <h2 className="text-xl font-semibold mb-4">Wheel Mode Only</h2>
@@ -49,7 +54,7 @@ const EmotionSelectorDemo: React.FC = () => {
             mode="wheel"
           />
         </div>
-        
+
         {/* Usage Example */}
         <div className="bg-surface rounded-lg shadow-lg p-6 border border-surface-muted">
           <h2 className="text-xl font-semibold mb-4">Usage Example</h2>
@@ -70,12 +75,15 @@ const MyComponent = () => {
 };`}</code>
           </pre>
         </div>
-        
+
         {/* Integration with Journal Templates */}
         <div className="bg-surface rounded-lg shadow-lg p-6 border border-surface-muted">
-          <h2 className="text-xl font-semibold mb-4">Integration with Journal Templates</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Integration with Journal Templates
+          </h2>
           <p className="text-sm text-muted mb-4">
-            The emotion selector has been integrated into the journal templates. Here's how it works:
+            The emotion selector has been integrated into the journal templates.
+            Here's how it works:
           </p>
           <pre className="text-sm bg-surface-hover p-4 rounded-lg overflow-x-auto">
             <code>{`// In enhanced-templates.ts

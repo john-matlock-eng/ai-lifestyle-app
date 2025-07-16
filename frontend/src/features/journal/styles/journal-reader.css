@@ -121,12 +121,16 @@
 
 /* Font size transitions */
 .font-transition {
-  transition: font-size 0.2s ease-out, line-height 0.2s ease-out;
+  transition:
+    font-size 0.2s ease-out,
+    line-height 0.2s ease-out;
 }
 
 /* Control panel animations */
 .controls-slide {
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transition:
+    transform 0.3s ease-out,
+    opacity 0.3s ease-out;
 }
 
 /* Settings panel slide */
@@ -147,7 +151,10 @@
 
 /* Button hover states */
 .reader-button {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 /* Focus visible for keyboard navigation */
@@ -163,14 +170,18 @@
 }
 
 .gratitude-item::before {
-  content: '🙏';
+  content: "🙏";
   position: absolute;
   left: 0;
   top: 0.125rem;
 }
 
 .goal-progress-bar {
-  background: linear-gradient(90deg, var(--accent) var(--progress), transparent var(--progress));
+  background: linear-gradient(
+    90deg,
+    var(--accent) var(--progress),
+    transparent var(--progress)
+  );
   transition: background 0.5s ease-out;
 }
 
@@ -195,7 +206,7 @@
 
 /* Creative writing styles */
 .creative-content {
-  font-family: 'Georgia', 'Cambria', 'Times New Roman', Times, serif;
+  font-family: "Georgia", "Cambria", "Times New Roman", Times, serif;
   white-space: pre-wrap;
   line-height: 1.8;
 }
@@ -205,15 +216,15 @@
   .journal-reader .prose {
     font-size: 1rem;
   }
-  
+
   .journal-reader h1 {
     font-size: 2rem;
   }
-  
+
   .journal-reader h2 {
     font-size: 1.5rem;
   }
-  
+
   .journal-reader h3 {
     font-size: 1.25rem;
   }
@@ -226,12 +237,12 @@
   .reading-progress-bar {
     display: none !important;
   }
-  
+
   .journal-content {
     padding: 0;
     max-width: 100%;
   }
-  
+
   .journal-reader {
     background: white;
     color: black;

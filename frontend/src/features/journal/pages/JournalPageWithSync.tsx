@@ -1,59 +1,59 @@
 // JournalPageWithSync.tsx - Example integration
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/common';
-import { 
-  JournalSearchBar, 
-  JournalCard, 
-  SearchResultsSummary
-} from '../components';
-import { useJournalSearch, useJournalSync } from '../hooks';
-import type { SearchFilters } from '../services/JournalStorageService';
-import type { JournalEntry } from '../../../types/journal';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Plus, RefreshCw } from "lucide-react";
+import { Button } from "@/components/common";
+import {
+  JournalSearchBar,
+  JournalCard,
+  SearchResultsSummary,
+} from "../components";
+import { useJournalSearch, useJournalSync } from "../hooks";
+import type { SearchFilters } from "../services/JournalStorageService";
+import type { JournalEntry } from "../../../types/journal";
 
 export const JournalPageWithSync: React.FC = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = React.useState<SearchFilters>({});
-  
+
   // Initialize journal sync - this will sync entries and maintain the cache
-  const { 
-    isLoading: isSyncing, 
-    forceSync, 
-    lastSync
-  } = useJournalSync({ 
+  const {
+    isLoading: isSyncing,
+    forceSync,
+    lastSync,
+  } = useJournalSync({
     enabled: true,
-    syncInterval: 5 * 60 * 1000 // 5 minutes
+    syncInterval: 5 * 60 * 1000, // 5 minutes
   });
-  
+
   // Use local search with the synced data
-  const { 
-    entries, 
+  const {
+    entries,
     total,
     availableTags,
     availableMoods,
     availableTemplates,
-    setFilters: updateFilters
+    setFilters: updateFilters,
   } = useJournalSearch();
-  
+
   // Update search filters
   useEffect(() => {
     updateFilters(filters);
   }, [filters, updateFilters]);
-  
+
   // Force sync on mount
   useEffect(() => {
     forceSync();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  
+
   const handleCreateNew = () => {
-    navigate('/journal/new');
+    navigate("/journal/new");
   };
-  
+
   const handleRefresh = async () => {
     await forceSync();
   };
-  
+
   // Show loading state only on initial load
   if (isSyncing && !entries) {
     return (
@@ -65,7 +65,7 @@ export const JournalPageWithSync: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
@@ -86,7 +86,9 @@ export const JournalPageWithSync: React.FC = () => {
               disabled={isSyncing}
               title="Sync with server"
             >
-              <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`}
+              />
             </Button>
             <Button onClick={handleCreateNew}>
               <Plus className="w-4 h-4 mr-2" />
@@ -94,7 +96,7 @@ export const JournalPageWithSync: React.FC = () => {
             </Button>
           </div>
         </div>
-        
+
         {/* Search Bar with Settings */}
         <JournalSearchBar
           filters={filters}
@@ -103,10 +105,10 @@ export const JournalPageWithSync: React.FC = () => {
           availableMoods={availableMoods || []}
           availableTemplates={availableTemplates || []}
         />
-        
+
         {/* Search Results Summary */}
         {(filters.query || Object.keys(filters).length > 1) && (
-          <SearchResultsSummary 
+          <SearchResultsSummary
             total={total}
             filters={filters}
             onClearFilter={(key) => {
@@ -117,33 +119,31 @@ export const JournalPageWithSync: React.FC = () => {
             onClearAll={() => setFilters({})}
           />
         )}
-        
+
         {/* Results */}
         {entries.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted mb-4">
               {filters.query || Object.keys(filters).length > 1
-                ? 'No entries match your search criteria'
-                : 'No journal entries yet'}
+                ? "No entries match your search criteria"
+                : "No journal entries yet"}
             </p>
-            {(!filters.query && Object.keys(filters).length <= 1) && (
-              <Button onClick={handleCreateNew}>
-                Create Your First Entry
-              </Button>
+            {!filters.query && Object.keys(filters).length <= 1 && (
+              <Button onClick={handleCreateNew}>Create Your First Entry</Button>
             )}
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {entries.map((entry: JournalEntry) => (
-              <JournalCard 
-                key={entry.entryId} 
+              <JournalCard
+                key={entry.entryId}
                 entry={entry}
                 onClick={() => navigate(`/journal/${entry.entryId}`)}
               />
             ))}
           </div>
         )}
-        
+
         {/* Floating Action Button on Mobile */}
         <div className="md:hidden fixed bottom-6 right-6">
           <button

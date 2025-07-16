@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import type { GoalPattern, GoalTarget } from '../../types/api.types';
-import { getDefaultsByPattern } from '../../types/ui.types';
-import Button from '../../../../components/common/Button';
-import { Target, Flame, Trophy, Shield, Calendar } from 'lucide-react';
-import type { MetricType } from '../../types/goal.types';
-import { METRIC_UNITS } from '../../types/goal.types';
+import React, { useState } from "react";
+import type { GoalPattern, GoalTarget } from "../../types/api.types";
+import { getDefaultsByPattern } from "../../types/ui.types";
+import Button from "../../../../components/common/Button";
+import { Target, Flame, Trophy, Shield, Calendar } from "lucide-react";
+import type { MetricType } from "../../types/goal.types";
+import { METRIC_UNITS } from "../../types/goal.types";
 
 interface TargetStepProps {
   pattern: GoalPattern;
@@ -12,14 +12,18 @@ interface TargetStepProps {
   onComplete: (target: GoalTarget) => void;
 }
 
-const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onComplete }) => {
+const TargetStep: React.FC<TargetStepProps> = ({
+  pattern,
+  initialValues,
+  onComplete,
+}) => {
   const defaults = getDefaultsByPattern(pattern);
-  
-  const [metricType, setMetricType] = useState<MetricType>('count');
+
+  const [metricType, setMetricType] = useState<MetricType>("count");
   const [target, setTarget] = useState<GoalTarget>({
-    metric: initialValues?.metric || 'count',
+    metric: initialValues?.metric || "count",
     value: initialValues?.value || 1,
-    unit: initialValues?.unit || 'times',
+    unit: initialValues?.unit || "times",
     direction: initialValues?.direction || defaults.direction,
     targetType: initialValues?.targetType || defaults.targetType,
     period: initialValues?.period || defaults.period,
@@ -33,7 +37,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
   };
 
   const updateTarget = (updates: Partial<GoalTarget>) => {
-    setTarget(prev => ({ ...prev, ...updates }));
+    setTarget((prev) => ({ ...prev, ...updates }));
   };
 
   const availableUnits = METRIC_UNITS[metricType] || [];
@@ -53,18 +57,20 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
 
   const renderPatternSpecificFields = () => {
     switch (pattern) {
-      case 'recurring':
+      case "recurring":
         return (
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Target per {target.period || 'day'}
+                  Target per {target.period || "day"}
                 </label>
                 <input
                   type="number"
                   value={target.value}
-                  onChange={(e) => updateTarget({ value: parseInt(e.target.value) || 1 })}
+                  onChange={(e) =>
+                    updateTarget({ value: parseInt(e.target.value) || 1 })
+                  }
                   min={1}
                   className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
                   required
@@ -76,7 +82,16 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
                 </label>
                 <select
                   value={target.period}
-                  onChange={(e) => updateTarget({ period: e.target.value as 'day' | 'week' | 'month' | 'quarter' | 'year' })}
+                  onChange={(e) =>
+                    updateTarget({
+                      period: e.target.value as
+                        | "day"
+                        | "week"
+                        | "month"
+                        | "quarter"
+                        | "year",
+                    })
+                  }
                   className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="day">Day</option>
@@ -91,7 +106,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
           </>
         );
 
-      case 'target':
+      case "target":
         return (
           <>
             <div>
@@ -101,7 +116,9 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               <input
                 type="number"
                 value={target.value}
-                onChange={(e) => updateTarget({ value: parseInt(e.target.value) || 1 })}
+                onChange={(e) =>
+                  updateTarget({ value: parseInt(e.target.value) || 1 })
+                }
                 min={1}
                 className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
                 required
@@ -113,9 +130,15 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               </label>
               <input
                 type="date"
-                value={target.targetDate ? target.targetDate.split('T')[0] : ''}
-                onChange={(e) => updateTarget({ targetDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                min={new Date().toISOString().split('T')[0]}
+                value={target.targetDate ? target.targetDate.split("T")[0] : ""}
+                onChange={(e) =>
+                  updateTarget({
+                    targetDate: e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : undefined,
+                  })
+                }
+                min={new Date().toISOString().split("T")[0]}
                 className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
               />
             </div>
@@ -125,7 +148,7 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
           </>
         );
 
-      case 'streak':
+      case "streak":
         return (
           <>
             <div>
@@ -135,19 +158,22 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               <input
                 type="number"
                 value={target.value}
-                onChange={(e) => updateTarget({ value: parseInt(e.target.value) || 1 })}
+                onChange={(e) =>
+                  updateTarget({ value: parseInt(e.target.value) || 1 })
+                }
                 min={1}
                 className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>
             <p className="text-sm text-muted mt-2">
-              Example: Meditate for 30 consecutive days, Write daily for 100 days
+              Example: Meditate for 30 consecutive days, Write daily for 100
+              days
             </p>
           </>
         );
 
-      case 'milestone':
+      case "milestone":
         return (
           <>
             <div>
@@ -166,26 +192,34 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               </label>
               <input
                 type="date"
-                value={target.targetDate ? target.targetDate.split('T')[0] : ''}
-                onChange={(e) => updateTarget({ targetDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                min={new Date().toISOString().split('T')[0]}
+                value={target.targetDate ? target.targetDate.split("T")[0] : ""}
+                onChange={(e) =>
+                  updateTarget({
+                    targetDate: e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : undefined,
+                  })
+                }
+                min={new Date().toISOString().split("T")[0]}
                 className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
               />
             </div>
           </>
         );
 
-      case 'limit':
+      case "limit":
         return (
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Maximum allowed per {target.period || 'day'}
+                Maximum allowed per {target.period || "day"}
               </label>
               <input
                 type="number"
                 value={target.value}
-                onChange={(e) => updateTarget({ value: parseInt(e.target.value) || 1 })}
+                onChange={(e) =>
+                  updateTarget({ value: parseInt(e.target.value) || 1 })
+                }
                 min={0}
                 className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
                 required
@@ -197,7 +231,16 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               </label>
               <select
                 value={target.period}
-                onChange={(e) => updateTarget({ period: e.target.value as 'day' | 'week' | 'month' | 'quarter' | 'year' })}
+                onChange={(e) =>
+                  updateTarget({
+                    period: e.target.value as
+                      | "day"
+                      | "week"
+                      | "month"
+                      | "quarter"
+                      | "year",
+                  })
+                }
                 className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
               >
                 <option value="day">Day</option>
@@ -206,7 +249,8 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
               </select>
             </div>
             <p className="text-sm text-muted mt-2">
-              Example: Maximum 2 hours social media per day, Spend less than $50 per week on dining out
+              Example: Maximum 2 hours social media per day, Spend less than $50
+              per week on dining out
             </p>
           </>
         );
@@ -223,7 +267,9 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
           <PatternIcon className="h-6 w-6 text-primary-600" />
         </div>
         <div>
-          <h3 className="text-lg font-medium text-[var(--text)]">Set Your Target</h3>
+          <h3 className="text-lg font-medium text-[var(--text)]">
+            Set Your Target
+          </h3>
           <p className="text-sm text-muted">
             Define what you want to achieve with this {pattern} goal
           </p>
@@ -241,9 +287,9 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
             onChange={(e) => {
               const newType = e.target.value as MetricType;
               setMetricType(newType);
-              updateTarget({ 
-                metric: newType === 'count' ? 'count' : newType,
-                unit: METRIC_UNITS[newType][0] || 'times' 
+              updateTarget({
+                metric: newType === "count" ? "count" : newType,
+                unit: METRIC_UNITS[newType][0] || "times",
               });
             }}
             className="px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
@@ -258,8 +304,10 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
             onChange={(e) => updateTarget({ unit: e.target.value })}
             className="px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
           >
-            {availableUnits.map(unit => (
-              <option key={unit} value={unit}>{unit}</option>
+            {availableUnits.map((unit) => (
+              <option key={unit} value={unit}>
+                {unit}
+              </option>
             ))}
           </select>
         </div>
@@ -274,20 +322,32 @@ const TargetStep: React.FC<TargetStepProps> = ({ pattern, initialValues, onCompl
       <div className="bg-primary-50 rounded-lg p-4">
         <h4 className="font-medium text-[var(--text)] mb-2">Goal Summary</h4>
         <div className="text-sm text-gray-700">
-          {pattern === 'recurring' && (
-            <p>Complete {target.value} {target.unit} per {target.period}</p>
+          {pattern === "recurring" && (
+            <p>
+              Complete {target.value} {target.unit} per {target.period}
+            </p>
           )}
-          {pattern === 'target' && (
-            <p>Reach {target.value} {target.unit}{target.targetDate && ` by ${new Date(target.targetDate).toLocaleDateString()}`}</p>
+          {pattern === "target" && (
+            <p>
+              Reach {target.value} {target.unit}
+              {target.targetDate &&
+                ` by ${new Date(target.targetDate).toLocaleDateString()}`}
+            </p>
           )}
-          {pattern === 'streak' && (
+          {pattern === "streak" && (
             <p>Maintain activity for {target.value} consecutive days</p>
           )}
-          {pattern === 'milestone' && (
-            <p>Complete milestone{target.targetDate && ` by ${new Date(target.targetDate).toLocaleDateString()}`}</p>
+          {pattern === "milestone" && (
+            <p>
+              Complete milestone
+              {target.targetDate &&
+                ` by ${new Date(target.targetDate).toLocaleDateString()}`}
+            </p>
           )}
-          {pattern === 'limit' && (
-            <p>Stay under {target.value} {target.unit} per {target.period}</p>
+          {pattern === "limit" && (
+            <p>
+              Stay under {target.value} {target.unit} per {target.period}
+            </p>
           )}
         </div>
       </div>

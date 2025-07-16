@@ -1,8 +1,16 @@
 // JournalActions.tsx
-import React from 'react';
-import { MoreVertical, Share2, Brain, Users, Lock, Download, Copy } from 'lucide-react';
-import { Menu } from '@headlessui/react';
-import type { JournalEntry } from '@/types/journal';
+import React from "react";
+import {
+  MoreVertical,
+  Share2,
+  Brain,
+  Users,
+  Lock,
+  Download,
+  Copy,
+} from "lucide-react";
+import { Menu } from "@headlessui/react";
+import type { JournalEntry } from "@/types/journal";
 
 interface JournalActionsProps {
   entry: JournalEntry;
@@ -13,27 +21,27 @@ interface JournalActionsProps {
   onDuplicate?: () => void;
 }
 
-export const JournalActions: React.FC<JournalActionsProps> = ({ 
-  entry, 
-  onShare, 
-  onAIAnalyze, 
+export const JournalActions: React.FC<JournalActionsProps> = ({
+  entry,
+  onShare,
+  onAIAnalyze,
   onManageShares,
   onExport,
-  onDuplicate
+  onDuplicate,
 }) => {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <Menu.Button className="inline-flex items-center justify-center p-2 text-sm font-medium text-theme hover:bg-surface-muted rounded-lg transition-colors">
         <MoreVertical className="w-5 h-5" />
       </Menu.Button>
-      
+
       <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right bg-surface rounded-lg shadow-lg border border-surface-muted focus:outline-none z-10">
         <div className="py-1">
           <Menu.Item>
             {({ active }) => (
               <button
                 className={`${
-                  active ? 'bg-surface-muted' : ''
+                  active ? "bg-surface-muted" : ""
                 } flex items-center gap-3 px-4 py-2 text-sm text-theme w-full hover:text-accent transition-colors`}
                 onClick={onShare}
               >
@@ -42,12 +50,12 @@ export const JournalActions: React.FC<JournalActionsProps> = ({
               </button>
             )}
           </Menu.Item>
-          
+
           <Menu.Item>
             {({ active }) => (
               <button
                 className={`${
-                  active ? 'bg-surface-muted' : ''
+                  active ? "bg-surface-muted" : ""
                 } flex items-center gap-3 px-4 py-2 text-sm text-theme w-full hover:text-accent transition-colors`}
                 onClick={onAIAnalyze}
               >
@@ -56,13 +64,13 @@ export const JournalActions: React.FC<JournalActionsProps> = ({
               </button>
             )}
           </Menu.Item>
-          
+
           {entry.sharedWith && entry.sharedWith.length > 0 && (
             <Menu.Item>
               {({ active }) => (
                 <button
                   className={`${
-                    active ? 'bg-surface-muted' : ''
+                    active ? "bg-surface-muted" : ""
                   } flex items-center gap-3 px-4 py-2 text-sm text-theme w-full hover:text-accent transition-colors`}
                   onClick={onManageShares}
                 >
@@ -72,15 +80,15 @@ export const JournalActions: React.FC<JournalActionsProps> = ({
               )}
             </Menu.Item>
           )}
-          
+
           <div className="h-px bg-surface-muted my-1" />
-          
+
           {onExport && (
             <Menu.Item>
               {({ active }) => (
                 <button
                   className={`${
-                    active ? 'bg-surface-muted' : ''
+                    active ? "bg-surface-muted" : ""
                   } flex items-center gap-3 px-4 py-2 text-sm text-theme w-full hover:text-accent transition-colors`}
                   onClick={onExport}
                 >
@@ -90,13 +98,13 @@ export const JournalActions: React.FC<JournalActionsProps> = ({
               )}
             </Menu.Item>
           )}
-          
+
           {onDuplicate && (
             <Menu.Item>
               {({ active }) => (
                 <button
                   className={`${
-                    active ? 'bg-surface-muted' : ''
+                    active ? "bg-surface-muted" : ""
                   } flex items-center gap-3 px-4 py-2 text-sm text-theme w-full hover:text-accent transition-colors`}
                   onClick={onDuplicate}
                 >
@@ -106,9 +114,9 @@ export const JournalActions: React.FC<JournalActionsProps> = ({
               )}
             </Menu.Item>
           )}
-          
+
           <div className="h-px bg-surface-muted my-1" />
-          
+
           <div className="px-4 py-2">
             <div className="flex items-center gap-2 text-xs text-muted">
               <Lock className="w-3 h-3" />

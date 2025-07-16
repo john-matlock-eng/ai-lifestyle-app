@@ -1,5 +1,5 @@
-import React from 'react';
-import RegistrationForm from '../../features/auth/components/RegistrationForm';
+import React from "react";
+import RegistrationForm from "../../features/auth/components/RegistrationForm";
 
 const RegisterPage: React.FC = () => {
   return (

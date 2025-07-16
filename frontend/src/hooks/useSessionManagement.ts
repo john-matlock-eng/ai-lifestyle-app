@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useAuth } from '../contexts';
+import { useEffect } from "react";
+import { useAuth } from "../contexts";
 
 interface UseSessionManagementOptions {
   warnBeforeExpiry?: number; // milliseconds before expiry to show warning
@@ -7,7 +7,9 @@ interface UseSessionManagementOptions {
   onSessionWarning?: () => void;
 }
 
-export const useSessionManagement = (options: UseSessionManagementOptions = {}) => {
+export const useSessionManagement = (
+  options: UseSessionManagementOptions = {},
+) => {
   const {
     isAuthenticated,
     sessionExpiry,
@@ -34,7 +36,10 @@ export const useSessionManagement = (options: UseSessionManagementOptions = {}) 
         if (onSessionExpired) {
           onSessionExpired();
         }
-      } else if (timeUntilExpiry <= warnBeforeExpiry && !isSessionWarningActive) {
+      } else if (
+        timeUntilExpiry <= warnBeforeExpiry &&
+        !isSessionWarningActive
+      ) {
         // Warning threshold reached
         if (onSessionWarning) {
           onSessionWarning();
@@ -66,7 +71,7 @@ export const useSessionManagement = (options: UseSessionManagementOptions = {}) 
 // Hook for detecting idle timeout
 export const useIdleTimeout = (
   timeoutMs: number = 30 * 60 * 1000, // 30 minutes default
-  onTimeout: () => void
+  onTimeout: () => void,
 ) => {
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -85,8 +90,14 @@ export const useIdleTimeout = (
     };
 
     // Events that reset the idle timer
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
-    events.forEach(event => {
+    const events = [
+      "mousedown",
+      "keydown",
+      "scroll",
+      "touchstart",
+      "mousemove",
+    ];
+    events.forEach((event) => {
       window.addEventListener(event, handleActivity);
     });
 
@@ -97,7 +108,7 @@ export const useIdleTimeout = (
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      events.forEach(event => {
+      events.forEach((event) => {
         window.removeEventListener(event, handleActivity);
       });
     };
@@ -118,7 +129,7 @@ export const useSessionTimeRemaining = () => {
   if (remaining <= 0) {
     return {
       expired: true,
-      formatted: 'Session expired',
+      formatted: "Session expired",
       minutes: 0,
       seconds: 0,
     };
@@ -129,7 +140,7 @@ export const useSessionTimeRemaining = () => {
 
   return {
     expired: false,
-    formatted: `${minutes}:${seconds.toString().padStart(2, '0')}`,
+    formatted: `${minutes}:${seconds.toString().padStart(2, "0")}`,
     minutes,
     seconds,
   };

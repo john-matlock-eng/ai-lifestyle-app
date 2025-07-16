@@ -1,12 +1,15 @@
 # Emotion Wheel Tooltip Fix
 
 ## Problem
+
 When hovering over emotions on the right side of the wheel, the tooltip would appear off-screen, making it unreadable.
 
 ## Solution
+
 Implemented smart tooltip positioning that keeps the tooltip within the visible area:
 
 ### Position Logic
+
 1. **Default Position**: Right and above the cursor (offset by 15px)
 2. **Right Edge Detection**: If tooltip would overflow right, position it to the left of cursor
 3. **Left Edge Detection**: If tooltip would overflow left, center it horizontally on cursor
@@ -14,6 +17,7 @@ Implemented smart tooltip positioning that keeps the tooltip within the visible 
 5. **Bottom Edge Detection**: If tooltip would overflow bottom, keep it above but within bounds
 
 ### Technical Implementation
+
 ```typescript
 // Smart positioning algorithm
 let left = tooltip.x + offset;
@@ -27,6 +31,7 @@ if (left + tooltipWidth > containerWidth - padding) {
 ```
 
 ### Visual Improvements
+
 - Increased blur effect for better readability
 - Enhanced shadow for depth
 - Smooth fade-in animation
@@ -34,13 +39,16 @@ if (left + tooltipWidth > containerWidth - padding) {
 - Better border styling
 
 ### Features
+
 - **Mouse tracking**: Tooltip follows cursor movement
 - **Boundary awareness**: Never goes off-screen
 - **Smooth animations**: Gentle fade-in effect
 - **Consistent sizing**: Max-width constraint for uniform appearance
 
 ## Testing
+
 Try hovering over emotions in different areas:
+
 - ✅ Right edge emotions - tooltip appears on left
 - ✅ Top edge emotions - tooltip appears below
 - ✅ Corner emotions - tooltip finds best position

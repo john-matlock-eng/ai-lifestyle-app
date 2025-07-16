@@ -15,6 +15,7 @@ The encrypted sharing system allows users to securely share their journal entrie
 ## Components
 
 ### 1. **ShareDialog** (`/components/encryption/ShareDialog.tsx`)
+
 - Main dialog for sharing journals with other users
 - Handles recipient email input and validation
 - Manages permissions (read/write/share)
@@ -22,23 +23,27 @@ The encrypted sharing system allows users to securely share their journal entrie
 - Integrates with the encryption service to re-encrypt content keys
 
 ### 2. **AIShareDialog** (`/components/encryption/AIShareDialog.tsx`)
+
 - Specialized dialog for sharing journals with AI for analysis
 - Provides various analysis types (sentiment, themes, patterns, etc.)
 - Implements time-limited access (30 minutes) for privacy
 - Shows privacy-preserving guarantees to users
 
 ### 3. **ShareManagement** (`/components/encryption/ShareManagement.tsx`)
+
 - Component for managing active shares
 - Shows all shares with their status, permissions, and expiration
 - Allows revoking shares
 - Displays access statistics
 
 ### 4. **JournalActions** (`/features/journal/components/JournalActions.tsx`)
+
 - Dropdown menu component for journal entry actions
 - Provides quick access to sharing, AI analysis, and share management
 - Shows encrypted status indicator
 
 ### 5. **SharedJournalsPage** (`/pages/journal/SharedJournalsPage.tsx`)
+
 - Dedicated page for viewing all shared journals
 - Filters for "shared by me" and "shared with me"
 - Shows share status, permissions, and expiration information
@@ -47,6 +52,7 @@ The encrypted sharing system allows users to securely share their journal entrie
 ## Updated Components
 
 ### JournalViewPageEnhanced
+
 - Integrated sharing dialogs (ShareDialog, AIShareDialog)
 - Added share management modal
 - Shows sharing indicators in the metadata
@@ -54,29 +60,35 @@ The encrypted sharing system allows users to securely share their journal entrie
 - Shows "Manage Shares" button when entries are shared
 
 ### JournalCard
+
 - Added visual indicators for shared entries
 - Shows number of people the entry is shared with
 - Uses blue badge with Users icon for shared status
 
 ### JournalPageEnhanced
+
 - Added "Shared" button in the header
 - Links to the SharedJournalsPage
 
 ## API Integration
 
 ### Journal API (`/api/journal.ts`)
+
 - Added `getSharedJournals()` - Fetches all shared journals with filters
 - Added `shareJournal()` - Creates a new share
 - Added `revokeShare()` - Revokes an existing share
 - Updated `getEntry()` to use the correct endpoint path
 
 ### Users API (`/api/users.ts`)
+
 - New API module for user-related operations
 - `getUserByEmail()` - Fetches user details by email
 - `checkUserExists()` - Checks if a user exists
 
 ### Encryption Service
+
 The existing encryption service already includes:
+
 - `shareWithUser()` - Re-encrypts content keys for recipients
 - `shareWithAI()` - Creates time-limited AI shares
 - `getShares()` - Retrieves active shares
@@ -150,6 +162,7 @@ The existing encryption service already includes:
 ## Implementation Status
 
 ✅ Complete:
+
 - All UI components implemented
 - Share dialogs with full functionality
 - Share management interface
@@ -159,6 +172,7 @@ The existing encryption service already includes:
 - Actions menu for easy access
 
 ⚠️ Requires Backend:
+
 - Actual share creation endpoints
 - User lookup by email
 - Share revocation endpoints

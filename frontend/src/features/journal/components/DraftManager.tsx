@@ -1,16 +1,9 @@
 // DraftManager.tsx
-import React, { useEffect, useState } from 'react';
-import { 
-  FileText, 
-  Clock, 
-  Trash2, 
-  Edit,
-  Calendar,
-  Hash
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { JournalTemplate } from '@/types/journal';
-import { getTemplateName, getTemplateIcon } from '../templates/template-utils';
+import React, { useEffect, useState } from "react";
+import { FileText, Clock, Trash2, Edit, Calendar, Hash } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { JournalTemplate } from "@/types/journal";
+import { getTemplateName, getTemplateIcon } from "../templates/template-utils";
 
 interface DraftMeta {
   key: string;
@@ -26,12 +19,12 @@ interface DraftManagerProps {
   className?: string;
 }
 
-const DRAFT_LIST_KEY = 'journal-drafts-list';
+const DRAFT_LIST_KEY = "journal-drafts-list";
 
 export const DraftManager: React.FC<DraftManagerProps> = ({
   onSelectDraft,
   onDeleteDraft,
-  className = ''
+  className = "",
 }) => {
   const [drafts, setDrafts] = useState<DraftMeta[]>([]);
   const [selectedDrafts, setSelectedDrafts] = useState<Set<string>>(new Set());
@@ -42,29 +35,32 @@ export const DraftManager: React.FC<DraftManagerProps> = ({
 
   const loadDrafts = () => {
     try {
-      const draftsList = JSON.parse(localStorage.getItem(DRAFT_LIST_KEY) || '[]');
+      const draftsList = JSON.parse(
+        localStorage.getItem(DRAFT_LIST_KEY) || "[]",
+      );
       // Sort by most recent first
-      draftsList.sort((a: DraftMeta, b: DraftMeta) => 
-        new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime()
+      draftsList.sort(
+        (a: DraftMeta, b: DraftMeta) =>
+          new Date(b.lastSaved).getTime() - new Date(a.lastSaved).getTime(),
       );
       setDrafts(draftsList);
     } catch (error) {
-      console.error('Failed to load drafts:', error);
+      console.error("Failed to load drafts:", error);
       setDrafts([]);
     }
   };
 
   const handleDeleteDraft = (draftKey: string) => {
-    if (!window.confirm('Delete this draft? This cannot be undone.')) return;
+    if (!window.confirm("Delete this draft? This cannot be undone.")) return;
 
     // Remove from localStorage
     localStorage.removeItem(draftKey);
-    
+
     // Update drafts list
-    const updatedDrafts = drafts.filter(d => d.key !== draftKey);
+    const updatedDrafts = drafts.filter((d) => d.key !== draftKey);
     localStorage.setItem(DRAFT_LIST_KEY, JSON.stringify(updatedDrafts));
     setDrafts(updatedDrafts);
-    
+
     if (onDeleteDraft) {
       onDeleteDraft(draftKey);
     }
@@ -72,14 +68,19 @@ export const DraftManager: React.FC<DraftManagerProps> = ({
 
   const handleDeleteSelected = () => {
     if (selectedDrafts.size === 0) return;
-    
-    if (!window.confirm(`Delete ${selectedDrafts.size} drafts? This cannot be undone.`)) return;
 
-    selectedDrafts.forEach(key => {
+    if (
+      !window.confirm(
+        `Delete ${selectedDrafts.size} drafts? This cannot be undone.`,
+      )
+    )
+      return;
+
+    selectedDrafts.forEach((key) => {
       localStorage.removeItem(key);
     });
 
-    const updatedDrafts = drafts.filter(d => !selectedDrafts.has(d.key));
+    const updatedDrafts = drafts.filter((d) => !selectedDrafts.has(d.key));
     localStorage.setItem(DRAFT_LIST_KEY, JSON.stringify(updatedDrafts));
     setDrafts(updatedDrafts);
     setSelectedDrafts(new Set());
@@ -108,7 +109,9 @@ export const DraftManager: React.FC<DraftManagerProps> = ({
     <div className={`draft-manager ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-theme">Saved Drafts ({drafts.length})</h3>
+        <h3 className="text-lg font-semibold text-theme">
+          Saved Drafts ({drafts.length})
+        </h3>
         {selectedDrafts.size > 0 && (
           <button
             onClick={handleDeleteSelected}
@@ -122,15 +125,16 @@ export const DraftManager: React.FC<DraftManagerProps> = ({
 
       {/* Drafts List */}
       <div className="space-y-2">
-        {drafts.map(draft => (
+        {drafts.map((draft) => (
           <div
             key={draft.key}
             className={`
               draft-item group relative
               p-4 rounded-lg border transition-all
-              ${selectedDrafts.has(draft.key) 
-                ? 'border-accent bg-accent/5' 
-                : 'border-surface-muted bg-surface hover:bg-surface-hover'
+              ${
+                selectedDrafts.has(draft.key)
+                  ? "border-accent bg-accent/5"
+                  : "border-surface-muted bg-surface hover:bg-surface-hover"
               }
             `}
           >
@@ -145,15 +149,17 @@ export const DraftManager: React.FC<DraftManagerProps> = ({
               />
 
               {/* Draft Content */}
-              <div 
+              <div
                 className="flex-1 cursor-pointer"
                 onClick={() => onSelectDraft(draft.key)}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h4 className="font-medium text-theme flex items-center gap-2">
-                      <span className="text-lg">{getTemplateIcon(draft.templateId)}</span>
-                      {draft.title || 'Untitled Draft'}
+                      <span className="text-lg">
+                        {getTemplateIcon(draft.templateId)}
+                      </span>
+                      {draft.title || "Untitled Draft"}
                     </h4>
                     <div className="flex items-center gap-4 mt-1 text-xs text-muted">
                       <span className="flex items-center gap-1">
@@ -162,7 +168,9 @@ export const DraftManager: React.FC<DraftManagerProps> = ({
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {formatDistanceToNow(new Date(draft.lastSaved), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(draft.lastSaved), {
+                          addSuffix: true,
+                        })}
                       </span>
                       <span className="flex items-center gap-1">
                         <FileText className="w-3 h-3" />

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Shield, ShieldOff, Info } from 'lucide-react';
+import React, { useState } from "react";
+import { Shield, ShieldOff, Info } from "lucide-react";
 
 interface EncryptionToggleProps {
   value: boolean;
@@ -16,7 +16,7 @@ export const EncryptionToggle: React.FC<EncryptionToggleProps> = ({
   moduleId,
   disabled = false,
   showInfo = true,
-  className = '',
+  className = "",
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -32,32 +32,37 @@ export const EncryptionToggle: React.FC<EncryptionToggleProps> = ({
         type="button"
         role="switch"
         aria-checked={value}
-        aria-label={`${value ? 'Disable' : 'Enable'} encryption for ${moduleId}`}
+        aria-label={`${value ? "Disable" : "Enable"} encryption for ${moduleId}`}
         onClick={handleToggle}
         disabled={disabled}
         className={`
           relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-          ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-          ${value ? 'bg-[var(--accent)]' : 'bg-[var(--surface-muted)]'}
+          ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+          ${value ? "bg-[var(--accent)]" : "bg-[var(--surface-muted)]"}
         `}
       >
         <span
           className={`
-            ${value ? 'translate-x-6' : 'translate-x-1'}
+            ${value ? "translate-x-6" : "translate-x-1"}
             inline-block h-4 w-4 transform rounded-full bg-[var(--surface)] transition-transform
           `}
         />
       </button>
-      
+
       <div className="flex items-center gap-2">
         {value ? (
           <Shield className="h-5 w-5 text-[var(--accent)]" aria-hidden="true" />
         ) : (
-          <ShieldOff className="h-5 w-5 text-[var(--text-muted)]" aria-hidden="true" />
+          <ShieldOff
+            className="h-5 w-5 text-[var(--text-muted)]"
+            aria-hidden="true"
+          />
         )}
-        
-        <span className={`text-sm font-medium ${value ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>
-          {value ? 'Encrypted' : 'Not encrypted'}
+
+        <span
+          className={`text-sm font-medium ${value ? "text-[var(--text)]" : "text-[var(--text-muted)]"}`}
+        >
+          {value ? "Encrypted" : "Not encrypted"}
         </span>
       </div>
 
@@ -74,7 +79,7 @@ export const EncryptionToggle: React.FC<EncryptionToggleProps> = ({
           >
             <Info className="h-4 w-4" />
           </button>
-          
+
           {showTooltip && (
             <div
               role="tooltip"
@@ -82,8 +87,9 @@ export const EncryptionToggle: React.FC<EncryptionToggleProps> = ({
             >
               <div className="relative">
                 <p>
-                  When enabled, your {moduleId} data is encrypted locally before being stored. 
-                  Only you can decrypt this data with your encryption key.
+                  When enabled, your {moduleId} data is encrypted locally before
+                  being stored. Only you can decrypt this data with your
+                  encryption key.
                 </p>
                 <div className="absolute w-2 h-2 bg-[var(--tooltip-bg)] transform rotate-45 -bottom-1 left-2" />
               </div>

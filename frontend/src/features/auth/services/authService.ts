@@ -1,11 +1,11 @@
-import apiClient from '../../../api/client';
-import { setTokens, clearTokens } from '../utils/tokenManager';
-import type { 
-  RegisterFormData, 
-  LoginFormData, 
-  PasswordResetRequestFormData, 
-  PasswordResetConfirmFormData 
-} from '../utils/validation';
+import apiClient from "../../../api/client";
+import { setTokens, clearTokens } from "../utils/tokenManager";
+import type {
+  RegisterFormData,
+  LoginFormData,
+  PasswordResetRequestFormData,
+  PasswordResetConfirmFormData,
+} from "../utils/validation";
 
 // API Response Types (matching OpenAPI contract)
 export interface UserProfile {
@@ -24,7 +24,7 @@ export interface UserProfile {
 }
 
 export interface UserPreferences {
-  units?: 'metric' | 'imperial';
+  units?: "metric" | "imperial";
   language?: string;
   notifications?: {
     email?: boolean;
@@ -44,7 +44,7 @@ export interface RegisterResponse {
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
-  tokenType: 'Bearer';
+  tokenType: "Bearer";
   expiresIn: number;
   user: UserProfile;
 }
@@ -52,7 +52,7 @@ export interface LoginResponse {
 export interface MfaRequiredResponse {
   sessionToken: string;
   mfaRequired: true;
-  tokenType: 'Bearer';
+  tokenType: "Bearer";
 }
 
 export interface MessageResponse {
@@ -72,24 +72,33 @@ export interface MfaStatusResponse {
 
 // Auth Service
 class AuthService {
-  async register(data: Omit<RegisterFormData, 'confirmPassword'>): Promise<RegisterResponse> {
-    const { data: response } = await apiClient.post<RegisterResponse>('/auth/register', {
-      email: data.email,
-      password: data.password,
-      firstName: data.firstName,
-      lastName: data.lastName,
-    });
+  async register(
+    data: Omit<RegisterFormData, "confirmPassword">,
+  ): Promise<RegisterResponse> {
+    const { data: response } = await apiClient.post<RegisterResponse>(
+      "/auth/register",
+      {
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      },
+    );
     return response;
   }
 
-  async login(data: LoginFormData & { rememberMe?: boolean }): Promise<LoginResponse | MfaRequiredResponse> {
-    const { data: response } = await apiClient.post<LoginResponse | MfaRequiredResponse>('/auth/login', {
+  async login(
+    data: LoginFormData & { rememberMe?: boolean },
+  ): Promise<LoginResponse | MfaRequiredResponse> {
+    const { data: response } = await apiClient.post<
+      LoginResponse | MfaRequiredResponse
+    >("/auth/login", {
       email: data.email,
       password: data.password,
     });
 
     // Check if MFA is required
-    if ('mfaRequired' in response) {
+    if ("mfaRequired" in response) {
       return response;
     }
 
@@ -99,10 +108,13 @@ class AuthService {
   }
 
   async verifyMfa(sessionToken: string, code: string): Promise<LoginResponse> {
-    const { data: response } = await apiClient.post<LoginResponse>('/auth/mfa/verify', {
-      sessionToken,
-      code,
-    });
+    const { data: response } = await apiClient.post<LoginResponse>(
+      "/auth/mfa/verify",
+      {
+        sessionToken,
+        code,
+      },
+    );
 
     // Store tokens after successful MFA verification
     setTokens(response.accessToken, response.refreshToken, response.expiresIn);
@@ -115,45 +127,67 @@ class AuthService {
   }
 
   async getCurrentUser(): Promise<UserProfile> {
-    const { data } = await apiClient.get<UserProfile>('/users/profile');
+    const { data } = await apiClient.get<UserProfile>("/users/profile");
     return data;
   }
 
   async updateProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
-    const { data } = await apiClient.put<UserProfile>('/users/profile', updates);
+    const { data } = await apiClient.put<UserProfile>(
+      "/users/profile",
+      updates,
+    );
     return data;
   }
 
-  async requestPasswordReset(data: PasswordResetRequestFormData): Promise<MessageResponse> {
-    const { data: response } = await apiClient.post<MessageResponse>('/auth/password/reset-request', data);
+  async requestPasswordReset(
+    data: PasswordResetRequestFormData,
+  ): Promise<MessageResponse> {
+    const { data: response } = await apiClient.post<MessageResponse>(
+      "/auth/password/reset-request",
+      data,
+    );
     return response;
   }
 
-  async confirmPasswordReset(data: PasswordResetConfirmFormData): Promise<MessageResponse> {
-    const { data: response } = await apiClient.post<MessageResponse>('/auth/password/reset-confirm', {
-      token: data.token,
-      password: data.password,
-    });
+  async confirmPasswordReset(
+    data: PasswordResetConfirmFormData,
+  ): Promise<MessageResponse> {
+    const { data: response } = await apiClient.post<MessageResponse>(
+      "/auth/password/reset-confirm",
+      {
+        token: data.token,
+        password: data.password,
+      },
+    );
     return response;
   }
 
   async verifyEmail(token: string): Promise<MessageResponse> {
-    const { data: response } = await apiClient.post<MessageResponse>('/auth/email/verify', { token });
+    const { data: response } = await apiClient.post<MessageResponse>(
+      "/auth/email/verify",
+      { token },
+    );
     return response;
   }
 
   async setupMfa(): Promise<MfaSetupResponse> {
-    const { data } = await apiClient.post<MfaSetupResponse>('/auth/mfa/setup');
+    const { data } = await apiClient.post<MfaSetupResponse>("/auth/mfa/setup");
     return data;
   }
 
   async verifyMfaSetup(code: string): Promise<MfaStatusResponse> {
-    const { data } = await apiClient.post<MfaStatusResponse>('/auth/mfa/verify-setup', { code });
+    const { data } = await apiClient.post<MfaStatusResponse>(
+      "/auth/mfa/verify-setup",
+      { code },
+    );
     return data;
   }
 
   async disableMfa(password: string): Promise<MfaStatusResponse> {
-    const { data } = await apiClient.post<MfaStatusResponse>('/auth/mfa/disable', { password });
+    const { data } = await apiClient.post<MfaStatusResponse>(
+      "/auth/mfa/disable",
+      { password },
+    );
     return data;
   }
 }

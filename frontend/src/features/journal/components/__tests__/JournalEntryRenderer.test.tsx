@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { JournalEntryRenderer } from '../JournalEntryRenderer';
-import { JournalTemplate } from '@/types/journal';
-import '@testing-library/jest-dom';
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { JournalEntryRenderer } from "../JournalEntryRenderer";
+import { JournalTemplate } from "@/types/journal";
+import "@testing-library/jest-dom";
 
-describe('JournalEntryRenderer - Enhanced Version', () => {
-  describe('Section Marker Parsing', () => {
-    it('should parse and render daily reflection with section markers', () => {
+describe("JournalEntryRenderer - Enhanced Version", () => {
+  describe("Section Marker Parsing", () => {
+    it("should parse and render daily reflection with section markers", () => {
       const entry = {
         content: `
 <!--SECTION:emotions:emotions:{"title":"Today's Emotions"}-->
@@ -34,25 +34,27 @@ describe('JournalEntryRenderer - Enhanced Version', () => {
 <p>Review project feedback and start on the next phase.</p>
 <!--/SECTION-->`,
         template: JournalTemplate.DAILY_REFLECTION,
-        wordCount: 50
+        wordCount: 50,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
       // Check that all sections are rendered
       expect(screen.getByText("Today's Emotions")).toBeInTheDocument();
-      expect(screen.getByText("Three Things I'm Grateful For")).toBeInTheDocument();
+      expect(
+        screen.getByText("Three Things I'm Grateful For"),
+      ).toBeInTheDocument();
       expect(screen.getByText("Today's Highlights")).toBeInTheDocument();
       expect(screen.getByText("Challenges & Lessons")).toBeInTheDocument();
       expect(screen.getByText("Tomorrow's Focus")).toBeInTheDocument();
 
       // Check that emotions are displayed with proper styling
-      expect(screen.getByText('Happy')).toBeInTheDocument(); // Should be capitalized
-      expect(screen.getByText('Content')).toBeInTheDocument();
-      expect(screen.getByText('Grateful')).toBeInTheDocument();
+      expect(screen.getByText("Happy")).toBeInTheDocument(); // Should be capitalized
+      expect(screen.getByText("Content")).toBeInTheDocument();
+      expect(screen.getByText("Grateful")).toBeInTheDocument();
     });
 
-    it('should render mood tracker with scale and emotions', () => {
+    it("should render mood tracker with scale and emotions", () => {
       const entry = {
         content: `
 <!--SECTION:current-emotions:emotions:{"title":"Current Emotions"}-->
@@ -69,23 +71,23 @@ describe('JournalEntryRenderer - Enhanced Version', () => {
 <p>Work deadline approaching and multiple tasks piling up.</p>
 <!--/SECTION-->`,
         template: JournalTemplate.MOOD_TRACKER,
-        wordCount: 20
+        wordCount: 20,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
       // Check emotions
-      expect(screen.getByText('Current Emotions')).toBeInTheDocument();
-      expect(screen.getByText('Anxious')).toBeInTheDocument();
-      expect(screen.getByText('Overwhelmed')).toBeInTheDocument();
+      expect(screen.getByText("Current Emotions")).toBeInTheDocument();
+      expect(screen.getByText("Anxious")).toBeInTheDocument();
+      expect(screen.getByText("Overwhelmed")).toBeInTheDocument();
 
       // Check scale rendering
-      expect(screen.getByText('Overall Intensity')).toBeInTheDocument();
-      expect(screen.getByText('8')).toBeInTheDocument();
-      expect(screen.getByText('out of 10')).toBeInTheDocument();
+      expect(screen.getByText("Overall Intensity")).toBeInTheDocument();
+      expect(screen.getByText("8")).toBeInTheDocument();
+      expect(screen.getByText("out of 10")).toBeInTheDocument();
     });
 
-    it('should render habit tracker with checklists', () => {
+    it("should render habit tracker with checklists", () => {
       const entry = {
         content: `
 <!--SECTION:morning-habits:checklist:{"title":"Morning Habits"}-->
@@ -103,22 +105,22 @@ describe('JournalEntryRenderer - Enhanced Version', () => {
 <p>Good morning routine today, helped set a positive tone for the day.</p>
 <!--/SECTION-->`,
         template: JournalTemplate.HABIT_TRACKER,
-        wordCount: 20
+        wordCount: 20,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
       // Check checklist rendering
-      expect(screen.getByText('Morning Habits')).toBeInTheDocument();
-      expect(screen.getByText('Woke up early')).toBeInTheDocument();
-      expect(screen.getByText('Morning exercise')).toBeInTheDocument();
-      
+      expect(screen.getByText("Morning Habits")).toBeInTheDocument();
+      expect(screen.getByText("Woke up early")).toBeInTheDocument();
+      expect(screen.getByText("Morning exercise")).toBeInTheDocument();
+
       // Check that completed items have strikethrough styling
-      const wokeUpEarly = screen.getByText('Woke up early');
-      expect(wokeUpEarly.className).toContain('line-through');
+      const wokeUpEarly = screen.getByText("Woke up early");
+      expect(wokeUpEarly.className).toContain("line-through");
     });
 
-    it('should render goal progress with linked goals', () => {
+    it("should render goal progress with linked goals", () => {
       const entry = {
         content: `
 <!--SECTION:goals-worked:goals:{"title":"Goals I Worked On"}-->
@@ -133,17 +135,17 @@ describe('JournalEntryRenderer - Enhanced Version', () => {
 <p>7</p>
 <!--/SECTION-->`,
         template: JournalTemplate.GOAL_PROGRESS,
-        wordCount: 30
+        wordCount: 30,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
-      expect(screen.getByText('Goals I Worked On')).toBeInTheDocument();
-      expect(screen.getByText('Goal: goal-123')).toBeInTheDocument();
-      expect(screen.getByText('Goal: goal-456')).toBeInTheDocument();
+      expect(screen.getByText("Goals I Worked On")).toBeInTheDocument();
+      expect(screen.getByText("Goal: goal-123")).toBeInTheDocument();
+      expect(screen.getByText("Goal: goal-456")).toBeInTheDocument();
     });
 
-    it('should render creative writing with choice selection', () => {
+    it("should render creative writing with choice selection", () => {
       const entry = {
         content: `
 <!--SECTION:writing-prompt:choice:{"title":"Today's Prompt"}-->
@@ -163,25 +165,27 @@ I hope this letter finds you well and thriving...</p>
 <span class="tag">personal-growth</span>
 <!--/SECTION-->`,
         template: JournalTemplate.CREATIVE_WRITING,
-        wordCount: 50
+        wordCount: 50,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
       // Check choice rendering
       expect(screen.getByText("Today's Prompt")).toBeInTheDocument();
-      expect(screen.getByText('A letter to your future self')).toBeInTheDocument();
+      expect(
+        screen.getByText("A letter to your future self"),
+      ).toBeInTheDocument();
 
       // Check tags
-      expect(screen.getByText('Themes')).toBeInTheDocument();
-      expect(screen.getByText('#reflection')).toBeInTheDocument();
-      expect(screen.getByText('#hope')).toBeInTheDocument();
-      expect(screen.getByText('#personal-growth')).toBeInTheDocument();
+      expect(screen.getByText("Themes")).toBeInTheDocument();
+      expect(screen.getByText("#reflection")).toBeInTheDocument();
+      expect(screen.getByText("#hope")).toBeInTheDocument();
+      expect(screen.getByText("#personal-growth")).toBeInTheDocument();
     });
   });
 
-  describe('Legacy Content Support', () => {
-    it('should still render legacy daily reflection format', () => {
+  describe("Legacy Content Support", () => {
+    it("should still render legacy daily reflection format", () => {
       const entry = {
         content: `<h3>Today's Emotions</h3>
 <p>happy, excited</p>
@@ -189,18 +193,20 @@ I hope this letter finds you well and thriving...</p>
 <p>Family, health, sunshine</p>
 <h3>Today's Highlights</h3>
 <p>Finished a big project</p>`,
-        template: 'daily_reflection',
-        wordCount: 20
+        template: "daily_reflection",
+        wordCount: 20,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
       expect(screen.getByText("Today's Emotions")).toBeInTheDocument();
-      expect(screen.getByText('happy, excited')).toBeInTheDocument();
-      expect(screen.getByText("Three Things I'm Grateful For")).toBeInTheDocument();
+      expect(screen.getByText("happy, excited")).toBeInTheDocument();
+      expect(
+        screen.getByText("Three Things I'm Grateful For"),
+      ).toBeInTheDocument();
     });
 
-    it('should render plain markdown content', () => {
+    it("should render plain markdown content", () => {
       const entry = {
         content: `# My Thoughts
 
@@ -214,20 +220,20 @@ This is a **bold** statement and this is *italic*.
 
 [Link to something](https://example.com)`,
         template: JournalTemplate.BLANK,
-        wordCount: 30
+        wordCount: 30,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
-      expect(screen.getByText('My Thoughts')).toBeInTheDocument();
-      expect(screen.getByText('bold', { exact: false })).toBeInTheDocument();
-      expect(screen.getByText('First item')).toBeInTheDocument();
-      expect(screen.getByText('This is a quote')).toBeInTheDocument();
+      expect(screen.getByText("My Thoughts")).toBeInTheDocument();
+      expect(screen.getByText("bold", { exact: false })).toBeInTheDocument();
+      expect(screen.getByText("First item")).toBeInTheDocument();
+      expect(screen.getByText("This is a quote")).toBeInTheDocument();
     });
   });
 
-  describe('Empty Content Handling', () => {
-    it('should show placeholder for empty sections', () => {
+  describe("Empty Content Handling", () => {
+    it("should show placeholder for empty sections", () => {
       const entry = {
         content: `
 <!--SECTION:emotions:emotions:{"title":"Today's Emotions"}-->
@@ -238,32 +244,32 @@ This is a **bold** statement and this is *italic*.
 <p></p>
 <!--/SECTION-->`,
         template: JournalTemplate.DAILY_REFLECTION,
-        wordCount: 0
+        wordCount: 0,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
-      expect(screen.getByText('No emotions recorded')).toBeInTheDocument();
-      expect(screen.getByText('No content added')).toBeInTheDocument();
+      expect(screen.getByText("No emotions recorded")).toBeInTheDocument();
+      expect(screen.getByText("No content added")).toBeInTheDocument();
     });
   });
 
-  describe('Unknown Template Handling', () => {
-    it('should render unknown templates gracefully', () => {
+  describe("Unknown Template Handling", () => {
+    it("should render unknown templates gracefully", () => {
       const entry = {
         content: `
 <!--SECTION:custom-section:text:{"title":"Custom Section"}-->
 <h3>Custom Section</h3>
 <p>This is custom content</p>
 <!--/SECTION-->`,
-        template: 'unknown_template',
-        wordCount: 10
+        template: "unknown_template",
+        wordCount: 10,
       };
 
       render(<JournalEntryRenderer entry={entry} />);
 
-      expect(screen.getByText('Custom Section')).toBeInTheDocument();
-      expect(screen.getByText('This is custom content')).toBeInTheDocument();
+      expect(screen.getByText("Custom Section")).toBeInTheDocument();
+      expect(screen.getByText("This is custom content")).toBeInTheDocument();
     });
   });
 });

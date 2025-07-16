@@ -1,14 +1,14 @@
-import React from 'react';
-import { useTheme } from '../../contexts';
-import type { Theme } from '../../contexts';
+import React from "react";
+import { useTheme } from "../../contexts";
+import type { Theme } from "../../contexts";
 
 const options: { label: string; value: Theme }[] = [
-  { label: 'Light', value: 'light' },
-  { label: 'Dark', value: 'dark' },
-  { label: 'Serene', value: 'serene' },
-  { label: 'Vibrant', value: 'vibrant' },
-  { label: 'Midnight', value: 'midnight' },
-  { label: 'Solarized', value: 'solarized' },
+  { label: "Light", value: "light" },
+  { label: "Dark", value: "dark" },
+  { label: "Serene", value: "serene" },
+  { label: "Vibrant", value: "vibrant" },
+  { label: "Midnight", value: "midnight" },
+  { label: "Solarized", value: "solarized" },
 ];
 
 const ThemeSwitcher: React.FC = () => {
