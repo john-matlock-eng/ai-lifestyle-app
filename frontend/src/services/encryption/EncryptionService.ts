@@ -24,14 +24,25 @@ export class EncryptionService {
    */
   async initialize(password: string, userId: string): Promise<void> {
     try {
+      console.log('[Encryption] Starting initialization for user', userId);
+      
       // Check if user has encryption set up on server
       const response = await apiClient.get(`/encryption/check/${userId}`);
       const encryptionStatus = response.data;
       
       if (encryptionStatus.hasEncryption) {
+        console.log('[Encryption] User has server-side encryption setup');
+        
         // User has encryption on server, fetch salt
         const userResponse = await apiClient.get(`/encryption/user/${userId}`);
         const encryptionData = userResponse.data;
+        
+        console.log('[Encryption] Retrieved encryption data', {
+          hasSalt: !!encryptionData.salt,
+          hasEncryptedPrivateKey: !!encryptionData.encryptedPrivateKey,
+          hasPublicKey: !!encryptionData.publicKey,
+          publicKeyId: encryptionData.publicKeyId
+        });
         
         // Convert base64 salt to Uint8Array
         const salt = this.base64ToArrayBuffer(encryptionData.salt);
@@ -53,13 +64,20 @@ export class EncryptionService {
         // Load personal keys
         await this.loadPersonalKeys(encryptedPrivateKey);
         this.publicKeyId = encryptionData.publicKeyId;
+        
+        console.log('[Encryption] Initialization complete', {
+          publicKeyId: this.publicKeyId,
+          hasPrivateKey: !!this.personalKeyPair?.privateKey,
+          hasPublicKey: !!this.personalKeyPair?.publicKey
+        });
       } else {
         // First time setup
+        console.log('[Encryption] No server encryption found, setting up new user');
         await this.setupNewUser(password, userId);
       }
     } catch (error) {
       // If server check fails, fall back to local-only mode
-      console.warn('Server check failed, using local encryption:', error);
+      console.warn('[Encryption] Server check failed, using local encryption:', error);
       
       const salt = await keyStore.getSalt();
       if (salt) {
@@ -248,35 +266,54 @@ export class EncryptionService {
   async decryptContent(encryptedData: EncryptedData): Promise<string> {
     if (!this.personalKeyPair) throw new Error('Encryption not initialized');
 
-    // Decrypt content key
-    const encryptedKey = this.base64ToArrayBuffer(encryptedData.encryptedKey);
-    const rawContentKey = await crypto.subtle.decrypt(
-      { name: 'RSA-OAEP' },
-      this.personalKeyPair.privateKey,
-      encryptedKey
-    );
+    try {
+      // Decrypt content key
+      const encryptedKey = this.base64ToArrayBuffer(encryptedData.encryptedKey);
+      
+      console.log('[Decryption] Attempting to decrypt content key', {
+        encryptedKeyLength: encryptedKey.byteLength,
+        hasPrivateKey: !!this.personalKeyPair.privateKey,
+        publicKeyId: this.publicKeyId
+      });
+      
+      const rawContentKey = await crypto.subtle.decrypt(
+        { name: 'RSA-OAEP' },
+        this.personalKeyPair.privateKey,
+        encryptedKey
+      );
 
-    // Import content key
-    const contentKey = await crypto.subtle.importKey(
-      'raw',
-      rawContentKey,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['decrypt']
-    );
+      // Import content key
+      const contentKey = await crypto.subtle.importKey(
+        'raw',
+        rawContentKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
 
-    // Decrypt content
-    const encryptedContent = this.base64ToArrayBuffer(encryptedData.content);
-    const iv = this.base64ToArrayBuffer(encryptedData.iv);
+      // Decrypt content
+      const encryptedContent = this.base64ToArrayBuffer(encryptedData.content);
+      const iv = this.base64ToArrayBuffer(encryptedData.iv);
 
-    const decryptedContent = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
-      contentKey,
-      encryptedContent
-    );
+      const decryptedContent = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        contentKey,
+        encryptedContent
+      );
 
-    const decoder = new TextDecoder();
-    return decoder.decode(decryptedContent);
+      const decoder = new TextDecoder();
+      return decoder.decode(decryptedContent);
+    } catch (error) {
+      console.error('[Decryption] Failed to decrypt content', {
+        error,
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorMessage: error instanceof Error ? error.message : String(error),
+        hasEncryptedKey: !!encryptedData.encryptedKey,
+        hasIv: !!encryptedData.iv,
+        publicKeyId: this.publicKeyId
+      });
+      throw error;
+    }
   }
 
   /**
@@ -423,6 +460,14 @@ export class EncryptionService {
     if (!this.personalKeyPair) throw new Error('Encryption not initialized');
 
     try {
+      console.log('[Sharing] Starting share process', {
+        itemType,
+        itemId,
+        recipientUserId,
+        encryptedKeyLength: encryptedKey.length,
+        ownerPublicKeyId: this.publicKeyId
+      });
+
       // 1. Fetch recipient's public key from server
       const recipientResponse = await apiClient.get(`/encryption/user/${recipientUserId}`);
       const recipientData = recipientResponse.data;
@@ -431,6 +476,11 @@ export class EncryptionService {
         throw new Error('Recipient has not set up encryption');
       }
       
+      console.log('[Sharing] Got recipient encryption data', {
+        recipientHasPublicKey: !!recipientData.publicKey,
+        recipientPublicKeyId: recipientData.publicKeyId
+      });
+      
       // 2. Decrypt content key with our private key
       const encryptedKeyBuffer = this.base64ToArrayBuffer(encryptedKey);
       const contentKeyBuffer = await crypto.subtle.decrypt(
@@ -438,6 +488,10 @@ export class EncryptionService {
         this.personalKeyPair.privateKey,
         encryptedKeyBuffer
       );
+      
+      console.log('[Sharing] Decrypted content key', {
+        contentKeyLength: contentKeyBuffer.byteLength
+      });
       
       // 3. Import recipient's public key
       const recipientPublicKeyData = this.base64ToArrayBuffer(recipientData.publicKey);
@@ -459,22 +513,37 @@ export class EncryptionService {
         contentKeyBuffer
       );
       
+      const reEncryptedKeyBase64 = this.arrayBufferToBase64(reEncryptedKey);
+      
+      console.log('[Sharing] Re-encrypted content key', {
+        reEncryptedKeyLength: reEncryptedKey.byteLength,
+        reEncryptedKeyBase64Length: reEncryptedKeyBase64.length
+      });
+      
       // 5. Create share on server
       const shareResponse = await apiClient.post('/shares', {
         itemType,
         itemId,
         recipientId: recipientUserId,
-        encryptedKey: this.arrayBufferToBase64(reEncryptedKey),
+        encryptedKey: reEncryptedKeyBase64,
         expiresInHours,
         permissions
       });
       
+      console.log('[Sharing] Share created successfully', {
+        shareId: shareResponse.data.shareId
+      });
+      
       return {
         shareId: shareResponse.data.shareId,
-        encryptedKey: this.arrayBufferToBase64(reEncryptedKey)
+        encryptedKey: reEncryptedKeyBase64
       };
     } catch (error) {
-      console.error('Failed to share with user:', error);
+      console.error('[Sharing] Failed to share with user', {
+        error,
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorMessage: error instanceof Error ? error.message : String(error)
+      });
       throw error;
     }
   }
