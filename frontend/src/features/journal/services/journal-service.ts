@@ -37,7 +37,7 @@ export class JournalService {
   }
 
   /**
-   * List journal entries with optional filter and decrypt if necessary
+   * List journal entries with optional filter
    */
   async listJournalEntries(params?: {
     page?: number;
@@ -47,63 +47,10 @@ export class JournalService {
   }): Promise<SharedJournalsResponse> {
     const response = await journalApi.listEntries(params);
     
-    // Decrypt entries
-    const decryptedEntries = await Promise.all(
-      response.entries.map(async (item) => {
-        // Check if it's a SharedJournalItem or regular JournalEntry
-        const entry = 'entry' in item ? item.entry : item;
-        
-        if (entry.isEncrypted && entry.content && entry.encryptedKey && entry.encryptionIv) {
-          try {
-            const decryptedContent = await this.encryptionService.decryptContent({
-              content: entry.content,
-              encryptedKey: entry.encryptedKey,
-              iv: entry.encryptionIv
-            });
-            
-            // Return the appropriate structure
-            if ('entry' in item) {
-              return {
-                ...item,
-                entry: {
-                  ...entry,
-                  content: decryptedContent
-                }
-              };
-            } else {
-              return {
-                ...entry,
-                content: decryptedContent
-              };
-            }
-          } catch (error) {
-            console.error(`Failed to decrypt journal ${entry.entryId}:`, error);
-            // Return with placeholder content
-            if ('entry' in item) {
-              return {
-                ...item,
-                entry: {
-                  ...entry,
-                  content: '[Unable to decrypt]'
-                }
-              };
-            } else {
-              return {
-                ...entry,
-                content: '[Unable to decrypt]'
-              };
-            }
-          }
-        }
-        
-        return item;
-      })
-    );
-    
-    return {
-      ...response,
-      entries: decryptedEntries
-    };
+    // Don't decrypt entries in the list view - it's not needed
+    // The JournalCard component will show a placeholder for encrypted content
+    // Decryption happens only when viewing individual entries
+    return response;
   }
 
   /**
