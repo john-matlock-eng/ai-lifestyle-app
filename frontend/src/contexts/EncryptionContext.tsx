@@ -53,8 +53,9 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
         const keyId = await encryptionService.getPublicKeyId();
         setEncryptionKeyId(keyId);
         
-        // If we have local setup, encryption is unlocked
-        setIsEncryptionLocked(false);
+        // Even if we have local setup, encryption starts locked after refresh
+        // User must enter password to unlock
+        setIsEncryptionLocked(true);
       } else if (profile?.encryptionEnabled) {
         // Profile says encryption is enabled but no local setup
         // User needs to enter password to set up locally
