@@ -64,10 +64,11 @@ class RevokeShareService:
             
             # Update the original item to remove from sharedWith list
             self._update_item_shares(
-                share.get('itemType'),
-                share.get('itemId'),
-                share.get('recipientId'),
-                'remove'
+                owner_id=share.get('ownerId'),
+                item_type=share.get('itemType'),
+                item_id=share.get('itemId'),
+                recipient_id=share.get('recipientId'),
+                action='remove'
             )
             
             logger.info(f"Revoked share {share_id}")
@@ -94,45 +95,41 @@ class RevokeShareService:
             return None
     
     @tracer.capture_method
-    def _update_item_shares(self, item_type: str, item_id: str, recipient_id: str, action: str):
+    def _update_item_shares(self, owner_id: str, item_type: str, item_id: str, recipient_id: str, action: str):
         """Update the shared_with list on the original item."""
-        if not all([item_type, item_id, recipient_id]):
+        if not all([owner_id, item_type, item_id, recipient_id]):
+            logger.warning("Missing required parameters for updating item shares")
             return
         
         try:
-            # Find the item (journal or goal)
-            # This is a simplified version - in production you'd need proper indexes
-            if item_type == 'journal':
-                # Query for the journal entry
-                # Since we don't have the owner ID, we need to scan or use a GSI
-                # For now, we'll try to find it using a scan (not efficient for production)
-                response = self.table.scan(
-                    FilterExpression='sk = :sk',
-                    ExpressionAttributeValues={
-                        ':sk': f'JOURNAL#{item_id}'
-                    }
-                )
+            # Construct the correct key for the item
+            item_key = {
+                'pk': f'USER#{owner_id}',
+                'sk': f'{item_type.upper()}#{item_id}'
+            }
+            
+            # Get the current item
+            response = self.table.get_item(Key=item_key)
+            
+            if response.get('Item'):
+                item = response['Item']
+                shared_with = item.get('sharedWith', item.get('shared_with', []))
                 
-                if response.get('Items'):
-                    for item in response['Items']:
-                        shared_with = item.get('sharedWith', [])
-                        
-                        if action == 'remove' and recipient_id in shared_with:
-                            shared_with.remove(recipient_id)
-                            
-                            # Update the item
-                            self.table.update_item(
-                                Key={
-                                    'pk': item['pk'],
-                                    'sk': item['sk']
-                                },
-                                UpdateExpression='SET sharedWith = :sw, isShared = :is',
-                                ExpressionAttributeValues={
-                                    ':sw': shared_with,
-                                    ':is': len(shared_with) > 0
-                                }
-                            )
-                            break
+                if action == 'remove' and recipient_id in shared_with:
+                    shared_with.remove(recipient_id)
+                    
+                    # Update the item
+                    self.table.update_item(
+                        Key=item_key,
+                        UpdateExpression='SET sharedWith = :sw, isShared = :is',
+                        ExpressionAttributeValues={
+                            ':sw': shared_with,
+                            ':is': len(shared_with) > 0
+                        }
+                    )
+                    logger.info(f"Updated {item_type} {item_id} shares list - removed {recipient_id}")
+                else:
+                    logger.info(f"Recipient {recipient_id} not in shared list for {item_type} {item_id}")
                     
         except Exception as e:
             logger.warning(f"Failed to update item shares: {str(e)}")

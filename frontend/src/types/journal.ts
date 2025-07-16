@@ -22,6 +22,12 @@ export interface GoalProgress {
   completed: boolean;
 }
 
+export interface ShareAccess {
+  shareId: string;
+  permissions: string[];
+  expiresAt: string | null;
+}
+
 export interface JournalEntry {
   // Identification
   entryId: string;
@@ -51,6 +57,9 @@ export interface JournalEntry {
   encryptedKey?: string; // Base64 encrypted content key
   encryptionIv?: string; // Base64 initialization vector
   sharedWith: string[]; // User IDs this entry is shared with
+  
+  // Share access info when accessing via share
+  shareAccess?: ShareAccess;
 }
 
 export interface TemplateUsage {
@@ -128,4 +137,28 @@ export interface JournalListResponse {
   page: number;
   limit: number;
   hasMore: boolean;
+}
+
+export interface ShareInfo {
+  shareId: string;
+  sharedAt: string;
+  sharedBy?: string; // Email or user ID
+  sharedWith?: string; // Email or user ID
+  permissions: string[];
+  expiresAt: string | null;
+}
+
+export interface SharedJournalItem {
+  entry: JournalEntry;
+  shareInfo: ShareInfo;
+  isIncoming: boolean;
+}
+
+export interface SharedJournalsResponse {
+  entries: (JournalEntry | SharedJournalItem)[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+  filter: 'owned' | 'shared-with-me' | 'shared-by-me' | 'all';
 }

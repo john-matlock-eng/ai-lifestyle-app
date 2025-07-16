@@ -1,7 +1,7 @@
 // JournalViewPageEnhanced.tsx
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   ArrowLeft, 
   Edit, 
@@ -18,11 +18,12 @@ import {
   Users,
   X,
   BookOpen,
-  Maximize2
+  Maximize2,
+  Info
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/common';
-import { getEntry, deleteEntry, listEntries } from '@/api/journal';
+import { deleteEntry } from '@/api/journal';
 import { journalStorage } from '../services/JournalStorageService';
 import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
 import ShareDialog from '@/components/encryption/ShareDialog';
@@ -32,37 +33,50 @@ import { JournalActions } from '../components/JournalActions';
 import { JournalEntryRenderer } from '../components/JournalEntryRenderer';
 import { JournalReaderView } from '../components/JournalReaderView';
 import { useEncryption } from '@/contexts/useEncryption';
-import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
-import { getEncryptionService } from '@/services/encryption';
+import { getJournalService } from '../services/journal-service';
 import { getEmotionById, getEmotionEmoji } from '../components/EmotionSelector/emotionData';
+import { useJournalEntry, useJournalEntries } from '../hooks';
+import { useAuth } from '@/contexts/useAuth';
 import '../styles/journal-reader.css';
 
 export const JournalViewPageEnhanced: React.FC = () => {
   const { entryId } = useParams<{ entryId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { isEncryptionSetup } = useEncryption();
+  const { user } = useAuth();
+  const journalService = getJournalService();
+  
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showShareManagement, setShowShareManagement] = useState(false);
   const [showAIShareDialog, setShowAIShareDialog] = useState(false);
   const [shareSuccessMessage, setShareSuccessMessage] = useState<string | null>(null);
-  const [decryptedEntry, setDecryptedEntry] = useState<typeof entry | null>(null);
-  const [isDecrypting, setIsDecrypting] = useState(false);
   const [showReaderMode, setShowReaderMode] = useState(false);
 
-  // Fetch current entry
-  const { data: entry, isLoading, error, refetch } = useQuery({
-    queryKey: ['journal', 'entry', entryId],
-    queryFn: () => getEntry(entryId!),
-    enabled: !!entryId
+  // Fetch current entry (with decryption)
+  const { data: entry, isLoading, error } = useJournalEntry(entryId);
+
+  // Fetch all entries for navigation (only in reader mode)
+  const { data: entriesData } = useJournalEntries({
+    limit: 1000,
+    filter: 'all' // Include shared entries in navigation
   });
 
-  // Fetch all entries for navigation
-  const { data: entriesData } = useQuery({
-    queryKey: ['journal', 'entries', 'navigation'],
-    queryFn: () => listEntries({ limit: 1000 }),
-    enabled: showReaderMode // Only fetch when reader mode is active
-  });
+  // Check access permissions
+  const canEdit = React.useMemo(() => {
+    if (!entry || !user) return false;
+    return journalService.canEditEntry(entry, user.id);
+  }, [entry, user, journalService]);
+
+  const canShare = React.useMemo(() => {
+    if (!entry || !user) return false;
+    return journalService.canShareEntry(entry, user.id);
+  }, [entry, user, journalService]);
+
+  const isSharedAccess = React.useMemo(() => {
+    return !!entry?.shareAccess;
+  }, [entry]);
 
   // Calculate navigation state
   const navigationInfo = React.useMemo(() => {
@@ -70,7 +84,11 @@ export const JournalViewPageEnhanced: React.FC = () => {
       return { hasPrevious: false, hasNext: false, previousId: null, nextId: null };
     }
     
-    const entries = entriesData.entries;
+    // Extract entries from the response (could be JournalEntry or SharedJournalItem)
+    const entries = entriesData.entries.map(item => 
+      'entry' in item ? item.entry : item
+    );
+    
     const currentIndex = entries.findIndex(e => e.entryId === entryId);
     
     return {
@@ -87,11 +105,15 @@ export const JournalViewPageEnhanced: React.FC = () => {
     onSuccess: async () => {
       // Remove from IndexedDB
       await journalStorage.deleteEntry(entryId!);
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ['journal-entries'] });
       navigate('/journal');
     }
   });
 
   const handleDelete = () => {
+    if (!canEdit) return;
+    
     if (showDeleteConfirm) {
       deleteMutation.mutate();
     } else {
@@ -104,7 +126,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
     console.log('Created shares:', tokens);
     setShareSuccessMessage(`Successfully shared with ${tokens.length} recipient${tokens.length > 1 ? 's' : ''}`);
     setTimeout(() => setShareSuccessMessage(null), 3000);
-    refetch(); // Refresh entry to show updated sharing status
+    queryClient.invalidateQueries({ queryKey: ['journal-entry', entryId] });
   };
 
   const handleAIAnalysis = (analysisId: string) => {
@@ -117,61 +139,8 @@ export const JournalViewPageEnhanced: React.FC = () => {
     console.log('Revoked share:', shareId);
     setShareSuccessMessage('Share access has been revoked.');
     setTimeout(() => setShareSuccessMessage(null), 3000);
-    refetch(); // Refresh entry data
+    queryClient.invalidateQueries({ queryKey: ['journal-entry', entryId] });
   };
-
-  const decryptContent = React.useCallback(async () => {
-    if (!entry) return;
-    
-    console.log('[Decryption] Starting decryption for entry:', entry.entryId);
-    console.log('[Decryption] Entry has encryptedKey:', !!entry.encryptedKey);
-    console.log('[Decryption] Entry has encryptionIv:', !!entry.encryptionIv);
-    
-    try {
-      setIsDecrypting(true);
-      const encryptionService = getEncryptionService();
-      const decrypted = await encryptionService.decryptContent({
-        content: entry.content,
-        encryptedKey: entry.encryptedKey!,
-        iv: entry.encryptionIv!,
-      });
-      
-      console.log('[Decryption] Successfully decrypted, content length:', decrypted.length);
-      
-      // Create a decrypted version of the entry
-      setDecryptedEntry({
-        ...entry,
-        content: decrypted
-      });
-    } catch (error) {
-      console.error('[Decryption] Failed to decrypt content:', error);
-      setDecryptedEntry(null);
-    } finally {
-      setIsDecrypting(false);
-    }
-  }, [entry]);
-
-  // Handle decryption when entry loads
-  React.useEffect(() => {
-    if (!entry) {
-      console.log('[Decryption Effect] No entry yet');
-      return;
-    }
-
-    const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
-    console.log('[Decryption Effect] Entry loaded:', entry.entryId);
-    console.log('[Decryption Effect] isEncrypted flag:', entry.isEncrypted);
-    console.log('[Decryption Effect] shouldTreatAsEncrypted:', isActuallyEncrypted);
-    console.log('[Decryption Effect] Has encryptedKey:', !!entry.encryptedKey);
-    
-    if (isActuallyEncrypted && entry.encryptedKey) {
-      console.log('[Decryption Effect] Starting decryption...');
-      decryptContent();
-    } else {
-      console.log('[Decryption Effect] Using entry as-is (not encrypted or no key)');
-      setDecryptedEntry(entry);
-    }
-  }, [entry, decryptContent]);
 
   const handleNavigate = (direction: 'prev' | 'next') => {
     const targetId = direction === 'prev' ? navigationInfo.previousId : navigationInfo.nextId;
@@ -231,6 +200,9 @@ export const JournalViewPageEnhanced: React.FC = () => {
         <div className="container mx-auto py-8 px-4">
           <div className="text-center py-12">
             <p className="text-error mb-4">Failed to load journal entry</p>
+            <p className="text-sm text-muted mb-4">
+              The entry may not exist or your share access may have expired.
+            </p>
             <Button onClick={() => navigate('/journal')}>
               Back to Journals
             </Button>
@@ -241,11 +213,11 @@ export const JournalViewPageEnhanced: React.FC = () => {
   }
 
   // Show reader mode if enabled
-  if (showReaderMode && decryptedEntry) {
+  if (showReaderMode && entry) {
     return (
       <JournalReaderView
-        entry={decryptedEntry}
-        onEdit={() => navigate(`/journal/${entryId}/edit`)}
+        entry={entry}
+        onEdit={canEdit ? () => navigate(`/journal/${entryId}/edit`) : undefined}
         onClose={() => setShowReaderMode(false)}
         onNavigate={handleNavigate}
         hasPrevious={navigationInfo.hasPrevious}
@@ -261,6 +233,26 @@ export const JournalViewPageEnhanced: React.FC = () => {
         {shareSuccessMessage && (
           <div className="mb-4 p-3 bg-success/10 text-success rounded-lg">
             {shareSuccessMessage}
+          </div>
+        )}
+
+        {/* Shared Access Notification */}
+        {isSharedAccess && entry.shareAccess && (
+          <div className="mb-4 p-4 bg-info/10 rounded-lg border border-info/20">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-theme">
+                  This journal was shared with you
+                </p>
+                <p className="text-xs text-muted mt-1">
+                  {entry.shareAccess.expiresAt 
+                    ? `Access expires: ${format(new Date(entry.shareAccess.expiresAt), 'MMM d, yyyy at h:mm a')}`
+                    : 'No expiration date'
+                  }
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -284,7 +276,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
               <BookOpen className="w-4 h-4 mr-2" />
               Read
             </Button>
-            {isEncryptionSetup && entry.isEncrypted && (
+            {isEncryptionSetup && entry.isEncrypted && canShare && (
               <JournalActions
                 entry={entry}
                 onShare={() => setShowShareDialog(true)}
@@ -292,23 +284,27 @@ export const JournalViewPageEnhanced: React.FC = () => {
                 onManageShares={() => setShowShareManagement(true)}
               />
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/journal/${entryId}/edit`)}
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              className={showDeleteConfirm ? 'text-error' : ''}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              {showDeleteConfirm ? 'Confirm Delete?' : 'Delete'}
-            </Button>
+            {canEdit && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/journal/${entryId}/edit`)}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDelete}
+                  className={showDeleteConfirm ? 'text-error' : ''}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {showDeleteConfirm ? 'Confirm Delete?' : 'Delete'}
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -388,59 +384,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
 
         {/* Content */}
         <div className="glass rounded-2xl p-8 mb-6">
-          {(() => {
-            // Debug logging
-            console.log('[Render] isDecrypting:', isDecrypting);
-            console.log('[Render] decryptedEntry exists:', !!decryptedEntry);
-            console.log('[Render] entry.isEncrypted:', entry?.isEncrypted);
-            console.log('[Render] shouldTreatAsEncrypted:', entry ? shouldTreatAsEncrypted(entry) : false);
-            
-            if (isDecrypting) {
-              return (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
-                  <p className="text-muted">Decrypting content...</p>
-                </div>
-              );
-            }
-            
-            // Check if we should treat this as encrypted
-            const isActuallyEncrypted = entry ? shouldTreatAsEncrypted(entry) : false;
-            
-            if (isActuallyEncrypted && !decryptedEntry) {
-              // Entry is encrypted but we don't have decrypted content
-              return (
-                <div className="text-center py-12">
-                  <Lock className="w-12 h-12 text-muted mx-auto mb-4" />
-                  <p className="text-lg font-semibold text-theme mb-2">This entry is encrypted</p>
-                  <p className="text-sm text-muted">
-                    Unable to decrypt content. Please ensure encryption is unlocked.
-                  </p>
-                  {!isEncryptionSetup && (
-                    <p className="text-sm text-muted mt-2">
-                      Encryption needs to be set up to view this content.
-                    </p>
-                  )}
-                </div>
-              );
-            }
-            
-            if (decryptedEntry) {
-              return <JournalEntryRenderer entry={decryptedEntry} />;
-            }
-            
-            // If not encrypted, show the entry as-is
-            if (entry && !isActuallyEncrypted) {
-              return <JournalEntryRenderer entry={entry} />;
-            }
-            
-            // Fallback
-            return (
-              <div className="text-center py-12">
-                <p className="text-muted">No content available</p>
-              </div>
-            );
-          })()}
+          <JournalEntryRenderer entry={entry} />
         </div>
 
         {/* Goal Progress */}
@@ -486,7 +430,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
             Reader Mode
           </Button>
           
-          {isEncryptionSetup && entry.isEncrypted ? (
+          {canShare && isEncryptionSetup && entry.isEncrypted ? (
             <Button
               variant="outline"
               onClick={() => setShowShareDialog(true)}
@@ -494,7 +438,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
               <Share2 className="w-4 h-4 mr-2" />
               Share Encrypted
             </Button>
-          ) : (
+          ) : !isSharedAccess && (
             <Button
               variant="outline"
               onClick={() => {
@@ -513,7 +457,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
             </Button>
           )}
           
-          {entry.sharedWith && entry.sharedWith.length > 0 && (
+          {canShare && entry.sharedWith && entry.sharedWith.length > 0 && (
             <Button
               variant="ghost"
               onClick={() => setShowShareManagement(true)}
@@ -523,45 +467,51 @@ export const JournalViewPageEnhanced: React.FC = () => {
             </Button>
           )}
           
-          <Button
-            onClick={() => navigate(`/journal/${entryId}/edit`)}
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Edit Entry
-          </Button>
+          {canEdit && (
+            <Button
+              onClick={() => navigate(`/journal/${entryId}/edit`)}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Edit Entry
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Share Dialog */}
-      <ShareDialog
-        isOpen={showShareDialog}
-        onClose={() => setShowShareDialog(false)}
-        items={[{
-          id: entry.entryId,
-          title: entry.title,
-          type: 'journal',
-          createdAt: entry.createdAt,
-          encrypted: entry.isEncrypted
-        }]}
-        onShare={handleShare}
-      />
+      {canShare && (
+        <ShareDialog
+          isOpen={showShareDialog}
+          onClose={() => setShowShareDialog(false)}
+          items={[{
+            id: entry.entryId,
+            title: entry.title,
+            type: 'journal',
+            createdAt: entry.createdAt,
+            encrypted: entry.isEncrypted
+          }]}
+          onShare={handleShare}
+        />
+      )}
 
       {/* AI Share Dialog */}
-      <AIShareDialog
-        isOpen={showAIShareDialog}
-        onClose={() => setShowAIShareDialog(false)}
-        items={[{
-          id: entry.entryId,
-          title: entry.title,
-          type: 'journal',
-          createdAt: entry.createdAt,
-          encrypted: entry.isEncrypted
-        }]}
-        onAnalysisComplete={handleAIAnalysis}
-      />
+      {canShare && (
+        <AIShareDialog
+          isOpen={showAIShareDialog}
+          onClose={() => setShowAIShareDialog(false)}
+          items={[{
+            id: entry.entryId,
+            title: entry.title,
+            type: 'journal',
+            createdAt: entry.createdAt,
+            encrypted: entry.isEncrypted
+          }]}
+          onAnalysisComplete={handleAIAnalysis}
+        />
+      )}
 
       {/* Share Management Modal */}
-      {showShareManagement && (
+      {showShareManagement && canShare && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-surface rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-auto">
             <div className="flex items-center justify-between mb-6">

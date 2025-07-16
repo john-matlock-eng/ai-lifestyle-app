@@ -32,9 +32,9 @@ import GoalDetailPage from './pages/goals/GoalDetailPage';
 import { 
   JournalPageEnhanced, 
   JournalEditPageEnhanced, 
-  JournalViewPageEnhanced 
+  JournalViewPageEnhanced,
+  SharedJournalsPage 
 } from './features/journal/pages';
-import SharedJournalsPage from './pages/journal/SharedJournalsPage';
 import JournalDebugPage from './pages/journal/JournalDebugPage';
 
 // Components

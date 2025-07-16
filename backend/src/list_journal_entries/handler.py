@@ -94,6 +94,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         page = int(query_params.get('page', '1'))
         limit = int(query_params.get('limit', '20'))
         goal_id = query_params.get('goalId')
+        filter_type = query_params.get('filter', 'owned')  # 'owned', 'shared-with-me', 'shared-by-me', 'all'
         
         # Validate pagination
         if page < 1:
@@ -113,7 +114,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 user_id=user_id,
                 page=page,
                 limit=limit,
-                goal_id=goal_id
+                goal_id=goal_id,
+                filter_type=filter_type
             )
         except Exception as e:
             logger.error(f"Failed to list journal entries: {str(e)}")
@@ -128,11 +130,11 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Add metrics
         metrics.add_metric(name="JournalEntriesListRequests", unit=MetricUnit.Count, value=1)
-        metrics.add_metric(name="JournalEntriesReturned", unit=MetricUnit.Count, value=len(response.entries))
+        metrics.add_metric(name="JournalEntriesReturned", unit=MetricUnit.Count, value=len(response.get('entries', [])))
         
         return create_response(
             status_code=200,
-            body=response.model_dump(by_alias=True, mode='json'),
+            body=response,  # Already a dict from service
             request_id=request_id
         )
         

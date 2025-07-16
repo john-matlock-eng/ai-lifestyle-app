@@ -392,6 +392,46 @@ class EncryptionRepository:
             logger.error(f"Error revoking share: {str(e)}")
             return False
     
+    def find_active_share(self, item_type: str, item_id: str, recipient_id: str) -> Optional[Share]:
+        """
+        Find an active share for a specific item and recipient.
+        
+        Args:
+            item_type: Type of item (e.g., 'journal')
+            item_id: Item ID
+            recipient_id: Recipient user ID
+            
+        Returns:
+            Active share if found
+        """
+        shares = self.get_shares_for_recipient(recipient_id, item_type, active_only=True)
+        
+        for share in shares:
+            if share.item_id == item_id:
+                # Check if still valid
+                if share.expires_at and share.expires_at < datetime.now(timezone.utc):
+                    continue
+                if share.max_accesses and share.access_count >= share.max_accesses:
+                    continue
+                return share
+        
+        return None
+    
+    def record_share_access(self, share_id: str) -> bool:
+        """
+        Record that a share was accessed.
+        
+        Args:
+            share_id: Share ID
+            
+        Returns:
+            True if successful
+        """
+        # This is a simplified version - in reality we'd need to look up the recipient
+        # For now, this is handled by update_share_access
+        logger.info(f"Share {share_id} accessed")
+        return True
+    
     def _item_to_share(self, item: Dict[str, Any]) -> Share:
         """Convert DynamoDB item to Share model."""
         return Share(

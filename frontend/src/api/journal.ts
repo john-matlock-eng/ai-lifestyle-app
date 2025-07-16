@@ -4,24 +4,15 @@ import type {
   JournalStats,
   CreateJournalEntryRequest,
   UpdateJournalEntryRequest,
-  JournalListResponse,
+  SharedJournalsResponse,
+  SharedJournalItem,
 } from '../types/journal';
 
 interface ListJournalEntriesParams {
   page?: number;
   limit?: number;
   goalId?: string;
-}
-
-interface SharedJournal {
-  entry: JournalEntry;
-  shareInfo: {
-    sharedAt: string;
-    sharedBy?: string;
-    permissions: string[];
-    expiresAt?: string;
-  };
-  isIncoming: boolean;
+  filter?: 'owned' | 'shared-with-me' | 'shared-by-me' | 'all';
 }
 
 const journalApi = {
@@ -35,8 +26,8 @@ const journalApi = {
     return data;
   },
 
-  async listEntries(params?: ListJournalEntriesParams): Promise<JournalListResponse> {
-    const { data } = await apiClient.get<JournalListResponse>('/journal', { params });
+  async listEntries(params?: ListJournalEntriesParams): Promise<SharedJournalsResponse> {
+    const { data } = await apiClient.get<SharedJournalsResponse>('/journal', { params });
     return data;
   },
 
@@ -54,11 +45,12 @@ const journalApi = {
     return data;
   },
 
-  async getSharedJournals(filter?: string): Promise<SharedJournal[]> {
-    const { data } = await apiClient.get<SharedJournal[]>('/journal/shared', {
-      params: { filter }
-    });
-    return data;
+  // Deprecated - use listEntries with filter parameter instead
+  async getSharedJournals(filter?: string): Promise<SharedJournalItem[]> {
+    const response = await listEntries({ filter: (filter as 'owned' | 'shared-with-me' | 'shared-by-me' | 'all') || 'all' });
+    return response.entries.filter((e): e is SharedJournalItem => 
+      'shareInfo' in e && e.shareInfo !== undefined
+    );
   },
 
   async shareJournal(entryId: string, recipientEmail: string, permissions: string[], expiresInHours: number): Promise<{ shareId: string }> {
