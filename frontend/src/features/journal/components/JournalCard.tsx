@@ -100,9 +100,11 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, clas
             </div>
           )}
           {isActuallyEncrypted ? (
-            <Lock className="w-4 h-4 text-muted" />
+            <div className="p-1.5 bg-accent/20 rounded-lg" title="Encrypted entry">
+              <Lock className="w-4 h-4 text-accent" />
+            </div>
           ) : (
-            <Unlock className="w-4 h-4 text-muted opacity-50" />
+            <Unlock className="w-4 h-4 text-muted/30" />
           )}
         </div>
       </div>

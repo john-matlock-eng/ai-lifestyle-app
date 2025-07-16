@@ -9,15 +9,23 @@ export function isContentActuallyEncrypted(content: string): boolean {
     return false;
   }
 
+  // First, check if it looks like base64
+  const base64Regex = /^[A-Za-z0-9+/=]+$/;
+  const cleanContent = content.replace(/\s/g, ''); // Remove whitespace
+  
+  if (!base64Regex.test(cleanContent)) {
+    return false; // Not base64, so not encrypted
+  }
+
   // Check if the content looks like plain text (contains common readable patterns)
   const plainTextIndicators = [
     /^#{1,6}\s/m,  // Markdown headers
     /\*\*.*\*\*/,   // Bold text
     /\n---\n/,      // Horizontal rules
-    /\w{3,}/,       // Words with 3+ characters
+    /\b(the|and|or|is|in|to|of|a|an)\b/i, // Common English words
     /[.!?]\s+[A-Z]/, // Sentences
-    /\s{2,}/,       // Multiple spaces
-    /\n{2,}/        // Multiple newlines
+    /\s{2,}/,       // Multiple spaces (not common in base64)
+    /\n{2,}/        // Multiple newlines (not common in base64)
   ];
 
   // If any plain text indicator is found, it's not encrypted
@@ -25,15 +33,8 @@ export function isContentActuallyEncrypted(content: string): boolean {
     return false;
   }
 
-  // Check if content is valid base64
+  // Additional checks for encrypted content
   try {
-    // Base64 regex pattern
-    const base64Regex = /^[A-Za-z0-9+/]+=*$/;
-    const cleanContent = content.replace(/\s/g, ''); // Remove whitespace
-    
-    if (!base64Regex.test(cleanContent)) {
-      return false;
-    }
 
     // Try to decode - encrypted content should decode to binary data
     const decoded = atob(cleanContent);
@@ -60,13 +61,23 @@ export function isContentActuallyEncrypted(content: string): boolean {
  * Determines if we should treat an entry as encrypted based on both
  * the isEncrypted flag and actual content analysis.
  */
-export function shouldTreatAsEncrypted(entry: { isEncrypted: boolean; content: string }): boolean {
+export function shouldTreatAsEncrypted(entry: { 
+  isEncrypted: boolean; 
+  content: string;
+  encryptedKey?: string;
+  encryptionIv?: string;
+}): boolean {
   // If the flag says it's not encrypted, trust it
   if (!entry.isEncrypted) {
     return false;
   }
 
-  // If the flag says it's encrypted, verify the content actually is
+  // If we have encryption keys, it's definitely encrypted
+  if (entry.encryptedKey && entry.encryptionIv) {
+    return true;
+  }
+
+  // Otherwise, verify the content actually looks encrypted
   return isContentActuallyEncrypted(entry.content);
 }
 
