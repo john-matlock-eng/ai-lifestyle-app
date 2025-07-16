@@ -17,6 +17,55 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
   entry,
   className = ''
 }) => {
+  // Parse HTML content with section markers - improved version
+  const parseHTMLContent = (html: string): Record<string, string> | null => {
+    const data: Record<string, string> = {};
+    
+    // Create a temporary div to parse HTML properly
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // Find all h3 elements and their following content
+    const h3Elements = tempDiv.querySelectorAll('h3');
+    
+    h3Elements.forEach((h3) => {
+      const title = h3.textContent?.trim() || '';
+      let content = '';
+      
+      // Get all sibling elements until the next h3
+      let nextElement = h3.nextElementSibling;
+      const contentElements: string[] = [];
+      
+      while (nextElement && nextElement.tagName !== 'H3') {
+        const text = nextElement.textContent?.trim();
+        if (text && text !== '7') { // Skip standalone "7"
+          contentElements.push(text);
+        }
+        nextElement = nextElement.nextElementSibling;
+      }
+      
+      content = contentElements.join(' ').trim();
+      
+      // Map section titles to data keys
+      const titleLower = title.toLowerCase();
+      if (titleLower.includes('emotion')) {
+        data.emotions = content || '';
+      } else if (titleLower.includes('grateful')) {
+        data.gratitude = content || '';
+      } else if (titleLower.includes('highlight')) {
+        data.highlights = content || '';
+      } else if (titleLower.includes('challenge') || titleLower.includes('lesson')) {
+        data.challenges = content || '';
+      } else if (titleLower.includes('tomorrow')) {
+        data.tomorrow = content || '';
+      } else if (titleLower.includes('additional') || titleLower.includes('notes')) {
+        data.notes = content || '';
+      }
+    });
+    
+    return Object.keys(data).length > 0 ? data : null;
+  };
+
   // Parse structured content if it exists
   const parseContent = (content: string) => {
     try {
@@ -26,6 +75,14 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
         return renderStructuredContent(parsed);
       }
     } catch {
+      // Try to parse as HTML with section markers
+      if (content.includes('<h3') || content.includes('<H3')) {
+        const htmlData = parseHTMLContent(content);
+        if (htmlData) {
+          return renderStructuredContent(htmlData);
+        }
+      }
+      
       // If not JSON, check if it looks like structured plain text
       if (entry.template === 'daily_reflection') {
         const structuredData = parseDailyReflectionText(content);
@@ -108,6 +165,11 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
 
   // Render structured content based on template type
   const renderStructuredContent = (data: Record<string, unknown>) => {
+    // Always render as daily reflection if we have the typical sections
+    if ('emotions' in data || 'gratitude' in data || 'highlights' in data || 'challenges' in data || 'tomorrow' in data) {
+      return renderDailyReflectionContent(data);
+    }
+    
     switch (entry.template) {
       case 'daily_reflection':
         return renderDailyReflectionContent(data);
@@ -550,8 +612,20 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
 
   const content = parseContent(entry.content);
 
-  // If content is a string, render as markdown
+  // If content is a string, check if it contains HTML
   if (typeof content === 'string') {
+    // Strip HTML tags if they exist to prevent raw HTML display
+    const cleanContent = content.replace(/<[^>]*>/g, '').replace(/<!--[\s\S]*?-->/g, '').trim();
+    
+    // If it looks like HTML was stripped, try to parse the structure
+    if (cleanContent !== content && (content.includes('<h3') || content.includes('<!--'))) {
+      const htmlData = parseHTMLContent(content);
+      if (htmlData && Object.keys(htmlData).length > 0) {
+        return <div className={`journal-content ${className}`}>{renderStructuredContent(htmlData)}</div>;
+      }
+    }
+    
+    // Otherwise render as markdown (without remark-gfm since it's not available)
     return (
       <div className={`journal-content ${className}`}>
         <ReactMarkdown
@@ -584,7 +658,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
             ),
           }}
         >
-          {content}
+          {cleanContent}
         </ReactMarkdown>
       </div>
     );
