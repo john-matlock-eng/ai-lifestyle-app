@@ -17,9 +17,14 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
   entry,
   className = ''
 }) => {
+  // Debug: Log the raw content to understand what we're parsing
+  console.log('[JournalEntryRenderer] Raw content:', entry.content);
+  console.log('[JournalEntryRenderer] Template:', entry.template);
   // Parse HTML content with section markers - improved version
   const parseHTMLContent = (html: string): Record<string, string> | null => {
     const data: Record<string, string> = {};
+    
+    console.log('[parseHTMLContent] Parsing HTML:', html);
     
     // Create a temporary div to parse HTML properly
     const tempDiv = document.createElement('div');
@@ -38,13 +43,15 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
       
       while (nextElement && nextElement.tagName !== 'H3') {
         const text = nextElement.textContent?.trim();
-        if (text && text !== '7') { // Skip standalone "7"
+        console.log('[parseHTMLContent] Found element:', nextElement.tagName, 'with text:', text);
+        if (text) {
           contentElements.push(text);
         }
         nextElement = nextElement.nextElementSibling;
       }
       
       content = contentElements.join(' ').trim();
+      console.log('[parseHTMLContent] Section', title, 'has content:', content);
       
       // Map section titles to data keys
       const titleLower = title.toLowerCase();
@@ -63,6 +70,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
       }
     });
     
+    console.log('[parseHTMLContent] Final parsed data:', data);
     return Object.keys(data).length > 0 ? data : null;
   };
 
@@ -145,10 +153,6 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
         currentContent.push(line);
       } else {
         // Try to match patterns
-        if (line.match(/^\d+$/)) {
-          // Skip standalone numbers
-          continue;
-        }
         // If no section, treat as notes
         if (!data.notes) data.notes = '';
         data.notes += (data.notes ? '\n' : '') + line;
@@ -221,7 +225,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
               ))}
             </ul>
           ) : (
-            <p>{(typeof reflectionData.gratitude === 'string' && reflectionData.gratitude !== '7' && reflectionData.gratitude.trim() !== '') ? reflectionData.gratitude : <span className="journal-empty-content">No gratitude items added</span>}</p>
+            <p>{(typeof reflectionData.gratitude === 'string' && reflectionData.gratitude.trim() !== '') ? reflectionData.gratitude : <span className="journal-empty-content">No gratitude items added</span>}</p>
           )}
         </section>
         
@@ -237,18 +241,18 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
               ))}
             </ul>
           ) : (
-            <p>{(typeof reflectionData.highlights === 'string' && reflectionData.highlights !== '7' && reflectionData.highlights.trim() !== '') ? reflectionData.highlights : <span className="journal-empty-content">No highlights added</span>}</p>
+            <p>{(typeof reflectionData.highlights === 'string' && reflectionData.highlights.trim() !== '') ? reflectionData.highlights : <span className="journal-empty-content">No highlights added</span>}</p>
           )}
         </section>
         
         <section className="journal-section">
           <h3>Challenges & Lessons</h3>
-          <p>{(typeof reflectionData.challenges === 'string' && reflectionData.challenges !== '7' && reflectionData.challenges.trim() !== '') ? reflectionData.challenges : <span className="journal-empty-content">No challenges noted</span>}</p>
+          <p>{(typeof reflectionData.challenges === 'string' && reflectionData.challenges.trim() !== '') ? reflectionData.challenges : <span className="journal-empty-content">No challenges noted</span>}</p>
         </section>
         
         <section className="journal-section">
           <h3>Tomorrow's Focus</h3>
-          <p>{(typeof reflectionData.tomorrow === 'string' && reflectionData.tomorrow !== '7' && reflectionData.tomorrow.trim() !== '') ? reflectionData.tomorrow : <span className="journal-empty-content">No focus set for tomorrow</span>}</p>
+          <p>{(typeof reflectionData.tomorrow === 'string' && reflectionData.tomorrow.trim() !== '') ? reflectionData.tomorrow : <span className="journal-empty-content">No focus set for tomorrow</span>}</p>
         </section>
         
         {reflectionData.notes && (
