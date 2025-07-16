@@ -156,6 +156,11 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "GET /encryption/shares": list_shares_handler,
         "POST /encryption/ai-shares": create_ai_share_handler,
         "DELETE /encryption/shares/{shareId}": revoke_share_handler,
+        # Share endpoints (generic - handles both encrypted and non-encrypted)
+        "POST /shares": create_share_handler,
+        "GET /shares": list_shares_handler,
+        "POST /ai-shares": create_ai_share_handler,
+        "DELETE /shares/{shareId}": revoke_share_handler,
         "POST /encryption/recovery": setup_recovery_handler,
         "DELETE /encryption/keys": delete_encryption_keys_handler,
     }
