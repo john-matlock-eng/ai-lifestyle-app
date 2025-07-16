@@ -54,8 +54,13 @@ export function useJournalSearch(options: UseJournalSearchOptions = {}): UseJour
       // Fetch all entries for local caching (up to 1000)
       const response = await listEntries({ page: 1, limit: 1000 });
       
+      // Extract JournalEntry objects from the response
+      const journalEntries = response.entries.map(item => 
+        'entry' in item ? item.entry : item
+      );
+      
       // Sync with local storage
-      await journalStorage.syncWithServer(response.entries);
+      await journalStorage.syncWithServer(journalEntries);
       
       return response;
     },

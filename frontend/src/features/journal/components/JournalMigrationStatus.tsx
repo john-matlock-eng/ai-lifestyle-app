@@ -11,6 +11,7 @@ import { Button } from '@/components/common';
 import { useJournalMigration, JournalContentMigrationService } from '../services/journal-content-migration';
 import { useJournalEntries } from '../hooks';
 import { updateEntry as updateJournalEntry } from '@/api/journal';
+import type { JournalEntry } from '@/types/journal';
 
 export const JournalMigrationStatus: React.FC = () => {
   const { migrateEntries, isRunning, progress, result, reset } = useJournalMigration();
@@ -18,7 +19,11 @@ export const JournalMigrationStatus: React.FC = () => {
   const [showDetails, setShowDetails] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   
-  const entries = entriesData?.entries || [];
+  const rawEntries = entriesData?.entries || [];
+  // Extract JournalEntry from SharedJournalItem if needed
+  const entries = rawEntries.map(item => 
+    'entry' in item ? item.entry : item
+  );
   const needsMigration = entries.filter(entry => 
     JournalContentMigrationService.needsMigration(entry)
   );
@@ -26,7 +31,7 @@ export const JournalMigrationStatus: React.FC = () => {
   const handleMigrate = async () => {
     if (needsMigration.length === 0) return;
     
-    const migrationResult = await migrateEntries(needsMigration);
+    const migrationResult = await migrateEntries(needsMigration as JournalEntry[]);
     
     // Auto-save migrated entries
     if (migrationResult.migrated.length > 0) {

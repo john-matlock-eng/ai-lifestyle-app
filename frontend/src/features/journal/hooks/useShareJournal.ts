@@ -17,7 +17,7 @@ export function useShareJournal() {
   return useMutation({
     mutationFn: ({ entry, recipientEmail, permissions, expiresInHours }: ShareJournalParams) =>
       journalService.shareJournal(entry, recipientEmail, permissions, expiresInHours),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // Invalidate journal entries to refresh the shared status
       queryClient.invalidateQueries({ queryKey: ['journal-entries'] });
       queryClient.invalidateQueries({ queryKey: ['journal-entry', variables.entry.entryId] });

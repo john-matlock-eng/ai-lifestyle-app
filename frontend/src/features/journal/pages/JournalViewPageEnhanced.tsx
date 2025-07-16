@@ -66,12 +66,12 @@ export const JournalViewPageEnhanced: React.FC = () => {
   // Check access permissions
   const canEdit = React.useMemo(() => {
     if (!entry || !user) return false;
-    return journalService.canEditEntry(entry, user.id);
+    return journalService.canEditEntry(entry, user.userId);
   }, [entry, user, journalService]);
 
   const canShare = React.useMemo(() => {
     if (!entry || !user) return false;
-    return journalService.canShareEntry(entry, user.id);
+    return journalService.canShareEntry(entry, user.userId);
   }, [entry, user, journalService]);
 
   const isSharedAccess = React.useMemo(() => {
@@ -217,7 +217,7 @@ export const JournalViewPageEnhanced: React.FC = () => {
     return (
       <JournalReaderView
         entry={entry}
-        onEdit={canEdit ? () => navigate(`/journal/${entryId}/edit`) : undefined}
+        onEdit={() => canEdit && navigate(`/journal/${entryId}/edit`)}
         onClose={() => setShowReaderMode(false)}
         onNavigate={handleNavigate}
         hasPrevious={navigationInfo.hasPrevious}

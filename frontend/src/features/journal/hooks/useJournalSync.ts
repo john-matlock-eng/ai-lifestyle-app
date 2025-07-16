@@ -3,7 +3,7 @@ import { useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { listEntries } from '@/api/journal';
 import { journalStorage } from '../services/JournalStorageService';
-import type { JournalListResponse } from '@/types/journal';
+import type { SharedJournalsResponse, JournalEntry } from '@/types/journal';
 
 interface UseJournalSyncOptions {
   enabled?: boolean;
@@ -15,7 +15,7 @@ export function useJournalSync(options: UseJournalSyncOptions = {}) {
   const queryClient = useQueryClient();
 
   // Fetch all entries from server
-  const { data, isLoading, error, refetch } = useQuery<JournalListResponse>({
+  const { data, isLoading, error, refetch } = useQuery<SharedJournalsResponse>({
     queryKey: ['journal-sync'],
     queryFn: () => listEntries({ limit: 1000 }), // Fetch all entries
     enabled,
@@ -34,10 +34,15 @@ export function useJournalSync(options: UseJournalSyncOptions = {}) {
     if (!data?.entries) return;
 
     try {
-      console.log(`Syncing ${data.entries.length} journal entries to local storage...`);
+      // Extract JournalEntry objects from the response
+      const journalEntries = data.entries.map(item => 
+        'entry' in item ? item.entry : item
+      ) as JournalEntry[];
+      
+      console.log(`Syncing ${journalEntries.length} journal entries to local storage...`);
       
       // Sync all entries
-      await journalStorage.syncWithServer(data.entries);
+      await journalStorage.syncWithServer(journalEntries);
       
       // Check if we should rebuild the decrypted cache
       const settings = await journalStorage.getSettings();
