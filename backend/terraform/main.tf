@@ -355,6 +355,20 @@ module "api_gateway" {
       authorization_type = "JWT"
     }
 
+    # Share endpoints (generic - handles both encrypted and non-encrypted)
+    "POST /shares" = {
+      authorization_type = "JWT"
+    }
+    "GET /shares" = {
+      authorization_type = "JWT"
+    }
+    "DELETE /shares/{shareId}" = {
+      authorization_type = "JWT"
+    }
+    "POST /ai-shares" = {
+      authorization_type = "JWT"
+    }
+
     # Encryption endpoints
     "POST /encryption/setup" = {
       authorization_type = "JWT"
