@@ -1,0 +1,72 @@
+import React from 'react';
+import { render } from '@testing-library/react';
+import { JournalEntryRenderer } from './JournalEntryRenderer';
+
+// Test data from the example
+const testEntry = {
+  content: `<article class="journal-entry">
+<!--SECTION:content:text:{"title":"Your Thoughts","type":"text","completedAt":"2025-07-16T00:50:10.564Z"}-->
+<h3>Your Thoughts</h3>
+This is the next step in processing the three blockers she brought up. The first entry was about capturing my initial, raw reaction. This one is about digging deeper, asking myself the hard questions, and starting to design a path forward for myself, regardless of what it means for us.
+
+**Blocker 1: "I have many people who rely on / depend on me."**
+
+- **Initial Thought:** *This is true. I've always seen this as a part of my identity, being the reliable one. But hearing her frame it as a risk makes me question if it's a strength or a liability.*
+
+- **Deeper Introspection:**
+
+  - **Question:** Is being "the reliable one" a strength or a liability?
+
+  - **Answer:** I think it's both. It's a strength because it comes from a place of care and capability. But it becomes a liability when I overextend myself to the point of exhaustion, when I don't allow others to be self-sufficient, and when it prevents a partner from feeling like they are the priority.
+<!--/SECTION-->
+
+<!--SECTION:emotions:emotions:{"title":"Current Emotions (Optional)","type":"emotions","completedAt":"2025-07-16T00:51:20.216Z"}-->
+<h3>Current Emotions (Optional)</h3>
+<p>Emotions: worried, nervous, hopeful</p>
+<!--/SECTION-->
+
+<!--SECTION:tags:tags:{"title":"Tags","type":"tags","completedAt":"2025-07-16T00:51:30.056Z"}-->
+<h3>Tags</h3>
+
+<!--/SECTION-->
+</article>`,
+  template: 'blank',
+  wordCount: 200
+};
+
+describe('JournalEntryRenderer Markdown', () => {
+  it('should render markdown formatting in text sections', () => {
+    const { container } = render(<JournalEntryRenderer entry={testEntry} />);
+    
+    // Check for bold text rendering
+    const boldElements = container.querySelectorAll('strong');
+    expect(boldElements.length).toBeGreaterThan(0);
+    expect(boldElements[0].textContent).toContain('Blocker 1');
+    
+    // Check for italic text rendering
+    const italicElements = container.querySelectorAll('em');
+    expect(italicElements.length).toBeGreaterThan(0);
+    
+    // Check for list rendering
+    const listItems = container.querySelectorAll('li');
+    expect(listItems.length).toBeGreaterThan(0);
+  });
+  
+  it('should parse emotions correctly', () => {
+    const { container } = render(<JournalEntryRenderer entry={testEntry} />);
+    
+    // Check that emotions are displayed
+    const emotionsText = container.textContent;
+    expect(emotionsText).toContain('worried');
+    expect(emotionsText).toContain('nervous');
+    expect(emotionsText).toContain('hopeful');
+  });
+  
+  it('should handle empty tags section', () => {
+    const { container } = render(<JournalEntryRenderer entry={testEntry} />);
+    
+    // Should show empty state for tags
+    const emptyContent = container.querySelector('.journal-empty-content');
+    expect(emptyContent).toBeTruthy();
+  });
+});

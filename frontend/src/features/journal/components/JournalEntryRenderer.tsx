@@ -39,11 +39,12 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
     
     let match;
     while ((match = regex.exec(html)) !== null) {
-      const [, sectionId, type, metadataStr, content] = match;
+      const [, sectionId, type, metadataStr, rawContent] = match;
       
       try {
         const metadata = JSON.parse(metadataStr);
-        const extractedContent = extractSectionContent(content.trim(), type);
+        // Pass the raw content to extractSectionContent
+        const extractedContent = extractSectionContent(rawContent, type);
         
         sections.push({
           sectionId,
@@ -52,7 +53,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
           content: extractedContent
         });
         
-        console.log('[parseSectionMarkers] Parsed section:', { sectionId, type, content: extractedContent });
+        console.log('[parseSectionMarkers] Parsed section:', { sectionId, type, contentLength: typeof extractedContent === 'string' ? extractedContent.length : 'N/A' });
       } catch (e) {
         console.error('[parseSectionMarkers] Error parsing section:', e);
       }
@@ -63,7 +64,30 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
 
   // Extract content from HTML section based on type
   const extractSectionContent = (html: string, type: string): unknown => {
-    // Create a temporary div to parse HTML
+    // For text sections, we need to preserve the markdown content
+    if (type === 'text') {
+      // Remove the h3 title line
+      const lines = html.split('\n');
+      const contentLines: string[] = [];
+      let skipNextLine = false;
+      
+      for (const line of lines) {
+        if (line.includes('<h3>') || line.includes('</h3>')) {
+          skipNextLine = true;
+          continue;
+        }
+        if (skipNextLine && line.trim() === '') {
+          skipNextLine = false;
+          continue;
+        }
+        contentLines.push(line);
+      }
+      
+      // Return the raw markdown content
+      return contentLines.join('\n').trim();
+    }
+    
+    // For other types, parse HTML as before
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     
@@ -73,13 +97,22 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
     
     switch (type) {
       case 'emotions': {
+        // Look for emotion patterns in the content
+        const emotionText = tempDiv.textContent?.trim() || '';
+        
+        // Check if it's in the format "Emotions: emotion1, emotion2, emotion3"
+        const emotionMatch = emotionText.match(/Emotions?:\s*(.+)/i);
+        if (emotionMatch) {
+          return emotionMatch[1].split(/[,;]/).map(e => e.trim()).filter(Boolean);
+        }
+        
         // Look for emotion list items or spans
         const emotionElements = tempDiv.querySelectorAll('li, span.emotion-item');
         if (emotionElements.length > 0) {
           return Array.from(emotionElements).map(el => el.textContent?.trim()).filter(Boolean);
         }
+        
         // Fallback to text content split by commas
-        const emotionText = tempDiv.textContent?.trim() || '';
         return emotionText.split(/[,;]/).map(e => e.trim()).filter(Boolean);
       }
         
@@ -106,12 +139,16 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
       }
         
       case 'tags': {
+        // For empty tags section, return empty array
+        const tagText = tempDiv.textContent?.trim() || '';
+        if (!tagText) return [];
+        
         // Look for tag elements or parse comma-separated text
         const tagElements = tempDiv.querySelectorAll('.tag, span.tag-item');
         if (tagElements.length > 0) {
           return Array.from(tagElements).map(el => el.textContent?.trim()).filter(Boolean);
         }
-        const tagText = tempDiv.textContent?.trim() || '';
+        
         return tagText.split(/[,;#]/).map(t => t.trim()).filter(Boolean);
       }
         
@@ -135,14 +172,9 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
         return selectedChoice?.textContent?.trim() || tempDiv.textContent?.trim() || '';
       }
         
-      case 'text':
       default: {
-        // For text sections, preserve paragraph structure
-        const paragraphs = tempDiv.querySelectorAll('p');
-        if (paragraphs.length > 0) {
-          return Array.from(paragraphs).map(p => p.textContent?.trim()).filter(Boolean).join('\n\n');
-        }
-        return tempDiv.textContent?.trim() || '';
+        // For unknown types, preserve the content as-is
+        return html.replace(/<h3>.*?<\/h3>/gi, '').trim();
       }
     }
   };
@@ -247,18 +279,31 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
     
     const text = typeof content === 'string' ? content : String(content);
     
-    // If content has line breaks, render as separate paragraphs
-    if (text.includes('\n\n')) {
-      return (
-        <div className="space-y-4">
-          {text.split('\n\n').map((paragraph, index) => (
-            <p key={index} className="leading-relaxed">{paragraph}</p>
-          ))}
-        </div>
-      );
-    }
-    
-    return <p className="leading-relaxed">{text}</p>;
+    // Render markdown content
+    return (
+      <ReactMarkdown
+        components={{
+          p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+          em: ({ children }) => <em className="italic">{children}</em>,
+          ul: ({ children }) => <ul className="mb-4 space-y-2 ml-6 list-disc">{children}</ul>,
+          ol: ({ children }) => <ol className="mb-4 space-y-2 ml-6 list-decimal">{children}</ol>,
+          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-4 border-accent pl-4 py-2 my-4 italic opacity-90">
+              {children}
+            </blockquote>
+          ),
+          code: ({ children }) => (
+            <code className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm">
+              {children}
+            </code>
+          ),
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    );
   };
 
   const renderEmotionsSection = (emotions: string[]) => {
@@ -483,11 +528,35 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
 
   const renderDailyReflectionContent = (data: unknown) => {
     const reflectionData = data as DailyReflectionData;
+    
+    // Helper to render markdown text
+    const renderMarkdownText = (text: string | undefined) => {
+      if (!text || text.trim() === '') {
+        return <span className="journal-empty-content">No content added</span>;
+      }
+      return (
+        <ReactMarkdown
+          components={{
+            p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+            em: ({ children }) => <em className="italic">{children}</em>,
+            ul: ({ children }) => <ul className="mb-4 space-y-2 ml-6 list-disc">{children}</ul>,
+            ol: ({ children }) => <ol className="mb-4 space-y-2 ml-6 list-decimal">{children}</ol>,
+            li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+          }}
+        >
+          {text}
+        </ReactMarkdown>
+      );
+    };
+    
     return (
       <div className="space-y-8">
         <section className="journal-section">
           <h3>Today's Emotions</h3>
-          <p className="emotion-display">{reflectionData.emotions || <span className="journal-empty-content">No emotions recorded</span>}</p>
+          <div className="emotion-display">
+            {reflectionData.emotions ? renderMarkdownText(reflectionData.emotions) : <span className="journal-empty-content">No emotions recorded</span>}
+          </div>
         </section>
         
         <section className="journal-section">
@@ -497,12 +566,12 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
               {reflectionData.gratitude.map((item: string, index: number) => (
                 <li key={index} className="flex items-start gap-3">
                   <span className="list-icon">🙏</span>
-                  <span className="flex-1">{item}</span>
+                  <span className="flex-1">{renderMarkdownText(item)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p>{(typeof reflectionData.gratitude === 'string' && reflectionData.gratitude.trim() !== '') ? reflectionData.gratitude : <span className="journal-empty-content">No gratitude items added</span>}</p>
+            typeof reflectionData.gratitude === 'string' ? renderMarkdownText(reflectionData.gratitude) : <span className="journal-empty-content">No gratitude items added</span>
           )}
         </section>
         
@@ -513,29 +582,29 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
               {reflectionData.highlights.map((item: string, index: number) => (
                 <li key={index} className="flex items-start gap-3">
                   <span className="list-icon">✨</span>
-                  <span className="flex-1">{item}</span>
+                  <span className="flex-1">{renderMarkdownText(item)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p>{(typeof reflectionData.highlights === 'string' && reflectionData.highlights.trim() !== '') ? reflectionData.highlights : <span className="journal-empty-content">No highlights added</span>}</p>
+            typeof reflectionData.highlights === 'string' ? renderMarkdownText(reflectionData.highlights) : <span className="journal-empty-content">No highlights added</span>
           )}
         </section>
         
         <section className="journal-section">
           <h3>Challenges & Lessons</h3>
-          <p>{(typeof reflectionData.challenges === 'string' && reflectionData.challenges.trim() !== '') ? reflectionData.challenges : <span className="journal-empty-content">No challenges noted</span>}</p>
+          {renderMarkdownText(reflectionData.challenges)}
         </section>
         
         <section className="journal-section">
           <h3>Tomorrow's Focus</h3>
-          <p>{(typeof reflectionData.tomorrow === 'string' && reflectionData.tomorrow.trim() !== '') ? reflectionData.tomorrow : <span className="journal-empty-content">No focus set for tomorrow</span>}</p>
+          {renderMarkdownText(reflectionData.tomorrow)}
         </section>
         
         {reflectionData.notes && (
           <section className="journal-section">
             <h3>Additional Notes</h3>
-            <p>{reflectionData.notes}</p>
+            {renderMarkdownText(reflectionData.notes)}
           </section>
         )}
       </div>
@@ -556,20 +625,27 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
       }
     }
     
-    // Try JSON parsing
-    try {
-      const parsed = JSON.parse(content);
-      if (typeof parsed === 'object' && parsed !== null) {
-        return renderStructuredContent(parsed);
+    // Skip JSON parsing for content that looks like markdown
+    const hasMarkdownIndicators = content.includes('**') || content.includes('*') || 
+                                  content.includes('#') || content.includes('-') || 
+                                  content.includes('[') || content.includes('```');
+    
+    // Try JSON parsing only if it doesn't look like markdown
+    if (!hasMarkdownIndicators) {
+      try {
+        const parsed = JSON.parse(content);
+        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+          return renderStructuredContent(parsed);
+        }
+      } catch {
+        // Not JSON, continue with other parsing methods
       }
-    } catch {
-      // Not JSON, continue with other parsing methods
     }
     
-    // Try legacy HTML parsing
-    if (content.includes('<h3') || content.includes('<H3')) {
+    // Try legacy HTML parsing only if it has explicit h3 tags
+    if ((content.includes('<h3>') || content.includes('<H3>')) && content.includes('</h3>')) {
       const htmlData = parseHTMLContent(content);
-      if (htmlData) {
+      if (htmlData && Object.keys(htmlData).length > 0) {
         return renderStructuredContent(htmlData);
       }
     }

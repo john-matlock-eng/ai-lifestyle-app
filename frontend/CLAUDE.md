@@ -8,10 +8,11 @@ This document provides comprehensive information about the frontend architecture
 ### 1. Check CI/CD Pipeline
 The CI/CD pipeline runs these exact commands:
 ```bash
+# ⚠️ TESTS ARE CURRENTLY DISABLED IN CI/CD - See CI_CD_TESTS_DISABLED.md
 # Run these BEFORE committing any changes:
-npm run lint          # Must pass with 0 errors
-npm run type-check    # Must pass with 0 errors
-npm run test:ci       # Must pass all tests
+npm run lint          # Must pass with 0 errors (DISABLED IN CI/CD)
+npm run type-check    # Must pass with 0 errors (DISABLED IN CI/CD)
+npm run test:ci       # Must pass all tests (DISABLED IN CI/CD)
 npm run build         # Must build successfully
 ```
 
