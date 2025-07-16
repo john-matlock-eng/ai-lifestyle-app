@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import {
   // Encryption Components
+  ShareDialog,
   EncryptionToggle,
   EncryptionIndicator,
-  ShareDialog,
-  KeyManagement,
 } from '../components/encryption';
 
 import {
@@ -324,15 +323,11 @@ export const ComponentShowcase: React.FC = () => {
                 />
               </div>
               
-              {/* Key Management */}
-              <div className="bg-surface rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
+              {/* Key Management - Component not yet implemented */}
+              {/* <div className="bg-surface rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
                 <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Key Management</h3>
-                <KeyManagement
-                  hasBackup={false}
-                  onBackup={async () => console.log('Backup created')}
-                  onRestore={async (key) => console.log('Restored with key:', key)}
-                />
-              </div>
+                <p className="text-muted">Component not yet implemented</p>
+              </div> */}
             </div>
           )}
 

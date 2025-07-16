@@ -3,11 +3,13 @@ import { Lock } from 'lucide-react';
 import { useEncryption } from '../contexts/useEncryption';
 import { Button } from './common';
 import { useNavigate } from 'react-router-dom';
+import { securePasswordStorage } from '../services/encryption/securePasswordStorage';
 
 export const EncryptionUnlockPrompt: React.FC = () => {
   const { isEncryptionEnabled, isEncryptionSetup, isEncryptionLocked, unlockEncryption } = useEncryption();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
+  const [rememberPassword, setRememberPassword] = useState(false);
   const [error, setError] = useState('');
   const [isUnlocking, setIsUnlocking] = useState(false);
 
@@ -23,6 +25,17 @@ export const EncryptionUnlockPrompt: React.FC = () => {
 
     try {
       await unlockEncryption(password);
+      
+      // Store password if remember checkbox is checked
+      if (rememberPassword) {
+        try {
+          await securePasswordStorage.storePassword(password);
+        } catch (storageError) {
+          console.error('Failed to store password:', storageError);
+          // Don't block unlock if storage fails
+        }
+      }
+      
       setPassword('');
     } catch {
       setError('Invalid password. Please try again.');
@@ -64,6 +77,19 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                     autoFocus
                     required
                   />
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="rememberPassword"
+                    checked={rememberPassword}
+                    onChange={(e) => setRememberPassword(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="rememberPassword" className="ml-2 text-sm text-gray-700">
+                    Remember password on this device (30 days)
+                  </label>
                 </div>
 
                 {error && (
@@ -110,6 +136,19 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                     autoFocus
                     required
                   />
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="rememberPassword"
+                    checked={rememberPassword}
+                    onChange={(e) => setRememberPassword(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="rememberPassword" className="ml-2 text-sm text-gray-700">
+                    Remember password on this device (30 days)
+                  </label>
                 </div>
 
                 {error && (

@@ -8,6 +8,7 @@ export interface EncryptionContextValue {
   unlockEncryption: (password: string) => Promise<void>;
   lockEncryption: () => void;
   checkEncryptionStatus: () => Promise<void>;
+  clearStoredPassword: () => void;
 }
 
 export const EncryptionContext = createContext<EncryptionContextValue | undefined>(undefined);
