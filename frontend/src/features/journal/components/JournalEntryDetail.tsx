@@ -1,4 +1,4 @@
-// JournalEntryDetail.tsx - Updated version
+// JournalEntryDetail.tsx - Fixed version
 import React, { useState, useEffect } from 'react';
 import { 
   Share2, 
@@ -12,13 +12,15 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  X
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import ShareDialog from '../../../components/encryption/ShareDialog';
 import AIShareDialog from '../../../components/encryption/AIShareDialog';
 import ShareManagement from '../../../components/encryption/ShareManagement';
 import { getEncryptionService } from '../../../services/encryption';
+import { useEncryption } from '../../../contexts/useEncryption';
 import type { JournalEntry } from '@/types/journal';
 import { getTemplateIcon, getTemplateName } from '../templates/template-utils';
 import { getEmotionById, getEmotionEmoji } from './EmotionSelector/emotionData';
@@ -44,21 +46,44 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   const [showMenu, setShowMenu] = useState(false);
   const [decryptedEntry, setDecryptedEntry] = useState<JournalEntry | null>(null);
   const [isDecrypting, setIsDecrypting] = useState(false);
+  const [decryptionError, setDecryptionError] = useState<string | null>(null);
+  
+  // Use the encryption context to ensure encryption is set up
+  const { isEncryptionSetup, isEncryptionLocked } = useEncryption();
   
   const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
+  const isSharedWithMe = entry.shareAccess !== undefined;
 
   useEffect(() => {
     if (isActuallyEncrypted && entry.encryptedKey) {
-      decryptContent();
+      // Only attempt decryption if encryption is set up and unlocked
+      if (isEncryptionSetup && !isEncryptionLocked) {
+        decryptContent();
+      } else if (isSharedWithMe && !isEncryptionSetup) {
+        // If this is a shared entry and encryption isn't set up, show an error
+        setDecryptionError('Encryption must be set up to view shared encrypted content. Please set up encryption in your profile.');
+      } else if (isEncryptionSetup && isEncryptionLocked) {
+        // Encryption is set up but locked
+        setDecryptionError('Encryption is locked. Please unlock encryption to view encrypted content.');
+      }
     } else {
       setDecryptedEntry(entry);
     }
-  }, [entry]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [entry, isEncryptionSetup, isEncryptionLocked]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const decryptContent = async () => {
     try {
       setIsDecrypting(true);
+      setDecryptionError(null);
+      
       const encryptionService = getEncryptionService();
+      
+      // Check if encryption service is initialized
+      const isSetup = await encryptionService.checkSetup();
+      if (!isSetup) {
+        throw new Error('Encryption not set up. Please set up encryption in your profile to view encrypted content.');
+      }
+      
       const decrypted = await encryptionService.decryptContent({
         content: entry.content,
         encryptedKey: entry.encryptedKey!,
@@ -72,6 +97,19 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
       });
     } catch (error) {
       console.error('Failed to decrypt content:', error);
+      
+      let errorMessage = 'Failed to decrypt content.';
+      if (error instanceof Error) {
+        if (error.message.includes('Encryption not initialized') || error.message.includes('Encryption not set up')) {
+          errorMessage = 'Encryption must be set up to view encrypted content. Please set up encryption in your profile.';
+        } else if (error.message.includes('OperationError')) {
+          errorMessage = 'Decryption failed. This may happen if the content was encrypted with a different password.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setDecryptionError(errorMessage);
       setDecryptedEntry(null);
     } finally {
       setIsDecrypting(false);
@@ -111,6 +149,10 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   };
 
   const moodDisplay = getMoodDisplay(entry.mood);
+
+  // Don't allow editing or sharing if this is a shared entry
+  const canEdit = !isSharedWithMe;
+  const canShare = !isSharedWithMe && isActuallyEncrypted;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -179,76 +221,102 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
 
               {showMenu && (
                 <div className="absolute right-0 top-full mt-1 w-48 bg-surface border border-surface-muted rounded-lg shadow-lg z-10">
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      onEdit();
-                    }}
-                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-surface-muted transition-colors text-left"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Edit Entry
-                  </button>
-                  
-                  {isActuallyEncrypted && (
+                  {canEdit && (
                     <>
                       <button
                         onClick={() => {
                           setShowMenu(false);
-                          setShowShareDialog(true);
+                          onEdit();
                         }}
                         className="w-full flex items-center gap-2 px-4 py-2 hover:bg-surface-muted transition-colors text-left"
                       >
-                        <Share2 className="w-4 h-4" />
-                        Share with Friends
+                        <Edit className="w-4 h-4" />
+                        Edit Entry
                       </button>
+                      
+                      {canShare && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setShowMenu(false);
+                              setShowShareDialog(true);
+                            }}
+                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-surface-muted transition-colors text-left"
+                          >
+                            <Share2 className="w-4 h-4" />
+                            Share with Friends
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              setShowMenu(false);
+                              setShowAIShareDialog(true);
+                            }}
+                            className="w-full flex items-center gap-2 px-4 py-2 hover:bg-surface-muted transition-colors text-left"
+                          >
+                            <Brain className="w-4 h-4" />
+                            AI Analysis
+                          </button>
+                          
+                          {entry.isShared && (
+                            <button
+                              onClick={() => {
+                                setShowMenu(false);
+                                setShowShareManagement(true);
+                              }}
+                              className="w-full flex items-center gap-2 px-4 py-2 hover:bg-surface-muted transition-colors text-left"
+                            >
+                              <Shield className="w-4 h-4" />
+                              Manage Shares
+                            </button>
+                          )}
+                        </>
+                      )}
+                      
+                      <hr className="my-1 border-surface-muted" />
                       
                       <button
                         onClick={() => {
                           setShowMenu(false);
-                          setShowAIShareDialog(true);
+                          if (confirm('Are you sure you want to delete this entry?')) {
+                            onDelete();
+                          }
                         }}
-                        className="w-full flex items-center gap-2 px-4 py-2 hover:bg-surface-muted transition-colors text-left"
+                        className="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-red-600 transition-colors text-left"
                       >
-                        <Brain className="w-4 h-4" />
-                        AI Analysis
+                        <Trash2 className="w-4 h-4" />
+                        Delete Entry
                       </button>
-                      
-                      {entry.isShared && (
-                        <button
-                          onClick={() => {
-                            setShowMenu(false);
-                            setShowShareManagement(true);
-                          }}
-                          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-surface-muted transition-colors text-left"
-                        >
-                          <Shield className="w-4 h-4" />
-                          Manage Shares
-                        </button>
-                      )}
                     </>
                   )}
                   
-                  <hr className="my-1 border-surface-muted" />
-                  
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      if (confirm('Are you sure you want to delete this entry?')) {
-                        onDelete();
-                      }
-                    }}
-                    className="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-red-600 transition-colors text-left"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete Entry
-                  </button>
+                  {!canEdit && (
+                    <div className="px-4 py-2 text-sm text-muted">
+                      This is a shared entry
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Share Access Info */}
+      {isSharedWithMe && entry.shareAccess && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-2 text-blue-800">
+            <Share2 className="w-5 h-5" />
+            <span className="font-medium">Shared with you</span>
+          </div>
+          <p className="text-sm text-blue-700 mt-1">
+            Permissions: {entry.shareAccess.permissions.join(', ')}
+            {entry.shareAccess.expiresAt && (
+              <> • Expires {formatDistanceToNow(new Date(entry.shareAccess.expiresAt), { addSuffix: true })}</>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Tags - shown at top level, not in renderer */}
       {entry.tags.length > 0 && (
@@ -264,19 +332,39 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
 
       {/* Content - Use template renderer */}
       <div className="mb-8">
-        {isDecrypting ? (
+        {isEncryptionLocked && isActuallyEncrypted ? (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <div className="flex items-start gap-3">
+              <Lock className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <div>
+                <p className="text-yellow-800 font-medium">Encryption is locked</p>
+                <p className="text-yellow-700 text-sm mt-1">Please unlock encryption to view this encrypted content.</p>
+              </div>
+            </div>
+          </div>
+        ) : isDecrypting ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : decryptionError ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+              <div>
+                <p className="text-red-800 font-medium">Unable to decrypt content</p>
+                <p className="text-red-700 text-sm mt-1">{decryptionError}</p>
+              </div>
+            </div>
           </div>
         ) : decryptedEntry ? (
           <JournalEntryRenderer entry={decryptedEntry} />
         ) : (
-          <p className="text-muted italic">Content could not be decrypted</p>
+          <p className="text-muted italic">Content not available</p>
         )}
       </div>
 
-      {/* Share status */}
-      {entry.isShared && (
+      {/* Share status (only for owned entries) */}
+      {!isSharedWithMe && entry.isShared && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div className="flex items-center gap-2 text-blue-800">
             <Share2 className="w-5 h-5" />
