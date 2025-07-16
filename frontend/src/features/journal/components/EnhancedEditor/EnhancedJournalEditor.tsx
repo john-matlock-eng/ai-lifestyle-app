@@ -30,6 +30,7 @@ import { enhancedTemplates } from '../../templates/enhanced-templates';
 import SectionEditor from './SectionEditor';
 import { getEncryptionService } from '@/services/encryption';
 import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
+import { useEncryption } from '@/contexts/useEncryption';
 
 export interface EnhancedJournalEditorProps {
   templateId?: JournalTemplateEnum;
@@ -52,6 +53,9 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
 }) => {
   // Get template configuration - use entry's template if editing
   const template = enhancedTemplates[entry?.template || templateId] || enhancedTemplates.blank;
+  
+  // Get encryption context
+  const { isEncryptionEnabled, isEncryptionLocked } = useEncryption();
   
   // State
   const [title, setTitle] = useState(entry?.title || '');
@@ -344,6 +348,12 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       
       // Handle encryption if enabled
       if (isEncrypted && showEncryption) {
+        // Check if encryption is locked
+        if (isEncryptionEnabled && isEncryptionLocked) {
+          // The EncryptionUnlockPrompt will automatically show
+          throw new Error('Please unlock encryption to save encrypted entries');
+        }
+        
         try {
           const encryptionService = getEncryptionService();
           const encrypted = await encryptionService.encryptContent(finalContent);
@@ -380,6 +390,10 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (error) {
       console.error('Failed to save journal entry:', error);
+      // Show user-friendly error message
+      if (error instanceof Error) {
+        alert(error.message);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -558,10 +572,12 @@ export const EnhancedJournalEditor: React.FC<EnhancedJournalEditorProps> = ({
                 type="checkbox"
                 checked={isEncrypted}
                 onChange={(e) => setIsEncrypted(e.target.checked)}
+                disabled={isEncryptionEnabled && isEncryptionLocked}
                 className="sr-only"
               />
               <span className="text-sm">
                 {isEncrypted ? 'Encrypted' : 'Not encrypted'}
+                {isEncryptionEnabled && isEncryptionLocked && ' (Locked)'}
               </span>
             </label>
           )}
