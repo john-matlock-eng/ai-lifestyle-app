@@ -12,7 +12,7 @@ import {
   Share2
 } from 'lucide-react';
 import { JournalTemplate } from '@/types/journal';
-import type { CreateJournalEntryRequest, UpdateJournalEntryRequest } from '@/types/journal';
+import type { CreateJournalEntryRequest, UpdateJournalEntryRequest, JournalEntry } from '@/types/journal';
 import { Button } from '@/components/common';
 import { createEntry } from '@/api/journal';
 import { journalStorage } from '../services/JournalStorageService';
@@ -23,6 +23,8 @@ import { DraftManager } from '../components/DraftManager';
 import { JournalSearchBar } from '../components/JournalSearchBar';
 import JournalCard from '../components/JournalCard';
 import { SearchResultsSummary } from '../components/SearchResultsSummary';
+import ShareDialog from '@/components/encryption/ShareDialog';
+import { shouldTreatAsEncrypted } from '@/utils/encryption-utils';
 
 type ViewMode = 'list' | 'create' | 'drafts';
 
@@ -30,6 +32,8 @@ export const JournalPageEnhanced: React.FC = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedTemplate, setSelectedTemplate] = useState<JournalTemplate | null>(null);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_selectedDraftKey, _setSelectedDraftKey] = useState<string | null>(null);
 
@@ -332,6 +336,10 @@ export const JournalPageEnhanced: React.FC = () => {
                   key={entry.entryId}
                   entry={entry}
                   onClick={() => navigate(`/journal/${entry.entryId}`)}
+                  onShare={() => {
+                    setSelectedEntry(entry);
+                    setShowShareDialog(true);
+                  }}
                 />
               ))}
             </div>
@@ -349,6 +357,30 @@ export const JournalPageEnhanced: React.FC = () => {
               </div>
             )}
           </>
+        )}
+        
+        {/* Share Dialog */}
+        {showShareDialog && selectedEntry && (
+          <ShareDialog
+            isOpen={showShareDialog}
+            onClose={() => {
+              setShowShareDialog(false);
+              setSelectedEntry(null);
+            }}
+            items={[{
+              id: selectedEntry.entryId,
+              title: selectedEntry.title,
+              type: 'journal',
+              createdAt: selectedEntry.createdAt,
+              encrypted: shouldTreatAsEncrypted(selectedEntry),
+            }]}
+            onShare={(tokens) => {
+              console.log('Shares created:', tokens);
+              // Optionally refresh the entries or show a success message
+              setShowShareDialog(false);
+              setSelectedEntry(null);
+            }}
+          />
         )}
       </div>
     </div>

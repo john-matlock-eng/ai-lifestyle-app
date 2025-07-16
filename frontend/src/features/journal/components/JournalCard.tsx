@@ -19,10 +19,11 @@ import { shouldTreatAsEncrypted, getSafeExcerpt } from '@/utils/encryption-utils
 interface JournalCardProps {
   entry: JournalEntry;
   onClick: () => void;
+  onShare?: () => void;
   className?: string;
 }
 
-const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '' }) => {
+const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, onShare, className = '' }) => {
   const getMoodDisplay = (mood?: string) => {
     if (!mood) return null;
     
@@ -105,6 +106,22 @@ const JournalCard: React.FC<JournalCardProps> = ({ entry, onClick, className = '
           )}
         </div>
       </div>
+
+      {/* Action Buttons */}
+      {isActuallyEncrypted && onShare && (
+        <div className="absolute top-6 right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare();
+            }}
+            className="p-2 rounded-lg bg-surface-muted hover:bg-accent/10 hover:text-accent transition-colors"
+            title="Share Entry"
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Content Preview */}
       <p className="text-sm text-muted line-clamp-3 mb-3">
