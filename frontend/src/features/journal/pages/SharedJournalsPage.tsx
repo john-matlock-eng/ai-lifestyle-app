@@ -29,7 +29,7 @@ export const SharedJournalsPage: React.FC = () => {
 
   // Fetch shared journals
   const { data, isLoading, error } = useJournalEntries({
-    filter: filter === 'all' ? undefined : filter,
+    filter: filter,
     limit: 50
   });
 

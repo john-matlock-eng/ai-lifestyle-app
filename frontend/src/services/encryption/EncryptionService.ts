@@ -317,7 +317,7 @@ export class EncryptionService {
 
     try {
       // Create AI shares with limited time access
-      const response = await apiClient.post('/encryption/ai-shares', {
+      const response = await apiClient.post('/ai-shares', {
         itemType,
         itemIds,
         analysisType,
@@ -348,7 +348,7 @@ export class EncryptionService {
   }>> {
     try {
       const params = itemType ? { itemType } : {};
-      const response = await apiClient.get('/encryption/shares', { params });
+      const response = await apiClient.get('/shares', { params });
       return response.data.shares || [];
     } catch (error) {
       console.error('Failed to get shares:', error);
@@ -361,7 +361,7 @@ export class EncryptionService {
    */
   async revokeShare(shareId: string): Promise<boolean> {
     try {
-      await apiClient.delete(`/encryption/shares/${shareId}`);
+      await apiClient.delete(`/shares/${shareId}`);
       return true;
     } catch (error) {
       console.error('Failed to revoke share:', error);
@@ -460,7 +460,7 @@ export class EncryptionService {
       );
       
       // 5. Create share on server
-      const shareResponse = await apiClient.post('/encryption/shares', {
+      const shareResponse = await apiClient.post('/shares', {
         itemType,
         itemId,
         recipientId: recipientUserId,
