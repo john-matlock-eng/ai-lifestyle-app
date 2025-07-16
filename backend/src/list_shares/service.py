@@ -72,32 +72,33 @@ class ListSharesService:
     def _get_sent_shares(self, user_id: str) -> List[Dict[str, Any]]:
         """Get shares created by the user."""
         try:
-            # Use the EmailIndex GSI which is keyed by gsi1_pk
+            # Use the EmailIndex GSI which is keyed by gsi1_pk for owner queries
             response = self.table.query(
                 IndexName='EmailIndex',
-                KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{user_id}') & Key('gsi1_sk').begins_with('SHARE#')
+                KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{user_id}') & Key('gsi1_sk').begins_with('SHARE#CREATED#')
             )
             
             shares = []
             for item in response.get('Items', []):
-                # Verify this is a share item and user is the owner
-                if (item.get('pk', '').startswith('SHARE#') and 
-                    item.get('ownerId') == user_id and
-                    item.get('isActive', False)):
-                    shares.append(item)
+                # Verify this is a share item and is active
+                if (item.get('Type') == 'Share' and 
+                    item.get('OwnerId') == user_id and
+                    item.get('IsActive', False)):
+                    # Transform field names to lowercase for consistency
+                    shares.append(self._normalize_share_fields(item))
             
             # Handle pagination if needed
             while 'LastEvaluatedKey' in response:
                 response = self.table.query(
                     IndexName='EmailIndex',
-                    KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{user_id}') & Key('gsi1_sk').begins_with('SHARE#'),
+                    KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{user_id}') & Key('gsi1_sk').begins_with('SHARE#CREATED#'),
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
                 for item in response.get('Items', []):
-                    if (item.get('pk', '').startswith('SHARE#') and 
-                        item.get('ownerId') == user_id and
-                        item.get('isActive', False)):
-                        shares.append(item)
+                    if (item.get('Type') == 'Share' and 
+                        item.get('OwnerId') == user_id and
+                        item.get('IsActive', False)):
+                        shares.append(self._normalize_share_fields(item))
             
             logger.info(f"Found {len(shares)} sent shares for user {user_id}")
             return shares
@@ -110,27 +111,26 @@ class ListSharesService:
     def _get_received_shares(self, user_id: str) -> List[Dict[str, Any]]:
         """Get shares received by the user."""
         try:
-            # Use the RecipientSharesIndex GSI
+            # Query shares directly under the recipient's partition key
             response = self.table.query(
-                IndexName='RecipientSharesIndex',
-                KeyConditionExpression=Key('gsi2_pk').eq(f'USER#{user_id}') & Key('gsi2_sk').begins_with('SHARE#')
+                KeyConditionExpression=Key('pk').eq(f'USER#{user_id}') & Key('sk').begins_with('SHARE#')
             )
             
             shares = []
             for item in response.get('Items', []):
-                if item.get('isActive', False):
-                    shares.append(item)
+                if item.get('Type') == 'Share' and item.get('IsActive', False):
+                    # Transform field names to lowercase for consistency
+                    shares.append(self._normalize_share_fields(item))
             
             # Handle pagination if needed
             while 'LastEvaluatedKey' in response:
                 response = self.table.query(
-                    IndexName='RecipientSharesIndex',
-                    KeyConditionExpression=Key('gsi2_pk').eq(f'USER#{user_id}') & Key('gsi2_sk').begins_with('SHARE#'),
+                    KeyConditionExpression=Key('pk').eq(f'USER#{user_id}') & Key('sk').begins_with('SHARE#'),
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
                 for item in response.get('Items', []):
-                    if item.get('isActive', False):
-                        shares.append(item)
+                    if item.get('Type') == 'Share' and item.get('IsActive', False):
+                        shares.append(self._normalize_share_fields(item))
             
             logger.info(f"Found {len(shares)} received shares for user {user_id}")
             return shares
@@ -138,6 +138,24 @@ class ListSharesService:
         except Exception as e:
             logger.error(f"Error getting received shares: {str(e)}")
             return []
+    
+    @tracer.capture_method
+    def _normalize_share_fields(self, share: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize share field names from uppercase to lowercase."""
+        return {
+            'shareId': share.get('ShareId', share.get('shareId')),
+            'itemType': share.get('ItemType', share.get('itemType')),
+            'itemId': share.get('ItemId', share.get('itemId')),
+            'ownerId': share.get('OwnerId', share.get('ownerId')),
+            'recipientId': share.get('RecipientId', share.get('recipientId')),
+            'permissions': share.get('Permissions', share.get('permissions', [])),
+            'createdAt': share.get('CreatedAt', share.get('createdAt')),
+            'expiresAt': share.get('ExpiresAt', share.get('expiresAt')),
+            'isActive': share.get('IsActive', share.get('isActive', False)),
+            'accessCount': share.get('AccessCount', share.get('accessCount', 0)),
+            'encryptedKey': share.get('EncryptedKey', share.get('encryptedKey')),
+            'isEncrypted': share.get('IsEncrypted', share.get('isEncrypted', False))
+        }
     
     @tracer.capture_method
     def _filter_expired_shares(self, shares: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

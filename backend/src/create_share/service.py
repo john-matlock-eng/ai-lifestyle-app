@@ -94,31 +94,34 @@ class CreateShareService:
         
         # Create share item
         share_item = {
-            'pk': f'SHARE#{share_id}',
+            'pk': f'USER#{recipient_id}',  # Store under recipient for easy querying
             'sk': f'SHARE#{share_id}',
-            'shareId': share_id,
-            'itemType': item_type,
-            'itemId': item_id,
-            'ownerId': owner_id,
-            'recipientId': recipient_id,
-            'permissions': permissions,
-            'isEncrypted': is_encrypted,
-            'createdAt': created_at.isoformat(),
-            'expiresAt': expires_at.isoformat() if expires_at else None,
-            'isActive': True,
-            'accessCount': 0,
-            # GSI attributes for querying
+            'Type': 'Share',  # Add Type field expected by repository
+            'ShareId': share_id,  # Use uppercase field names to match repository
+            'ItemType': item_type,
+            'ItemId': item_id,
+            'OwnerId': owner_id,
+            'RecipientId': recipient_id,
+            'Permissions': permissions,
+            'ShareType': 'user',  # Add ShareType field
+            'EncryptedKey': encrypted_key if encrypted_key else None,
+            'IsEncrypted': is_encrypted,
+            'CreatedAt': created_at.isoformat(),
+            'ExpiresAt': expires_at.isoformat() if expires_at else None,
+            'IsActive': True,
+            'AccessCount': 0,
+            'AccessedAt': None,
+            'MaxAccesses': None,
+            'RevokedAt': None,
+            # GSI attributes for owner queries
             'gsi1_pk': f'USER#{owner_id}',
-            'gsi1_sk': f'SHARE#{created_at.isoformat()}',
+            'gsi1_sk': f'SHARE#CREATED#{share_id}',  # Match repository format
+            # Additional GSIs for other queries
             'gsi2_pk': f'USER#{recipient_id}',
             'gsi2_sk': f'SHARE#{created_at.isoformat()}',
             'gsi3_pk': f'{item_type.upper()}#{item_id}',
             'gsi3_sk': f'SHARE#{created_at.isoformat()}'
         }
-        
-        # Add encrypted key if provided
-        if encrypted_key:
-            share_item['encryptedKey'] = encrypted_key
         
         # Save to DynamoDB
         try:
@@ -217,23 +220,21 @@ class CreateShareService:
     def _check_existing_share(self, owner_id: str, item_type: str, item_id: str, recipient_id: str) -> Optional[Dict[str, Any]]:
         """Check if an active share already exists."""
         try:
-            # Query shares for this item using the correct GSI
-            # Note: We might not have ItemSharesIndex, so let's query by owner first
+            # Query shares for this recipient
             response = self.table.query(
-                IndexName='EmailIndex',  # Using available GSI
-                KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{owner_id}')
+                KeyConditionExpression=Key('pk').eq(f'USER#{recipient_id}') & Key('sk').begins_with('SHARE#')
             )
             
-            # Filter for shares of this specific item to this specific recipient
+            # Filter for shares of this specific item from this owner
             for item in response.get('Items', []):
-                if (item.get('itemType') == item_type and
-                    item.get('itemId') == item_id and
-                    item.get('recipientId') == recipient_id and 
-                    item.get('isActive', False)):
+                if (item.get('ItemType') == item_type and
+                    item.get('ItemId') == item_id and
+                    item.get('OwnerId') == owner_id and
+                    item.get('IsActive', False)):
                     
                     # Check if not expired
-                    if item.get('expiresAt'):
-                        expires_at = datetime.fromisoformat(item['expiresAt'].replace('Z', '+00:00'))
+                    if item.get('ExpiresAt'):
+                        expires_at = datetime.fromisoformat(item['ExpiresAt'].replace('Z', '+00:00'))
                         if expires_at < datetime.now(timezone.utc):
                             continue
                     
@@ -243,7 +244,7 @@ class CreateShareService:
             
         except Exception as e:
             logger.warning(f"Error checking existing share: {str(e)}")
-            # If GSI doesn't exist, just continue - we'll allow the share
+            # If query fails, just continue - we'll allow the share
             return None
     
     @tracer.capture_method
