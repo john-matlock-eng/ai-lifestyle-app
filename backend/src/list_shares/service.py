@@ -72,27 +72,34 @@ class ListSharesService:
     def _get_sent_shares(self, user_id: str) -> List[Dict[str, Any]]:
         """Get shares created by the user."""
         try:
+            # Use the EmailIndex GSI which is keyed by gsi1_pk
             response = self.table.query(
-                IndexName='OwnerIndex',  # GSI1
+                IndexName='EmailIndex',
                 KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{user_id}') & Key('gsi1_sk').begins_with('SHARE#')
             )
             
             shares = []
             for item in response.get('Items', []):
-                if item.get('isActive', False):
+                # Verify this is a share item and user is the owner
+                if (item.get('pk', '').startswith('SHARE#') and 
+                    item.get('ownerId') == user_id and
+                    item.get('isActive', False)):
                     shares.append(item)
             
             # Handle pagination if needed
             while 'LastEvaluatedKey' in response:
                 response = self.table.query(
-                    IndexName='OwnerIndex',
+                    IndexName='EmailIndex',
                     KeyConditionExpression=Key('gsi1_pk').eq(f'USER#{user_id}') & Key('gsi1_sk').begins_with('SHARE#'),
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
                 for item in response.get('Items', []):
-                    if item.get('isActive', False):
+                    if (item.get('pk', '').startswith('SHARE#') and 
+                        item.get('ownerId') == user_id and
+                        item.get('isActive', False)):
                         shares.append(item)
             
+            logger.info(f"Found {len(shares)} sent shares for user {user_id}")
             return shares
             
         except Exception as e:
@@ -103,8 +110,9 @@ class ListSharesService:
     def _get_received_shares(self, user_id: str) -> List[Dict[str, Any]]:
         """Get shares received by the user."""
         try:
+            # Use the RecipientSharesIndex GSI
             response = self.table.query(
-                IndexName='RecipientIndex',  # GSI2
+                IndexName='RecipientSharesIndex',
                 KeyConditionExpression=Key('gsi2_pk').eq(f'USER#{user_id}') & Key('gsi2_sk').begins_with('SHARE#')
             )
             
@@ -116,7 +124,7 @@ class ListSharesService:
             # Handle pagination if needed
             while 'LastEvaluatedKey' in response:
                 response = self.table.query(
-                    IndexName='RecipientIndex',
+                    IndexName='RecipientSharesIndex',
                     KeyConditionExpression=Key('gsi2_pk').eq(f'USER#{user_id}') & Key('gsi2_sk').begins_with('SHARE#'),
                     ExclusiveStartKey=response['LastEvaluatedKey']
                 )
@@ -124,6 +132,7 @@ class ListSharesService:
                     if item.get('isActive', False):
                         shares.append(item)
             
+            logger.info(f"Found {len(shares)} received shares for user {user_id}")
             return shares
             
         except Exception as e:

@@ -97,12 +97,26 @@ module "users_table" {
     type = "S"
   }
 
-  global_secondary_indexes = [{
-    name            = "EmailIndex"
-    hash_key        = "gsi1_pk"
-    range_key       = "gsi1_sk"
-    projection_type = "ALL"
-  }]
+  global_secondary_indexes = [
+    {
+      name            = "EmailIndex"
+      hash_key        = "gsi1_pk"
+      range_key       = "gsi1_sk"
+      projection_type = "ALL"
+    },
+    {
+      name            = "RecipientSharesIndex"
+      hash_key        = "gsi2_pk"
+      range_key       = "gsi2_sk"
+      projection_type = "ALL"
+    },
+    {
+      name            = "ItemSharesIndex"
+      hash_key        = "gsi3_pk"
+      range_key       = "gsi3_sk"
+      projection_type = "ALL"
+    }
+  ]
 
   additional_attributes = [
     {
@@ -111,6 +125,22 @@ module "users_table" {
     },
     {
       name = "gsi1_sk"
+      type = "S"
+    },
+    {
+      name = "gsi2_pk"
+      type = "S"
+    },
+    {
+      name = "gsi2_sk"
+      type = "S"
+    },
+    {
+      name = "gsi3_pk"
+      type = "S"
+    },
+    {
+      name = "gsi3_sk"
       type = "S"
     }
   ]
