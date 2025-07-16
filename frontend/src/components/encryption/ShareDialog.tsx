@@ -462,6 +462,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
             resetMismatchState();
             checkForMismatch();
           }}
+          needsFullReset={hasMismatch && errorDetails ? (!errorDetails.hasSalt || !errorDetails.hasEncryptedPrivateKey) : false}
         />
       )}
     </div>

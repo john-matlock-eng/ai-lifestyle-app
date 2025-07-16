@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./index";
@@ -39,31 +39,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     enabled: !!user,
   });
 
-  // Check local encryption setup on mount and when profile changes
-  useEffect(() => {
-    if (profile) {
-      checkEncryptionStatus();
-    }
-  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Auto-unlock with stored password when encryption is setup but locked
-  useEffect(() => {
-    if (
-      isEncryptionSetup &&
-      isEncryptionLocked &&
-      !hasAttemptedAutoUnlock &&
-      user?.userId
-    ) {
-      attemptAutoUnlock();
-    }
-  }, [
-    isEncryptionSetup,
-    isEncryptionLocked,
-    hasAttemptedAutoUnlock,
-    user?.userId,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const attemptAutoUnlock = async () => {
+  const attemptAutoUnlock = useCallback(async () => {
     setHasAttemptedAutoUnlock(true);
     setIsCheckingAutoUnlock(true);
 
@@ -97,7 +73,32 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     } finally {
       setIsCheckingAutoUnlock(false);
     }
-  };
+  }, [user?.userId]);
+
+  // Check local encryption setup on mount and when profile changes
+  useEffect(() => {
+    if (profile) {
+      checkEncryptionStatus();
+    }
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-unlock with stored password when encryption is setup but locked
+  useEffect(() => {
+    if (
+      isEncryptionSetup &&
+      isEncryptionLocked &&
+      !hasAttemptedAutoUnlock &&
+      user?.userId
+    ) {
+      attemptAutoUnlock();
+    }
+  }, [
+    isEncryptionSetup,
+    isEncryptionLocked,
+    hasAttemptedAutoUnlock,
+    user?.userId,
+    attemptAutoUnlock,
+  ]);
 
   const checkEncryptionStatus = async () => {
     try {

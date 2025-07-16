@@ -755,19 +755,45 @@ export class EncryptionService {
   async forceResync(password: string, userId: string): Promise<void> {
     console.log("[Encryption] Force resyncing encryption");
 
-    // Clear all local data
-    await this.reset();
-
-    // Delete server encryption data
     try {
-      await apiClient.delete("/encryption/keys");
-      console.log("[Encryption] Deleted server encryption data");
-    } catch (error) {
-      console.warn("[Encryption] Could not delete server data:", error);
-    }
+      // First check what's on the server
+      const userResponse = await apiClient.get(`/encryption/user/${userId}`);
+      const serverData = userResponse.data;
 
-    // Re-initialize with fresh setup
-    await this.initialize(password, userId);
+      // If server has incomplete data, we can safely delete and recreate
+      if (!serverData.salt || !serverData.encryptedPrivateKey) {
+        console.log("[Encryption] Server has incomplete data, resetting everything");
+        
+        // Clear all local data
+        await this.reset();
+
+        // Delete server encryption data
+        try {
+          await apiClient.delete("/encryption/keys");
+          console.log("[Encryption] Deleted incomplete server encryption data");
+        } catch (error) {
+          console.warn("[Encryption] Could not delete server data:", error);
+        }
+
+        // Re-initialize with fresh setup
+        await this.initialize(password, userId);
+      } else {
+        // Server has complete data, try to sync with it
+        console.log("[Encryption] Server has complete data, attempting to sync");
+        
+        // Clear local data only
+        await this.reset();
+        
+        // Re-initialize will pull from server
+        await this.initialize(password, userId);
+      }
+    } catch (error) {
+      console.error("[Encryption] Error checking server data:", error);
+      
+      // If we can't check server data, just clear local and try to init
+      await this.reset();
+      await this.initialize(password, userId);
+    }
   }
 }
 

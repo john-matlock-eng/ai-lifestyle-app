@@ -8,12 +8,14 @@ interface EncryptionResetDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  needsFullReset?: boolean;
 }
 
 export const EncryptionResetDialog: React.FC<EncryptionResetDialogProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  needsFullReset = false,
 }) => {
   const { user } = useAuth();
   const [password, setPassword] = useState("");
@@ -84,18 +86,27 @@ export const EncryptionResetDialog: React.FC<EncryptionResetDialogProps> = ({
               or if there was an issue during setup.
             </p>
 
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-orange-800">
-                <strong>Important:</strong> Resetting encryption will:
-              </p>
-              <ul className="list-disc list-inside text-sm text-orange-700 mt-2 space-y-1">
-                <li>Generate new encryption keys</li>
-                <li>
-                  Make previously shared journals inaccessible to recipients
-                </li>
-                <li>Require you to re-share any journals you want to share</li>
-              </ul>
-            </div>
+            {needsFullReset ? (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-orange-800">
+                  <strong>Important:</strong> Resetting encryption will:
+                </p>
+                <ul className="list-disc list-inside text-sm text-orange-700 mt-2 space-y-1">
+                  <li>Generate new encryption keys</li>
+                  <li>
+                    Make previously encrypted journals inaccessible
+                  </li>
+                  <li>Make previously shared journals inaccessible to recipients</li>
+                  <li>Require you to re-share any journals you want to share</li>
+                </ul>
+              </div>
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> This will sync your local encryption with the server. Your existing encrypted content will remain accessible.
+                </p>
+              </div>
+            )}
           </div>
 
           {error && (
@@ -135,7 +146,7 @@ export const EncryptionResetDialog: React.FC<EncryptionResetDialogProps> = ({
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4" />
-                  Reset Encryption
+                  {needsFullReset ? "Reset Encryption" : "Sync Encryption"}
                 </>
               )}
             </Button>

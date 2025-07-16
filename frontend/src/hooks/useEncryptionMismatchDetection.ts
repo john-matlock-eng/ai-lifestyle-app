@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/useAuth";
 interface EncryptionMismatchState {
   hasMismatch: boolean;
   isChecking: boolean;
+  needsFullReset?: boolean; // Only true if server data is incomplete
   errorDetails?: {
     localPublicKeyId?: string;
     serverPublicKeyId?: string;
@@ -50,16 +51,15 @@ export function useEncryptionMismatchDetection() {
         });
 
         // Check for mismatches
-        const hasMismatch =
-          (serverData.publicKeyId &&
-            serverData.publicKeyId !== localPublicKeyId) ||
-          !serverData.salt ||
-          !serverData.encryptedPrivateKey;
+        const hasIncompleteData = !serverData.salt || !serverData.encryptedPrivateKey;
+        const hasKeyMismatch = serverData.publicKeyId && serverData.publicKeyId !== localPublicKeyId;
+        const hasMismatch = hasIncompleteData || hasKeyMismatch;
 
         if (hasMismatch) {
           setState({
             hasMismatch: true,
             isChecking: false,
+            needsFullReset: hasIncompleteData, // Only need full reset if data is incomplete
             errorDetails: {
               localPublicKeyId,
               serverPublicKeyId: serverData.publicKeyId,
@@ -76,6 +76,7 @@ export function useEncryptionMismatchDetection() {
         setState({
           hasMismatch: true,
           isChecking: false,
+          needsFullReset: true, // No server data means we need full reset
           errorDetails: {
             localPublicKeyId,
             serverPublicKeyId: undefined,
