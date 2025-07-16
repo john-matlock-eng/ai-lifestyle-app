@@ -37,20 +37,38 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
       const title = h3.textContent?.trim() || '';
       let content = '';
       
-      // Get all sibling elements until the next h3
-      let nextElement = h3.nextElementSibling;
-      const contentElements: string[] = [];
+      // Get all sibling nodes (including text nodes) until the next h3 or comment
+      let nextNode = h3.nextSibling;
+      const contentParts: string[] = [];
       
-      while (nextElement && nextElement.tagName !== 'H3') {
-        const text = nextElement.textContent?.trim();
-        console.log('[parseHTMLContent] Found element:', nextElement.tagName, 'with text:', text);
-        if (text) {
-          contentElements.push(text);
+      while (nextNode) {
+        // Stop at the next h3 or at the closing comment
+        if (nextNode.nodeType === Node.ELEMENT_NODE && (nextNode as Element).tagName === 'H3') {
+          break;
         }
-        nextElement = nextElement.nextElementSibling;
+        if (nextNode.nodeType === Node.COMMENT_NODE && nextNode.textContent?.trim() === '/SECTION') {
+          break;
+        }
+        
+        // Collect text from text nodes and element nodes
+        if (nextNode.nodeType === Node.TEXT_NODE) {
+          const text = nextNode.textContent?.trim();
+          if (text) {
+            console.log('[parseHTMLContent] Found text node:', text);
+            contentParts.push(text);
+          }
+        } else if (nextNode.nodeType === Node.ELEMENT_NODE) {
+          const text = nextNode.textContent?.trim();
+          console.log('[parseHTMLContent] Found element:', (nextNode as Element).tagName, 'with text:', text);
+          if (text) {
+            contentParts.push(text);
+          }
+        }
+        
+        nextNode = nextNode.nextSibling;
       }
       
-      content = contentElements.join(' ').trim();
+      content = contentParts.join(' ').trim();
       console.log('[parseHTMLContent] Section', title, 'has content:', content);
       
       // Map section titles to data keys
