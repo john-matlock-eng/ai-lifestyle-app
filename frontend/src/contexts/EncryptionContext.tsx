@@ -25,6 +25,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
   const [isEncryptionLocked, setIsEncryptionLocked] = useState(true);
   const [encryptionKeyId, setEncryptionKeyId] = useState<string | null>(null);
   const [hasAttemptedAutoUnlock, setHasAttemptedAutoUnlock] = useState(false);
+  const [isCheckingAutoUnlock, setIsCheckingAutoUnlock] = useState(false);
 
   // Fetch user profile to check encryption status
   const { data: profile } = useQuery<UserProfile>({
@@ -52,6 +53,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
 
   const attemptAutoUnlock = async () => {
     setHasAttemptedAutoUnlock(true);
+    setIsCheckingAutoUnlock(true);
     
     try {
       // Check if we have a stored password
@@ -80,6 +82,8 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
       }
     } catch (error) {
       console.error('Failed to auto-unlock encryption:', error);
+    } finally {
+      setIsCheckingAutoUnlock(false);
     }
   };
 
@@ -98,6 +102,11 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
         // Even if we have local setup, encryption starts locked after refresh
         // User must enter password to unlock (unless we auto-unlock)
         setIsEncryptionLocked(true);
+        
+        // Trigger auto-unlock if not already attempted
+        if (!hasAttemptedAutoUnlock && user?.userId) {
+          attemptAutoUnlock();
+        }
       } else if (profile?.encryptionEnabled) {
         // Profile says encryption is enabled but no local setup
         // User needs to enter password to set up locally
@@ -142,6 +151,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({ children
     isEncryptionSetup,
     isEncryptionLocked,
     encryptionKeyId,
+    isCheckingAutoUnlock,
     unlockEncryption,
     lockEncryption,
     checkEncryptionStatus,

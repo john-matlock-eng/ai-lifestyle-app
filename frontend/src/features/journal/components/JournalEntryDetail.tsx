@@ -49,12 +49,17 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
   const [decryptionError, setDecryptionError] = useState<string | null>(null);
   
   // Use the encryption context to ensure encryption is set up
-  const { isEncryptionSetup, isEncryptionLocked } = useEncryption();
+  const { isEncryptionSetup, isEncryptionLocked, isCheckingAutoUnlock } = useEncryption();
   
   const isActuallyEncrypted = shouldTreatAsEncrypted(entry);
   const isSharedWithMe = entry.shareAccess !== undefined;
 
   useEffect(() => {
+    // Wait for auto-unlock to complete before attempting decryption
+    if (isCheckingAutoUnlock) {
+      return;
+    }
+    
     if (isActuallyEncrypted && entry.encryptedKey) {
       // Only attempt decryption if encryption is set up and unlocked
       if (isEncryptionSetup && !isEncryptionLocked) {
@@ -69,7 +74,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     } else {
       setDecryptedEntry(entry);
     }
-  }, [entry, isEncryptionSetup, isEncryptionLocked]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [entry, isEncryptionSetup, isEncryptionLocked, isCheckingAutoUnlock]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const decryptContent = async () => {
     try {
@@ -332,7 +337,12 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
 
       {/* Content - Use template renderer */}
       <div className="mb-8">
-        {isEncryptionLocked && isActuallyEncrypted ? (
+        {isCheckingAutoUnlock && isActuallyEncrypted ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-muted">Unlocking encryption...</p>
+          </div>
+        ) : isEncryptionLocked && isActuallyEncrypted ? (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <div className="flex items-start gap-3">
               <Lock className="w-5 h-5 text-yellow-600 mt-0.5" />

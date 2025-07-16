@@ -5,6 +5,7 @@ export interface EncryptionContextValue {
   isEncryptionSetup: boolean;
   isEncryptionLocked: boolean;
   encryptionKeyId: string | null;
+  isCheckingAutoUnlock: boolean;
   unlockEncryption: (password: string) => Promise<void>;
   lockEncryption: () => void;
   checkEncryptionStatus: () => Promise<void>;
