@@ -566,7 +566,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
               {reflectionData.gratitude.map((item: string, index: number) => (
                 <li key={index} className="flex items-start gap-3">
                   <span className="list-icon">🙏</span>
-                  <span className="flex-1">{renderMarkdownText(item)}</span>
+                  <div className="flex-1">{renderMarkdownText(item)}</div>
                 </li>
               ))}
             </ul>
@@ -582,7 +582,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
               {reflectionData.highlights.map((item: string, index: number) => (
                 <li key={index} className="flex items-start gap-3">
                   <span className="list-icon">✨</span>
-                  <span className="flex-1">{renderMarkdownText(item)}</span>
+                  <div className="flex-1">{renderMarkdownText(item)}</div>
                 </li>
               ))}
             </ul>
