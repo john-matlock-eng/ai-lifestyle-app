@@ -183,7 +183,7 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                     disabled={!password || isUnlocking}
                     isLoading={isUnlocking}
                   >
-                    Set Up Encryption
+                    Unlock
                   </Button>
                 </div>
               </form>

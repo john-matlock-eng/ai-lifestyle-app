@@ -299,9 +299,22 @@ export class EncryptionService {
         publicKey: publicKeyBase64,
         publicKeyId: this.publicKeyId,
       });
+      console.log("[Encryption] Successfully saved new encryption keys to server");
     } catch (error) {
-      console.warn("Failed to save encryption keys to server:", error);
-      // Continue with local-only encryption
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 409) {
+          console.log("[Encryption] Server already has encryption setup - this is fine");
+          // This can happen if there's a race condition or the state is out of sync
+          // The keys are already set up locally, so we can continue
+        } else {
+          console.warn("Failed to save encryption keys to server:", error);
+          // Continue with local-only encryption
+        }
+      } else {
+        console.warn("Failed to save encryption keys to server:", error);
+        // Continue with local-only encryption
+      }
     }
   }
 
