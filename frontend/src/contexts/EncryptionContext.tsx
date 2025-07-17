@@ -150,8 +150,11 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
         const axiosError = error as { response?: { status?: number } };
         if (axiosError.response?.status === 409) {
           console.log("[Encryption] Handling 409 during unlock - encryption already exists");
-          // Still mark as unlocked since the password was correct
-          // (otherwise initialize would have failed earlier)
+          // Since we got a 409, it means the password was correct and encryption is already set up
+          // Get the key ID from the service
+          const encryptionService = getEncryptionService();
+          const keyId = await encryptionService.getPublicKeyId();
+          setEncryptionKeyId(keyId);
           setIsEncryptionSetup(true);
           setIsEncryptionLocked(false);
           return; // Don't throw the error

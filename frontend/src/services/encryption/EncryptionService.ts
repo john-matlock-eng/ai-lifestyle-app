@@ -101,7 +101,7 @@ export class EncryptionService {
         
         if (existingLocalKeys && existingSalt) {
           console.log(
-            "[Encryption] Found existing local keys, uploading to server instead of generating new ones",
+            "[Encryption] Found existing local keys, verifying they match any server state",
           );
           
           // Derive master key from existing salt
@@ -111,38 +111,74 @@ export class EncryptionService {
           await this.loadPersonalKeys(existingLocalKeys.privateKey);
           this.publicKeyId = existingLocalKeys.publicKeyId;
           
-          // Upload existing keys to server
+          // First, check if server actually has encryption data by trying to fetch it
           try {
-            await apiClient.post("/encryption/setup", {
-              salt: this.arrayBufferToBase64(existingSalt),
-              encryptedPrivateKey: this.arrayBufferToBase64(existingLocalKeys.privateKey),
-              publicKey: existingLocalKeys.publicKey,
-              publicKeyId: existingLocalKeys.publicKeyId,
-            });
+            const checkResponse = await apiClient.get(`/encryption/user/${userId}`);
+            const serverData = checkResponse.data;
             
-            console.log(
-              "[Encryption] Successfully uploaded existing local keys to server",
-            );
-          } catch (error) {
-            // Check if it's a 409 conflict (already exists)
-            if (error instanceof Error && 'response' in error) {
-              const axiosError = error as { response?: { status?: number } };
-              if (axiosError.response?.status === 409) {
+            if (serverData.publicKeyId) {
+              // Server has encryption data, verify it matches our local keys
+              if (serverData.publicKeyId === existingLocalKeys.publicKeyId) {
                 console.log(
-                  "[Encryption] Server already has encryption setup, continuing with local keys",
+                  "[Encryption] Local keys match server keys, no upload needed",
                 );
               } else {
                 console.warn(
-                  "[Encryption] Failed to upload existing keys to server, continuing with local-only encryption:",
-                  error,
+                  "[Encryption] Local keys do not match server keys!",
+                  {
+                    localKeyId: existingLocalKeys.publicKeyId,
+                    serverKeyId: serverData.publicKeyId,
+                  },
+                );
+                throw new Error(
+                  "Encryption keys are out of sync. Please reset encryption in your profile settings.",
                 );
               }
             } else {
-              console.warn(
-                "[Encryption] Failed to upload existing keys to server:",
-                error,
+              // Server has no public key ID, try to upload our local keys
+              console.log(
+                "[Encryption] Server has no encryption data, uploading local keys",
               );
+              
+              try {
+                await apiClient.post("/encryption/setup", {
+                  salt: this.arrayBufferToBase64(existingSalt),
+                  encryptedPrivateKey: this.arrayBufferToBase64(existingLocalKeys.privateKey),
+                  publicKey: existingLocalKeys.publicKey,
+                  publicKeyId: existingLocalKeys.publicKeyId,
+                });
+                
+                console.log(
+                  "[Encryption] Successfully uploaded existing local keys to server",
+                );
+              } catch (uploadError) {
+                // Check if it's a 409 conflict (already exists)
+                if (uploadError instanceof Error && 'response' in uploadError) {
+                  const axiosError = uploadError as { response?: { status?: number } };
+                  if (axiosError.response?.status === 409) {
+                    console.log(
+                      "[Encryption] Server reports encryption already exists (409), using local keys",
+                    );
+                  } else {
+                    console.warn(
+                      "[Encryption] Failed to upload existing keys to server, continuing with local-only encryption:",
+                      uploadError,
+                    );
+                  }
+                } else {
+                  console.warn(
+                    "[Encryption] Failed to upload existing keys to server:",
+                    uploadError,
+                  );
+                }
+              }
             }
+          } catch (checkError) {
+            // Could not check server state, just use local keys
+            console.warn(
+              "[Encryption] Could not verify server encryption state, using local keys:",
+              checkError,
+            );
           }
         } else {
           // Truly a new user with no existing keys
