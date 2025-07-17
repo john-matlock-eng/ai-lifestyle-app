@@ -124,10 +124,25 @@ export class EncryptionService {
               "[Encryption] Successfully uploaded existing local keys to server",
             );
           } catch (error) {
-            console.warn(
-              "[Encryption] Failed to upload existing keys to server, continuing with local-only encryption:",
-              error,
-            );
+            // Check if it's a 409 conflict (already exists)
+            if (error instanceof Error && 'response' in error) {
+              const axiosError = error as { response?: { status?: number } };
+              if (axiosError.response?.status === 409) {
+                console.log(
+                  "[Encryption] Server already has encryption setup, continuing with local keys",
+                );
+              } else {
+                console.warn(
+                  "[Encryption] Failed to upload existing keys to server, continuing with local-only encryption:",
+                  error,
+                );
+              }
+            } else {
+              console.warn(
+                "[Encryption] Failed to upload existing keys to server:",
+                error,
+              );
+            }
           }
         } else {
           // Truly a new user with no existing keys
@@ -189,6 +204,13 @@ export class EncryptionService {
   async checkSetup(): Promise<boolean> {
     const salt = await keyStore.getSalt();
     return salt !== null;
+  }
+
+  /**
+   * Check if encryption is initialized and ready to use
+   */
+  isInitialized(): boolean {
+    return this.masterKey !== null && this.personalKeyPair !== null;
   }
 
   /**
@@ -328,7 +350,9 @@ export class EncryptionService {
    * Encrypt content with a new content key
    */
   async encryptContent(content: string): Promise<EncryptedData> {
-    if (!this.personalKeyPair) throw new Error("Encryption not initialized");
+    if (!this.isInitialized()) {
+      throw new Error("Encryption not initialized. Please set up or unlock encryption first.");
+    }
 
     // Generate content key
     const contentKey = await crypto.subtle.generateKey(
@@ -354,7 +378,7 @@ export class EncryptionService {
     // Encrypt content key with public key
     const encryptedKey = await crypto.subtle.encrypt(
       { name: "RSA-OAEP" },
-      this.personalKeyPair.publicKey,
+      this.personalKeyPair!.publicKey,
       rawContentKey,
     );
 
@@ -369,7 +393,9 @@ export class EncryptionService {
    * Decrypt content using the encrypted content key
    */
   async decryptContent(encryptedData: EncryptedData): Promise<string> {
-    if (!this.personalKeyPair) throw new Error("Encryption not initialized");
+    if (!this.isInitialized()) {
+      throw new Error("Encryption not initialized. Please unlock encryption first.");
+    }
 
     try {
       // Decrypt content key
@@ -377,13 +403,13 @@ export class EncryptionService {
 
       console.log("[Decryption] Attempting to decrypt content key", {
         encryptedKeyLength: encryptedKey.byteLength,
-        hasPrivateKey: !!this.personalKeyPair.privateKey,
+        hasPrivateKey: !!this.personalKeyPair!.privateKey,
         publicKeyId: this.publicKeyId,
       });
 
       const rawContentKey = await crypto.subtle.decrypt(
         { name: "RSA-OAEP" },
-        this.personalKeyPair.privateKey,
+        this.personalKeyPair!.privateKey,
         encryptedKey,
       );
 
@@ -427,7 +453,9 @@ export class EncryptionService {
   async tryDecryptWithFallback(
     encryptedData: EncryptedData
   ): Promise<string> {
-    if (!this.personalKeyPair) throw new Error("Encryption not initialized");
+    if (!this.isInitialized()) {
+      throw new Error("Encryption not initialized. Please unlock encryption to view encrypted content.");
+    }
 
     try {
       // First, try with current keys
@@ -514,7 +542,9 @@ export class EncryptionService {
     analysisType: string,
     context?: string,
   ): Promise<{ analysisRequestId: string; shareIds: string[] }> {
-    if (!this.personalKeyPair) throw new Error("Encryption not initialized");
+    if (!this.isInitialized()) {
+      throw new Error("Encryption not initialized. Please unlock encryption first.");
+    }
 
     try {
       // Create AI shares with limited time access
@@ -626,7 +656,9 @@ export class EncryptionService {
     expiresInHours?: number,
     permissions?: string[],
   ): Promise<{ shareId: string; encryptedKey: string }> {
-    if (!this.personalKeyPair) throw new Error("Encryption not initialized");
+    if (!this.isInitialized()) {
+      throw new Error("Encryption not initialized. Please unlock encryption first.");
+    }
 
     try {
       console.log("[Sharing] Starting share process", {
@@ -656,7 +688,7 @@ export class EncryptionService {
       const encryptedKeyBuffer = this.base64ToArrayBuffer(encryptedKey);
       const contentKeyBuffer = await crypto.subtle.decrypt(
         { name: "RSA-OAEP" },
-        this.personalKeyPair.privateKey,
+        this.personalKeyPair!.privateKey,
         encryptedKeyBuffer,
       );
 
@@ -798,6 +830,23 @@ export class EncryptionService {
    */
   async getPublicKeyId(): Promise<string | null> {
     return this.publicKeyId;
+  }
+
+  /**
+   * Safe decrypt for background/caching operations
+   * Returns null if encryption is not initialized instead of throwing
+   */
+  async safeDecryptContent(encryptedData: EncryptedData): Promise<string | null> {
+    try {
+      if (!this.isInitialized()) {
+        console.log("[Encryption] Skipping decryption - encryption not initialized");
+        return null;
+      }
+      return await this.decryptContent(encryptedData);
+    } catch (error) {
+      console.warn("[Encryption] Safe decrypt failed:", error);
+      return null;
+    }
   }
 
   /**
