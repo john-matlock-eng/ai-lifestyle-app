@@ -13,7 +13,6 @@ import {
   Edit,
   Trash2,
   X,
-  AlertCircle,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import ShareDialog from "../../../components/encryption/ShareDialog";
@@ -26,6 +25,7 @@ import { getTemplateIcon, getTemplateName } from "../templates/template-utils";
 import { getEmotionById, getEmotionEmoji } from "./EmotionSelector/emotionData";
 import { shouldTreatAsEncrypted } from "@/utils/encryption-utils";
 import { JournalEntryRenderer } from "./JournalEntryRenderer";
+import { JournalDecryptionErrorHandler } from "./JournalDecryptionErrorHandler";
 
 interface JournalEntryDetailProps {
   entry: JournalEntry;
@@ -48,7 +48,7 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
     null,
   );
   const [isDecrypting, setIsDecrypting] = useState(false);
-  const [decryptionError, setDecryptionError] = useState<string | null>(null);
+  const [decryptionError, setDecryptionError] = useState<Error | null>(null);
 
   // Use the encryption context to ensure encryption is set up
   const { isEncryptionSetup, isEncryptionLocked, isCheckingAutoUnlock } =
@@ -70,12 +70,12 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
       } else if (isSharedWithMe && !isEncryptionSetup) {
         // If this is a shared entry and encryption isn't set up, show an error
         setDecryptionError(
-          "Encryption must be set up to view shared encrypted content. Please set up encryption in your profile.",
+          new Error("Encryption must be set up to view shared encrypted content. Please set up encryption in your profile."),
         );
       } else if (isEncryptionSetup && isEncryptionLocked) {
         // Encryption is set up but locked
         setDecryptionError(
-          "Encryption is locked. Please unlock encryption to view encrypted content.",
+          new Error("Encryption is locked. Please unlock encryption to view encrypted content."),
         );
       }
     } else {
@@ -98,7 +98,8 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
         );
       }
 
-      const decrypted = await encryptionService.decryptContent({
+      // Use the new tryDecryptWithFallback method
+      const decrypted = await encryptionService.tryDecryptWithFallback({
         content: entry.content,
         encryptedKey: entry.encryptedKey!,
         iv: entry.encryptionIv!,
@@ -111,24 +112,9 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
       });
     } catch (error) {
       console.error("Failed to decrypt content:", error);
-
-      let errorMessage = "Failed to decrypt content.";
-      if (error instanceof Error) {
-        if (
-          error.message.includes("Encryption not initialized") ||
-          error.message.includes("Encryption not set up")
-        ) {
-          errorMessage =
-            "Encryption must be set up to view encrypted content. Please set up encryption in your profile.";
-        } else if (error.message.includes("OperationError")) {
-          errorMessage =
-            "Decryption failed. This may happen if the content was encrypted with a different password.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
-      setDecryptionError(errorMessage);
+      
+      // Store the error for the error handler
+      setDecryptionError(error instanceof Error ? error : new Error("Failed to decrypt content"));
       setDecryptedEntry(null);
     } finally {
       setIsDecrypting(false);
@@ -394,17 +380,18 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : decryptionError ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
-              <div>
-                <p className="text-red-800 font-medium">
-                  Unable to decrypt content
-                </p>
-                <p className="text-red-700 text-sm mt-1">{decryptionError}</p>
-              </div>
-            </div>
-          </div>
+          <JournalDecryptionErrorHandler
+            entry={entry}
+            error={decryptionError}
+            onRetry={() => {
+              setDecryptionError(null);
+              decryptContent();
+            }}
+            onSuccess={() => {
+              setDecryptionError(null);
+              decryptContent();
+            }}
+          />
         ) : decryptedEntry ? (
           <JournalEntryRenderer entry={decryptedEntry} />
         ) : (

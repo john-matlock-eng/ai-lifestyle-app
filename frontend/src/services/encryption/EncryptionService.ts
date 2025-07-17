@@ -90,11 +90,52 @@ export class EncryptionService {
           hasPublicKey: !!this.personalKeyPair?.publicKey,
         });
       } else {
-        // First time setup
+        // Server has no encryption setup
         console.log(
-          "[Encryption] No server encryption found, setting up new user",
+          "[Encryption] No server encryption found, checking for existing local keys",
         );
-        await this.setupNewUser(password, userId);
+        
+        // CRITICAL FIX: Check if user already has local keys before generating new ones
+        const existingLocalKeys = await keyStore.getPersonalKeys();
+        const existingSalt = await keyStore.getSalt();
+        
+        if (existingLocalKeys && existingSalt) {
+          console.log(
+            "[Encryption] Found existing local keys, uploading to server instead of generating new ones",
+          );
+          
+          // Derive master key from existing salt
+          this.masterKey = await this.deriveMasterKey(password, existingSalt);
+          
+          // Load existing personal keys
+          await this.loadPersonalKeys(existingLocalKeys.privateKey);
+          this.publicKeyId = existingLocalKeys.publicKeyId;
+          
+          // Upload existing keys to server
+          try {
+            await apiClient.post("/encryption/setup", {
+              salt: this.arrayBufferToBase64(existingSalt),
+              encryptedPrivateKey: this.arrayBufferToBase64(existingLocalKeys.privateKey),
+              publicKey: existingLocalKeys.publicKey,
+              publicKeyId: existingLocalKeys.publicKeyId,
+            });
+            
+            console.log(
+              "[Encryption] Successfully uploaded existing local keys to server",
+            );
+          } catch (error) {
+            console.warn(
+              "[Encryption] Failed to upload existing keys to server, continuing with local-only encryption:",
+              error,
+            );
+          }
+        } else {
+          // Truly a new user with no existing keys
+          console.log(
+            "[Encryption] No existing local keys found, setting up new user",
+          );
+          await this.setupNewUser(password, userId);
+        }
       }
     } catch (error) {
       // If server check fails, fall back to local-only mode
