@@ -19,7 +19,7 @@ export class JournalService {
     ) {
       try {
         // For shared entries, the encryptedKey is already re-encrypted for us
-        const decryptedContent = await this.encryptionService.decryptContent({
+        const decryptedContent = await this.encryptionService.tryDecryptWithFallback({
           content: entry.content,
           encryptedKey: entry.encryptedKey,
           iv: entry.encryptionIv,
@@ -31,8 +31,20 @@ export class JournalService {
         };
       } catch (error) {
         console.error("Failed to decrypt journal content:", error);
+        
+        // Provide more specific error messages
+        if (entry.shareAccess) {
+          throw new Error(
+            "Unable to decrypt shared content. The owner may need to re-share this entry with updated encryption.",
+          );
+        }
+        
+        if (error instanceof Error && error.message.includes("encryption keys are out of sync")) {
+          throw error; // Pass through the detailed error message
+        }
+        
         throw new Error(
-          "Unable to decrypt journal content. Please check your encryption setup.",
+          "Unable to decrypt journal content. Please check your encryption setup in Settings > Security.",
         );
       }
     }
@@ -70,26 +82,55 @@ export class JournalService {
       throw new Error("Can only share encrypted journals");
     }
 
-    // Find recipient by email
-    const recipientResponse = await fetch(
-      `/api/users/by-email?email=${encodeURIComponent(recipientEmail)}`,
-    );
-    if (!recipientResponse.ok) {
-      throw new Error("Recipient not found");
+    try {
+      // Find recipient by email
+      const recipientResponse = await fetch(
+        `/api/users/by-email?email=${encodeURIComponent(recipientEmail)}`,
+      );
+      if (!recipientResponse.ok) {
+        throw new Error("Recipient not found. Make sure they have an account and have set up encryption.");
+      }
+      const recipientData = await recipientResponse.json();
+
+      // First, verify we can decrypt the content key (to ensure we can re-encrypt it)
+      try {
+        await this.encryptionService.tryDecryptWithFallback({
+          content: entry.content,
+          encryptedKey: entry.encryptedKey,
+          iv: entry.encryptionIv!,
+        });
+      } catch (decryptError) {
+        console.error("Cannot decrypt entry for sharing:", decryptError);
+        throw new Error(
+          "Unable to share this entry. The encryption keys may be out of sync. " +
+          "Please try: \n" +
+          "1. Resetting your encryption in Settings > Security\n" +
+          "2. Re-saving this entry to update its encryption\n" +
+          "3. Creating a new encrypted copy of this entry",
+        );
+      }
+
+      // Share using the encryption service
+      const { shareId } = await this.encryptionService.shareWithUser(
+        "journal",
+        entry.entryId,
+        recipientData.userId,
+        entry.encryptedKey,
+        expiresInHours,
+        permissions,
+      );
+
+      return { shareId };
+    } catch (error) {
+      if (error instanceof Error && 
+          (error.message.includes("encryption keys may be out of sync") ||
+           error.message.includes("Recipient not found"))) {
+        throw error;
+      }
+      throw new Error(
+        `Failed to share journal: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
-    const recipientData = await recipientResponse.json();
-
-    // Share using the encryption service
-    const { shareId } = await this.encryptionService.shareWithUser(
-      "journal",
-      entry.entryId,
-      recipientData.userId,
-      entry.encryptedKey,
-      expiresInHours,
-      permissions,
-    );
-
-    return { shareId };
   }
 
   /**
@@ -128,6 +169,44 @@ export class JournalService {
   canShareEntry(entry: JournalEntry, currentUserId: string): boolean {
     // Only owner can share
     return entry.userId === currentUserId;
+  }
+
+  /**
+   * Re-encrypt a journal entry with current encryption keys
+   */
+  async reencryptEntry(entryId: string): Promise<JournalEntry> {
+    try {
+      // Get the entry
+      const entry = await this.getJournalEntry(entryId);
+      
+      if (!entry.isEncrypted) {
+        throw new Error("Entry is not encrypted");
+      }
+      
+      // The content is already decrypted from getJournalEntry
+      // Now re-encrypt with current keys
+      const newEncryptedData = await this.encryptionService.encryptContent(
+        entry.content,
+      );
+      
+      // Update the entry with new encryption
+      const updatedEntry = await journalApi.updateEntry(entryId, {
+        content: newEncryptedData.content,
+        encryptedKey: newEncryptedData.encryptedKey,
+        encryptionIv: newEncryptedData.iv,
+        wordCount: entry.wordCount, // Preserve word count
+        isEncrypted: true,
+      });
+      
+      console.log("[Journal] Successfully re-encrypted entry", entryId);
+      
+      return updatedEntry;
+    } catch (error) {
+      console.error("[Journal] Failed to re-encrypt entry", entryId, error);
+      throw new Error(
+        `Failed to re-encrypt entry: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
   }
 }
 

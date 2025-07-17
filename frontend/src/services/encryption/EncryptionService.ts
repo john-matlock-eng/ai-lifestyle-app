@@ -381,6 +381,37 @@ export class EncryptionService {
   }
 
   /**
+   * Try to decrypt content with fallback to server re-sync
+   */
+  async tryDecryptWithFallback(
+    encryptedData: EncryptedData
+  ): Promise<string> {
+    if (!this.personalKeyPair) throw new Error("Encryption not initialized");
+
+    try {
+      // First, try with current keys
+      return await this.decryptContent(encryptedData);
+    } catch (error) {
+      console.error("[Decryption] Failed with current keys, checking for alternatives", error);
+      
+      // Check if this might be a key mismatch issue
+      if (error instanceof Error && error.name === "OperationError") {
+        // This typically indicates wrong key was used for decryption
+        const errorMessage = 
+          "Unable to decrypt content. This may be due to:\n" +
+          "1. The content was encrypted with a different encryption key\n" +
+          "2. Your encryption keys are out of sync\n" +
+          "3. The content may be corrupted\n\n" +
+          "Try resetting your encryption in Settings > Security, or contact support.";
+        
+        throw new Error(errorMessage);
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
    * Generate recovery phrase (simplified - in production use BIP39)
    */
   async generateRecoveryPhrase(): Promise<string> {
