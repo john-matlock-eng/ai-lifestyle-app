@@ -175,6 +175,24 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     securePasswordStorage.clearStoredPassword();
   };
 
+  const setupEncryption = async (password: string) => {
+    if (!user?.userId) throw new Error("User not authenticated");
+
+    try {
+      const encryptionService = getEncryptionService();
+      await encryptionService.initialize(password, user.userId);
+
+      // Update local state
+      const keyId = await encryptionService.getPublicKeyId();
+      setEncryptionKeyId(keyId);
+      setIsEncryptionSetup(true);
+      setIsEncryptionLocked(false); // Important: unlock after setup
+    } catch (error) {
+      console.error("Failed to setup encryption:", error);
+      throw error;
+    }
+  };
+
   const resetEncryption = async (password: string) => {
     if (!user?.userId) throw new Error("User not authenticated");
 
@@ -204,6 +222,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     lockEncryption,
     checkEncryptionStatus,
     clearStoredPassword,
+    setupEncryption,
     resetEncryption,
   };
 
