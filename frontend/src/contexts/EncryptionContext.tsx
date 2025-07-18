@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
-import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "./index";
-import { getEncryptionService } from "../services/encryption";
+import type { ReactNode } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import apiClient from "../api/client";
-import { EncryptionContext } from "./EncryptionContextType";
-import type { EncryptionContextValue } from "./EncryptionContextType";
 import type { UserProfile as BaseUserProfile } from "../features/auth/services/authService";
+import { getEncryptionService } from "../services/encryption";
 import { securePasswordStorage } from "../services/encryption/securePasswordStorage";
+import type { EncryptionContextValue } from "./EncryptionContextType";
+import { EncryptionContext } from "./EncryptionContextType";
+import { useAuth } from "./index";
 
 interface UserProfile extends BaseUserProfile {
   encryptionEnabled: boolean;
@@ -120,12 +120,13 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
         const keyId = await encryptionService.getPublicKeyId();
         setEncryptionKeyId(keyId);
 
-        // Even if we have local setup, encryption starts locked after refresh
-        // User must enter password to unlock (unless we auto-unlock)
-        setIsEncryptionLocked(true);
+        const isInitialized = encryptionService.isInitialized();
 
-        // Trigger auto-unlock if not already attempted
-        if (!hasAttemptedAutoUnlock && user?.userId) {
+        // Set lock state based on initialization
+        setIsEncryptionLocked(!isInitialized);
+
+        // Trigger auto-unlock if encryption isn't initialized yet
+        if (!isInitialized && !hasAttemptedAutoUnlock && user?.userId) {
           attemptAutoUnlock();
         }
       } else if (profile?.encryptionEnabled) {
