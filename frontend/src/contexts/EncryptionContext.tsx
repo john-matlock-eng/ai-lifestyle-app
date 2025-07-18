@@ -112,12 +112,13 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
         const keyId = await encryptionService.getPublicKeyId();
         setEncryptionKeyId(keyId);
 
-        // Even if we have local setup, encryption starts locked after refresh
-        // User must enter password to unlock (unless we auto-unlock)
-        setIsEncryptionLocked(true);
+        const isInitialized = encryptionService.isInitialized();
 
-        // Trigger auto-unlock if not already attempted
-        if (!hasAttemptedAutoUnlock && user?.userId) {
+        // Set lock state based on initialization
+        setIsEncryptionLocked(!isInitialized);
+
+        // Trigger auto-unlock if encryption isn't initialized yet
+        if (!isInitialized && !hasAttemptedAutoUnlock && user?.userId) {
           attemptAutoUnlock();
         }
       } else if (profile?.encryptionEnabled) {
@@ -146,10 +147,12 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     } catch (error) {
       // If we get a 409 error, it means encryption is already set up
       // This can happen due to state sync issues - just continue
-      if (error instanceof Error && 'response' in error) {
+      if (error instanceof Error && "response" in error) {
         const axiosError = error as { response?: { status?: number } };
         if (axiosError.response?.status === 409) {
-          console.log("[Encryption] Handling 409 during unlock - encryption already exists");
+          console.log(
+            "[Encryption] Handling 409 during unlock - encryption already exists",
+          );
           // Since we got a 409, it means the password was correct and encryption is already set up
           // Get the key ID from the service
           const encryptionService = getEncryptionService();
