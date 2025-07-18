@@ -149,7 +149,7 @@ export class EncryptionService {
           await this.loadPersonalKeys(existingLocalKeys.privateKey);
           this.publicKeyId = existingLocalKeys.publicKeyId;
           
-          // First, check if server actually has encryption data by trying to fetch it
+          // Verify local keys match server keys if possible
           try {
             const checkResponse = await apiClient.get(`/encryption/user/${userId}`);
             const serverData = checkResponse.data;
@@ -158,7 +158,7 @@ export class EncryptionService {
               // Server has encryption data, verify it matches our local keys
               if (serverData.publicKeyId === existingLocalKeys.publicKeyId) {
                 console.log(
-                  "[Encryption] Local keys match server keys, no upload needed",
+                  "[Encryption] Local keys match server keys, initialization complete",
                 );
               } else {
                 console.warn(
@@ -172,45 +172,20 @@ export class EncryptionService {
                   "Encryption keys are out of sync. Please reset encryption in your profile settings.",
                 );
               }
-            } else {
-              // Server has no public key ID, try to upload our local keys
-              console.log(
-                "[Encryption] Server has no encryption data, uploading local keys",
+            } else if (serverData.salt && serverData.encryptedPrivateKey) {
+              // Server has partial data but no publicKeyId - this is an error state
+              console.error(
+                "[Encryption] Server has incomplete encryption data",
               );
-              
-              try {
-                await apiClient.post("/encryption/setup", {
-                  salt: this.arrayBufferToBase64(existingSalt),
-                  encryptedPrivateKey: this.arrayBufferToBase64(existingLocalKeys.privateKey),
-                  publicKey: existingLocalKeys.publicKey,
-                  publicKeyId: existingLocalKeys.publicKeyId,
-                });
-                
-                console.log(
-                  "[Encryption] Successfully uploaded existing local keys to server",
-                );
-              } catch (uploadError) {
-                // Check if it's a 409 conflict (already exists)
-                if (uploadError instanceof Error && 'response' in uploadError) {
-                  const axiosError = uploadError as { response?: { status?: number } };
-                  if (axiosError.response?.status === 409) {
-                    console.log(
-                      "[Encryption] Server reports encryption already exists (409), using local keys",
-                    );
-                    // This is expected - the server already has the keys, just continue
-                  } else {
-                    console.warn(
-                      "[Encryption] Failed to upload existing keys to server, continuing with local-only encryption:",
-                      uploadError,
-                    );
-                  }
-                } else {
-                  console.warn(
-                    "[Encryption] Failed to upload existing keys to server:",
-                    uploadError,
-                  );
-                }
-              }
+              throw new Error(
+                "Server encryption data is incomplete. Please reset encryption in your profile settings.",
+              );
+            } else {
+              // Server has no encryption data at all - this could be a timing issue
+              // Don't try to upload, as this might be a race condition
+              console.log(
+                "[Encryption] Server reports no encryption data, but we have local keys. Using local keys.",
+              );
             }
           } catch (checkError) {
             // Could not check server state, just use local keys
@@ -388,9 +363,13 @@ export class EncryptionService {
             
             if (serverData.publicKeyId && serverData.publicKeyId !== this.publicKeyId) {
               console.warn(
-                "[Encryption] Server has different keys than what we just generated. Using server keys.",
+                "[Encryption] Server has different keys than what we just generated. Replacing with server keys.",
                 { localKeyId: this.publicKeyId, serverKeyId: serverData.publicKeyId }
               );
+              
+              // CRITICAL: Clear the newly generated keys first
+              this.personalKeyPair = null;
+              this.publicKeyId = null;
               
               // Replace our local keys with server keys
               const serverSalt = this.base64ToArrayBuffer(serverData.salt);
@@ -410,6 +389,15 @@ export class EncryptionService {
               // Load the server keys
               await this.loadPersonalKeys(serverEncryptedPrivateKey);
               this.publicKeyId = serverData.publicKeyId;
+              
+              console.log("[Encryption] Successfully replaced local keys with server keys", {
+                publicKeyId: this.publicKeyId,
+                hasPrivateKey: !!(this.personalKeyPair && 'privateKey' in this.personalKeyPair),
+                hasPublicKey: !!(this.personalKeyPair && 'publicKey' in this.personalKeyPair)
+              });
+              
+              // IMPORTANT: Return early - we've successfully synced with server
+              return;
             }
           } catch (fetchError) {
             console.warn("[Encryption] Could not fetch server keys after 409:", fetchError);
@@ -475,6 +463,8 @@ export class EncryptionService {
       throw new Error("Encryption not initialized. Please set up or unlock encryption first.");
     }
 
+    console.log("[Encryption] Encrypting content with publicKeyId:", this.publicKeyId);
+
     // Generate content key
     const contentKey = await crypto.subtle.generateKey(
       { name: "AES-GCM", length: 256 },
@@ -526,6 +516,7 @@ export class EncryptionService {
         encryptedKeyLength: encryptedKey.byteLength,
         hasPrivateKey: !!this.personalKeyPair!.privateKey,
         publicKeyId: this.publicKeyId,
+        keyPairFingerprint: this.personalKeyPair ? 'present' : 'missing'
       });
 
       const rawContentKey = await crypto.subtle.decrypt(
@@ -974,6 +965,7 @@ export class EncryptionService {
    * Clear all encryption data (logout)
    */
   async clear(): Promise<void> {
+    console.log("[Encryption] Clearing encryption service state");
     this.masterKey = null;
     this.personalKeyPair = null;
     this.publicKeyId = null;
@@ -1044,7 +1036,17 @@ let encryptionService: EncryptionService | null = null;
 
 export function getEncryptionService(): EncryptionService {
   if (!encryptionService) {
+    console.log("[Encryption] Creating new EncryptionService instance");
     encryptionService = new EncryptionService();
   }
   return encryptionService;
+}
+
+// Reset the singleton instance (for testing or when needed)
+export function resetEncryptionService(): void {
+  console.log("[Encryption] Resetting EncryptionService singleton");
+  if (encryptionService) {
+    encryptionService.clear();
+  }
+  encryptionService = null;
 }

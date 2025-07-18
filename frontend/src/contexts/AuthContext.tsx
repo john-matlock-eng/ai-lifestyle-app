@@ -13,6 +13,7 @@ import {
 } from "../features/auth/utils/tokenManager";
 import { AuthContext } from "./AuthContextType";
 import type { AuthContextValue } from "./AuthContextType";
+import { getEncryptionService } from "../services/encryption";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -249,6 +250,10 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       clearTokens();
       queryClient.clear();
       setSessionExpiry(null);
+      
+      // Clear encryption state
+      const encryptionService = getEncryptionService();
+      encryptionService.clear();
 
       // Navigate based on logout reason
       if (reason === "timeout") {

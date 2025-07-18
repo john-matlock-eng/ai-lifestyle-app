@@ -3,7 +3,6 @@ import type { JournalEntry, SharedJournalsResponse } from "@/types/journal";
 import journalApi from "@/api/journal";
 
 export class JournalService {
-  private encryptionService = getEncryptionService();
 
   /**
    * Get a journal entry and decrypt if necessary
@@ -19,7 +18,7 @@ export class JournalService {
     ) {
       try {
         // For shared entries, the encryptedKey is already re-encrypted for us
-        const decryptedContent = await this.encryptionService.tryDecryptWithFallback({
+        const decryptedContent = await getEncryptionService().tryDecryptWithFallback({
           content: entry.content,
           encryptedKey: entry.encryptedKey,
           iv: entry.encryptionIv,
@@ -94,7 +93,7 @@ export class JournalService {
 
       // First, verify we can decrypt the content key (to ensure we can re-encrypt it)
       try {
-        await this.encryptionService.tryDecryptWithFallback({
+        await getEncryptionService().tryDecryptWithFallback({
           content: entry.content,
           encryptedKey: entry.encryptedKey,
           iv: entry.encryptionIv!,
@@ -111,7 +110,7 @@ export class JournalService {
       }
 
       // Share using the encryption service
-      const { shareId } = await this.encryptionService.shareWithUser(
+      const { shareId } = await getEncryptionService().shareWithUser(
         "journal",
         entry.entryId,
         recipientData.userId,
@@ -185,7 +184,7 @@ export class JournalService {
       
       // The content is already decrypted from getJournalEntry
       // Now re-encrypt with current keys
-      const newEncryptedData = await this.encryptionService.encryptContent(
+      const newEncryptedData = await getEncryptionService().encryptContent(
         entry.content,
       );
       
