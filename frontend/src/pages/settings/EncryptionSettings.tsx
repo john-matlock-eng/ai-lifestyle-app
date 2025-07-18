@@ -164,7 +164,7 @@ const SetupWizard: React.FC<SetupWizardProps> = ({
 
 const EncryptionSettings: React.FC = () => {
   const { user } = useAuth();
-  const { setupEncryption: contextSetupEncryption, isEncryptionSetup: contextIsSetup } = useEncryption();
+  const { isEncryptionSetup: contextIsSetup } = useEncryption();
   const [isSetup, setIsSetup] = useState(false);
   const [showSetupWizard, setShowSetupWizard] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
