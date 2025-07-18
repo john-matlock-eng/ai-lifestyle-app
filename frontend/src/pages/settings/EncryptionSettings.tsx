@@ -3,6 +3,7 @@ import { Shield, Lock, AlertTriangle, CheckCircle, Info } from "lucide-react";
 import { Button } from "../../components/common";
 import { getEncryptionService } from "../../services/encryption";
 import { useAuth } from "../../contexts";
+import { useEncryption } from "../../contexts/useEncryption";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import apiClient from "../../api/client";
 import type { UserProfile as BaseUserProfile } from "../../features/auth/services/authService";
@@ -239,6 +240,8 @@ const EncryptionSettings: React.FC = () => {
     }
   }, [profile]);
 
+  const { unlockEncryption } = useEncryption();
+
   const handleSetupEncryption = async () => {
     if (masterPassword !== confirmPassword) {
       setSetupError("Passwords do not match");
@@ -251,10 +254,10 @@ const EncryptionSettings: React.FC = () => {
     }
 
     try {
-      const encryptionService = getEncryptionService();
-      await encryptionService.initialize(masterPassword, user?.userId || "");
+      // Use the context to initialize and unlock encryption
+      await unlockEncryption(masterPassword);
 
-      // Update user profile
+      const encryptionService = getEncryptionService();
       const keyId = await encryptionService.getPublicKeyId();
       await updateProfileMutation.mutateAsync({
         encryptionEnabled: true,
@@ -275,8 +278,7 @@ const EncryptionSettings: React.FC = () => {
 
   const handleUnlock = async () => {
     try {
-      const encryptionService = getEncryptionService();
-      await encryptionService.initialize(unlockPassword, user?.userId || "");
+      await unlockEncryption(unlockPassword);
 
       setIsSetup(true);
       setShowPasswordPrompt(false);
