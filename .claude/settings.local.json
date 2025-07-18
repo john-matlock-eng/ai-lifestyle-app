@@ -26,7 +26,8 @@
       "Bash(touch:*)",
       "Bash(npx prettier:*)",
       "Bash(git add:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(npm run test:*)"
     ],
     "deny": []
   }

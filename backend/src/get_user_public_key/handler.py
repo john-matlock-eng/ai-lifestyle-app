@@ -10,7 +10,7 @@ from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.logging import correlation_paths
 
-from encryption_common import EncryptionRepository, PublicKeyResponse
+from encryption_common import EncryptionRepository, PublicKeyResponse, EncryptionKeys
 
 # Initialize AWS Lambda Powertools
 logger = Logger()
@@ -116,32 +116,78 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         table_name = os.environ.get('TABLE_NAME', 'ai-lifestyle-dev')
         repository = EncryptionRepository(table_name)
         
-        # Get public key info
-        public_key_info = repository.get_public_key(target_user_id)
+        # Check if requesting user is same as target user
+        is_self_request = requesting_user_id == target_user_id
+        
+        logger.info(f"User {requesting_user_id} requesting encryption data for {target_user_id}, is_self={is_self_request}")
         
         # Track metrics
         metrics.add_metric(name="PublicKeyRequests", unit=MetricUnit.Count, value=1)
         
-        if public_key_info:
-            metrics.add_metric(name="PublicKeyFound", unit=MetricUnit.Count, value=1)
+        if is_self_request:
+            # Return full encryption data for self
+            encryption_keys = repository.get_encryption_keys(target_user_id)
             
-            response = PublicKeyResponse(
-                user_id=target_user_id,
-                public_key=public_key_info['public_key'],
-                public_key_id=public_key_info['public_key_id'],
-                has_encryption=True
-            )
-            
-            return {
-                'statusCode': 200,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'X-Request-ID': request_id
-                },
-                'body': response.model_dump_json(by_alias=True)
-            }
+            if encryption_keys:
+                metrics.add_metric(name="EncryptionKeysFound", unit=MetricUnit.Count, value=1)
+                
+                # Return full encryption data with camelCase field names
+                response_data = {
+                    'userId': target_user_id,
+                    'publicKey': encryption_keys.public_key,
+                    'publicKeyId': encryption_keys.public_key_id,
+                    'salt': encryption_keys.salt,
+                    'encryptedPrivateKey': encryption_keys.encrypted_private_key,
+                    'hasEncryption': True,
+                    'recoveryEnabled': encryption_keys.recovery_enabled,
+                    'recoveryMethods': [method.value for method in encryption_keys.recovery_methods]
+                }
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'X-Request-ID': request_id
+                    },
+                    'body': json.dumps(response_data)
+                }
+            else:
+                # No encryption setup
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'X-Request-ID': request_id
+                    },
+                    'body': json.dumps({
+                        'userId': target_user_id,
+                        'hasEncryption': False
+                    })
+                }
         else:
-            metrics.add_metric(name="PublicKeyNotFound", unit=MetricUnit.Count, value=1)
+            # Return only public key info for others
+            public_key_info = repository.get_public_key(target_user_id)
+            
+            if public_key_info:
+                metrics.add_metric(name="PublicKeyFound", unit=MetricUnit.Count, value=1)
+                
+                response = PublicKeyResponse(
+                    user_id=target_user_id,
+                    public_key=public_key_info['public_key'],
+                    public_key_id=public_key_info['public_key_id'],
+                    has_encryption=True
+                )
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'X-Request-ID': request_id
+                    },
+                    'body': response.model_dump_json(by_alias=True)
+                }
+            else:
+                metrics.add_metric(name="PublicKeyNotFound", unit=MetricUnit.Count, value=1)
             
             return {
                 'statusCode': 404,

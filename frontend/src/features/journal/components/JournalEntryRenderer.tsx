@@ -190,7 +190,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
           return Array.from(goalLinks)
             .map((link) => {
               const href = link.getAttribute("href") || "";
-              const goalIdMatch = href.match(/goal[/-]([a-zA-Z0-9-]+)/);
+              const goalIdMatch = href.match(/goal[s]?[/-]([a-zA-Z0-9-]+)/);
               return goalIdMatch ? goalIdMatch[1] : null;
             })
             .filter(Boolean);
@@ -212,7 +212,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
       }
 
       default: {
-        // For unknown types, preserve the content as-is
+        // For unknown types, return the HTML content for rendering
         return html.replace(/<h3>.*?<\/h3>/gi, "").trim();
       }
     }
@@ -326,6 +326,10 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
         return renderChoiceSection(section.content as string, sectionDef);
 
       default:
+        // For unknown types, render the HTML directly
+        if (typeof section.content === 'string' && section.content.includes('<')) {
+          return <div dangerouslySetInnerHTML={{ __html: section.content }} />;
+        }
         return renderTextSection(section.content);
     }
   };
@@ -337,6 +341,12 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
     }
 
     const text = typeof content === "string" ? content : String(content);
+    
+    // Check if the content is just empty HTML tags
+    const strippedContent = text.replace(/<[^>]*>/g, '').trim();
+    if (!strippedContent) {
+      return <p className="journal-empty-content">No content added</p>;
+    }
 
     // Render markdown content
     return (
@@ -404,13 +414,14 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
               );
             }
 
-            // Fallback for unknown emotions
+            // Fallback for unknown emotions - capitalize first letter
+            const capitalizedEmotion = emotionId.charAt(0).toUpperCase() + emotionId.slice(1);
             return (
               <span
                 key={index}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm"
               >
-                <span>{emotionId}</span>
+                <span>{capitalizedEmotion}</span>
               </span>
             );
           })}
@@ -510,7 +521,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
         {goalIds.map((goalId, index) => (
           <li key={index} className="flex items-center gap-2">
             <span className="text-accent">🎯</span>
-            <span className="text-sm">Goal: {goalId}</span>
+            <span className="text-sm">{`Goal: ${goalId}`}</span>
           </li>
         ))}
       </ul>

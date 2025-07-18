@@ -28,6 +28,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
   const [encryptionKeyId, setEncryptionKeyId] = useState<string | null>(null);
   const [hasAttemptedAutoUnlock, setHasAttemptedAutoUnlock] = useState(false);
   const [isCheckingAutoUnlock, setIsCheckingAutoUnlock] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Fetch user profile to check encryption status
   const { data: profile } = useQuery<UserProfile>({
@@ -40,6 +41,10 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
   });
 
   const attemptAutoUnlock = useCallback(async () => {
+    if (hasAttemptedAutoUnlock || isCheckingAutoUnlock) {
+      return;
+    }
+    
     setHasAttemptedAutoUnlock(true);
     setIsCheckingAutoUnlock(true);
 
@@ -73,14 +78,14 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     } finally {
       setIsCheckingAutoUnlock(false);
     }
-  }, [user?.userId]);
+  }, [user?.userId, hasAttemptedAutoUnlock, isCheckingAutoUnlock]);
 
   // Check local encryption setup on mount and when profile changes
   useEffect(() => {
-    if (profile) {
+    if (profile && !isInitializing) {
       checkEncryptionStatus();
     }
-  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profile, isInitializing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Prevent unlock prompt from showing immediately after setup
   useEffect(() => {
@@ -96,6 +101,8 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       isEncryptionSetup &&
       isEncryptionLocked &&
       !hasAttemptedAutoUnlock &&
+      !isCheckingAutoUnlock &&
+      !isInitializing &&
       user?.userId
     ) {
       attemptAutoUnlock();
@@ -104,6 +111,8 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     isEncryptionSetup,
     isEncryptionLocked,
     hasAttemptedAutoUnlock,
+    isCheckingAutoUnlock,
+    isInitializing,
     user?.userId,
     attemptAutoUnlock,
   ]);
@@ -126,7 +135,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
         setIsEncryptionLocked(!isInitialized);
 
         // Trigger auto-unlock if encryption isn't initialized yet
-        if (!isInitialized && !hasAttemptedAutoUnlock && user?.userId) {
+        if (!isInitialized && !hasAttemptedAutoUnlock && !isCheckingAutoUnlock && user?.userId) {
           attemptAutoUnlock();
         }
       } else if (profile?.encryptionEnabled) {
@@ -145,6 +154,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
         throw new Error("User ID not available");
       }
 
+      setIsInitializing(true);
       const encryptionService = getEncryptionService();
       await encryptionService.initialize(password, user.userId);
 
@@ -152,9 +162,14 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       setEncryptionKeyId(keyId);
       setIsEncryptionSetup(true);
       setIsEncryptionLocked(false);
+      
+      // Mark that we've attempted unlock to prevent auto-unlock from triggering
+      setHasAttemptedAutoUnlock(true);
     } catch (error) {
       console.error("Failed to unlock encryption:", error);
       throw error;
+    } finally {
+      setIsInitializing(false);
     }
   };
 
@@ -172,6 +187,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     if (!user?.userId) throw new Error("User not authenticated");
 
     try {
+      setIsInitializing(true);
       const encryptionService = getEncryptionService();
       await encryptionService.initialize(password, user.userId);
 
@@ -180,9 +196,14 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       setEncryptionKeyId(keyId);
       setIsEncryptionSetup(true);
       setIsEncryptionLocked(false); // Important: unlock after setup
+      
+      // Mark that setup is complete to prevent unlock prompt
+      setHasAttemptedAutoUnlock(true);
     } catch (error) {
       console.error("Failed to setup encryption:", error);
       throw error;
+    } finally {
+      setIsInitializing(false);
     }
   };
 
@@ -190,6 +211,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     if (!user?.userId) throw new Error("User not authenticated");
 
     try {
+      setIsInitializing(true);
       const encryptionService = getEncryptionService();
       await encryptionService.forceResync(password, user.userId);
 
@@ -198,9 +220,14 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       setEncryptionKeyId(keyId);
       setIsEncryptionSetup(true);
       setIsEncryptionLocked(false);
+      
+      // Mark that we've completed the reset
+      setHasAttemptedAutoUnlock(true);
     } catch (error) {
       console.error("Failed to reset encryption:", error);
       throw error;
+    } finally {
+      setIsInitializing(false);
     }
   };
 

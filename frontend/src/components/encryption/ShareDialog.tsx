@@ -273,15 +273,23 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                   {errorDetails && (
                     <div className="text-xs text-orange-700 mb-2">
                       <p>
-                        Local key: {errorDetails.localPublicKeyId?.slice(0, 8)}
-                        ...
+                        Local key: {errorDetails.localPublicKeyId ? 
+                          `${errorDetails.localPublicKeyId.slice(0, 8)}...${errorDetails.localPublicKeyId.slice(-4)}` : 
+                          "None"
+                        }
                       </p>
                       <p>
-                        Server key:{" "}
-                        {errorDetails.serverPublicKeyId
-                          ? `${errorDetails.serverPublicKeyId.slice(0, 8)}...`
-                          : "None"}
+                        Server key: {errorDetails.serverPublicKeyId ? 
+                          `${errorDetails.serverPublicKeyId.slice(0, 8)}...${errorDetails.serverPublicKeyId.slice(-4)}` : 
+                          "None"
+                        }
                       </p>
+                      {errorDetails.localPublicKeyId && errorDetails.serverPublicKeyId && 
+                       errorDetails.localPublicKeyId === errorDetails.serverPublicKeyId && (
+                        <p className="mt-1 font-medium">
+                          ⚠️ Keys appear to be identical - this might be a false positive
+                        </p>
+                      )}
                     </div>
                   )}
                   <button

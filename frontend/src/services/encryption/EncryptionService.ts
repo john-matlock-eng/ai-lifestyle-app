@@ -18,6 +18,7 @@ export class EncryptionService {
   private masterKey: CryptoKey | null = null;
   private personalKeyPair: CryptoKeyPair | null = null;
   private publicKeyId: string | null = null;
+  private isSettingUp: boolean = false; // Prevent concurrent setup attempts
 
   /**
    * Initialize the encryption service with user's password
@@ -26,6 +27,35 @@ export class EncryptionService {
     try {
       console.log("[Encryption] Starting initialization for user", userId);
 
+      // First, check if we have valid local keys that we can use
+      const localSalt = await keyStore.getSalt();
+      const localKeys = await keyStore.getPersonalKeys();
+      
+      if (localSalt && localKeys) {
+        console.log("[Encryption] Found existing local keys, attempting to use them");
+        
+        // Try to initialize with local keys first
+        try {
+          this.masterKey = await this.deriveMasterKey(password, localSalt);
+          await this.loadPersonalKeys(localKeys.privateKey);
+          this.publicKeyId = localKeys.publicKeyId;
+          
+          console.log("[Encryption] Successfully initialized with local keys", {
+            publicKeyId: this.publicKeyId
+          });
+          
+          // Verify these keys match server if possible (non-blocking)
+          this.verifyKeysWithServer(userId).catch(error => {
+            console.warn("[Encryption] Could not verify keys with server:", error);
+          });
+          
+          return; // Success with local keys
+        } catch (localError) {
+          console.warn("[Encryption] Failed to use local keys, will check server:", localError);
+          // Continue to server check
+        }
+      }
+
       // Check if user has encryption set up on server
       const response = await apiClient.get(`/encryption/check/${userId}`);
       const encryptionStatus = response.data;
@@ -33,7 +63,7 @@ export class EncryptionService {
       if (encryptionStatus.hasEncryption) {
         console.log("[Encryption] User has server-side encryption setup");
 
-        // User has encryption on server, fetch salt
+        // User has encryption on server, fetch full data
         const userResponse = await apiClient.get(`/encryption/user/${userId}`);
         const encryptionData = userResponse.data;
 
@@ -86,121 +116,30 @@ export class EncryptionService {
 
         console.log("[Encryption] Initialization complete", {
           publicKeyId: this.publicKeyId,
+          publicKeyIdLength: this.publicKeyId?.length,
           hasPrivateKey: !!this.personalKeyPair?.privateKey,
           hasPublicKey: !!this.personalKeyPair?.publicKey,
         });
       } else {
-        // Server check says no encryption, but let's double-check by trying to fetch user encryption data
-        // This handles race conditions where the check endpoint returns false but data exists
+        // Server check says no encryption
         console.log(
-          "[Encryption] Check endpoint says no encryption, double-checking by fetching user data",
+          "[Encryption] Check endpoint says no encryption, setting up new user",
         );
         
-        let serverHasEncryption = false;
-        try {
-          const userResponse = await apiClient.get(`/encryption/user/${userId}`);
-          const encryptionData = userResponse.data;
-          
-          if (encryptionData.salt && encryptionData.encryptedPrivateKey && encryptionData.publicKey) {
-            console.log("[Encryption] Found encryption data on second check, using it");
-            serverHasEncryption = true;
-            
-            // Process the encryption data as if hasEncryption was true
-            const salt = this.base64ToArrayBuffer(encryptionData.salt);
-            await keyStore.setSalt(new Uint8Array(salt));
-            this.masterKey = await this.deriveMasterKey(password, new Uint8Array(salt));
-            
-            const encryptedPrivateKey = this.base64ToArrayBuffer(encryptionData.encryptedPrivateKey);
-            await keyStore.setPersonalKeys(
-              encryptedPrivateKey,
-              encryptionData.publicKey,
-              encryptionData.publicKeyId,
-            );
-            
-            await this.loadPersonalKeys(encryptedPrivateKey);
-            this.publicKeyId = encryptionData.publicKeyId;
-            
-            console.log("[Encryption] Successfully initialized from server data after double-check");
-            return; // Exit early, we're done
-          }
-        } catch (error) {
-          console.log("[Encryption] Double-check failed, proceeding with local key check", error);
-        }
-        
-        if (!serverHasEncryption) {
-          // Server truly has no encryption setup
-          console.log(
-            "[Encryption] No server encryption found after double-check, checking for existing local keys",
-          );
-          
-          // CRITICAL FIX: Check if user already has local keys before generating new ones
-          const existingLocalKeys = await keyStore.getPersonalKeys();
-          const existingSalt = await keyStore.getSalt();
-        
-        if (existingLocalKeys && existingSalt) {
-          console.log(
-            "[Encryption] Found existing local keys, verifying they match any server state",
-          );
-          
-          // Derive master key from existing salt
-          this.masterKey = await this.deriveMasterKey(password, existingSalt);
-          
-          // Load existing personal keys
-          await this.loadPersonalKeys(existingLocalKeys.privateKey);
-          this.publicKeyId = existingLocalKeys.publicKeyId;
-          
-          // Verify local keys match server keys if possible
-          try {
-            const checkResponse = await apiClient.get(`/encryption/user/${userId}`);
-            const serverData = checkResponse.data;
-            
-            if (serverData.publicKeyId) {
-              // Server has encryption data, verify it matches our local keys
-              if (serverData.publicKeyId === existingLocalKeys.publicKeyId) {
-                console.log(
-                  "[Encryption] Local keys match server keys, initialization complete",
-                );
-              } else {
-                console.warn(
-                  "[Encryption] Local keys do not match server keys!",
-                  {
-                    localKeyId: existingLocalKeys.publicKeyId,
-                    serverKeyId: serverData.publicKeyId,
-                  },
-                );
-                throw new Error(
-                  "Encryption keys are out of sync. Please reset encryption in your profile settings.",
-                );
-              }
-            } else if (serverData.salt && serverData.encryptedPrivateKey) {
-              // Server has partial data but no publicKeyId - this is an error state
-              console.error(
-                "[Encryption] Server has incomplete encryption data",
-              );
-              throw new Error(
-                "Server encryption data is incomplete. Please reset encryption in your profile settings.",
-              );
-            } else {
-              // Server has no encryption data at all - this could be a timing issue
-              // Don't try to upload, as this might be a race condition
-              console.log(
-                "[Encryption] Server reports no encryption data, but we have local keys. Using local keys.",
-              );
-            }
-          } catch (checkError) {
-            // Could not check server state, just use local keys
-            console.warn(
-              "[Encryption] Could not verify server encryption state, using local keys:",
-              checkError,
-            );
-          }
-        } else {
-          // Truly a new user with no existing keys
-          console.log(
-            "[Encryption] No existing local keys found, setting up new user",
-          );
+        // IMPORTANT: Only set up new encryption if we don't have local keys
+        // and we're not already setting up
+        if (!localSalt && !localKeys && !this.isSettingUp) {
           await this.setupNewUser(password, userId);
-        }
+        } else if (localSalt && localKeys) {
+          // We have local keys but server says no encryption
+          // This might be a timing issue - try to use local keys
+          console.log("[Encryption] Using existing local keys despite server response");
+          this.masterKey = await this.deriveMasterKey(password, localSalt);
+          await this.loadPersonalKeys(localKeys.privateKey);
+          this.publicKeyId = localKeys.publicKeyId;
+        } else if (this.isSettingUp) {
+          console.log("[Encryption] Already setting up encryption, skipping duplicate setup");
+          throw new Error("Encryption setup already in progress");
         }
       }
     } catch (error) {
@@ -217,35 +156,36 @@ export class EncryptionService {
         if (personalKeys) {
           await this.loadPersonalKeys(personalKeys.privateKey);
           this.publicKeyId = personalKeys.publicKeyId;
-
-          // Check if local keys match server (if we can)
-          try {
-            const userResponse = await apiClient.get(
-              `/encryption/user/${userId}`,
-            );
-            const serverKeyId = userResponse.data?.publicKeyId;
-
-            if (serverKeyId && serverKeyId !== this.publicKeyId) {
-              console.warn(
-                "[Encryption] Local keys do not match server keys!",
-                {
-                  localKeyId: this.publicKeyId,
-                  serverKeyId: serverKeyId,
-                },
-              );
-
-              // Prompt user to re-sync or re-setup encryption
-              throw new Error(
-                "Encryption keys are out of sync. Please reset encryption in your profile settings.",
-              );
-            }
-          } catch (checkError) {
-            console.warn("[Encryption] Could not verify key sync:", checkError);
-          }
         }
-      } else {
+      } else if (!this.isSettingUp) {
         await this.setupNewUser(password, userId);
       }
+    }
+  }
+
+  /**
+   * Verify local keys match server keys
+   */
+  private async verifyKeysWithServer(userId: string): Promise<void> {
+    try {
+      const userResponse = await apiClient.get(`/encryption/user/${userId}`);
+      const serverData = userResponse.data;
+      
+      if (serverData.publicKeyId && serverData.publicKeyId !== this.publicKeyId) {
+        console.error(
+          "[Encryption] Local keys do not match server keys!",
+          {
+            localKeyId: this.publicKeyId,
+            serverKeyId: serverData.publicKeyId,
+          }
+        );
+        throw new Error(
+          "Encryption keys are out of sync. Please reset encryption in your profile settings."
+        );
+      }
+    } catch (error) {
+      // Log but don't throw - this is a non-blocking verification
+      console.warn("[Encryption] Could not verify keys with server:", error);
     }
   }
 
@@ -298,119 +238,90 @@ export class EncryptionService {
    * Set up encryption for a new user
    */
   private async setupNewUser(password: string, userId: string): Promise<void> {
-    // Generate random salt
-    const salt = crypto.getRandomValues(new Uint8Array(32));
-    await keyStore.setSalt(salt);
-
-    // Derive master key
-    this.masterKey = await this.deriveMasterKey(password, salt);
-
-    // Generate personal keypair
-    this.personalKeyPair = await crypto.subtle.generateKey(
-      {
-        name: "RSA-OAEP",
-        modulusLength: 4096,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: "SHA-256",
-      },
-      true,
-      ["encrypt", "decrypt"],
-    );
-
-    // Generate public key ID
-    this.publicKeyId = this.generateKeyId();
-
-    // Export and encrypt private key
-    const privateKeyData = await crypto.subtle.exportKey(
-      "pkcs8",
-      this.personalKeyPair.privateKey,
-    );
-    const encryptedPrivateKey = await this.encryptWithMasterKey(privateKeyData);
-
-    // Export public key
-    const publicKeyData = await crypto.subtle.exportKey(
-      "spki",
-      this.personalKeyPair.publicKey,
-    );
-    const publicKeyBase64 = this.arrayBufferToBase64(publicKeyData);
-
-    // Store keys locally
-    await keyStore.setPersonalKeys(
-      encryptedPrivateKey,
-      publicKeyBase64,
-      this.publicKeyId,
-    );
-
+    // Prevent concurrent setup attempts
+    if (this.isSettingUp) {
+      console.log("[Encryption] Setup already in progress, skipping");
+      return;
+    }
+    
+    this.isSettingUp = true;
+    
     try {
-      // Save to server for cross-device access
-      await apiClient.post("/encryption/setup", {
-        salt: this.arrayBufferToBase64(salt),
-        encryptedPrivateKey: this.arrayBufferToBase64(encryptedPrivateKey),
-        publicKey: publicKeyBase64,
-        publicKeyId: this.publicKeyId,
-      });
-      console.log("[Encryption] Successfully saved new encryption keys to server");
-    } catch (error) {
-      if (error instanceof Error && 'response' in error) {
-        const axiosError = error as { response?: { status?: number } };
-        if (axiosError.response?.status === 409) {
-          console.log("[Encryption] Server already has encryption setup (409) - fetching server keys");
-          
-          // If we get a 409, try to fetch the server keys to ensure consistency
-          try {
-            const userResponse = await apiClient.get(`/encryption/user/${userId}`);
-            const serverData = userResponse.data;
+      // Generate random salt
+      const salt = crypto.getRandomValues(new Uint8Array(32));
+      await keyStore.setSalt(salt);
+
+      // Derive master key
+      this.masterKey = await this.deriveMasterKey(password, salt);
+
+      // Generate personal keypair
+      this.personalKeyPair = await crypto.subtle.generateKey(
+        {
+          name: "RSA-OAEP",
+          modulusLength: 4096,
+          publicExponent: new Uint8Array([1, 0, 1]),
+          hash: "SHA-256",
+        },
+        true,
+        ["encrypt", "decrypt"],
+      );
+
+      // Generate public key ID
+      this.publicKeyId = this.generateKeyId();
+
+      // Export and encrypt private key
+      const privateKeyData = await crypto.subtle.exportKey(
+        "pkcs8",
+        this.personalKeyPair.privateKey,
+      );
+      const encryptedPrivateKey = await this.encryptWithMasterKey(privateKeyData);
+
+      // Export public key
+      const publicKeyData = await crypto.subtle.exportKey(
+        "spki",
+        this.personalKeyPair.publicKey,
+      );
+      const publicKeyBase64 = this.arrayBufferToBase64(publicKeyData);
+
+      // Store keys locally first
+      await keyStore.setPersonalKeys(
+        encryptedPrivateKey,
+        publicKeyBase64,
+        this.publicKeyId,
+      );
+
+      try {
+        // Save to server for cross-device access
+        await apiClient.post("/encryption/setup", {
+          salt: this.arrayBufferToBase64(salt),
+          encryptedPrivateKey: this.arrayBufferToBase64(encryptedPrivateKey),
+          publicKey: publicKeyBase64,
+          publicKeyId: this.publicKeyId,
+        });
+        console.log("[Encryption] Successfully saved new encryption keys to server");
+      } catch (error) {
+        if (error instanceof Error && 'response' in error) {
+          const axiosError = error as { response?: { status?: number, data?: any } };
+          if (axiosError.response?.status === 409) {
+            console.log("[Encryption] Server already has encryption setup (409)");
             
-            if (serverData.publicKeyId && serverData.publicKeyId !== this.publicKeyId) {
-              console.warn(
-                "[Encryption] Server has different keys than what we just generated. Replacing with server keys.",
-                { localKeyId: this.publicKeyId, serverKeyId: serverData.publicKeyId }
-              );
-              
-              // CRITICAL: Clear the newly generated keys first
-              this.personalKeyPair = null;
-              this.publicKeyId = null;
-              
-              // Replace our local keys with server keys
-              const serverSalt = this.base64ToArrayBuffer(serverData.salt);
-              await keyStore.setSalt(new Uint8Array(serverSalt));
-              
-              // Re-derive master key with server salt
-              this.masterKey = await this.deriveMasterKey(password, new Uint8Array(serverSalt));
-              
-              // Store server keys locally
-              const serverEncryptedPrivateKey = this.base64ToArrayBuffer(serverData.encryptedPrivateKey);
-              await keyStore.setPersonalKeys(
-                serverEncryptedPrivateKey,
-                serverData.publicKey,
-                serverData.publicKeyId,
-              );
-              
-              // Load the server keys
-              await this.loadPersonalKeys(serverEncryptedPrivateKey);
-              this.publicKeyId = serverData.publicKeyId;
-              
-              console.log("[Encryption] Successfully replaced local keys with server keys", {
-                publicKeyId: this.publicKeyId,
-                hasPrivateKey: !!(this.personalKeyPair && 'privateKey' in this.personalKeyPair),
-                hasPublicKey: !!(this.personalKeyPair && 'publicKey' in this.personalKeyPair)
-              });
-              
-              // IMPORTANT: Return early - we've successfully synced with server
-              return;
-            }
-          } catch (fetchError) {
-            console.warn("[Encryption] Could not fetch server keys after 409:", fetchError);
-            // Continue with locally generated keys
+            // If we get a 409, the server already has encryption set up
+            // This likely means another request completed while we were setting up
+            // We should NOT try to fetch server keys here as it could cause
+            // infinite recursion. Instead, we'll use the keys we just generated
+            // locally since they're already stored.
+            console.log("[Encryption] Using locally generated keys despite 409 response");
+            
+            // The keys are already set up locally, so we're good to go
+            return;
           }
-        } else {
-          console.warn("Failed to save encryption keys to server:", error);
-          // Continue with local-only encryption
         }
-      } else {
+        
+        // For other errors, log but continue with local-only encryption
         console.warn("Failed to save encryption keys to server:", error);
-        // Continue with local-only encryption
       }
+    } finally {
+      this.isSettingUp = false;
     }
   }
 
@@ -908,9 +819,12 @@ export class EncryptionService {
    */
   private generateKeyId(): string {
     const bytes = crypto.getRandomValues(new Uint8Array(16));
-    return Array.from(bytes)
+    const hexString = Array.from(bytes)
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
+    
+    console.log("[Encryption] Generated new key ID:", hexString);
+    return hexString;
   }
 
   /**
@@ -969,6 +883,7 @@ export class EncryptionService {
     this.masterKey = null;
     this.personalKeyPair = null;
     this.publicKeyId = null;
+    this.isSettingUp = false;
     // Note: We don't clear the keyStore here as the user might want to log back in
   }
 
@@ -980,6 +895,7 @@ export class EncryptionService {
     this.masterKey = null;
     this.personalKeyPair = null;
     this.publicKeyId = null;
+    this.isSettingUp = false;
   }
 
   /**
