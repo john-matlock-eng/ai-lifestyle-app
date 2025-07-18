@@ -11,6 +11,7 @@ export interface EncryptionContextValue {
   lockEncryption: () => void;
   checkEncryptionStatus: () => Promise<void>;
   clearStoredPassword: () => void;
+  setupEncryption: (password: string) => Promise<void>;
   resetEncryption: (password: string) => Promise<void>;
 }
 

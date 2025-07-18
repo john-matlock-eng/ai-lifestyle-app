@@ -164,6 +164,7 @@ const SetupWizard: React.FC<SetupWizardProps> = ({
 
 const EncryptionSettings: React.FC = () => {
   const { user } = useAuth();
+  const { setupEncryption: contextSetupEncryption, isEncryptionSetup: contextIsSetup } = useEncryption();
   const [isSetup, setIsSetup] = useState(false);
   const [showSetupWizard, setShowSetupWizard] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
@@ -224,10 +225,10 @@ const EncryptionSettings: React.FC = () => {
         console.log("Profile data:", profile); // Debug log
         const encryptionService = getEncryptionService();
         const hasLocalSetup = await encryptionService.checkSetup();
-        setIsSetup(hasLocalSetup);
+        setIsSetup(hasLocalSetup || contextIsSetup); // Use context state as fallback
 
         // If profile says encryption is enabled but local setup is missing
-        if (profile?.encryptionEnabled && !hasLocalSetup) {
+        if (profile?.encryptionEnabled && !hasLocalSetup && !contextIsSetup) {
           setShowPasswordPrompt(true);
         }
       } catch (error) {
@@ -238,7 +239,7 @@ const EncryptionSettings: React.FC = () => {
     if (profile) {
       checkEncryption();
     }
-  }, [profile]);
+  }, [profile, contextIsSetup]);
 
   const { unlockEncryption } = useEncryption();
 
@@ -256,9 +257,10 @@ const EncryptionSettings: React.FC = () => {
     try {
       // Use the context to initialize and unlock encryption
       await unlockEncryption(masterPassword);
-
       const encryptionService = getEncryptionService();
       const keyId = await encryptionService.getPublicKeyId();
+      
+      // Update user profile
       await updateProfileMutation.mutateAsync({
         encryptionEnabled: true,
         encryptionSetupDate: new Date().toISOString(),

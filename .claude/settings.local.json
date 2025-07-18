@@ -25,7 +25,8 @@
       "Bash(/dev/null)",
       "Bash(touch:*)",
       "Bash(npx prettier:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(pip install:*)"
     ],
     "deny": []
   }
