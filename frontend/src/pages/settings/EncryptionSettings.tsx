@@ -241,6 +241,8 @@ const EncryptionSettings: React.FC = () => {
     }
   }, [profile, contextIsSetup]);
 
+  const { unlockEncryption } = useEncryption();
+
   const handleSetupEncryption = async () => {
     if (masterPassword !== confirmPassword) {
       setSetupError("Passwords do not match");
@@ -253,10 +255,8 @@ const EncryptionSettings: React.FC = () => {
     }
 
     try {
-      // Use context setupEncryption which properly updates all state
-      await contextSetupEncryption(masterPassword);
-
-      // Get the key ID after setup
+      // Use the context to initialize and unlock encryption
+      await unlockEncryption(masterPassword);
       const encryptionService = getEncryptionService();
       const keyId = await encryptionService.getPublicKeyId();
       
@@ -280,8 +280,7 @@ const EncryptionSettings: React.FC = () => {
 
   const handleUnlock = async () => {
     try {
-      const encryptionService = getEncryptionService();
-      await encryptionService.initialize(unlockPassword, user?.userId || "");
+      await unlockEncryption(unlockPassword);
 
       setIsSetup(true);
       setShowPasswordPrompt(false);
