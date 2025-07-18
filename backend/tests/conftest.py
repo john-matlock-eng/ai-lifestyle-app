@@ -87,6 +87,7 @@ def set_env_vars(monkeypatch):
     """Set environment variables for tests"""
     monkeypatch.setenv('ENVIRONMENT', 'test')
     monkeypatch.setenv('TABLE_NAME', 'test-table')
+    monkeypatch.setenv('USERS_TABLE_NAME', 'users-test')
     monkeypatch.setenv('LOG_LEVEL', 'DEBUG')
     monkeypatch.setenv('AWS_REGION', 'us-east-1')
     monkeypatch.setenv('POWERTOOLS_SERVICE_NAME', 'test-service')

@@ -94,8 +94,13 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
         contentLines.push(line);
       }
 
-      // Return the raw markdown content
-      return contentLines.join("\n").trim();
+      // Return the raw markdown/HTML content
+      const content = contentLines.join("\n").trim();
+      // If it contains HTML tags, return it as is for HTML rendering
+      if (content.includes('<p>') || content.includes('<div>')) {
+        return content;
+      }
+      return content;
     }
 
     // For other types, parse HTML as before
@@ -348,7 +353,12 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
       return <p className="journal-empty-content">No content added</p>;
     }
 
-    // Render markdown content
+    // If content contains HTML tags, render it as HTML
+    if (text.includes('<p>') || text.includes('<div>') || text.includes('<ul>')) {
+      return <div dangerouslySetInnerHTML={{ __html: text }} />;
+    }
+
+    // Otherwise render as markdown
     return (
       <ReactMarkdown
         components={{

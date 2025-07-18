@@ -7,6 +7,9 @@ pytest-cov>=4.1.0
 pytest-mock>=3.11.1
 pytest-asyncio>=0.21.1
 moto[dynamodb2]>=4.2.0
+freezegun>=1.2.2
+aiohttp>=3.8.5
+httpx>=0.24.1
 
 # Code quality
 black>=23.7.0

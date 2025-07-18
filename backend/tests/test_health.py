@@ -2,7 +2,7 @@
 Tests for health check Lambda
 """
 import json
-from src.health import handler
+from health import handler
 
 
 def test_health_check_success(lambda_context, api_gateway_event, mock_dynamodb):
