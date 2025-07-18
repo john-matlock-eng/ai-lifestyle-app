@@ -2,6 +2,12 @@
 Tests for health check Lambda
 """
 import json
+import os
+
+# Set environment variables before importing
+os.environ['ENVIRONMENT'] = 'test'
+os.environ['USERS_TABLE_NAME'] = 'users-test'
+
 from health import handler
 
 

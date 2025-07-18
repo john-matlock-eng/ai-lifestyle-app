@@ -73,12 +73,10 @@ def mock_dynamodb(monkeypatch):
         }
     }
     
-    def mock_boto_client(service_name):
-        if service_name == 'dynamodb':
-            return mock_client
-        return Mock()
+    # Mock at the module level where it's imported
+    import health
+    monkeypatch.setattr(health, 'dynamodb', mock_client)
     
-    monkeypatch.setattr('boto3.client', mock_boto_client)
     return mock_client
 
 

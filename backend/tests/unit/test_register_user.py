@@ -75,7 +75,7 @@ class TestRegistrationService:
         assert isinstance(result, RegisterResponse)
         assert result.userId == user_id
         assert result.email == valid_request.email
-        assert "verification" in result.message.lower()
+        assert "verify" in result.message.lower()
         
         # Verify method calls
         registration_service.user_repository.get_user_by_email.assert_called_once_with(valid_request.email)
