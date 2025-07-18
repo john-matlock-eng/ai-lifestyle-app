@@ -237,7 +237,7 @@ export class EncryptionService {
   /**
    * Set up encryption for a new user
    */
-  private async setupNewUser(password: string, userId: string): Promise<void> {
+  private async setupNewUser(password: string, _userId: string): Promise<void> {
     // Prevent concurrent setup attempts
     if (this.isSettingUp) {
       console.log("[Encryption] Setup already in progress, skipping");
