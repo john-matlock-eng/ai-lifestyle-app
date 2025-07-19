@@ -20,7 +20,7 @@ import RegisterSuccessPage from "./pages/auth/RegisterSuccessPage";
 import LoginPage from "./pages/auth/LoginPage";
 
 // Pages - App
-import DashboardPage from "./pages/DashboardPage";
+import DashboardPage from "./pages/ImprovedDashboardPage";
 import SettingsPage from "./pages/SettingsPage";
 
 // Pages - Goals
@@ -37,6 +37,13 @@ import {
   JournalImportPage,
 } from "./features/journal/pages";
 import JournalDebugPage from "./pages/journal/JournalDebugPage";
+
+// Pages - Habits
+import {
+  HabitsPage,
+  CreateHabitPage,
+  EditHabitPage
+} from "./features/habits/pages";
 
 // Components
 import DevTools from "./components/common/DevTools";
@@ -125,6 +132,23 @@ function App() {
                   <Route
                     path="/workouts"
                     element={<div>Workouts - Coming Soon</div>}
+                  />
+                  
+                  {/* Habit Routes */}
+                  <Route path="/habits" element={<HabitsPage />} />
+                  <Route path="/habits/new" element={<CreateHabitPage />} />
+                  <Route path="/habits/:habitId/edit" element={<EditHabitPage />} />
+                  <Route
+                    path="/habits/manage"
+                    element={<div>Manage Habits - Coming Soon</div>}
+                  />
+                  <Route
+                    path="/habits/analytics"
+                    element={<div>Habit Analytics - Coming Soon</div>}
+                  />
+                  <Route
+                    path="/habits/rewards"
+                    element={<div>Rewards - Coming Soon</div>}
                   />
 
                   {/* Journal Routes */}

@@ -49,6 +49,16 @@ from revoke_share.handler import lambda_handler as revoke_share_handler
 from setup_recovery.handler import lambda_handler as setup_recovery_handler
 from delete_encryption_keys.handler import lambda_handler as delete_encryption_keys_handler
 from get_feature_flags import lambda_handler as get_feature_flags_handler
+# Habit endpoints
+from create_habit.handler import handler as create_habit_handler
+from list_habits.handler import handler as list_habits_handler
+from get_today_habits.handler import handler as get_today_habits_handler
+from update_habit.handler import handler as update_habit_handler
+from delete_habit.handler import handler as delete_habit_handler
+from check_in_habit.handler import handler as check_in_habit_handler
+from skip_habit.handler import handler as skip_habit_handler
+from get_habit_analytics.handler import handler as get_habit_analytics_handler
+from get_user_stats.handler import handler as get_user_stats_handler
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -163,6 +173,18 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "DELETE /shares/{shareId}": revoke_share_handler,
         "POST /encryption/recovery": setup_recovery_handler,
         "DELETE /encryption/keys": delete_encryption_keys_handler,
+        # Habit endpoints
+        "GET /habits": list_habits_handler,
+        "POST /habits": create_habit_handler,
+        "GET /habits/today": get_today_habits_handler,
+        "GET /habits/{habitId}": None,  # Will be handled in path parameter section
+        "PATCH /habits/{habitId}": None,  # Will be handled in path parameter section
+        "DELETE /habits/{habitId}": None,  # Will be handled in path parameter section
+        "POST /habits/{habitId}/check-in": None,  # Will be handled in path parameter section
+        "POST /habits/{habitId}/skip": None,  # Will be handled in path parameter section
+        "GET /habits/{habitId}/analytics": None,  # Will be handled in path parameter section
+        "GET /users/stats": get_user_stats_handler,
+        "PUT /habits/reorder": None,  # TODO: Implement reorder handler
     }
     
     # Find and execute the appropriate handler
@@ -281,12 +303,48 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             # /users/{userId}
             user_id = path_parts[2]
             # Skip if it's a known static route
-            if user_id not in ['profile', 'by-email']:
+            if user_id not in ['profile', 'by-email', 'stats']:
                 if 'pathParameters' not in event:
                     event['pathParameters'] = {}
                 event['pathParameters']['userId'] = user_id
                 if http_method == 'GET':
                     handler = get_user_by_id_handler
+        
+        # Check for habit-specific routes with {habitId}
+        elif len(path_parts) >= 3 and path_parts[1] == 'habits':
+            # Check if this is /habits/today first (no path parameter)
+            if len(path_parts) == 3 and path_parts[2] == 'today' and http_method == 'GET':
+                handler = get_today_habits_handler
+            # Check if this is /habits/reorder (no path parameter)
+            elif len(path_parts) == 3 and path_parts[2] == 'reorder' and http_method == 'PUT':
+                handler = None  # TODO: Implement reorder handler
+            # Otherwise, treat as habit ID
+            elif len(path_parts) >= 3 and path_parts[2] not in ['today', 'reorder']:
+                # Extract habitId for path parameter
+                habit_id = path_parts[2]
+                
+                # Add path parameters to event if not present
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['habitId'] = habit_id
+                
+                # Check for specific habit endpoints
+                if len(path_parts) == 3:
+                    # /habits/{habitId}
+                    if http_method == 'GET':
+                        handler = None  # TODO: Implement get single habit handler
+                    elif http_method == 'PATCH':
+                        handler = update_habit_handler
+                    elif http_method == 'DELETE':
+                        handler = delete_habit_handler
+                elif len(path_parts) == 4:
+                    # /habits/{habitId}/check-in or /habits/{habitId}/skip or /habits/{habitId}/analytics
+                    if path_parts[3] == 'check-in' and http_method == 'POST':
+                        handler = check_in_habit_handler
+                    elif path_parts[3] == 'skip' and http_method == 'POST':
+                        handler = skip_habit_handler
+                    elif path_parts[3] == 'analytics' and http_method == 'GET':
+                        handler = get_habit_analytics_handler
     
     if handler:
         # Ensure the event has the expected format for handlers
