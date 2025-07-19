@@ -29,14 +29,55 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting, touchedFields },
+    formState: { errors, isSubmitting, touchedFields, isValid },
     setError,
     getFieldState,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    mode: "onBlur",
+    mode: "onChange",
     criteriaMode: "all",
   });
+
+  // Get all watched values
+  const watchedValues = watch();
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Form state:', {
+      errors,
+      touchedFields,
+      watchedValues,
+      isValid,
+      completedFields: Array.from(completedFields),
+    });
+  }, [errors, touchedFields, watchedValues, isValid, completedFields]);
+
+  // Track completed fields based on touched and valid state
+  useEffect(() => {
+    const fields: (keyof RegisterFormData)[] = ['firstName', 'lastName', 'email', 'password', 'confirmPassword'];
+    const newCompletedFields = new Set<string>();
+    
+    fields.forEach(fieldName => {
+      const fieldState = getFieldState(fieldName);
+      const fieldValue = watchedValues[fieldName];
+      
+      // Field is completed if it has a value and no errors
+      if (fieldValue && fieldValue.toString().trim() !== '' && !fieldState.error) {
+        newCompletedFields.add(fieldName);
+      }
+    });
+    
+    // Only update if there's a change to avoid infinite loops
+    if (newCompletedFields.size !== completedFields.size || 
+        Array.from(newCompletedFields).sort().join(',') !== Array.from(completedFields).sort().join(',')) {
+      setCompletedFields(newCompletedFields);
+      
+      // Celebrate each new field completion
+      if (newCompletedFields.size > completedFields.size && companion) {
+        companion.handleFieldComplete('field');
+      }
+    }
+  }, [watchedValues, errors, getFieldState, completedFields, companion]);
 
   // React to form progress
   useEffect(() => {
@@ -70,32 +111,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
       }
     }
   }, [completedFields, companion]);
-
-  // Track completed fields based on touched and valid state
-  useEffect(() => {
-    const fields: (keyof RegisterFormData)[] = ['firstName', 'lastName', 'email', 'password', 'confirmPassword'];
-    const newCompletedFields = new Set<string>();
-    
-    fields.forEach(fieldName => {
-      const fieldState = getFieldState(fieldName);
-      const fieldValue = watch(fieldName);
-      
-      // Field is completed if it's been touched, has a value, and has no errors
-      if (fieldState.isTouched && fieldValue && !fieldState.error) {
-        newCompletedFields.add(fieldName);
-      }
-    });
-    
-    // Only update if there's a change to avoid infinite loops
-    if (newCompletedFields.size !== completedFields.size) {
-      setCompletedFields(newCompletedFields);
-      
-      // Celebrate each new field completion
-      if (newCompletedFields.size > completedFields.size && companion) {
-        companion.handleFieldComplete('field');
-      }
-    }
-  }, [touchedFields, errors, watch, getFieldState, completedFields.size, companion]);
 
   // Track password strength
   const password = watch("password");
@@ -437,6 +452,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
               size="lg"
               isLoading={isSubmitting || registerMutation.isPending}
               loadingText="Creating account..."
+              disabled={!isValid}
             >
               Create account
             </Button>
