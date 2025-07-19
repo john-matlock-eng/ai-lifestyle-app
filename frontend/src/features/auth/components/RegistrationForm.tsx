@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
@@ -98,31 +98,45 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     }
   }, [password, companion]);
 
-  // Handle field validation and completion
-  const handleFieldBlur = useCallback(async (fieldName: keyof RegisterFormData) => {
-    const isValid = await trigger(fieldName);
-    const fieldValue = watch(fieldName);
+  // Create wrapped event handlers that preserve react-hook-form's handlers
+  const createFieldHandlers = (fieldName: keyof RegisterFormData) => {
+    const fieldRegistration = register(fieldName);
     
-    if (isValid && fieldValue && fieldValue.toString().trim()) {
-      setCompletedFields(prev => new Set(prev).add(fieldName));
-      companion?.handleFieldComplete();
-    } else if (!isValid && companion) {
-      companion.handleError();
-    }
-  }, [trigger, watch, companion]);
-
-  // Handle input focus
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (companion && e.target) {
-      companion.handleInputFocus(e.target);
-    }
-  };
-
-  // Handle typing
-  const handleInputChange = () => {
-    if (companion) {
-      companion.handleTyping();
-    }
+    return {
+      ...fieldRegistration,
+      onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+        // Our custom handler
+        if (companion && e.target) {
+          companion.handleInputFocus(e.target);
+        }
+      },
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Call react-hook-form's handler first
+        fieldRegistration.onChange(e);
+        // Then our handler
+        if (companion) {
+          companion.handleTyping();
+        }
+      },
+      onBlur: async (e: React.FocusEvent<HTMLInputElement>) => {
+        // Call react-hook-form's handler first
+        await fieldRegistration.onBlur(e);
+        // Then check if field is valid and completed
+        const fieldValue = e.target.value;
+        if (fieldValue && fieldValue.trim()) {
+          // Use a slight delay to ensure validation has run
+          setTimeout(async () => {
+            const isValid = await trigger(fieldName);
+            if (isValid) {
+              setCompletedFields(prev => new Set(prev).add(fieldName));
+              companion?.handleFieldComplete();
+            } else if (companion) {
+              companion.handleError();
+            }
+          }, 100);
+        }
+      }
+    };
   };
 
   const registerMutation = useMutation({
@@ -302,23 +316,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             <Input
               label="First name"
               isRequired
-              {...register("firstName")}
+              {...createFieldHandlers("firstName")}
               error={errors.firstName?.message}
               autoComplete="given-name"
-              onFocus={handleInputFocus}
-              onBlur={() => handleFieldBlur('firstName')}
-              onChange={handleInputChange}
             />
 
             <Input
               label="Last name"
               isRequired
-              {...register("lastName")}
+              {...createFieldHandlers("lastName")}
               error={errors.lastName?.message}
               autoComplete="family-name"
-              onFocus={handleInputFocus}
-              onBlur={() => handleFieldBlur('lastName')}
-              onChange={handleInputChange}
             />
           </div>
 
@@ -326,12 +334,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             label="Email address"
             type="email"
             isRequired
-            {...register("email")}
+            {...createFieldHandlers("email")}
             error={errors.email?.message}
             autoComplete="email"
-            onFocus={handleInputFocus}
-            onBlur={() => handleFieldBlur('email')}
-            onChange={handleInputChange}
             leftIcon={
               <svg
                 className="h-5 w-5"
@@ -353,13 +358,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             <PasswordInput
               label="Password"
               isRequired
-              {...register("password")}
+              {...createFieldHandlers("password")}
               error={errors.password?.message}
               autoComplete="new-password"
               hint="Must be at least 8 characters with uppercase, lowercase, number, and special character"
-              onFocus={handleInputFocus}
-              onBlur={() => handleFieldBlur('password')}
-              onChange={handleInputChange}
             />
             <PasswordStrengthMeter password={password || ""} />
             {passwordStrength === 'strong' && companion && (
@@ -372,12 +374,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
           <PasswordInput
             label="Confirm password"
             isRequired
-            {...register("confirmPassword")}
+            {...createFieldHandlers("confirmPassword")}
             error={errors.confirmPassword?.message}
             autoComplete="new-password"
-            onFocus={handleInputFocus}
-            onBlur={() => handleFieldBlur('confirmPassword')}
-            onChange={handleInputChange}
           />
 
           <div className="space-y-4">
