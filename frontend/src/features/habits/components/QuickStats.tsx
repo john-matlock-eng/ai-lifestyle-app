@@ -1,6 +1,6 @@
 import React from 'react';
 import type { UserStats } from '@/types/habits';
-import { Trophy, Zap, TrendingUp, Star } from 'lucide-react';
+import { Trophy, Zap, Star } from 'lucide-react';
 
 interface QuickStatsProps {
   stats: UserStats;
