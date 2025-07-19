@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import RegistrationForm from "../../features/auth/components/RegistrationForm";
 import AuthLayout from "../../features/auth/components/AuthLayout";
-import type { useAuthShihTzu } from "../../hooks/useAuthShihTzu";
+import { useAuthShihTzu } from "../../hooks/useAuthShihTzu";
 
 const RegisterPage: React.FC = () => {
   const companionRef = useRef<ReturnType<typeof useAuthShihTzu>>();

@@ -6,7 +6,7 @@ interface UseAuthShihTzuOptions {
   onIdle?: () => void;
 }
 
-export const useAuthShihTzu = (options?: UseAuthShihTzuOptions) => {
+export const useAuthShihTzu = () => {
   const companion = useShihTzuCompanion({
     initialPosition: { x: window.innerWidth - 150, y: 50 },
     idleTimeout: 10000, // Shorter timeout for auth pages
@@ -79,7 +79,7 @@ export const useAuthShihTzu = (options?: UseAuthShihTzuOptions) => {
   }, [companion]);
 
   // React to field completion
-  const handleFieldComplete = useCallback((fieldName: string) => {
+  const handleFieldComplete = useCallback(() => {
     // Quick happy animation
     const currentMood = companion.mood;
     companion.setMood('happy');
