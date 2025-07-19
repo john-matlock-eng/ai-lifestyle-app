@@ -19,7 +19,7 @@ import type {
   JournalEntry,
 } from "@/types/journal";
 import { Button } from "@/components/common";
-import { createEntry } from "@/api/journal";
+import { createEntry, getStats } from "@/api/journal";
 import { journalStorage } from "../services/JournalStorageService";
 import { useJournalSearch } from "../hooks/useJournalSearch";
 import { EnhancedJournalEditor } from "../components/EnhancedEditor";
@@ -64,20 +64,7 @@ export const JournalPageEnhanced: React.FC = () => {
   // Stats query
   const { data: stats } = useQuery({
     queryKey: ["journal", "stats"],
-    queryFn: async () => {
-      // This would fetch from your API
-      return {
-        totalEntries: total,
-        totalWords: 0,
-        currentStreak: 3,
-        longestStreak: 15,
-        goalsTracked: 5,
-        goalsCompleted: 2,
-        entriesThisWeek: 7,
-        entriesThisMonth: 23,
-        averageWordsPerEntry: 350,
-      };
-    },
+    queryFn: getStats,
   });
 
   // Create entry mutation
