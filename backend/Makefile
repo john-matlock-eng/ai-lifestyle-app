@@ -21,8 +21,6 @@ help: ## Show this help message
 
 setup: ## Set up development environment with pre-commit hooks
 	@echo "${YELLOW}Setting up development environment...${NC}"
-	@chmod +x scripts/*.sh || true
-	@./scripts/setup-dev.sh
 
 init: ## Initialize Terraform
 	@echo "${YELLOW}Initializing Terraform for ${ENV}...${NC}"
@@ -57,7 +55,7 @@ destroy: ## Destroy infrastructure (use with caution!)
 
 build-lambda: ## Build and push Lambda container
 	@echo "${YELLOW}Building Lambda function: ${FUNCTION}${NC}"
-	./scripts/deploy-lambda.sh ${ENV} ${FUNCTION}
+	@echo "Deployment scripts removed"
 
 test: ## Run tests
 	@echo "${YELLOW}Running tests...${NC}"
