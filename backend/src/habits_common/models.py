@@ -31,11 +31,11 @@ class HabitBase(BaseModel):
     description: Optional[str] = Field(None, max_length=1000)
     category: str = Field(default=HabitCategory.OTHER)
     icon: str = Field(default="📌")
-    color: str = Field(default="#3B82F6", regex="^#[0-9A-Fa-f]{6}$")
+    color: str = Field(default="#3B82F6", pattern="^#[0-9A-Fa-f]{6}$")
     pattern: Literal["daily", "weekly", "custom"] = Field(default=HabitPattern.DAILY)
     target_days: int = Field(default=30, ge=1, le=365)
     motivational_text: Optional[str] = Field(None, max_length=200)
-    reminder_time: Optional[str] = Field(None, regex="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
+    reminder_time: Optional[str] = Field(None, pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
     
     class Config:
         schema_extra = {
@@ -65,10 +65,10 @@ class UpdateHabitRequest(BaseModel):
     description: Optional[str] = Field(None, max_length=1000)
     category: Optional[str] = None
     icon: Optional[str] = None
-    color: Optional[str] = Field(None, regex="^#[0-9A-Fa-f]{6}$")
+    color: Optional[str] = Field(None, pattern="^#[0-9A-Fa-f]{6}$")
     target_days: Optional[int] = Field(None, ge=1, le=365)
     motivational_text: Optional[str] = Field(None, max_length=200)
-    reminder_time: Optional[str] = Field(None, regex="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
+    reminder_time: Optional[str] = Field(None, pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$")
     show_on_dashboard: Optional[bool] = None
     display_order: Optional[int] = None
 
