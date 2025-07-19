@@ -5,7 +5,7 @@ import {
   refreshAccessToken,
   clearTokens,
 } from "../features/auth/utils/tokenManager";
-import { snakeToCamelObject, camelToSnakeObject } from "../utils/caseConversion";
+// Note: Case conversion not needed - backend handles camelCase/snake_case via Pydantic
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -16,7 +16,7 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor for authentication and case conversion
+// Request interceptor for authentication
 apiClient.interceptors.request.use(
   async (config) => {
     const token = await getAccessToken();
@@ -24,10 +24,8 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Convert request data from camelCase to snake_case
-    if (config.data && typeof config.data === 'object') {
-      config.data = camelToSnakeObject(config.data);
-    }
+    // Note: Backend expects camelCase and handles conversion internally via Pydantic
+    // Do NOT convert request data here
     
     return config;
   },
@@ -36,13 +34,11 @@ apiClient.interceptors.request.use(
   },
 );
 
-// Response interceptor for token refresh and case conversion
+// Response interceptor for token refresh
 apiClient.interceptors.response.use(
   (response) => {
-    // Convert response data from snake_case to camelCase
-    if (response.data && typeof response.data === 'object') {
-      response.data = snakeToCamelObject(response.data);
-    }
+    // Note: Backend returns camelCase directly via Pydantic's alias_generator
+    // No conversion needed here
     return response;
   },
   async (error: AxiosError) => {
