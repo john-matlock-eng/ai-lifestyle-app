@@ -84,7 +84,7 @@ export class EncryptionService {
           await keyStore.clearAll();
 
           // Set up new encryption
-          await this.setupNewUser(password, userId);
+          await this.setupNewUser(password);
           return;
         }
 
@@ -129,7 +129,7 @@ export class EncryptionService {
         // IMPORTANT: Only set up new encryption if we don't have local keys
         // and we're not already setting up
         if (!localSalt && !localKeys && !this.isSettingUp) {
-          await this.setupNewUser(password, userId);
+          await this.setupNewUser(password);
         } else if (localSalt && localKeys) {
           // We have local keys but server says no encryption
           // This might be a timing issue - try to use local keys
@@ -237,7 +237,7 @@ export class EncryptionService {
   /**
    * Set up encryption for a new user
    */
-  private async setupNewUser(password: string, _userId: string): Promise<void> {
+  private async setupNewUser(password: string): Promise<void> {
     // Prevent concurrent setup attempts
     if (this.isSettingUp) {
       console.log("[Encryption] Setup already in progress, skipping");
@@ -301,7 +301,7 @@ export class EncryptionService {
         console.log("[Encryption] Successfully saved new encryption keys to server");
       } catch (error) {
         if (error instanceof Error && 'response' in error) {
-          const axiosError = error as { response?: { status?: number, data?: any } };
+          const axiosError = error as { response?: { status?: number, data?: unknown } };
           if (axiosError.response?.status === 409) {
             console.log("[Encryption] Server already has encryption setup (409)");
             

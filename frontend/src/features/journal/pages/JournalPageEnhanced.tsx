@@ -10,6 +10,7 @@ import {
   Clock,
   TrendingUp,
   Share2,
+  Upload,
 } from "lucide-react";
 import { JournalTemplate } from "@/types/journal";
 import type {
@@ -232,6 +233,14 @@ export const JournalPageEnhanced: React.FC = () => {
             >
               <Edit3 className="w-4 h-4 mr-2" />
               Drafts
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/journal/import")}
+              className="hover-lift"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Import
             </Button>
             <Button
               onClick={() => setViewMode("create")}

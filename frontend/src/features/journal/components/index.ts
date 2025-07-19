@@ -8,6 +8,7 @@ export { default as JournalCard } from "./JournalCard";
 export { default as JournalEntryDetail } from "./JournalEntryDetail";
 export { JournalEntryRenderer } from "./JournalEntryRenderer";
 export { JournalActions } from "./JournalActions";
+export { JournalImporter } from "./JournalImporter";
 
 // Enhanced Editor Components
 export { EnhancedJournalEditor, SectionEditor } from "./EnhancedEditor";
