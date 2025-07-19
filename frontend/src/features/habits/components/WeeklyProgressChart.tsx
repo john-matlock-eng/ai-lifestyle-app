@@ -17,8 +17,6 @@ export const WeeklyProgressChart: React.FC<WeeklyProgressChartProps> = ({ habits
     return totalHabitsForDay > 0 ? (completedForDay / totalHabitsForDay) * 100 : 0;
   });
   
-  const maxHeight = 100;
-  
   return (
     <div className="glass rounded-lg p-4 border border-surface-muted hover-lift">
       <div className="flex items-center justify-between mb-4">
