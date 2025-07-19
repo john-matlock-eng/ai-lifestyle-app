@@ -80,7 +80,7 @@ export const useAuthShihTzu = () => {
   }, [companion]);
 
   // React to field completion
-  const handleFieldComplete = useCallback((fieldName: string) => {
+  const handleFieldComplete = useCallback((_fieldName: string) => {
     // Quick happy animation
     const currentMood = companion.mood;
     companion.setMood('happy');
