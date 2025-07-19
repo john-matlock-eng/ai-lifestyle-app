@@ -122,26 +122,47 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       const encryptionService = getEncryptionService();
       const hasLocalSetup = await encryptionService.checkSetup();
 
-      setIsEncryptionSetup(hasLocalSetup);
+      // Check if profile says encryption is enabled
+      const profileHasEncryption = profile?.encryptionEnabled || false;
 
       if (hasLocalSetup) {
-        // Get the key ID
-        const keyId = await encryptionService.getPublicKeyId();
-        setEncryptionKeyId(keyId);
+        // We have local keys - check if they match the current user's encryption status
+        const localKeyId = await encryptionService.getPublicKeyId();
+        
+        if (profileHasEncryption) {
+          // Both local and profile have encryption - this is the normal case
+          setIsEncryptionSetup(true);
+          setEncryptionKeyId(localKeyId);
 
-        const isInitialized = encryptionService.isInitialized();
+          const isInitialized = encryptionService.isInitialized();
+          setIsEncryptionLocked(!isInitialized);
 
-        // Set lock state based on initialization
-        setIsEncryptionLocked(!isInitialized);
-
-        // Trigger auto-unlock if encryption isn't initialized yet
-        if (!isInitialized && !hasAttemptedAutoUnlock && !isCheckingAutoUnlock && user?.userId) {
-          attemptAutoUnlock();
+          // Trigger auto-unlock if needed
+          if (!isInitialized && !hasAttemptedAutoUnlock && !isCheckingAutoUnlock && user?.userId) {
+            attemptAutoUnlock();
+          }
+        } else {
+          // Local keys exist but profile says no encryption
+          // This means we have keys from a different user - clear them
+          console.log("[Encryption] Found local keys but user profile has no encryption - clearing old keys");
+          await encryptionService.reset();
+          setIsEncryptionSetup(false);
+          setIsEncryptionLocked(false);
+          setEncryptionKeyId(null);
         }
-      } else if (profile?.encryptionEnabled) {
-        // Profile says encryption is enabled but no local setup
-        // User needs to enter password to set up locally
-        setIsEncryptionLocked(true);
+      } else {
+        // No local setup
+        if (profileHasEncryption) {
+          // Profile says encryption is enabled but no local setup
+          // User needs to enter password to set up locally
+          setIsEncryptionSetup(false);
+          setIsEncryptionLocked(true);
+        } else {
+          // No encryption anywhere - this is a new user
+          setIsEncryptionSetup(false);
+          setIsEncryptionLocked(false);
+          setEncryptionKeyId(null);
+        }
       }
     } catch (error) {
       console.error("Failed to check encryption status:", error);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,8 +12,13 @@ import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import PasswordInput from "./PasswordInput";
 import MfaCodeInput from "./MfaCodeInput";
+import type { useAuthShihTzu } from "../../../hooks/useAuthShihTzu";
 
-const LoginForm: React.FC = () => {
+interface LoginFormProps {
+  companion?: ReturnType<typeof useAuthShihTzu>;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [generalError, setGeneralError] = useState<string>("");
@@ -21,6 +26,8 @@ const LoginForm: React.FC = () => {
     null,
   );
   const [showMfa, setShowMfa] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const {
     register,
@@ -34,18 +41,84 @@ const LoginForm: React.FC = () => {
     },
   });
 
+  // React to form errors
+  useEffect(() => {
+    if (Object.keys(errors).length > 0 && companion && hasInteracted) {
+      companion.handleError();
+    }
+  }, [errors, companion, hasInteracted]);
+
+  // React to general errors
+  useEffect(() => {
+    if (generalError && companion) {
+      if (generalError.includes("Too many")) {
+        companion.handleSpecificError('rate-limit');
+      } else if (generalError.includes("Unable to connect")) {
+        companion.handleSpecificError('network');
+      } else {
+        companion.handleError();
+      }
+    }
+  }, [generalError, companion]);
+
+  // Create wrapped event handlers that preserve react-hook-form's handlers
+  const createFieldHandlers = (fieldName: keyof LoginFormData) => {
+    const fieldRegistration = register(fieldName);
+    
+    return {
+      ...fieldRegistration,
+      onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+        setHasInteracted(true);
+        // Our custom handler
+        if (companion && e.target) {
+          companion.handleInputFocus(e.target);
+        }
+      },
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Call react-hook-form's handler first
+        fieldRegistration.onChange(e);
+        // Then our handler
+        if (companion && hasInteracted) {
+          companion.handleTyping();
+        }
+      }
+    };
+  };
+
   const loginMutation = useMutation({
     mutationFn: authService.login,
+    onMutate: () => {
+      // Show loading state
+      if (companion) {
+        companion.handleLoading();
+      }
+    },
     onSuccess: (data) => {
       if ("mfaRequired" in data) {
-        // MFA is required
+        // MFA is required - show curious shih tzu
+        if (companion) {
+          companion.showCuriosity();
+          // Move near MFA section
+          if (formRef.current) {
+            const rect = formRef.current.getBoundingClientRect();
+            companion.setPosition({
+              x: rect.right + 20,
+              y: rect.top + 100,
+            });
+          }
+        }
         setMfaSession({ sessionToken: data.sessionToken });
         setShowMfa(true);
       } else {
-        // Login successful - refresh user data and redirect
-        // The tokens are already stored by authService
+        // Login successful - celebrate!
+        if (companion) {
+          companion.handleSuccess();
+        }
         queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-        navigate("/dashboard", { replace: true });
+        // Delay navigation to show celebration
+        setTimeout(() => {
+          navigate("/dashboard", { replace: true });
+        }, 1500);
       }
     },
     onError: (error) => {
@@ -54,6 +127,9 @@ const LoginForm: React.FC = () => {
           setError("password", {
             message: "Invalid email or password",
           });
+          if (companion) {
+            companion.handleSpecificError('unauthorized');
+          }
         } else if (error.response?.status === 429) {
           setGeneralError("Too many login attempts. Please try again later.");
         } else {
@@ -76,11 +152,20 @@ const LoginForm: React.FC = () => {
       sessionToken: string;
       code: string;
     }) => authService.verifyMfa(sessionToken, code),
+    onMutate: () => {
+      if (companion) {
+        companion.handleLoading();
+      }
+    },
     onSuccess: () => {
       // MFA verification successful
-      // The tokens are stored by authService
+      if (companion) {
+        companion.handleSuccess();
+      }
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-      navigate("/dashboard", { replace: true });
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 1500);
     },
     onError: (error) => {
       if (isApiError(error)) {
@@ -123,6 +208,17 @@ const LoginForm: React.FC = () => {
     setShowMfa(false);
     setMfaSession(null);
     setGeneralError("");
+    if (companion) {
+      companion.setMood('idle');
+      // Move back to default position
+      const formWidth = 400;
+      const formCenterX = window.innerWidth / 2;
+      const defaultX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
+      companion.setPosition({
+        x: defaultX,
+        y: 200,
+      });
+    }
   };
 
   if (showMfa && mfaSession) {
@@ -180,13 +276,15 @@ const LoginForm: React.FC = () => {
             <Link
               to="/register"
               className="font-medium text-primary-600 hover:text-primary-500"
+              onMouseEnter={() => companion?.showCuriosity()}
+              onMouseLeave={() => companion?.setMood('idle')}
             >
               create a new account
             </Link>
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {generalError && (
             <div
               className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm"
@@ -200,7 +298,7 @@ const LoginForm: React.FC = () => {
             label="Email address"
             type="email"
             isRequired
-            {...register("email")}
+            {...createFieldHandlers("email")}
             error={errors.email?.message}
             autoComplete="email"
             leftIcon={
@@ -223,7 +321,7 @@ const LoginForm: React.FC = () => {
           <PasswordInput
             label="Password"
             isRequired
-            {...register("password")}
+            {...createFieldHandlers("password")}
             error={errors.password?.message}
             autoComplete="current-password"
           />
@@ -248,6 +346,8 @@ const LoginForm: React.FC = () => {
               <Link
                 to="/forgot-password"
                 className="font-medium text-primary-600 hover:text-primary-500"
+                onMouseEnter={() => companion?.showCuriosity()}
+                onMouseLeave={() => companion?.setMood('idle')}
               >
                 Forgot your password?
               </Link>

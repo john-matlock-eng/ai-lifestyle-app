@@ -16,6 +16,7 @@ const passwordSchema = z
 // Name validation schema
 const nameSchema = z
   .string()
+  .trim()
   .min(1, "This field is required")
   .max(50, "Must be 50 characters or less")
   .regex(/^[a-zA-Z\s-]+$/, "Only letters, spaces, and hyphens are allowed");

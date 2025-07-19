@@ -27,7 +27,10 @@
       "Bash(npx prettier:*)",
       "Bash(git add:*)",
       "Bash(pip install:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(node fix-imports.js)",
+      "Bash(node:*)",
+      "Bash(npx vite:*)"
     ],
     "deny": []
   }
