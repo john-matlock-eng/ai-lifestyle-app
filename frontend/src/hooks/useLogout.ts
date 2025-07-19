@@ -7,7 +7,7 @@ export const useLogout = () => {
   const { logout: authLogout } = useAuth();
   const { lockEncryption } = useEncryption();
 
-  const logout = async (clearStoredPassword = false) => {
+  const logout = async () => {
     try {
       // Clear encryption state and IndexedDB
       const encryptionService = getEncryptionService();
