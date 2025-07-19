@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
@@ -29,12 +29,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, touchedFields },
     setError,
-    trigger,
+    getFieldState,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
+    criteriaMode: "all",
   });
 
   // React to form progress
@@ -70,6 +71,32 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     }
   }, [completedFields, companion]);
 
+  // Track completed fields based on touched and valid state
+  useEffect(() => {
+    const fields: (keyof RegisterFormData)[] = ['firstName', 'lastName', 'email', 'password', 'confirmPassword'];
+    const newCompletedFields = new Set<string>();
+    
+    fields.forEach(fieldName => {
+      const fieldState = getFieldState(fieldName);
+      const fieldValue = watch(fieldName);
+      
+      // Field is completed if it's been touched, has a value, and has no errors
+      if (fieldState.isTouched && fieldValue && !fieldState.error) {
+        newCompletedFields.add(fieldName);
+      }
+    });
+    
+    // Only update if there's a change to avoid infinite loops
+    if (newCompletedFields.size !== completedFields.size) {
+      setCompletedFields(newCompletedFields);
+      
+      // Celebrate each new field completion
+      if (newCompletedFields.size > completedFields.size && companion) {
+        companion.handleFieldComplete('field');
+      }
+    }
+  }, [touchedFields, errors, watch, getFieldState, completedFields.size, companion]);
+
   // Track password strength
   const password = watch("password");
   
@@ -98,46 +125,25 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     }
   }, [password, companion]);
 
-  // Create wrapped event handlers that preserve react-hook-form's handlers
-  const createFieldHandlers = (fieldName: keyof RegisterFormData) => {
-    const fieldRegistration = register(fieldName);
-    
-    return {
-      ...fieldRegistration,
-      onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
-        // Our custom handler
-        if (companion && e.target) {
-          companion.handleInputFocus(e.target);
-        }
-      },
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Call react-hook-form's handler first
-        fieldRegistration.onChange(e);
-        // Then our handler
-        if (companion) {
-          companion.handleTyping();
-        }
-      },
-      onBlur: async (e: React.FocusEvent<HTMLInputElement>) => {
-        // Call react-hook-form's handler first
-        await fieldRegistration.onBlur(e);
-        // Then check if field is valid and completed
-        const fieldValue = e.target.value;
-        if (fieldValue && fieldValue.trim()) {
-          // Use a slight delay to ensure validation has run
-          setTimeout(async () => {
-            const isValid = await trigger(fieldName);
-            if (isValid) {
-              setCompletedFields(prev => new Set(prev).add(fieldName));
-              companion?.handleFieldComplete();
-            } else if (companion) {
-              companion.handleError();
-            }
-          }, 100);
-        }
-      }
-    };
-  };
+  // Handle companion interactions
+  const handleInputFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    if (companion && e.target) {
+      companion.handleInputFocus(e.target);
+    }
+  }, [companion]);
+
+  const handleInputChange = useCallback(() => {
+    if (companion) {
+      companion.handleTyping();
+    }
+  }, [companion]);
+
+  // React to errors
+  useEffect(() => {
+    if (Object.keys(errors).length > 0 && Object.keys(touchedFields).length > 0 && companion) {
+      companion.handleError();
+    }
+  }, [errors, touchedFields, companion]);
 
   const registerMutation = useMutation({
     mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
@@ -296,7 +302,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
           )}
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
           {generalError && (
             <div
               className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm"
@@ -316,17 +322,21 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             <Input
               label="First name"
               isRequired
-              {...createFieldHandlers("firstName")}
+              {...register("firstName")}
               error={errors.firstName?.message}
               autoComplete="given-name"
+              onFocus={handleInputFocus}
+              onChange={handleInputChange}
             />
 
             <Input
               label="Last name"
               isRequired
-              {...createFieldHandlers("lastName")}
+              {...register("lastName")}
               error={errors.lastName?.message}
               autoComplete="family-name"
+              onFocus={handleInputFocus}
+              onChange={handleInputChange}
             />
           </div>
 
@@ -334,9 +344,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             label="Email address"
             type="email"
             isRequired
-            {...createFieldHandlers("email")}
+            {...register("email")}
             error={errors.email?.message}
             autoComplete="email"
+            onFocus={handleInputFocus}
+            onChange={handleInputChange}
             leftIcon={
               <svg
                 className="h-5 w-5"
@@ -358,10 +370,12 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             <PasswordInput
               label="Password"
               isRequired
-              {...createFieldHandlers("password")}
+              {...register("password")}
               error={errors.password?.message}
               autoComplete="new-password"
               hint="Must be at least 8 characters with uppercase, lowercase, number, and special character"
+              onFocus={handleInputFocus}
+              onChange={handleInputChange}
             />
             <PasswordStrengthMeter password={password || ""} />
             {passwordStrength === 'strong' && companion && (
@@ -374,9 +388,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
           <PasswordInput
             label="Confirm password"
             isRequired
-            {...createFieldHandlers("confirmPassword")}
+            {...register("confirmPassword")}
             error={errors.confirmPassword?.message}
             autoComplete="new-password"
+            onFocus={handleInputFocus}
+            onChange={handleInputChange}
           />
 
           <div className="space-y-4">
@@ -385,7 +401,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
                 id="terms"
                 type="checkbox"
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
-                required
                 onChange={(e) => {
                   if (e.target.checked && companion) {
                     companion.setMood('happy');
