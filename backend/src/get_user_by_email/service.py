@@ -62,7 +62,7 @@ class GetUserByEmailService:
             # Build display name from first/last name or email
             first_name = user_item.get('first_name', '')
             last_name = user_item.get('last_name', '')
-            display_name = f"{first_name} {last_name}".strip() if (first_name or last_name) else email.split('@')[0]
+            display_name = user_item.get('display_name') or (f"{first_name} {last_name}".strip() if (first_name or last_name) else email.split('@')[0])
             
             return {
                 'userId': user_id,

@@ -13,6 +13,7 @@ export interface UserProfile {
   email: string;
   firstName: string;
   lastName: string;
+  displayName: string;
   emailVerified: boolean;
   mfaEnabled?: boolean;
   phoneNumber?: string;

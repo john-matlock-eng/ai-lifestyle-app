@@ -36,7 +36,7 @@ const DashboardPage: React.FC = () => {
       <div className="md:flex md:items-center md:justify-between">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gradient sm:text-3xl sm:truncate">
-            Welcome back, {user?.firstName}!
+            Welcome back, {user?.displayName ?? user?.firstName}!
           </h2>
         </div>
       </div>

@@ -78,6 +78,7 @@ class UserRepository:
                 email=item['email'],
                 first_name=item['first_name'],
                 last_name=item['last_name'],
+                display_name=item.get('display_name', f"{item['first_name']} {item['last_name']}").strip(),
                 email_verified=item.get('email_verified', False),
                 mfa_enabled=item.get('mfa_enabled', False),
                 phone_number=item.get('phone_number'),
