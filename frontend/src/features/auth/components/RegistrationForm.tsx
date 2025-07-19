@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,36 +11,169 @@ import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import PasswordInput from "./PasswordInput";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
+import type { useAuthShihTzu } from "../../../hooks/useAuthShihTzu";
 
-const RegistrationForm: React.FC = () => {
+interface RegistrationFormProps {
+  companion?: ReturnType<typeof useAuthShihTzu>;
+}
+
+const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   const navigate = useNavigate();
   const [generalError, setGeneralError] = useState<string>("");
+  const [completedFields, setCompletedFields] = useState<Set<string>>(new Set());
+  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
+  const formRef = useRef<HTMLFormElement>(null);
+  const totalFields = 5; // firstName, lastName, email, password, confirmPassword
 
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
     setError,
+    trigger,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
   });
 
+  // React to form progress
+  useEffect(() => {
+    if (companion) {
+      const progress = completedFields.size / totalFields;
+      
+      if (progress === 0) {
+        companion.setMood('idle');
+      } else if (progress < 0.4) {
+        companion.setMood('curious');
+      } else if (progress < 0.8) {
+        // Getting excited
+        if (companion.mood !== 'happy') {
+          companion.setMood('happy');
+          setTimeout(() => companion.setMood('curious'), 2000);
+        }
+      } else if (progress >= 0.8) {
+        // Very happy, almost done!
+        companion.setMood('happy');
+      }
+
+      // Move companion based on progress
+      if (progress > 0 && progress < 1) {
+        const formRect = formRef.current?.getBoundingClientRect();
+        if (formRect) {
+          companion.setPosition({
+            x: formRect.right + 20,
+            y: formRect.top + (formRect.height * progress),
+          });
+        }
+      }
+    }
+  }, [completedFields, companion]);
+
+  // Track password strength
+  const password = watch("password");
+  
+  useEffect(() => {
+    if (password) {
+      // Simple password strength calculation
+      let strength: 'weak' | 'medium' | 'strong' = 'weak';
+      
+      if (password.length >= 8) {
+        const hasUpper = /[A-Z]/.test(password);
+        const hasLower = /[a-z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSpecial = /[^A-Za-z0-9]/.test(password);
+        
+        const criteriaCount = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+        
+        if (criteriaCount >= 4 && password.length >= 12) {
+          strength = 'strong';
+        } else if (criteriaCount >= 3) {
+          strength = 'medium';
+        }
+      }
+      
+      setPasswordStrength(strength);
+      companion?.handlePasswordStrength(strength);
+    }
+  }, [password, companion]);
+
+  // Handle field validation and completion
+  const handleFieldBlur = useCallback(async (fieldName: keyof RegisterFormData) => {
+    const isValid = await trigger(fieldName);
+    const fieldValue = watch(fieldName);
+    
+    if (isValid && fieldValue && fieldValue.toString().trim()) {
+      setCompletedFields(prev => new Set(prev).add(fieldName));
+      companion?.handleFieldComplete(fieldName);
+    } else if (!isValid && companion) {
+      companion.handleError();
+    }
+  }, [trigger, watch, companion]);
+
+  // Handle input focus
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (companion && e.target) {
+      companion.handleInputFocus(e.target);
+    }
+  };
+
+  // Handle typing
+  const handleInputChange = () => {
+    if (companion) {
+      companion.handleTyping();
+    }
+  };
+
   const registerMutation = useMutation({
     mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
       authService.register(data),
+    onMutate: () => {
+      if (companion) {
+        companion.handleLoading();
+      }
+    },
     onSuccess: (data) => {
-      // Navigate to success page or show success message
-      navigate("/register/success", {
-        state: {
-          email: data.email,
-          message: data.message,
-        },
-      });
+      if (companion) {
+        // Major celebration for successful registration!
+        companion.handleSuccess();
+        
+        // Extra celebration animations
+        setTimeout(() => {
+          companion.setMood('happy');
+          // Do a little dance (move in a pattern)
+          const celebrationPath = [
+            { x: window.innerWidth / 2 - 50, y: window.innerHeight / 2 - 100 },
+            { x: window.innerWidth / 2 + 50, y: window.innerHeight / 2 - 100 },
+            { x: window.innerWidth / 2 + 50, y: window.innerHeight / 2 },
+            { x: window.innerWidth / 2 - 50, y: window.innerHeight / 2 },
+            { x: window.innerWidth / 2, y: window.innerHeight / 2 - 50 },
+          ];
+          companion.followPath(celebrationPath);
+        }, 500);
+      }
+      
+      // Navigate to success page after celebration
+      setTimeout(() => {
+        navigate("/register/success", {
+          state: {
+            email: data.email,
+            message: data.message,
+          },
+        });
+      }, 2500);
     },
     onError: (error) => {
       console.error("Registration error:", error);
+      
+      if (companion) {
+        if (error.toString().includes("ERR_NETWORK")) {
+          companion.handleSpecificError('network');
+        } else {
+          companion.handleError();
+        }
+      }
+      
       if (isValidationError(error)) {
         // Handle field-specific validation errors from the API
         error.response?.data.validation_errors.forEach((validationError) => {
@@ -100,7 +233,8 @@ const RegistrationForm: React.FC = () => {
     await registerMutation.mutateAsync(registerData);
   };
 
-  const password = watch("password");
+  // Show form completion percentage
+  const completionPercentage = Math.round((completedFields.size / totalFields) * 100);
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -114,13 +248,41 @@ const RegistrationForm: React.FC = () => {
             <Link
               to="/login"
               className="font-medium text-primary-600 hover:text-primary-500"
+              onMouseEnter={() => companion?.showCuriosity()}
+              onMouseLeave={() => companion?.setMood('idle')}
             >
               Sign in
             </Link>
           </p>
+          
+          {/* Progress indicator */}
+          {completedFields.size > 0 && (
+            <div className="mt-4">
+              <div className="relative pt-1">
+                <div className="flex mb-2 items-center justify-between">
+                  <div>
+                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-primary-600 bg-primary-200">
+                      Progress
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-semibold inline-block text-primary-600">
+                      {completionPercentage}%
+                    </span>
+                  </div>
+                </div>
+                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-primary-200">
+                  <div 
+                    style={{ width: `${completionPercentage}%` }}
+                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-500 transition-all duration-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {generalError && (
             <div
               className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm"
@@ -143,6 +305,9 @@ const RegistrationForm: React.FC = () => {
               {...register("firstName")}
               error={errors.firstName?.message}
               autoComplete="given-name"
+              onFocus={handleInputFocus}
+              onBlur={() => handleFieldBlur('firstName')}
+              onChange={handleInputChange}
             />
 
             <Input
@@ -151,6 +316,9 @@ const RegistrationForm: React.FC = () => {
               {...register("lastName")}
               error={errors.lastName?.message}
               autoComplete="family-name"
+              onFocus={handleInputFocus}
+              onBlur={() => handleFieldBlur('lastName')}
+              onChange={handleInputChange}
             />
           </div>
 
@@ -161,6 +329,9 @@ const RegistrationForm: React.FC = () => {
             {...register("email")}
             error={errors.email?.message}
             autoComplete="email"
+            onFocus={handleInputFocus}
+            onBlur={() => handleFieldBlur('email')}
+            onChange={handleInputChange}
             leftIcon={
               <svg
                 className="h-5 w-5"
@@ -186,8 +357,16 @@ const RegistrationForm: React.FC = () => {
               error={errors.password?.message}
               autoComplete="new-password"
               hint="Must be at least 8 characters with uppercase, lowercase, number, and special character"
+              onFocus={handleInputFocus}
+              onBlur={() => handleFieldBlur('password')}
+              onChange={handleInputChange}
             />
             <PasswordStrengthMeter password={password || ""} />
+            {passwordStrength === 'strong' && companion && (
+              <p className="mt-1 text-sm text-green-600">
+                Great password! Your companion is impressed! 🎉
+              </p>
+            )}
           </div>
 
           <PasswordInput
@@ -196,6 +375,9 @@ const RegistrationForm: React.FC = () => {
             {...register("confirmPassword")}
             error={errors.confirmPassword?.message}
             autoComplete="new-password"
+            onFocus={handleInputFocus}
+            onBlur={() => handleFieldBlur('confirmPassword')}
+            onChange={handleInputChange}
           />
 
           <div className="space-y-4">
@@ -205,6 +387,12 @@ const RegistrationForm: React.FC = () => {
                 type="checkbox"
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
                 required
+                onChange={(e) => {
+                  if (e.target.checked && companion) {
+                    companion.setMood('happy');
+                    setTimeout(() => companion.setMood('idle'), 1500);
+                  }
+                }}
               />
               <label
                 htmlFor="terms"

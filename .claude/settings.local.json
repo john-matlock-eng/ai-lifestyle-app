@@ -29,7 +29,8 @@
       "Bash(pip install:*)",
       "Bash(npm run test:*)",
       "Bash(node fix-imports.js)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npx vite:*)"
     ],
     "deny": []
   }

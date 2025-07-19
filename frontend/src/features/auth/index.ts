@@ -1,4 +1,5 @@
 // Components
+export { default as AuthLayout } from "./components/AuthLayout";
 export { default as RegistrationForm } from "./components/RegistrationForm";
 export { default as RegistrationSuccess } from "./components/RegistrationSuccess";
 export { default as LoginForm } from "./components/LoginForm";
