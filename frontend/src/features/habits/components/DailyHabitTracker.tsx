@@ -21,41 +21,41 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
   
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Today's Habits</h2>
+      <h2 className="text-2xl font-bold text-gradient mb-6">Today's Habits</h2>
       
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <StatsCard
           label="Completed Today"
           value={`${completedToday}/${totalHabits}`}
-          icon={<Target className="w-6 h-6 text-blue-500" />}
+          icon={<Target className="w-6 h-6 text-accent" />}
         />
         <StatsCard
           label="Daily Progress"
           value={`${Math.round(completionPercentage)}%`}
-          icon={<TrendingUp className="w-6 h-6 text-green-500" />}
+          icon={<TrendingUp className="w-6 h-6 text-success" />}
         />
         <StatsCard
           label="Total Streak Days"
           value={totalStreak}
-          icon={<Flame className="w-6 h-6 text-orange-500" />}
+          icon={<Flame className="w-6 h-6 text-warning" />}
         />
         <StatsCard
           label="Weekly Score"
           value={habits.reduce((sum, h) => sum + h.weekProgress.filter(Boolean).length, 0)}
-          icon={<Award className="w-6 h-6 text-purple-500" />}
+          icon={<Award className="w-6 h-6 text-accent" />}
         />
       </div>
       
       {/* Overall Progress Bar */}
-      <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 mb-6">
+      <div className="glass rounded-lg shadow-md p-4 border border-surface-muted mb-6 hover-lift">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">Today's Progress</span>
-          <span className="text-sm text-gray-500">{completedToday} of {totalHabits} habits</span>
+          <span className="text-sm font-medium text-theme">Today's Progress</span>
+          <span className="text-sm text-muted">{completedToday} of {totalHabits} habits</span>
         </div>
-        <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-4 bg-surface-muted rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500 ease-out progress-shine"
+            className="h-full bg-gradient-to-r from-accent to-accent-hover transition-all duration-500 ease-out progress-shine"
             style={{ width: `${completionPercentage}%` }}
           />
         </div>
@@ -63,8 +63,8 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
       
       {/* Habit Cards */}
       {totalHabits === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
-          <p className="text-gray-500">No habits yet. Create your first habit to get started!</p>
+        <div className="text-center py-12 glass rounded-lg shadow-md border border-surface-muted">
+          <p className="text-muted">No habits yet. Create your first habit to get started!</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -87,11 +87,11 @@ const StatsCard: React.FC<{
   value: string | number;
   icon: React.ReactNode;
 }> = ({ label, value, icon }) => (
-  <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+  <div className="glass rounded-lg shadow-sm p-4 border border-surface-muted hover-lift">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-lg font-bold text-gray-900">{value}</p>
+        <p className="text-xs text-muted">{label}</p>
+        <p className="text-lg font-bold text-theme">{value}</p>
       </div>
       {icon}
     </div>

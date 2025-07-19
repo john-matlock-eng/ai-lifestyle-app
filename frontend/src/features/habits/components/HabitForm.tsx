@@ -129,7 +129,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-gradient">
           {isEditing ? 'Edit Habit' : 'Create New Habit'}
         </h2>
         <Button
@@ -143,29 +143,29 @@ export const HabitForm: React.FC<HabitFormProps> = ({
       </div>
 
       {/* Icon and Color Selection */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Appearance</h3>
+      <div className="glass rounded-lg shadow-md border border-surface-muted p-6 hover-lift">
+        <h3 className="text-lg font-medium text-theme mb-4">Appearance</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Icon Picker */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme mb-2">
               Icon
             </label>
             <div className="flex items-center space-x-3">
               <button
                 type="button"
                 onClick={() => setShowIconPicker(!showIconPicker)}
-                className="w-16 h-16 rounded-lg flex items-center justify-center text-3xl border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                className="w-16 h-16 rounded-lg flex items-center justify-center text-3xl border-2 border-surface-muted hover:border-accent transition-colors"
                 style={{ backgroundColor: `${selectedColor}20` }}
               >
                 {selectedIcon}
               </button>
-              <span className="text-sm text-gray-500">Click to change</span>
+              <span className="text-sm text-muted">Click to change</span>
             </div>
             
             {showIconPicker && (
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg grid grid-cols-8 gap-2">
+              <div className="mt-3 p-3 bg-surface rounded-lg grid grid-cols-8 gap-2">
                 {EMOJI_ICONS.map((emoji) => (
                   <button
                     key={emoji}
@@ -175,8 +175,8 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                       setValue('icon', emoji);
                       setShowIconPicker(false);
                     }}
-                    className={`w-10 h-10 rounded flex items-center justify-center text-xl hover:bg-gray-200 transition-colors ${
-                      selectedIcon === emoji ? 'bg-gray-200 ring-2 ring-blue-500' : ''
+                    className={`w-10 h-10 rounded flex items-center justify-center text-xl hover:bg-surface-muted transition-colors ${
+                      selectedIcon === emoji ? 'bg-surface-muted ring-2 ring-accent' : ''
                     }`}
                   >
                     {emoji}
@@ -189,13 +189,13 @@ export const HabitForm: React.FC<HabitFormProps> = ({
 
           {/* Color Picker */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme mb-2">
               Color
             </label>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <div
-                  className="w-16 h-16 rounded-lg border-2 border-gray-300"
+                  className="w-16 h-16 rounded-lg border-2 border-surface-muted"
                   style={{ backgroundColor: selectedColor }}
                 />
                 <Controller
@@ -217,7 +217,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                 />
                 <label 
                   htmlFor="color-picker"
-                  className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer"
+                  className="px-3 py-1 text-sm border border-surface-muted rounded-md hover:bg-surface-muted cursor-pointer text-theme"
                 >
                   Custom
                 </label>
@@ -233,7 +233,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                       setValue('color', color);
                     }}
                     className={`w-8 h-8 rounded-full ring-2 ring-offset-2 transition-all ${
-                      selectedColor === color ? 'ring-gray-400' : 'ring-transparent'
+                      selectedColor === color ? 'ring-accent' : 'ring-transparent'
                     }`}
                     style={{ backgroundColor: color }}
                   />
@@ -248,12 +248,12 @@ export const HabitForm: React.FC<HabitFormProps> = ({
       </div>
 
       {/* Basic Information */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+      <div className="glass rounded-lg shadow-md border border-surface-muted p-6 hover-lift">
+        <h3 className="text-lg font-medium text-theme mb-4">Basic Information</h3>
         
         <div className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="title" className="block text-sm font-medium text-theme mb-1">
               Habit Title *
             </label>
             <Input
@@ -265,14 +265,14 @@ export const HabitForm: React.FC<HabitFormProps> = ({
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-theme mb-1">
               Description
             </label>
             <textarea
               id="description"
               {...register('description')}
               rows={3}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="form-textarea"
               placeholder="Add more details about this habit..."
             />
             {errors.description && (
@@ -281,13 +281,13 @@ export const HabitForm: React.FC<HabitFormProps> = ({
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="category" className="block text-sm font-medium text-theme mb-1">
               Category *
             </label>
             <select
               id="category"
               {...register('category')}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="form-select"
             >
               {HABIT_CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
@@ -303,12 +303,12 @@ export const HabitForm: React.FC<HabitFormProps> = ({
       </div>
 
       {/* Tracking Settings */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Tracking Settings</h3>
+      <div className="glass rounded-lg shadow-md border border-surface-muted p-6 hover-lift">
+        <h3 className="text-lg font-medium text-theme mb-4">Tracking Settings</h3>
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme mb-2">
               Pattern *
             </label>
             <div className="grid grid-cols-3 gap-3">
@@ -317,8 +317,8 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                   key={p}
                   className={`relative flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-all ${
                     pattern === p
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-300 hover:border-gray-400'
+                      ? 'border-accent bg-accent text-white glow'
+                      : 'border-surface-muted hover:border-accent'
                   }`}
                 >
                   <input
@@ -334,8 +334,8 @@ export const HabitForm: React.FC<HabitFormProps> = ({
           </div>
 
           <div>
-            <label htmlFor="targetDays" className="block text-sm font-medium text-gray-700 mb-1">
-              Target Days <Target className="inline w-4 h-4 text-gray-400 ml-1" />
+            <label htmlFor="targetDays" className="block text-sm font-medium text-theme mb-1">
+              Target Days <Target className="inline w-4 h-4 text-muted ml-1" />
             </label>
             <Controller
               name="targetDays"
@@ -352,7 +352,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                 />
               )}
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted">
               How many days until you consider this habit established?
             </p>
           </div>
@@ -360,13 +360,13 @@ export const HabitForm: React.FC<HabitFormProps> = ({
       </div>
 
       {/* Motivation & Reminders */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Motivation & Reminders</h3>
+      <div className="glass rounded-lg shadow-md border border-surface-muted p-6 hover-lift">
+        <h3 className="text-lg font-medium text-theme mb-4">Motivation & Reminders</h3>
         
         <div className="space-y-4">
           <div>
-            <label htmlFor="motivationalText" className="block text-sm font-medium text-gray-700 mb-1">
-              Motivational Text <Sparkles className="inline w-4 h-4 text-gray-400 ml-1" />
+            <label htmlFor="motivationalText" className="block text-sm font-medium text-theme mb-1">
+              Motivational Text <Sparkles className="inline w-4 h-4 text-muted ml-1" />
             </label>
             <Input
               id="motivationalText"
@@ -374,14 +374,14 @@ export const HabitForm: React.FC<HabitFormProps> = ({
               placeholder="e.g., A calm mind is a powerful mind"
               error={errors.motivationalText?.message}
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted">
               This will appear when you haven't completed the habit yet
             </p>
           </div>
 
           <div>
-            <label htmlFor="reminderTime" className="block text-sm font-medium text-gray-700 mb-1">
-              Reminder Time <Clock className="inline w-4 h-4 text-gray-400 ml-1" />
+            <label htmlFor="reminderTime" className="block text-sm font-medium text-theme mb-1">
+              Reminder Time <Clock className="inline w-4 h-4 text-muted ml-1" />
             </label>
             <Input
               id="reminderTime"
@@ -389,19 +389,19 @@ export const HabitForm: React.FC<HabitFormProps> = ({
               type="time"
               error={errors.reminderTime?.message}
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted">
               Optional daily reminder (24-hour format)
             </p>
           </div>
 
           <div>
-            <label htmlFor="goalId" className="block text-sm font-medium text-gray-700 mb-1">
-              Link to Goal <LinkIcon className="inline w-4 h-4 text-gray-400 ml-1" />
+            <label htmlFor="goalId" className="block text-sm font-medium text-theme mb-1">
+              Link to Goal <LinkIcon className="inline w-4 h-4 text-muted ml-1" />
             </label>
             <select
               id="goalId"
               {...register('goalId')}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="form-select"
             >
               <option value="">No linked goal</option>
               {/* TODO: Fetch and display user's goals */}
@@ -413,9 +413,9 @@ export const HabitForm: React.FC<HabitFormProps> = ({
               id="showOnDashboard"
               type="checkbox"
               {...register('showOnDashboard')}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-accent focus:ring-accent border-surface-muted rounded"
             />
-            <label htmlFor="showOnDashboard" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="showOnDashboard" className="ml-2 block text-sm text-theme">
               Show on dashboard
             </label>
           </div>

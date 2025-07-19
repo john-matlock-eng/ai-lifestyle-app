@@ -23,7 +23,8 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         cx={size / 2}
         cy={size / 2}
         r={radius}
-        stroke="#E5E7EB"
+        stroke="currentColor"
+        className="text-surface-muted"
         strokeWidth={strokeWidth}
         fill="none"
       />
@@ -44,7 +45,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         y="50%"
         dy=".3em"
         textAnchor="middle"
-        className="fill-current text-gray-700 text-xs font-medium"
+        className="fill-current text-theme text-xs font-medium"
         transform={`rotate(90 ${size / 2} ${size / 2})`}
       >
         {Math.round(progress)}%
