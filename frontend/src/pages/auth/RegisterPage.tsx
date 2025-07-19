@@ -4,7 +4,7 @@ import AuthLayout from "../../features/auth/components/AuthLayout";
 import { useAuthShihTzu } from "../../hooks/useAuthShihTzu";
 
 const RegisterPage: React.FC = () => {
-  const companionRef = useRef<ReturnType<typeof useAuthShihTzu>>();
+  const companionRef = useRef<ReturnType<typeof useAuthShihTzu> | null>(null);
 
   const handleShihTzuReady = (companion: ReturnType<typeof useAuthShihTzu>) => {
     companionRef.current = companion;
@@ -51,7 +51,7 @@ const RegisterPage: React.FC = () => {
         </div>
 
         <div className="mt-8">
-          <RegistrationForm companion={companionRef.current} />
+          <RegistrationForm companion={companionRef.current || undefined} />
         </div>
       </div>
     </AuthLayout>
