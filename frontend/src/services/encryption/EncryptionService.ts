@@ -158,7 +158,7 @@ export class EncryptionService {
           this.publicKeyId = personalKeys.publicKeyId;
         }
       } else if (!this.isSettingUp) {
-        await this.setupNewUser(password, userId);
+        await this.setupNewUser(password);
       }
     }
   }
