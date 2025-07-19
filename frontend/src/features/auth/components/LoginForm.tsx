@@ -61,19 +61,28 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     }
   }, [generalError, companion]);
 
-  // Handle input focus
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    setHasInteracted(true);
-    if (companion && e.target) {
-      companion.handleInputFocus(e.target);
-    }
-  };
-
-  // Handle typing
-  const handleInputChange = () => {
-    if (companion && hasInteracted) {
-      companion.handleTyping();
-    }
+  // Create wrapped event handlers that preserve react-hook-form's handlers
+  const createFieldHandlers = (fieldName: keyof LoginFormData) => {
+    const fieldRegistration = register(fieldName);
+    
+    return {
+      ...fieldRegistration,
+      onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+        setHasInteracted(true);
+        // Our custom handler
+        if (companion && e.target) {
+          companion.handleInputFocus(e.target);
+        }
+      },
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Call react-hook-form's handler first
+        fieldRegistration.onChange(e);
+        // Then our handler
+        if (companion && hasInteracted) {
+          companion.handleTyping();
+        }
+      }
+    };
   };
 
   const loginMutation = useMutation({
@@ -202,9 +211,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     if (companion) {
       companion.setMood('idle');
       // Move back to default position
+      const formWidth = 400;
+      const formCenterX = window.innerWidth / 2;
+      const defaultX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
       companion.setPosition({
-        x: window.innerWidth - 150,
-        y: 50,
+        x: defaultX,
+        y: 200,
       });
     }
   };
@@ -286,11 +298,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
             label="Email address"
             type="email"
             isRequired
-            {...register("email")}
+            {...createFieldHandlers("email")}
             error={errors.email?.message}
             autoComplete="email"
-            onFocus={handleInputFocus}
-            onChange={handleInputChange}
             leftIcon={
               <svg
                 className="h-5 w-5"
@@ -311,11 +321,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
           <PasswordInput
             label="Password"
             isRequired
-            {...register("password")}
+            {...createFieldHandlers("password")}
             error={errors.password?.message}
             autoComplete="current-password"
-            onFocus={handleInputFocus}
-            onChange={handleInputChange}
           />
 
           <div className="flex items-center justify-between">

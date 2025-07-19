@@ -3,8 +3,13 @@ import { useEffect, useCallback } from 'react';
 import { useShihTzuCompanion } from './useShihTzuCompanion';
 
 export const useAuthShihTzu = () => {
+  // Position the companion near the form (assuming form is centered and ~400px wide)
+  const formWidth = 400;
+  const formCenterX = window.innerWidth / 2;
+  const initialX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
+  
   const companion = useShihTzuCompanion({
-    initialPosition: { x: window.innerWidth - 150, y: 50 },
+    initialPosition: { x: initialX, y: 200 },
     idleTimeout: 10000, // Shorter timeout for auth pages
   });
 

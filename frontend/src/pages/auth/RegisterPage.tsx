@@ -12,21 +12,23 @@ const RegisterPage: React.FC = () => {
 
   useEffect(() => {
     // Special greeting for registration
-    if (companionRef.current) {
-      companionRef.current.setMood('happy');
-      // Move to a welcoming position
-      companionRef.current.setPosition({
-        x: window.innerWidth / 2 + 200,
-        y: 100,
-      });
-      setTimeout(() => {
-        companionRef.current?.setMood('idle');
-        companionRef.current?.setPosition({
-          x: window.innerWidth - 150,
-          y: 50,
+    const timer = setTimeout(() => {
+      if (companionRef.current) {
+        companionRef.current.setMood('happy');
+        // Move to a welcoming position
+        const formWidth = 400;
+        const formCenterX = window.innerWidth / 2;
+        companionRef.current.setPosition({
+          x: Math.min(formCenterX + formWidth / 2 + 50, window.innerWidth - 150),
+          y: 150,
         });
-      }, 3000);
-    }
+        setTimeout(() => {
+          companionRef.current?.setMood('idle');
+        }, 3000);
+      }
+    }, 100); // Small delay to ensure companion is ready
+    
+    return () => clearTimeout(timer);
   }, []);
 
   return (
