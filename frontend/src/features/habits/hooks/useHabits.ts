@@ -56,25 +56,29 @@ export const useHabits = () => {
                   ...habit, 
                   completedToday: completed,
                   currentStreak: data.currentStreak,
-                  weekProgress: (habit.weekProgress || Array(7).fill(false)).map((completed, index) => 
-                    index === new Date().getDay() ? completed : completed
+                  weekProgress: (habit.weekProgress || Array(7).fill(false)).map((dayCompleted, index) => 
+                    index === new Date().getDay() ? completed : dayCompleted
                   )
                 }
               : habit
           )
         });
         
-        // Update stats if points were earned
-        if (data.points > 0) {
+        // Update stats
+        if (todayData) {
+          const updatedHabits = queryClient.getQueryData<{ habits: Habit[]; stats: UserStats }>(['habits', 'today']);
+          const habitsCompletedToday = updatedHabits?.habits.filter(h => h.completedToday).length ?? 0;
+          
           queryClient.setQueryData(['habits', 'today'], {
-            ...todayData,
+            ...updatedHabits,
             stats: {
-              ...todayData.stats,
-              totalPoints: (todayData.stats?.totalPoints ?? 0) + data.points,
-              totalCheckIns: (todayData.stats?.totalCheckIns ?? 0) + 1,
+              ...updatedHabits?.stats,
+              totalPoints: (updatedHabits?.stats?.totalPoints ?? 0) + data.points,
+              totalCheckIns: (updatedHabits?.stats?.totalCheckIns ?? 0) + (completed ? 1 : 0),
+              habitsCompletedToday,
               // Recalculate level progress
-              nextLevelProgress: (((todayData.stats?.totalPoints ?? 0) + data.points) % ((todayData.stats?.currentLevel ?? 1) * 100)) / ((todayData.stats?.currentLevel ?? 1) * 100) * 100,
-              currentLevel: Math.floor(((todayData.stats?.totalPoints ?? 0) + data.points) / 100) + 1
+              nextLevelProgress: (((updatedHabits?.stats?.totalPoints ?? 0) + data.points) % ((updatedHabits?.stats?.currentLevel ?? 1) * 100)) / ((updatedHabits?.stats?.currentLevel ?? 1) * 100) * 100,
+              currentLevel: Math.floor(((updatedHabits?.stats?.totalPoints ?? 0) + data.points) / 100) + 1
             }
           });
         }
@@ -97,13 +101,17 @@ export const useHabits = () => {
   const skipMutation = useMutation({
     mutationFn: (habitId: string) => habitService.skipHabit(habitId),
     onSuccess: (_, habitId) => {
-      queryClient.setQueryData(['habits', 'today'], (oldHabits: Habit[] = []) => 
-        oldHabits.map(habit => 
-          habit.id === habitId 
-            ? { ...habit, skippedToday: true }
-            : habit
-        )
-      );
+      const todayData = queryClient.getQueryData<{ habits: Habit[]; stats: UserStats }>(['habits', 'today']);
+      if (todayData) {
+        queryClient.setQueryData(['habits', 'today'], {
+          ...todayData,
+          habits: todayData.habits.map(habit => 
+            habit.id === habitId 
+              ? { ...habit, skippedToday: true }
+              : habit
+          )
+        });
+      }
       console.log('Habit skipped for today');
     },
     onError: () => {
