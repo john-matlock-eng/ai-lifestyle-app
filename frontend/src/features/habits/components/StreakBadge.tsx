@@ -12,12 +12,12 @@ export const StreakBadge: React.FC<StreakBadgeProps> = ({ streak, milestone = 7 
   
   return (
     <div className={`
-      inline-flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium
+      inline-flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium transition-all
       ${isMilestone 
-        ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow-lg animate-pulse' 
+        ? 'bg-gradient-to-r from-warning to-orange-500 text-white shadow-lg animate-pulse glow' 
         : isNearMilestone
-        ? 'bg-orange-100 text-orange-700 border border-orange-200'
-        : 'bg-gray-100 text-gray-700 border border-gray-200'}
+        ? 'bg-warning-bg text-warning border border-warning'
+        : 'bg-surface text-muted border border-surface-muted'}
     `}>
       <Flame className={`w-4 h-4 ${isMilestone ? 'animate-bounce' : ''}`} />
       <span>{streak} day{streak !== 1 ? 's' : ''}</span>

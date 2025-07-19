@@ -1,50 +1,60 @@
 import React from 'react';
-import { Plus, BarChart3, Settings, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Plus, BarChart3, Trophy, Target } from 'lucide-react';
 
 export const QuickActions: React.FC = () => {
   const navigate = useNavigate();
-
+  
   const actions = [
     {
       icon: <Plus className="w-5 h-5" />,
-      label: 'Add Habit',
-      color: 'bg-blue-500 hover:bg-blue-600',
-      onClick: () => navigate('/habits/new')
+      label: 'New Habit',
+      description: 'Create a new habit',
+      onClick: () => navigate('/habits/new'),
+      color: 'accent'
     },
     {
       icon: <BarChart3 className="w-5 h-5" />,
-      label: 'View Analytics',
-      color: 'bg-purple-500 hover:bg-purple-600',
-      onClick: () => navigate('/habits/analytics')
+      label: 'Analytics',
+      description: 'View your progress',
+      onClick: () => navigate('/habits/analytics'),
+      color: 'success'
     },
     {
-      icon: <Settings className="w-5 h-5" />,
-      label: 'Manage Habits',
-      color: 'bg-gray-500 hover:bg-gray-600',
-      onClick: () => navigate('/habits/manage')
-    },
-    {
-      icon: <Gift className="w-5 h-5" />,
+      icon: <Trophy className="w-5 h-5" />,
       label: 'Rewards',
-      color: 'bg-pink-500 hover:bg-pink-600',
-      onClick: () => navigate('/habits/rewards')
+      description: 'Check your rewards',
+      onClick: () => navigate('/habits/rewards'),
+      color: 'warning'
+    },
+    {
+      icon: <Target className="w-5 h-5" />,
+      label: 'Goals',
+      description: 'Manage your goals',
+      onClick: () => navigate('/goals'),
+      color: 'accent'
     }
   ];
-
+  
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-      
-      <div className="grid grid-cols-2 gap-3">
+    <div className="glass rounded-lg p-4 border border-surface-muted hover-lift">
+      <h3 className="text-sm font-semibold text-theme mb-3">Quick Actions</h3>
+      <div className="space-y-2">
         {actions.map((action, index) => (
           <button
             key={index}
             onClick={action.onClick}
-            className={`${action.color} text-white rounded-lg p-3 flex flex-col items-center justify-center space-y-2 transition-colors transform hover:scale-[1.02] active:scale-[0.98]`}
+            className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-surface-muted transition-colors text-left"
           >
-            {action.icon}
-            <span className="text-xs font-medium">{action.label}</span>
+            <div className={`p-2 rounded-lg bg-${action.color === 'accent' ? 'accent' : action.color === 'success' ? 'success-bg' : 'warning-bg'}`}>
+              <div className={`text-${action.color === 'accent' ? 'white' : action.color}`}>
+                {action.icon}
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-theme">{action.label}</p>
+              <p className="text-xs text-muted">{action.description}</p>
+            </div>
           </button>
         ))}
       </div>

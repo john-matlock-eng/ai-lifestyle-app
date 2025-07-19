@@ -52,10 +52,10 @@ export const HabitsPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
+        <div className="h-8 bg-surface-muted rounded w-1/4 mb-8 animate-shimmer"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
+            <div key={i} className="h-64 bg-surface-muted rounded-lg animate-shimmer"></div>
           ))}
         </div>
       </div>
@@ -65,11 +65,11 @@ export const HabitsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 -mx-4 -mt-6 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
+      <div className="glass shadow-md border-b border-surface-muted -mx-4 -mt-6 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-6">
         <div className="md:flex md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Habits</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-gradient">My Habits</h1>
+            <p className="mt-1 text-sm text-muted">
               Track your daily progress and build lasting routines
             </p>
           </div>
@@ -96,43 +96,43 @@ export const HabitsPage: React.FC = () => {
         <StatsCard
           label="Total Habits"
           value={stats.totalHabits}
-          icon={<Target className="w-6 h-6 text-blue-500" />}
+          icon={<Target className="w-6 h-6 text-accent" />}
           onClick={() => {}}
         />
         <StatsCard
           label="Completed Today"
           value={`${stats.habitsCompletedToday}/${stats.totalHabits}`}
-          icon={<Calendar className="w-6 h-6 text-green-500" />}
+          icon={<Calendar className="w-6 h-6 text-success" />}
           onClick={() => {}}
         />
         <StatsCard
           label="Current Level"
           value={`Level ${stats.currentLevel}`}
           subValue={`${Math.round(stats.nextLevelProgress)}% to next`}
-          icon={<TrendingUp className="w-6 h-6 text-purple-500" />}
+          icon={<TrendingUp className="w-6 h-6 text-accent" />}
           onClick={() => navigate('/habits/rewards')}
         />
         <StatsCard
           label="Total Points"
           value={stats.totalPoints.toLocaleString()}
-          icon={<Award className="w-6 h-6 text-yellow-500" />}
+          icon={<Award className="w-6 h-6 text-warning" />}
           onClick={() => navigate('/habits/rewards')}
         />
       </div>
       
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="glass rounded-lg shadow-md border border-surface-muted p-4 hover-lift">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-2">
-            <Filter className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Filter:</span>
+            <Filter className="w-4 h-4 text-muted" />
+            <span className="text-sm font-medium text-theme">Filter:</span>
           </div>
           
           {/* Category Filter */}
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="text-sm form-select"
           >
             <option value="all">All Categories</option>
             {HABIT_CATEGORIES.map(cat => (
@@ -148,9 +148,9 @@ export const HabitsPage: React.FC = () => {
               type="checkbox"
               checked={showOnlyActive}
               onChange={(e) => setShowOnlyActive(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-accent focus:ring-accent border-surface-muted rounded"
             />
-            <span className="text-gray-700">Active habits only</span>
+            <span className="text-theme">Active habits only</span>
           </label>
           
           <div className="ml-auto">
@@ -168,12 +168,12 @@ export const HabitsPage: React.FC = () => {
       
       {/* Habits Grid */}
       {filteredHabits.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
-          <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <div className="text-center py-12 glass rounded-lg shadow-md border border-surface-muted">
+          <Target className="w-12 h-12 text-muted mx-auto mb-4" />
           {habits.length === 0 ? (
             <>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No habits yet</h3>
-              <p className="text-gray-500 mb-4">Start building better routines today!</p>
+              <h3 className="text-lg font-medium text-theme mb-2">No habits yet</h3>
+              <p className="text-muted mb-4">Start building better routines today!</p>
               <Button onClick={() => navigate('/habits/new')}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Your First Habit
@@ -181,8 +181,8 @@ export const HabitsPage: React.FC = () => {
             </>
           ) : (
             <>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No habits match filters</h3>
-              <p className="text-gray-500">Try adjusting your filters to see more habits.</p>
+              <h3 className="text-lg font-medium text-theme mb-2">No habits match filters</h3>
+              <p className="text-muted">Try adjusting your filters to see more habits.</p>
             </>
           )}
         </div>
@@ -200,10 +200,10 @@ export const HabitsPage: React.FC = () => {
               {/* Edit button overlay */}
               <button
                 onClick={() => handleEditHabit(habit.id)}
-                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md"
+                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity p-2 glass rounded-lg shadow-sm border border-surface-muted hover:shadow-md"
                 title="Edit habit"
               >
-                <Settings className="w-4 h-4 text-gray-600" />
+                <Settings className="w-4 h-4 text-muted" />
               </button>
             </div>
           ))}
@@ -211,9 +211,9 @@ export const HabitsPage: React.FC = () => {
       )}
       
       {/* Quick Actions */}
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 className="text-sm font-medium text-blue-900 mb-2">Quick Tips</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
+      <div className="mt-8 p-4 glass rounded-lg border border-accent glow">
+        <h3 className="text-sm font-medium text-theme mb-2">Quick Tips</h3>
+        <ul className="text-sm text-muted space-y-1">
           <li>• Complete habits daily to build streaks and earn points</li>
           <li>• Link habits to your goals for better tracking</li>
           <li>• Set reminders to stay consistent</li>
@@ -234,19 +234,19 @@ const StatsCard: React.FC<{
 }> = ({ label, value, subValue, icon, onClick }) => (
   <button
     onClick={onClick}
-    className="bg-white rounded-lg shadow-sm p-4 border border-gray-200 hover:shadow-md transition-all text-left group"
+    className="glass rounded-lg shadow-sm p-4 border border-surface-muted hover:shadow-md transition-all text-left group hover-lift"
   >
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-xs text-gray-500">{label}</p>
-        <p className="text-lg font-bold text-gray-900">{value}</p>
+        <p className="text-xs text-muted">{label}</p>
+        <p className="text-lg font-bold text-theme">{value}</p>
         {subValue && (
-          <p className="text-xs text-gray-600 mt-1">{subValue}</p>
+          <p className="text-xs text-muted mt-1">{subValue}</p>
         )}
       </div>
       <div className="flex items-center">
         {icon}
-        <ChevronRight className="w-4 h-4 text-gray-400 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <ChevronRight className="w-4 h-4 text-muted ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
     </div>
   </button>
