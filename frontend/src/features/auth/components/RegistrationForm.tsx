@@ -29,7 +29,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting, dirtyFields },
+    formState: { errors, isSubmitting },
     setError,
     trigger,
   } = useForm<RegisterFormData>({

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import LoginForm from "../../features/auth/components/LoginForm";
 import AuthLayout from "../../features/auth/components/AuthLayout";
-import type { useAuthShihTzu } from "../../hooks/useAuthShihTzu";
+import { useAuthShihTzu } from "../../hooks/useAuthShihTzu";
 
 const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
