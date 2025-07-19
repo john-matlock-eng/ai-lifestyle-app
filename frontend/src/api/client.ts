@@ -5,6 +5,7 @@ import {
   refreshAccessToken,
   clearTokens,
 } from "../features/auth/utils/tokenManager";
+import { snakeToCamelObject, camelToSnakeObject } from "../utils/caseConversion";
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -15,13 +16,19 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor for authentication
+// Request interceptor for authentication and case conversion
 apiClient.interceptors.request.use(
   async (config) => {
     const token = await getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Convert request data from camelCase to snake_case
+    if (config.data && typeof config.data === 'object') {
+      config.data = camelToSnakeObject(config.data);
+    }
+    
     return config;
   },
   (error) => {
@@ -29,9 +36,15 @@ apiClient.interceptors.request.use(
   },
 );
 
-// Response interceptor for token refresh
+// Response interceptor for token refresh and case conversion
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Convert response data from snake_case to camelCase
+    if (response.data && typeof response.data === 'object') {
+      response.data = snakeToCamelObject(response.data);
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & {
       _retry?: boolean;
