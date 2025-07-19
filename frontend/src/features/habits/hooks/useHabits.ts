@@ -18,7 +18,10 @@ export const useHabits = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  const habits = todayData?.habits || [];
+  const habits = (todayData?.habits || []).map(habit => ({
+    ...habit,
+    weekProgress: habit.weekProgress || Array(7).fill(false)
+  }));
   const serverStats = todayData?.stats;
   
   // Use stats from today's habits response or fallback to separate query
@@ -53,7 +56,7 @@ export const useHabits = () => {
                   ...habit, 
                   completedToday: completed,
                   currentStreak: data.currentStreak,
-                  weekProgress: habit.weekProgress.map((completed, index) => 
+                  weekProgress: (habit.weekProgress || Array(7).fill(false)).map((completed, index) => 
                     index === new Date().getDay() ? completed : completed
                   )
                 }
