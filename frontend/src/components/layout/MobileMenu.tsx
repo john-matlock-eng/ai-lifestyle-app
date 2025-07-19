@@ -103,6 +103,17 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             Workouts
           </Link>
           <Link
+            to="/habits"
+            className={`block px-3 py-2 rounded-md text-base font-medium ${
+              isActive("/habits")
+                ? "text-[var(--text)] bg-[var(--surface-muted)]"
+                : "text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]"
+            }`}
+            onClick={onClose}
+          >
+            Habits
+          </Link>
+          <Link
             to="/journal"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
               isActive("/journal")

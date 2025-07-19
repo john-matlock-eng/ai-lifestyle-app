@@ -7,3 +7,4 @@ export type { InputProps } from "./Input";
 export { default as DevTools } from "./DevTools";
 export { default as LoadingScreen } from "./LoadingScreen";
 export { default as ThemeSwitcher } from "./ThemeSwitcher";
+export { Confetti } from "./Confetti";

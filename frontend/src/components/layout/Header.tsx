@@ -112,6 +112,16 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                 Workouts
               </Link>
               <Link
+                to="/habits"
+                className={`${
+                  isActive("/habits")
+                    ? "text-accent font-medium"
+                    : "text-text-secondary"
+                } hover:text-accent px-3 py-2 rounded-md text-sm font-medium transition-colors`}
+              >
+                Habits
+              </Link>
+              <Link
                 to="/journal"
                 className={`${
                   isActive("/journal") ? "text-theme" : "text-muted"
