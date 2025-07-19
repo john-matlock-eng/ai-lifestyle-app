@@ -49,6 +49,7 @@ import {
 import DevTools from "./components/common/DevTools";
 import { SessionWarning } from "./components/SessionWarning";
 import { EncryptionUnlockPrompt } from "./components/EncryptionUnlockPrompt";
+import { ShihTzuCompanionExample } from "./components/common";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -150,6 +151,9 @@ function App() {
                     path="/habits/rewards"
                     element={<div>Rewards - Coming Soon</div>}
                   />
+
+                  {/* Demo Route */}
+                  <Route path="/demo/shih-tzu" element={<ShihTzuCompanionExample />} />
 
                   {/* Journal Routes */}
                   <Route path="/journal" element={<JournalPageEnhanced />} />
