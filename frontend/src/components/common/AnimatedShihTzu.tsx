@@ -208,6 +208,24 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
               repeatCount="indefinite"
             />
           )}
+          
+          {/* Ears - drawn first so they appear behind the head */}
+          {/* Left ear - attaches at top-side of head */}
+          <path
+            d="M 33 25 Q 25 35 28 48 Q 30 52 33 48 Q 35 40 33 25"
+            fill="white"
+            stroke="#e5e7eb"
+            strokeWidth="1"
+          />
+          
+          {/* Right ear - attaches at top-side of head */}
+          <path
+            d="M 67 25 Q 75 35 72 48 Q 70 52 67 48 Q 65 40 67 25"
+            fill="white"
+            stroke="#e5e7eb"
+            strokeWidth="1"
+          />
+          
           {/* Head */}
           <circle
             cx="50"
@@ -216,28 +234,6 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
             fill="white"
             stroke="#e5e7eb"
             strokeWidth="1"
-          />
-          
-          {/* Ears */}
-          <ellipse
-            cx="35"
-            cy="30"
-            rx="8"
-            ry="12"
-            fill="white"
-            stroke="#e5e7eb"
-            strokeWidth="1"
-            transform={currentMood === 'curious' ? "rotate(-25 35 30)" : "rotate(-30 35 30)"}
-          />
-          <ellipse
-            cx="65"
-            cy="30"
-            rx="8"
-            ry="12"
-            fill="white"
-            stroke="#e5e7eb"
-            strokeWidth="1"
-            transform={currentMood === 'curious' ? "rotate(25 65 30)" : "rotate(30 65 30)"}
           />
           
           {/* Eyes */}

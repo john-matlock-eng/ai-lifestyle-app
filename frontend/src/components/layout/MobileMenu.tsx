@@ -124,6 +124,17 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
           >
             Journal
           </Link>
+          <Link
+            to="/demo/shih-tzu"
+            className={`block px-3 py-2 rounded-md text-base font-medium ${
+              isActive("/demo/shih-tzu")
+                ? "text-[var(--text)] bg-[var(--surface-muted)]"
+                : "text-gray-500 hover:text-[var(--text)] hover:bg-[color:var(--surface-muted)]"
+            }`}
+            onClick={onClose}
+          >
+            🐕 Shih Tzu Demo
+          </Link>
         </nav>
 
         <div className="border-t pt-4 pb-3">
