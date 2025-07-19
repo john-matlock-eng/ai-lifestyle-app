@@ -28,22 +28,22 @@ class HabitRepository:
     def _get_habit_key(self, user_id: str, habit_id: str) -> Dict[str, str]:
         """Generate the primary key for a habit."""
         return {
-            'PK': f'USER#{user_id}',
-            'SK': f'HABIT#{habit_id}'
+            'pk': f'USER#{user_id}',
+            'sk': f'HABIT#{habit_id}'
         }
     
     def _get_checkin_key(self, user_id: str, habit_id: str, check_date: date) -> Dict[str, str]:
         """Generate the primary key for a habit check-in."""
         return {
-            'PK': f'USER#{user_id}#HABIT#{habit_id}',
-            'SK': f'CHECKIN#{check_date.isoformat()}'
+            'pk': f'USER#{user_id}#HABIT#{habit_id}',
+            'sk': f'CHECKIN#{check_date.isoformat()}'
         }
     
     def _get_stats_key(self, user_id: str) -> Dict[str, str]:
         """Generate the primary key for user stats."""
         return {
-            'PK': f'USER#{user_id}',
-            'SK': 'STATS#HABITS'
+            'pk': f'USER#{user_id}',
+            'sk': 'STATS#HABITS'
         }
     
     def create_habit(self, user_id: str, habit_id: str, habit_data: Dict[str, Any]) -> HabitResponse:
@@ -88,7 +88,7 @@ class HabitRepository:
             
             self.table.put_item(
                 Item=item,
-                ConditionExpression='attribute_not_exists(PK)'
+                ConditionExpression='attribute_not_exists(pk)'
             )
             
             # Update user's total habits count
@@ -122,7 +122,7 @@ class HabitRepository:
         """List all habits for a user."""
         try:
             response = self.table.query(
-                KeyConditionExpression=Key('PK').eq(f'USER#{user_id}') & Key('SK').begins_with('HABIT#')
+                KeyConditionExpression=Key('pk').eq(f'USER#{user_id}') & Key('sk').begins_with('HABIT#')
             )
             
             habits = []
@@ -201,7 +201,7 @@ class HabitRepository:
                 UpdateExpression=update_expression,
                 ExpressionAttributeNames=expr_attr_names,
                 ExpressionAttributeValues=expr_attr_values,
-                ConditionExpression="attribute_exists(PK)",
+                ConditionExpression="attribute_exists(pk)",
                 ReturnValues="ALL_NEW"
             )
             
@@ -219,19 +219,19 @@ class HabitRepository:
             # First, delete the habit
             self.table.delete_item(
                 Key=self._get_habit_key(user_id, habit_id),
-                ConditionExpression="attribute_exists(PK)"
+                ConditionExpression="attribute_exists(pk)"
             )
             
             # Delete all check-ins for this habit
             checkin_response = self.table.query(
-                KeyConditionExpression=Key('PK').eq(f'USER#{user_id}#HABIT#{habit_id}')
+                KeyConditionExpression=Key('pk').eq(f'USER#{user_id}#HABIT#{habit_id}')
             )
             
             # Batch delete check-ins
             with self.table.batch_writer() as batch:
                 for item in checkin_response.get('Items', []):
                     batch.delete_item(
-                        Key={'PK': item['PK'], 'SK': item['SK']}
+                        Key={'pk': item['pk'], 'sk': item['sk']}
                     )
             
             # Update user's total habits count

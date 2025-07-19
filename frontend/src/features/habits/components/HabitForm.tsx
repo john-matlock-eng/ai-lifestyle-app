@@ -10,8 +10,7 @@ import type {
   HabitCategory 
 } from '@/types/habits';
 import { HABIT_CATEGORIES } from '@/types/habits';
-import Button from '@/components/common/Button';
-import Input from '@/components/common/Input';
+import { Button, Input } from '@/components/common';
 import { 
   Save, 
   X, 
