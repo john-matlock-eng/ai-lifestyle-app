@@ -10,7 +10,7 @@ const LoginPage: React.FC = () => {
     type: "info" | "error";
     text: string;
   } | null>(null);
-  const companionRef = useRef<ReturnType<typeof useAuthShihTzu>>();
+  const companionRef = useRef<ReturnType<typeof useAuthShihTzu> | null>(null);
 
   useEffect(() => {
     const messageParam = searchParams.get("message");
@@ -88,7 +88,7 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
           )}
-          <LoginForm companion={companionRef.current} />
+          <LoginForm companion={companionRef.current || undefined} />
         </div>
       </div>
     </AuthLayout>

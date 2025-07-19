@@ -105,7 +105,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     
     if (isValid && fieldValue && fieldValue.toString().trim()) {
       setCompletedFields(prev => new Set(prev).add(fieldName));
-      companion?.handleFieldComplete(fieldName);
+      companion?.handleFieldComplete();
     } else if (!isValid && companion) {
       companion.handleError();
     }

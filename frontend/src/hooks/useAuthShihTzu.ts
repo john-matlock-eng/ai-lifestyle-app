@@ -2,10 +2,6 @@
 import { useEffect, useCallback } from 'react';
 import { useShihTzuCompanion } from './useShihTzuCompanion';
 
-interface UseAuthShihTzuOptions {
-  onIdle?: () => void;
-}
-
 export const useAuthShihTzu = () => {
   const companion = useShihTzuCompanion({
     initialPosition: { x: window.innerWidth - 150, y: 50 },
