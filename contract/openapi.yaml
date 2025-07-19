@@ -2696,7 +2696,7 @@ components:
             type: number
           minItems: 2
           maxItems: 2
-          description: [longitude, latitude]
+          description: "[longitude, latitude]"
 
     ActivityContext:
       type: object

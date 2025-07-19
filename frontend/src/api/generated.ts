@@ -1409,10 +1409,7 @@ export interface components {
             /** @enum {string} */
             type?: "home" | "work" | "gym" | "outdoors" | "travel";
             city?: string;
-            /** @description [
-             *       "longitude",
-             *       "latitude"
-             *     ] */
+            /** @description [longitude, latitude] */
             coordinates?: number[];
         };
         ActivityContext: {

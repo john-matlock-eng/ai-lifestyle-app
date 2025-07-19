@@ -1,7 +1,8 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authService, UserProfile } from "../../features/auth/services/authService";
+import { authService } from "../../features/auth/services/authService";
+import type { UserProfile } from "../../features/auth/services/authService";
 import Button from "../common/Button";
 
 interface Props {
@@ -24,14 +25,15 @@ const ProfileSection: React.FC<Props> = ({ user }) => {
     },
   });
 
-  const mutation = useMutation(authService.updateProfile, {
+  const mutation = useMutation({
+    mutationFn: (updates: Partial<UserProfile>) => authService.updateProfile(updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
     },
   });
 
-  const onSubmit = handleSubmit((data) => {
-    mutation.mutate(data);
+  const onSubmit = handleSubmit((formData) => {
+    mutation.mutate(formData);
   });
 
   return (
@@ -59,7 +61,7 @@ const ProfileSection: React.FC<Props> = ({ user }) => {
             <input id="lastName" className="input w-full" {...register("lastName")} />
           </div>
         </div>
-        <Button type="submit" loading={mutation.isPending}>Save</Button>
+        <Button type="submit" isLoading={mutation.isPending}>Save</Button>
       </form>
     </div>
   );
