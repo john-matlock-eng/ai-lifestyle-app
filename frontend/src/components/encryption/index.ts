@@ -1,10 +1,14 @@
-// Encryption Component Library
-export { EncryptionToggle } from './EncryptionToggle';
-export { EncryptionIndicator, EncryptionStatusList } from './EncryptionIndicator';
-export { default as ShareDialog } from './ShareDialog';
-export { default as KeyManagement } from './KeyManagement';
-export { EncryptionOnboarding } from './EncryptionOnboarding';
+// Export encryption components
+export { EncryptionSettings } from "./EncryptionSettings";
+export { default as ShareDialog } from "./ShareDialog";
+export { default as ShareManagement } from "./ShareManagement";
+export { default as AIShareDialog } from "./AIShareDialog";
+export { EncryptionToggle } from "./EncryptionToggle";
+export { EncryptionIndicator } from "./EncryptionIndicator";
+export { default as EncryptionResetDialog } from "./EncryptionResetDialog";
 
 // Export types
-export type { ShareableItem, ShareToken, SharePermissions } from './ShareDialog';
-export type { OnboardingSettings } from './EncryptionOnboarding';
+export type { ShareableItem, ShareToken } from "./ShareDialog";
+
+// Components that may not exist yet - comment out if they don't
+// export { KeyManagement } from './KeyManagement';

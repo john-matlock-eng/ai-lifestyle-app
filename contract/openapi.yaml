@@ -872,6 +872,521 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  # Journaling Endpoints
+  /journal:
+    post:
+      summary: Create journal entry
+      description: Creates a new journal entry with optional encryption
+      operationId: createJournalEntry
+      tags:
+        - Journaling
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJournalEntryRequest'
+      responses:
+        '201':
+          description: Entry created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+        '400':
+          description: Invalid entry data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: List journal entries
+      description: Returns paginated list of journal entries including shared entries
+      operationId: listJournalEntries
+      tags:
+        - Journaling
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: filter
+          in: query
+          description: Filter entries by ownership/sharing status
+          schema:
+            type: string
+            enum: [owned, shared-with-me, shared-by-me, all]
+            default: owned
+        - name: goalId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Entries retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharedJournalsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /journal/{entryId}:
+    get:
+      summary: Get journal entry
+      description: Returns a specific journal entry (owned or shared)
+      operationId: getJournalEntry
+      tags:
+        - Journaling
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Entry retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update journal entry
+      description: Updates an existing journal entry
+      operationId: updateJournalEntry
+      tags:
+        - Journaling
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJournalEntryRequest'
+      responses:
+        '200':
+          description: Entry updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalEntry'
+        '400':
+          description: Invalid update data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete journal entry
+      description: Deletes a journal entry
+      operationId: deleteJournalEntry
+      tags:
+        - Journaling
+      parameters:
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Entry deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /journal/stats:
+    get:
+      summary: Get journal statistics
+      description: Returns user's journaling statistics
+      operationId: getJournalStats
+      tags:
+        - Journaling
+      responses:
+        '200':
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JournalStats'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Share Management Endpoints
+  /shares:
+    post:
+      summary: Create share
+      description: Creates a share for encrypted content
+      operationId: createShare
+      tags:
+        - Shares
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShareRequest'
+      responses:
+        '201':
+          description: Share created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareResponse'
+        '400':
+          description: Invalid share data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item to share not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: List shares
+      description: Lists all shares created by or for the user
+      operationId: listShares
+      tags:
+        - Shares
+      parameters:
+        - name: itemType
+          in: query
+          schema:
+            type: string
+            enum: [journal, goal]
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [created, received, all]
+            default: all
+      responses:
+        '200':
+          description: Shares retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /shares/{shareId}:
+    delete:
+      summary: Revoke share
+      description: Revokes an existing share
+      operationId: revokeShare
+      tags:
+        - Shares
+      parameters:
+        - name: shareId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Share revoked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Share not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ai-shares:
+    post:
+      summary: Create AI analysis share
+      description: Creates a temporary share for AI analysis
+      operationId: createAIShare
+      tags:
+        - Shares
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAIShareRequest'
+      responses:
+        '201':
+          description: AI share created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIShareResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/by-email/{email}:
+    get:
+      summary: Get user by email
+      description: Retrieves basic user information by email address
+      operationId: getUserByEmail
+      tags:
+        - Users
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBasicInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{userId}:
+    get:
+      summary: Get user by ID
+      description: Retrieves basic user information by user ID
+      operationId: getUserById
+      tags:
+        - Users
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBasicInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/user/{userId}:
+    get:
+      summary: Get user encryption info
+      description: Retrieves user's public encryption key
+      operationId: getUserEncryption
+      tags:
+        - Encryption
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Encryption info retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEncryptionInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found or encryption not set up
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/check/{userId}:
+    get:
+      summary: Check user encryption status
+      description: Checks if user has encryption set up
+      operationId: checkUserEncryption
+      tags:
+        - Encryption
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Encryption status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EncryptionCheckResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /encryption/setup:
+    post:
+      summary: Setup user encryption
+      description: Sets up encryption keys for the user
+      operationId: setupEncryption
+      tags:
+        - Encryption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetupEncryptionRequest'
+      responses:
+        '201':
+          description: Encryption setup successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid setup data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # AI Analysis Endpoints
   /ai-analysis/shares:
     post:
@@ -2862,6 +3377,511 @@ components:
           type: string
           format: password
 
+    # Journaling Schemas
+    CreateJournalEntryRequest:
+      type: object
+      required:
+        - title
+        - content
+        - template
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          description: Journal entry content (can be encrypted)
+          maxLength: 50000
+        template:
+          type: string
+          enum: [blank, daily-reflection, gratitude, goals-progress, emotional-checkin, dream-journal, creative-writing]
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+        mood:
+          type: string
+        linkedGoalIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        goalProgress:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalGoalProgress'
+        isEncrypted:
+          type: boolean
+          default: false
+        encryptedKey:
+          type: string
+          description: Encrypted content key (if encrypted)
+        encryptionIv:
+          type: string
+          description: Encryption initialization vector (if encrypted)
+
+    UpdateJournalEntryRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          maxLength: 50000
+        tags:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+        mood:
+          type: string
+        linkedGoalIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        goalProgress:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalGoalProgress'
+
+    JournalEntry:
+      type: object
+      required:
+        - entryId
+        - userId
+        - title
+        - content
+        - template
+        - wordCount
+        - tags
+        - linkedGoalIds
+        - goalProgress
+        - createdAt
+        - updatedAt
+        - isEncrypted
+        - isShared
+        - sharedWith
+      properties:
+        entryId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: string
+        template:
+          type: string
+          enum: [blank, daily-reflection, gratitude, goals-progress, emotional-checkin, dream-journal, creative-writing]
+        wordCount:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        mood:
+          type: string
+        linkedGoalIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        goalProgress:
+          type: array
+          items:
+            $ref: '#/components/schemas/JournalGoalProgress'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isEncrypted:
+          type: boolean
+        isShared:
+          type: boolean
+        encryptedKey:
+          type: string
+          description: Encrypted content key (if encrypted)
+        encryptionIv:
+          type: string
+          description: Encryption initialization vector (if encrypted)
+        sharedWith:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: User IDs this entry is shared with
+        shareAccess:
+          $ref: '#/components/schemas/ShareAccess'
+          description: Present when accessing a shared entry
+
+    JournalGoalProgress:
+      type: object
+      required:
+        - goalId
+        - completed
+      properties:
+        goalId:
+          type: string
+          format: uuid
+        progressValue:
+          type: number
+          description: Progress value (numeric)
+        notes:
+          type: string
+        completed:
+          type: boolean
+
+    SharedJournalItem:
+      type: object
+      required:
+        - entry
+        - shareInfo
+        - isIncoming
+      properties:
+        entry:
+          $ref: '#/components/schemas/JournalEntry'
+        shareInfo:
+          $ref: '#/components/schemas/ShareInfo'
+        isIncoming:
+          type: boolean
+          description: True if shared with user, false if shared by user
+
+    ShareInfo:
+      type: object
+      required:
+        - shareId
+        - sharedAt
+        - permissions
+      properties:
+        shareId:
+          type: string
+          format: uuid
+        sharedAt:
+          type: string
+          format: date-time
+        sharedBy:
+          type: string
+          description: Email of user who shared (for incoming)
+        sharedWith:
+          type: string
+          description: Email of recipient (for outgoing)
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, share]
+        expiresAt:
+          type: string
+          format: date-time
+
+    ShareAccess:
+      type: object
+      required:
+        - shareId
+        - permissions
+      properties:
+        shareId:
+          type: string
+          format: uuid
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, share]
+        expiresAt:
+          type: string
+          format: date-time
+
+    SharedJournalsResponse:
+      type: object
+      required:
+        - entries
+        - total
+        - page
+        - limit
+        - hasMore
+        - filter
+      properties:
+        entries:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/JournalEntry'
+              - $ref: '#/components/schemas/SharedJournalItem'
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        hasMore:
+          type: boolean
+        filter:
+          type: string
+          enum: [owned, shared-with-me, shared-by-me, all]
+
+    JournalStats:
+      type: object
+      properties:
+        totalEntries:
+          type: integer
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        averageWordCount:
+          type: integer
+        totalWords:
+          type: integer
+        moodDistribution:
+          type: object
+          additionalProperties:
+            type: integer
+        topTags:
+          type: array
+          items:
+            type: object
+            properties:
+              tag:
+                type: string
+              count:
+                type: integer
+
+    # Share Schemas
+    CreateShareRequest:
+      type: object
+      required:
+        - itemType
+        - itemId
+        - recipientId
+        - permissions
+      properties:
+        itemType:
+          type: string
+          enum: [journal, goal]
+          description: Type of item being shared
+        itemId:
+          type: string
+          format: uuid
+          description: ID of the item being shared
+        recipientId:
+          type: string
+          format: uuid
+          description: User ID of the recipient
+        encryptedKey:
+          type: string
+          description: Re-encrypted content key for recipient (required for encrypted items)
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, share]
+          default: [read]
+        expiresInHours:
+          type: integer
+          minimum: 1
+          maximum: 720
+          default: 24
+          description: Hours until share expires (max 30 days)
+
+    ShareResponse:
+      type: object
+      required:
+        - shareId
+        - createdAt
+        - expiresAt
+        - isEncrypted
+      properties:
+        shareId:
+          type: string
+          format: uuid
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        isEncrypted:
+          type: boolean
+
+    Share:
+      type: object
+      required:
+        - shareId
+        - ownerId
+        - recipientId
+        - itemType
+        - itemId
+        - permissions
+        - createdAt
+        - active
+      properties:
+        shareId:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        recipientId:
+          type: string
+          format: uuid
+        itemType:
+          type: string
+          enum: [journal, goal]
+        itemId:
+          type: string
+          format: uuid
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [read, write, share]
+        encryptedKey:
+          type: string
+          description: Re-encrypted content key for recipient
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+        lastAccessed:
+          type: string
+          format: date-time
+        accessCount:
+          type: integer
+
+    ShareListResponse:
+      type: object
+      required:
+        - shares
+      properties:
+        shares:
+          type: array
+          items:
+            $ref: '#/components/schemas/Share'
+
+    CreateAIShareRequest:
+      type: object
+      required:
+        - itemType
+        - itemIds
+        - analysisType
+      properties:
+        itemType:
+          type: string
+          enum: [journal]
+        itemIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+          maxItems: 100
+        analysisType:
+          type: string
+          enum: [sentiment, themes, patterns, suggestions, wellness]
+        context:
+          type: string
+          description: Additional context for AI analysis
+        expiresInMinutes:
+          type: integer
+          minimum: 1
+          maximum: 60
+          default: 30
+
+    AIShareResponse:
+      type: object
+      required:
+        - analysisRequestId
+        - shareIds
+      properties:
+        analysisRequestId:
+          type: string
+          format: uuid
+        shareIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    # User Info Schemas
+    UserBasicInfo:
+      type: object
+      required:
+        - userId
+        - email
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+
+    UserEncryptionInfo:
+      type: object
+      required:
+        - userId
+        - publicKey
+        - publicKeyId
+      properties:
+        userId:
+          type: string
+          format: uuid
+        publicKey:
+          type: string
+          description: Base64 encoded public key
+        publicKeyId:
+          type: string
+        salt:
+          type: string
+          description: Base64 encoded salt
+        encryptedPrivateKey:
+          type: string
+          description: Base64 encoded encrypted private key
+
+    EncryptionCheckResponse:
+      type: object
+      required:
+        - hasEncryption
+      properties:
+        hasEncryption:
+          type: boolean
+
+    SetupEncryptionRequest:
+      type: object
+      required:
+        - salt
+        - encryptedPrivateKey
+        - publicKey
+        - publicKeyId
+      properties:
+        salt:
+          type: string
+          description: Base64 encoded salt
+        encryptedPrivateKey:
+          type: string
+          description: Base64 encoded encrypted private key
+        publicKey:
+          type: string
+          description: Base64 encoded public key
+        publicKeyId:
+          type: string
+
     # Common Schemas
     PaginationParams:
       type: object
@@ -2915,6 +3935,10 @@ tags:
     description: User profile management
   - name: Goals
     description: Goal setting and tracking
+  - name: Journaling
+    description: Personal journaling with encryption and sharing
+  - name: Shares
+    description: Sharing encrypted content between users
   - name: Encryption
     description: Core encryption service for all modules
   - name: AI Analysis

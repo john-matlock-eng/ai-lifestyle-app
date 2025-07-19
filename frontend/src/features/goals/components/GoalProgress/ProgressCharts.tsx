@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
-import { 
-  LineChart, Line, BarChart, Bar, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell, RadialBarChart, RadialBar
-} from 'recharts';
-import { 
-  TrendingUp, TrendingDown, Activity, 
-  BarChart3, PieChart as PieIcon, Target, Info 
-} from 'lucide-react';
-import type { Goal, GoalActivity, GoalProgress } from '../../types/api.types';
-import { GOAL_PATTERN_COLORS } from '../../types/goal.types';
+import React, { useState } from "react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  RadialBarChart,
+  RadialBar,
+} from "recharts";
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  BarChart3,
+  PieChart as PieIcon,
+  Target,
+  Info,
+} from "lucide-react";
+import type { Goal, GoalActivity, GoalProgress } from "../../types/api.types";
+import { GOAL_PATTERN_COLORS } from "../../types/goal.types";
 
 interface ProgressChartsProps {
   goal: Goal;
@@ -18,17 +37,17 @@ interface ProgressChartsProps {
   className?: string;
 }
 
-type ChartType = 'line' | 'bar' | 'area' | 'radial' | 'pie';
-type TimeRange = '7d' | '30d' | '90d' | '1y' | 'all';
+type ChartType = "line" | "bar" | "area" | "radial" | "pie";
+type TimeRange = "7d" | "30d" | "90d" | "1y" | "all";
 
 const ProgressCharts: React.FC<ProgressChartsProps> = ({
   goal,
   activities,
   progress,
-  className = '',
+  className = "",
 }) => {
-  const [chartType, setChartType] = useState<ChartType>('line');
-  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const [chartType, setChartType] = useState<ChartType>("line");
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [showTarget, setShowTarget] = useState(true);
 
   const color = GOAL_PATTERN_COLORS[goal.goalPattern];
@@ -37,36 +56,46 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
   const getChartData = () => {
     const now = new Date();
     const rangeMap = {
-      '7d': 7,
-      '30d': 30,
-      '90d': 90,
-      '1y': 365,
-      'all': Infinity,
+      "7d": 7,
+      "30d": 30,
+      "90d": 90,
+      "1y": 365,
+      all: Infinity,
     };
-    
+
     const daysToShow = rangeMap[timeRange];
-    const startDate = daysToShow === Infinity 
-      ? new Date(goal.createdAt)
-      : new Date(now.getTime() - daysToShow * 24 * 60 * 60 * 1000);
+    const startDate =
+      daysToShow === Infinity
+        ? new Date(goal.createdAt)
+        : new Date(now.getTime() - daysToShow * 24 * 60 * 60 * 1000);
 
     // Filter activities within range
     const filteredActivities = activities.filter(
-      (activity) => new Date(activity.activityDate) >= startDate
+      (activity) => new Date(activity.activityDate) >= startDate,
     );
 
     // Group by day
-    const dailyData = new Map<string, { date: string; value: number; activities: number }>();
-    
+    const dailyData = new Map<
+      string,
+      { date: string; value: number; activities: number }
+    >();
+
     // Initialize all days in range
     for (let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = d.toISOString().split("T")[0];
       dailyData.set(dateStr, { date: dateStr, value: 0, activities: 0 });
     }
 
     // Aggregate activities
     filteredActivities.forEach((activity) => {
-      const dateStr = new Date(activity.activityDate).toISOString().split('T')[0];
-      const existing = dailyData.get(dateStr) || { date: dateStr, value: 0, activities: 0 };
+      const dateStr = new Date(activity.activityDate)
+        .toISOString()
+        .split("T")[0];
+      const existing = dailyData.get(dateStr) || {
+        date: dateStr,
+        value: 0,
+        activities: 0,
+      };
       existing.value += activity.value;
       existing.activities += 1;
       dailyData.set(dateStr, existing);
@@ -74,9 +103,9 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
 
     return Array.from(dailyData.values()).map((data) => ({
       ...data,
-      formattedDate: new Date(data.date).toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
+      formattedDate: new Date(data.date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
       }),
       target: goal.target.value,
     }));
@@ -87,37 +116,42 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
   // Calculate statistics
   const stats = {
     total: activities.reduce((sum, a) => sum + a.value, 0),
-    average: activities.length > 0 
-      ? activities.reduce((sum, a) => sum + a.value, 0) / activities.length 
-      : 0,
-    max: Math.max(...activities.map(a => a.value), 0),
-    min: activities.length > 0 ? Math.min(...activities.map(a => a.value)) : 0,
+    average:
+      activities.length > 0
+        ? activities.reduce((sum, a) => sum + a.value, 0) / activities.length
+        : 0,
+    max: Math.max(...activities.map((a) => a.value), 0),
+    min:
+      activities.length > 0 ? Math.min(...activities.map((a) => a.value)) : 0,
     consistency: progress.statistics?.consistency || 0,
   };
 
   // Pie chart data for activity types
-  const activityTypeData = activities.reduce((acc, activity) => {
-    const type = activity.activityType;
-    const existing = acc.find(item => item.name === type);
-    if (existing) {
-      existing.value += 1;
-    } else {
-      acc.push({ name: type, value: 1 });
-    }
-    return acc;
-  }, [] as { name: string; value: number }[]);
+  const activityTypeData = activities.reduce(
+    (acc, activity) => {
+      const type = activity.activityType;
+      const existing = acc.find((item) => item.name === type);
+      if (existing) {
+        existing.value += 1;
+      } else {
+        acc.push({ name: type, value: 1 });
+      }
+      return acc;
+    },
+    [] as { name: string; value: number }[],
+  );
 
   const pieColors = {
-    progress: '#3B82F6',
-    completed: '#10B981',
-    skipped: '#F59E0B',
-    partial: '#8B5CF6',
+    progress: "var(--primary)",
+    completed: "var(--success)",
+    skipped: "var(--warning)",
+    partial: "var(--accent)",
   };
 
   // Radial bar data for progress
   const radialData = [
     {
-      name: 'Progress',
+      name: "Progress",
       value: progress.progress.percentComplete,
       fill: color,
     },
@@ -125,39 +159,39 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
 
   const renderChart = () => {
     switch (chartType) {
-      case 'line':
+      case "line":
         return (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="formattedDate" 
+              <XAxis
+                dataKey="formattedDate"
                 tick={{ fontSize: 12 }}
                 interval={Math.floor(chartData.length / 10)}
               />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid var(--surface-muted)",
+                  borderRadius: "8px",
                 }}
               />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke={color} 
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke={color}
                 strokeWidth={2}
                 dot={{ fill: color, r: 3 }}
                 activeDot={{ r: 6 }}
                 name={goal.target.unit}
               />
               {showTarget && (
-                <Line 
-                  type="monotone" 
-                  dataKey="target" 
-                  stroke="#94A3B8" 
+                <Line
+                  type="monotone"
+                  dataKey="target"
+                  stroke="var(--text-muted)"
                   strokeDasharray="5 5"
                   strokeWidth={1}
                   dot={false}
@@ -168,28 +202,28 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
           </ResponsiveContainer>
         );
 
-      case 'bar':
+      case "bar":
         return (
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="formattedDate" 
+              <XAxis
+                dataKey="formattedDate"
                 tick={{ fontSize: 12 }}
                 interval={Math.floor(chartData.length / 10)}
               />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid var(--surface-muted)",
+                  borderRadius: "8px",
                 }}
               />
               <Legend />
-              <Bar 
-                dataKey="value" 
-                fill={color} 
+              <Bar
+                dataKey="value"
+                fill={color}
                 radius={[4, 4, 0, 0]}
                 name={goal.target.unit}
               />
@@ -197,38 +231,38 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
           </ResponsiveContainer>
         );
 
-      case 'area':
+      case "area":
         return (
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="formattedDate" 
+              <XAxis
+                dataKey="formattedDate"
                 tick={{ fontSize: 12 }}
                 interval={Math.floor(chartData.length / 10)}
               />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid var(--surface-muted)",
+                  borderRadius: "8px",
                 }}
               />
               <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="value" 
-                stroke={color} 
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={color}
                 fill={`${color}30`}
                 strokeWidth={2}
                 name={goal.target.unit}
               />
               {showTarget && (
-                <Line 
-                  type="monotone" 
-                  dataKey="target" 
-                  stroke="#94A3B8" 
+                <Line
+                  type="monotone"
+                  dataKey="target"
+                  stroke="var(--text-muted)"
                   strokeDasharray="5 5"
                   strokeWidth={1}
                   dot={false}
@@ -239,39 +273,39 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
           </ResponsiveContainer>
         );
 
-      case 'radial':
+      case "radial":
         return (
           <ResponsiveContainer width="100%" height={300}>
-            <RadialBarChart 
-              cx="50%" 
-              cy="50%" 
-              innerRadius="60%" 
-              outerRadius="90%" 
+            <RadialBarChart
+              cx="50%"
+              cy="50%"
+              innerRadius="60%"
+              outerRadius="90%"
               data={radialData}
             >
-              <RadialBar 
-                dataKey="value" 
-                cornerRadius={10} 
+              <RadialBar
+                dataKey="value"
+                cornerRadius={10}
                 fill={color}
-                background={{ fill: '#f3f4f6' }}
+                background={{ fill: "var(--surface-muted)" }}
               />
-              <text 
-                x="50%" 
-                y="50%" 
-                textAnchor="middle" 
-                dominantBaseline="middle" 
+              <text
+                x="50%"
+                y="50%"
+                textAnchor="middle"
+                dominantBaseline="middle"
                 className="text-3xl font-bold"
-                fill="#111827"
+                fill="var(--text)"
               >
                 {progress.progress.percentComplete}%
               </text>
-              <text 
-                x="50%" 
-                y="50%" 
-                dy={30} 
-                textAnchor="middle" 
+              <text
+                x="50%"
+                y="50%"
+                dy={30}
+                textAnchor="middle"
                 className="text-sm"
-                fill="#6b7280"
+                fill="var(--text-muted)"
               >
                 Complete
               </text>
@@ -279,7 +313,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
           </ResponsiveContainer>
         );
 
-      case 'pie':
+      case "pie":
         return (
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -288,23 +322,28 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                label={({ name, percent }) =>
+                  `${name}: ${((percent || 0) * 100).toFixed(0)}%`
+                }
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
               >
                 {activityTypeData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={pieColors[entry.name as keyof typeof pieColors] || '#94A3B8'} 
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={
+                      pieColors[entry.name as keyof typeof pieColors] ||
+                      "var(--text-muted)"
+                    }
                   />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  border: "1px solid var(--surface-muted)",
+                  borderRadius: "8px",
                 }}
               />
             </PieChart>
@@ -318,25 +357,27 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
       {/* Chart Controls */}
       <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h2 className="text-lg font-semibold text-[var(--text)]">Progress Analytics</h2>
-          
+          <h2 className="text-lg font-semibold text-[var(--text)]">
+            Progress Analytics
+          </h2>
+
           <div className="flex flex-wrap items-center gap-3">
             {/* Chart Type Selector */}
             <div className="flex bg-[var(--surface-muted)] rounded-lg p-1">
               {[
-                { type: 'line' as ChartType, icon: Activity },
-                { type: 'bar' as ChartType, icon: BarChart3 },
-                { type: 'area' as ChartType, icon: TrendingUp },
-                { type: 'radial' as ChartType, icon: Target },
-                { type: 'pie' as ChartType, icon: PieIcon },
+                { type: "line" as ChartType, icon: Activity },
+                { type: "bar" as ChartType, icon: BarChart3 },
+                { type: "area" as ChartType, icon: TrendingUp },
+                { type: "radial" as ChartType, icon: Target },
+                { type: "pie" as ChartType, icon: PieIcon },
               ].map(({ type, icon: Icon }) => (
                 <button
                   key={type}
                   onClick={() => setChartType(type)}
                   className={`p-2 rounded transition-all ${
                     chartType === type
-                      ? 'bg-[var(--surface)] shadow-sm text-[var(--text)]'
-                      : 'text-muted hover:text-[var(--text)]'
+                      ? "bg-[var(--surface)] shadow-sm text-[var(--text)]"
+                      : "text-muted hover:text-[var(--text)]"
                   }`}
                   title={`${type} chart`}
                 >
@@ -346,7 +387,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
             </div>
 
             {/* Time Range Selector */}
-            {chartType !== 'radial' && chartType !== 'pie' && (
+            {chartType !== "radial" && chartType !== "pie" && (
               <select
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value as TimeRange)}
@@ -361,7 +402,7 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
             )}
 
             {/* Show Target Toggle */}
-            {(chartType === 'line' || chartType === 'area') && (
+            {(chartType === "line" || chartType === "area") && (
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -378,11 +419,13 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
         {/* Chart */}
         <div className="relative">
           {activities.length === 0 ? (
-            <div className="h-[300px] flex items-center justify-center text-gray-500">
+            <div className="h-[300px] flex items-center justify-center text-[var(--text-muted)]">
               <div className="text-center">
-                <Activity className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <Activity className="h-12 w-12 mx-auto mb-3 text-[var(--text-muted)]" />
                 <p>No activity data to display</p>
-                <p className="text-sm mt-1">Start logging activities to see your progress</p>
+                <p className="text-sm mt-1 text-[var(--text-muted)]">
+                  Start logging activities to see your progress
+                </p>
               </div>
             </div>
           ) : (
@@ -396,63 +439,76 @@ const ProgressCharts: React.FC<ProgressChartsProps> = ({
         <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <p className="text-sm text-muted mb-1">Total</p>
           <p className="text-2xl font-bold text-[var(--text)]">
-            {stats.total.toFixed(1)} <span className="text-sm font-normal">{goal.target.unit}</span>
+            {stats.total.toFixed(1)}{" "}
+            <span className="text-sm font-normal">{goal.target.unit}</span>
           </p>
         </div>
-        
+
         <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <p className="text-sm text-muted mb-1">Average</p>
           <p className="text-2xl font-bold text-[var(--text)]">
-            {stats.average.toFixed(1)} <span className="text-sm font-normal">{goal.target.unit}</span>
+            {stats.average.toFixed(1)}{" "}
+            <span className="text-sm font-normal">{goal.target.unit}</span>
           </p>
         </div>
-        
+
         <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <p className="text-sm text-muted mb-1">Best</p>
           <p className="text-2xl font-bold text-[var(--text)]">
-            {stats.max.toFixed(1)} <span className="text-sm font-normal">{goal.target.unit}</span>
+            {stats.max.toFixed(1)}{" "}
+            <span className="text-sm font-normal">{goal.target.unit}</span>
           </p>
         </div>
-        
+
         <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <p className="text-sm text-muted mb-1">Consistency</p>
-          <p className="text-2xl font-bold text-[var(--text)]">{stats.consistency}%</p>
+          <p className="text-2xl font-bold text-[var(--text)]">
+            {stats.consistency}%
+          </p>
         </div>
-        
+
         <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-4">
           <p className="text-sm text-muted mb-1">Trend</p>
           <div className="flex items-center gap-2">
-            {progress.progress.trend === 'improving' ? (
-              <TrendingUp className="h-6 w-6 text-green-600" />
-            ) : progress.progress.trend === 'declining' ? (
-              <TrendingDown className="h-6 w-6 text-red-600" />
+            {progress.progress.trend === "improving" ? (
+              <TrendingUp className="h-6 w-6 text-[var(--success)]" />
+            ) : progress.progress.trend === "declining" ? (
+              <TrendingDown className="h-6 w-6 text-[var(--error)]" />
             ) : (
               <Activity className="h-6 w-6 text-muted" />
             )}
-            <span className="text-lg font-semibold capitalize">{progress.progress.trend}</span>
+            <span className="text-lg font-semibold capitalize">
+              {progress.progress.trend}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Insights */}
       {progress.insights && (
-        <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+        <div className="bg-[var(--primary)] bg-opacity-10 rounded-lg p-6 border border-[var(--primary)] border-opacity-20">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-[var(--primary)] mt-0.5 flex-shrink-0" />
             <div className="space-y-2">
-              <h3 className="font-medium text-blue-900">Insights & Recommendations</h3>
+              <h3 className="font-medium text-[var(--text)]">
+                Insights & Recommendations
+              </h3>
               {progress.insights.bestTimeOfDay && (
-                <p className="text-sm text-blue-800">
-                  • Your best performance is typically during <strong>{progress.insights.bestTimeOfDay}</strong>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  • Your best performance is typically during{" "}
+                  <strong>{progress.insights.bestTimeOfDay}</strong>
                 </p>
               )}
               {progress.insights.bestDayOfWeek && (
-                <p className="text-sm text-blue-800">
-                  • You're most consistent on <strong>{progress.insights.bestDayOfWeek}s</strong>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  • You're most consistent on{" "}
+                  <strong>{progress.insights.bestDayOfWeek}s</strong>
                 </p>
               )}
               {progress.insights.recommendations?.map((rec, idx) => (
-                <p key={idx} className="text-sm text-blue-800">• {rec}</p>
+                <p key={idx} className="text-sm text-[var(--text-secondary)]">
+                  • {rec}
+                </p>
               ))}
             </div>
           </div>

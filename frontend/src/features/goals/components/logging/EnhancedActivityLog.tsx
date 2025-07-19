@@ -1,20 +1,17 @@
-import React, { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-Battery, Clock, MapPin,
-Sun
-} from 'lucide-react';
-import { getGoal, logActivity } from '../../services/goalService';
-import type { 
-  LogActivityRequest, 
-  ActivityType, 
+import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Battery, Clock, MapPin, Sun } from "lucide-react";
+import { getGoal, logActivity } from "../../services/goalService";
+import type {
+  LogActivityRequest,
+  ActivityType,
   TimeOfDay,
   ActivityLocation,
-  ActivityContext 
-} from '../../types/api.types';
-import { formatGoalValue } from '../../types/ui.types';
-import Input from '../../../../components/common/Input';
-import Button from '../../../../components/common/Button';
+  ActivityContext,
+} from "../../types/api.types";
+import { formatGoalValue } from "../../types/ui.types";
+import Input from "../../../../components/common/Input";
+import Button from "../../../../components/common/Button";
 
 interface EnhancedActivityLogProps {
   goalId: string;
@@ -22,51 +19,67 @@ interface EnhancedActivityLogProps {
   onClose: () => void;
 }
 
-const timeOfDayOptions: { value: TimeOfDay; label: string; icon: typeof Sun }[] = [
-  { value: 'early-morning', label: 'Early Morning', icon: Sun },
-  { value: 'morning', label: 'Morning', icon: Sun },
-  { value: 'afternoon', label: 'Afternoon', icon: Sun },
-  { value: 'evening', label: 'Evening', icon: Sun },
-  { value: 'night', label: 'Night', icon: Sun },
+const timeOfDayOptions: {
+  value: TimeOfDay;
+  label: string;
+  icon: typeof Sun;
+}[] = [
+  { value: "early-morning", label: "Early Morning", icon: Sun },
+  { value: "morning", label: "Morning", icon: Sun },
+  { value: "afternoon", label: "Afternoon", icon: Sun },
+  { value: "evening", label: "Evening", icon: Sun },
+  { value: "night", label: "Night", icon: Sun },
 ];
 
-const locationOptions: { value: ActivityLocation['type']; label: string; icon: typeof MapPin }[] = [
-  { value: 'home', label: 'Home', icon: MapPin },
-  { value: 'work', label: 'Work', icon: MapPin },
-  { value: 'gym', label: 'Gym', icon: MapPin },
-  { value: 'outdoors', label: 'Outdoors', icon: MapPin },
-  { value: 'travel', label: 'Travel', icon: MapPin },
+const locationOptions: {
+  value: ActivityLocation["type"];
+  label: string;
+  icon: typeof MapPin;
+}[] = [
+  { value: "home", label: "Home", icon: MapPin },
+  { value: "work", label: "Work", icon: MapPin },
+  { value: "gym", label: "Gym", icon: MapPin },
+  { value: "outdoors", label: "Outdoors", icon: MapPin },
+  { value: "travel", label: "Travel", icon: MapPin },
 ];
 
 const moodOptions = [
-  { value: 'excited', emoji: '😊', label: 'Excited' },
-  { value: 'happy', emoji: '😄', label: 'Happy' },
-  { value: 'neutral', emoji: '😐', label: 'Neutral' },
-  { value: 'tired', emoji: '😴', label: 'Tired' },
-  { value: 'stressed', emoji: '😰', label: 'Stressed' },
+  { value: "excited", emoji: "😊", label: "Excited" },
+  { value: "happy", emoji: "😄", label: "Happy" },
+  { value: "neutral", emoji: "😐", label: "Neutral" },
+  { value: "tired", emoji: "😴", label: "Tired" },
+  { value: "stressed", emoji: "😰", label: "Stressed" },
 ];
 
-const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpen, onClose }) => {
+const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({
+  goalId,
+  isOpen,
+  onClose,
+}) => {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'quick' | 'detailed'>('quick');
-  
+  const [activeTab, setActiveTab] = useState<"quick" | "detailed">("quick");
+
   // Basic fields
-  const [value, setValue] = useState('');
-  const [note, setNote] = useState('');
-  const [activityType, setActivityType] = useState<ActivityType>('progress');
-  const [activityDate, setActivityDate] = useState(new Date().toISOString().split('T')[0]);
-  
+  const [value, setValue] = useState("");
+  const [note, setNote] = useState("");
+  const [activityType, setActivityType] = useState<ActivityType>("progress");
+  const [activityDate, setActivityDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+
   // Context fields
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | undefined>();
-  const [location, setLocation] = useState<ActivityLocation['type'] | undefined>();
+  const [location, setLocation] = useState<
+    ActivityLocation["type"] | undefined
+  >();
   const [energyLevel, setEnergyLevel] = useState<number>(5);
-  const [duration, setDuration] = useState<string>('');
+  const [duration, setDuration] = useState<string>("");
   const [difficulty, setDifficulty] = useState<number>(3);
   const [enjoyment, setEnjoyment] = useState<number>(3);
-  const [mood, setMood] = useState<string>('');
+  const [mood, setMood] = useState<string>("");
 
   const { data: goal, isLoading: goalLoading } = useQuery({
-    queryKey: ['goal', goalId],
+    queryKey: ["goal", goalId],
     queryFn: () => getGoal(goalId),
     enabled: isOpen,
   });
@@ -74,26 +87,26 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
   const logActivityMutation = useMutation({
     mutationFn: (activity: LogActivityRequest) => logActivity(goalId, activity),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['goals'] });
-      queryClient.invalidateQueries({ queryKey: ['goal', goalId] });
-      queryClient.invalidateQueries({ queryKey: ['goal-activities', goalId] });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal", goalId] });
+      queryClient.invalidateQueries({ queryKey: ["goal-activities", goalId] });
       onClose();
       resetForm();
     },
   });
 
   const resetForm = () => {
-    setValue('');
-    setNote('');
-    setActivityType('progress');
-    setActivityDate(new Date().toISOString().split('T')[0]);
+    setValue("");
+    setNote("");
+    setActivityType("progress");
+    setActivityDate(new Date().toISOString().split("T")[0]);
     setTimeOfDay(undefined);
     setLocation(undefined);
     setEnergyLevel(5);
-    setDuration('');
+    setDuration("");
     setDifficulty(3);
     setEnjoyment(3);
-    setMood('');
+    setMood("");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -101,7 +114,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
     if (!goal || !value) return;
 
     const context: ActivityContext = {};
-    
+
     if (timeOfDay) context.timeOfDay = timeOfDay;
     if (energyLevel !== 5) context.energyLevel = energyLevel;
     if (duration) context.duration = parseInt(duration);
@@ -113,7 +126,10 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
       value: parseFloat(value),
       unit: goal.target.unit,
       activityType,
-      activityDate: activityDate !== new Date().toISOString().split('T')[0] ? activityDate : undefined,
+      activityDate:
+        activityDate !== new Date().toISOString().split("T")[0]
+          ? activityDate
+          : undefined,
       note: note.trim() || undefined,
       location: location ? { type: location } : undefined,
       context: Object.keys(context).length > 0 ? context : undefined,
@@ -131,7 +147,10 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
           <div className="absolute inset-0 bg-black/60" onClick={onClose}></div>
         </div>
 
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
           &#8203;
         </span>
 
@@ -143,7 +162,9 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
           ) : (
             <>
               <div className="mb-4">
-                <h3 className="text-lg font-medium text-[var(--text)]">Log Activity</h3>
+                <h3 className="text-lg font-medium text-[var(--text)]">
+                  Log Activity
+                </h3>
                 <p className="mt-1 text-sm text-muted">{goal.title}</p>
               </div>
 
@@ -151,22 +172,22 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
               <div className="flex border-b border-[color:var(--surface-muted)] mb-4">
                 <button
                   type="button"
-                  onClick={() => setActiveTab('quick')}
+                  onClick={() => setActiveTab("quick")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === 'quick'
-                      ? 'text-primary-600 border-primary-600'
-                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                    activeTab === "quick"
+                      ? "text-primary-600 border-primary-600"
+                      : "text-gray-500 border-transparent hover:text-gray-700"
                   }`}
                 >
                   Quick Log
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('detailed')}
+                  onClick={() => setActiveTab("detailed")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === 'detailed'
-                      ? 'text-primary-600 border-primary-600'
-                      : 'text-gray-500 border-transparent hover:text-gray-700'
+                    activeTab === "detailed"
+                      ? "text-primary-600 border-primary-600"
+                      : "text-gray-500 border-transparent hover:text-gray-700"
                   }`}
                 >
                   Detailed Log
@@ -182,7 +203,14 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                       Activity Type
                     </label>
                     <div className="grid grid-cols-2 gap-2">
-                      {(['progress', 'completed', 'skipped', 'partial'] as ActivityType[]).map((type) => (
+                      {(
+                        [
+                          "progress",
+                          "completed",
+                          "skipped",
+                          "partial",
+                        ] as ActivityType[]
+                      ).map((type) => (
                         <button
                           key={type}
                           type="button"
@@ -191,8 +219,8 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                             px-3 py-2 rounded-md text-sm font-medium capitalize transition-all
                             ${
                               activityType === type
-                                ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                : 'bg-[var(--surface)] text-gray-700 border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]'
+                                ? "bg-primary-100 text-primary-800 border-primary-300"
+                                : "bg-[var(--surface)] text-gray-700 border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]"
                             }
                             border
                           `}
@@ -212,7 +240,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                       type="date"
                       value={activityDate}
                       onChange={(e) => setActivityDate(e.target.value)}
-                      max={new Date().toISOString().split('T')[0]}
+                      max={new Date().toISOString().split("T")[0]}
                     />
                   </div>
                 </div>
@@ -237,7 +265,9 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                   </div>
                   {goal.target.period && (
                     <p className="mt-1 text-xs text-gray-500">
-                      Target: {formatGoalValue(goal.target.value, goal.target.unit)} per {goal.target.period}
+                      Target:{" "}
+                      {formatGoalValue(goal.target.value, goal.target.unit)} per{" "}
+                      {goal.target.period}
                     </p>
                   )}
                 </div>
@@ -257,7 +287,7 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                 </div>
 
                 {/* Detailed Context (Only in Detailed Tab) */}
-                {activeTab === 'detailed' && (
+                {activeTab === "detailed" && (
                   <>
                     {/* Time & Location */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -277,8 +307,8 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 px-2 py-1 rounded text-xs font-medium transition-all
                                 ${
                                   timeOfDay === option.value
-                                    ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                    : 'bg-[var(--surface)] text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]'
+                                    ? "bg-primary-100 text-primary-800 border-primary-300"
+                                    : "bg-[var(--surface)] text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]"
                                 }
                                 border
                               `}
@@ -297,8 +327,8 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 px-2 py-1 rounded text-xs font-medium transition-all
                                 ${
                                   timeOfDay === option.value
-                                    ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                    : 'bg-[var(--surface)] text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]'
+                                    ? "bg-primary-100 text-primary-800 border-primary-300"
+                                    : "bg-[var(--surface)] text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]"
                                 }
                                 border
                               `}
@@ -325,8 +355,8 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 px-2 py-1 rounded text-xs font-medium transition-all
                                 ${
                                   location === option.value
-                                    ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                    : 'bg-[var(--surface)] text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]'
+                                    ? "bg-primary-100 text-primary-800 border-primary-300"
+                                    : "bg-[var(--surface)] text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]"
                                 }
                                 border
                               `}
@@ -345,8 +375,8 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 px-2 py-1 rounded text-xs font-medium transition-all
                                 ${
                                   location === option.value
-                                    ? 'bg-primary-100 text-primary-800 border-primary-300'
-                                    : 'bg-[var(--surface)] text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]'
+                                    ? "bg-primary-100 text-primary-800 border-primary-300"
+                                    : "bg-[var(--surface)] text-muted border-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]"
                                 }
                                 border
                               `}
@@ -371,7 +401,9 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                           min="1"
                           max="10"
                           value={energyLevel}
-                          onChange={(e) => setEnergyLevel(parseInt(e.target.value))}
+                          onChange={(e) =>
+                            setEnergyLevel(parseInt(e.target.value))
+                          }
                           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         />
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -395,8 +427,8 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                                 px-3 py-2 rounded-md text-xl transition-all
                                 ${
                                   mood === option.value
-                                    ? 'bg-primary-100 ring-2 ring-primary-300'
-                                    : 'bg-[var(--surface-muted)] hover:bg-[color:var(--surface-muted)]'
+                                    ? "bg-primary-100 ring-2 ring-primary-300"
+                                    : "bg-[var(--surface-muted)] hover:bg-[color:var(--surface-muted)]"
                                 }
                               `}
                               title={option.label}
@@ -434,7 +466,9 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                           min="1"
                           max="5"
                           value={difficulty}
-                          onChange={(e) => setDifficulty(parseInt(e.target.value))}
+                          onChange={(e) =>
+                            setDifficulty(parseInt(e.target.value))
+                          }
                           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         />
                       </div>
@@ -449,7 +483,9 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                           min="1"
                           max="5"
                           value={enjoyment}
-                          onChange={(e) => setEnjoyment(parseInt(e.target.value))}
+                          onChange={(e) =>
+                            setEnjoyment(parseInt(e.target.value))
+                          }
                           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         />
                       </div>
@@ -460,10 +496,10 @@ const EnhancedActivityLog: React.FC<EnhancedActivityLogProps> = ({ goalId, isOpe
                 {/* Actions */}
                 <div className="flex justify-between items-center pt-2">
                   <div className="text-sm text-gray-500">
-                    {activeTab === 'quick' && (
+                    {activeTab === "quick" && (
                       <button
                         type="button"
-                        onClick={() => setActiveTab('detailed')}
+                        onClick={() => setActiveTab("detailed")}
                         className="text-primary-600 hover:text-primary-700 font-medium"
                       >
                         Add more context →

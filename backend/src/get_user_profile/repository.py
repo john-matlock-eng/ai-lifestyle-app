@@ -8,7 +8,7 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from aws_lambda_powertools import Logger, Tracer
 
-from .models import DynamoDBUser
+from user_profile_common import DynamoDBUser
 from .errors import UserNotFoundError, DatabaseError
 
 logger = Logger()
@@ -84,6 +84,9 @@ class UserRepository:
                 date_of_birth=item.get('date_of_birth'),
                 timezone=item.get('timezone'),
                 preferences=item.get('preferences'),
+                encryption_enabled=item.get('encryption_enabled', False),
+                encryption_setup_date=item.get('encryption_setup_date'),
+                encryption_key_id=item.get('encryption_key_id'),
                 created_at=item['created_at'],
                 updated_at=item.get('updated_at', item['created_at'])
             )
@@ -184,6 +187,9 @@ class UserRepository:
                 date_of_birth=item.get('date_of_birth'),
                 timezone=item.get('timezone'),
                 preferences=item.get('preferences'),
+                encryption_enabled=item.get('encryption_enabled', False),
+                encryption_setup_date=item.get('encryption_setup_date'),
+                encryption_key_id=item.get('encryption_key_id'),
                 created_at=item['created_at'],
                 updated_at=item.get('updated_at', item['created_at'])
             )

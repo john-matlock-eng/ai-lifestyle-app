@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { loginSchema } from '../utils/validation';
-import type { LoginFormData } from '../utils/validation';
-import { authService } from '../services/authService';
-import { isApiError } from '../../../api/client';
-import { setRememberMe } from '../utils/tokenManager';
-import Input from '../../../components/common/Input';
-import Button from '../../../components/common/Button';
-import PasswordInput from './PasswordInput';
-import MfaCodeInput from './MfaCodeInput';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { loginSchema } from "../utils/validation";
+import type { LoginFormData } from "../utils/validation";
+import { authService } from "../services/authService";
+import { isApiError } from "../../../api/client";
+import { setRememberMe } from "../utils/tokenManager";
+import Input from "../../../components/common/Input";
+import Button from "../../../components/common/Button";
+import PasswordInput from "./PasswordInput";
+import MfaCodeInput from "./MfaCodeInput";
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [generalError, setGeneralError] = useState<string>('');
-  const [mfaSession, setMfaSession] = useState<{ sessionToken: string } | null>(null);
+  const [generalError, setGeneralError] = useState<string>("");
+  const [mfaSession, setMfaSession] = useState<{ sessionToken: string } | null>(
+    null,
+  );
   const [showMfa, setShowMfa] = useState(false);
 
   const {
@@ -32,64 +34,67 @@ const LoginForm: React.FC = () => {
     },
   });
 
-
-
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-      if ('mfaRequired' in data) {
+      if ("mfaRequired" in data) {
         // MFA is required
         setMfaSession({ sessionToken: data.sessionToken });
         setShowMfa(true);
       } else {
         // Login successful - refresh user data and redirect
         // The tokens are already stored by authService
-        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-        navigate('/dashboard', { replace: true });
+        queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+        navigate("/dashboard", { replace: true });
       }
     },
     onError: (error) => {
       if (isApiError(error)) {
         if (error.response?.status === 401) {
-          setError('password', {
-            message: 'Invalid email or password',
+          setError("password", {
+            message: "Invalid email or password",
           });
         } else if (error.response?.status === 429) {
-          setGeneralError('Too many login attempts. Please try again later.');
+          setGeneralError("Too many login attempts. Please try again later.");
         } else {
           setGeneralError(
-            error.response?.data?.message || 
-            'Something went wrong. Please try again.'
+            error.response?.data?.message ||
+              "Something went wrong. Please try again.",
           );
         }
       } else {
-        setGeneralError('Unable to connect to the server. Please try again.');
+        setGeneralError("Unable to connect to the server. Please try again.");
       }
     },
   });
 
   const mfaMutation = useMutation({
-    mutationFn: ({ sessionToken, code }: { sessionToken: string; code: string }) =>
-      authService.verifyMfa(sessionToken, code),
+    mutationFn: ({
+      sessionToken,
+      code,
+    }: {
+      sessionToken: string;
+      code: string;
+    }) => authService.verifyMfa(sessionToken, code),
     onSuccess: () => {
       // MFA verification successful
       // The tokens are stored by authService
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      navigate('/dashboard', { replace: true });
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      navigate("/dashboard", { replace: true });
     },
     onError: (error) => {
       if (isApiError(error)) {
         if (error.response?.status === 400) {
-          setGeneralError('Invalid verification code. Please try again.');
+          setGeneralError("Invalid verification code. Please try again.");
         } else if (error.response?.status === 401) {
           // Session expired
-          setGeneralError('Your session has expired. Please log in again.');
+          setGeneralError("Your session has expired. Please log in again.");
           setShowMfa(false);
           setMfaSession(null);
         } else {
           setGeneralError(
-            error.response?.data?.message || 
-            'Verification failed. Please try again.'
+            error.response?.data?.message ||
+              "Verification failed. Please try again.",
           );
         }
       }
@@ -97,7 +102,7 @@ const LoginForm: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    setGeneralError('');
+    setGeneralError("");
     // Set remember me preference before login
     if (data.rememberMe !== undefined) {
       setRememberMe(data.rememberMe);
@@ -107,7 +112,7 @@ const LoginForm: React.FC = () => {
 
   const handleMfaSubmit = async (code: string) => {
     if (!mfaSession) return;
-    setGeneralError('');
+    setGeneralError("");
     await mfaMutation.mutateAsync({
       sessionToken: mfaSession.sessionToken,
       code,
@@ -117,7 +122,7 @@ const LoginForm: React.FC = () => {
   const handleMfaCancel = () => {
     setShowMfa(false);
     setMfaSession(null);
-    setGeneralError('');
+    setGeneralError("");
   };
 
   if (showMfa && mfaSession) {
@@ -171,7 +176,7 @@ const LoginForm: React.FC = () => {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-muted">
-            Or{' '}
+            Or{" "}
             <Link
               to="/register"
               className="font-medium text-primary-600 hover:text-primary-500"
@@ -195,11 +200,16 @@ const LoginForm: React.FC = () => {
             label="Email address"
             type="email"
             isRequired
-            {...register('email')}
+            {...register("email")}
             error={errors.email?.message}
             autoComplete="email"
             leftIcon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -213,7 +223,7 @@ const LoginForm: React.FC = () => {
           <PasswordInput
             label="Password"
             isRequired
-            {...register('password')}
+            {...register("password")}
             error={errors.password?.message}
             autoComplete="current-password"
           />
@@ -224,9 +234,12 @@ const LoginForm: React.FC = () => {
                 id="rememberMe"
                 type="checkbox"
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
-                {...register('rememberMe')}
+                {...register("rememberMe")}
               />
-              <label htmlFor="rememberMe" className="ml-2 block text-sm text-[var(--text)]">
+              <label
+                htmlFor="rememberMe"
+                className="ml-2 block text-sm text-[var(--text)]"
+              >
                 Remember me
               </label>
             </div>
@@ -258,7 +271,9 @@ const LoginForm: React.FC = () => {
               <div className="w-full border-t border-[color:var(--surface-muted)]" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[var(--surface)] text-gray-500">Or continue with</span>
+              <span className="px-2 bg-[var(--surface)] text-gray-500">
+                Or continue with
+              </span>
             </div>
           </div>
 

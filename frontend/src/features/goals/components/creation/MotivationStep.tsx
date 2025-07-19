@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
-import type { GoalContext } from '../../types/api.types';
-import Button from '../../../../components/common/Button';
+import React, { useState } from "react";
+import type { GoalContext } from "../../types/api.types";
+import Button from "../../../../components/common/Button";
 
 interface MotivationStepProps {
   initialValues?: GoalContext;
   onComplete: (context?: GoalContext) => void;
 }
 
-const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComplete }) => {
+const MotivationStep: React.FC<MotivationStepProps> = ({
+  initialValues,
+  onComplete,
+}) => {
   const [context, setContext] = useState<GoalContext>({
-    motivation: initialValues?.motivation || '',
+    motivation: initialValues?.motivation || "",
     importanceLevel: initialValues?.importanceLevel || 3,
     obstacles: initialValues?.obstacles || [],
     successFactors: initialValues?.successFactors || [],
@@ -23,7 +26,9 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Your Motivation</h3>
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">
+          Your Motivation
+        </h3>
         <p className="text-sm text-muted">
           Understanding why this goal matters will help you stay committed.
         </p>
@@ -35,7 +40,9 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
         </label>
         <textarea
           value={context.motivation}
-          onChange={(e) => setContext({ ...context, motivation: e.target.value })}
+          onChange={(e) =>
+            setContext({ ...context, motivation: e.target.value })
+          }
           rows={3}
           className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
         />
@@ -66,8 +73,13 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
         </label>
         <input
           type="text"
-          value={context.obstacles?.join(', ') || ''}
-          onChange={(e) => setContext({ ...context, obstacles: e.target.value ? e.target.value.split(/,\s*/) : [] })}
+          value={context.obstacles?.join(", ") || ""}
+          onChange={(e) =>
+            setContext({
+              ...context,
+              obstacles: e.target.value ? e.target.value.split(/,\s*/) : [],
+            })
+          }
           className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
         />
       </div>
@@ -78,8 +90,15 @@ const MotivationStep: React.FC<MotivationStepProps> = ({ initialValues, onComple
         </label>
         <input
           type="text"
-          value={context.successFactors?.join(', ') || ''}
-          onChange={(e) => setContext({ ...context, successFactors: e.target.value ? e.target.value.split(/,\s*/) : [] })}
+          value={context.successFactors?.join(", ") || ""}
+          onChange={(e) =>
+            setContext({
+              ...context,
+              successFactors: e.target.value
+                ? e.target.value.split(/,\s*/)
+                : [],
+            })
+          }
           className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-primary-500"
         />
       </div>

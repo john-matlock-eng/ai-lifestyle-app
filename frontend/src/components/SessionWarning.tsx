@@ -1,10 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../contexts';
-import { Button } from './common';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../contexts";
+import { Button } from "./common";
 
 export const SessionWarning: React.FC = () => {
-  const { isSessionWarningActive, sessionExpiry, refreshSession, dismissSessionWarning, logout } = useAuth();
-  const [timeRemaining, setTimeRemaining] = useState<string>('');
+  const {
+    isSessionWarningActive,
+    sessionExpiry,
+    refreshSession,
+    dismissSessionWarning,
+    logout,
+  } = useAuth();
+  const [timeRemaining, setTimeRemaining] = useState<string>("");
 
   useEffect(() => {
     if (!isSessionWarningActive || !sessionExpiry) return;
@@ -12,15 +18,15 @@ export const SessionWarning: React.FC = () => {
     const updateTimeRemaining = () => {
       const now = new Date();
       const remaining = sessionExpiry.getTime() - now.getTime();
-      
+
       if (remaining <= 0) {
-        setTimeRemaining('Session expired');
+        setTimeRemaining("Session expired");
         return;
       }
 
       const minutes = Math.floor(remaining / 60000);
       const seconds = Math.floor((remaining % 60000) / 1000);
-      setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+      setTimeRemaining(`${minutes}:${seconds.toString().padStart(2, "0")}`);
     };
 
     updateTimeRemaining();
@@ -34,8 +40,11 @@ export const SessionWarning: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4 text-center">
-        <div className="fixed inset-0 bg-black/60 transition-opacity" onClick={dismissSessionWarning} />
-        
+        <div
+          className="fixed inset-0 bg-black/60 transition-opacity"
+          onClick={dismissSessionWarning}
+        />
+
         <div className="relative transform overflow-hidden rounded-lg bg-[var(--surface)] px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
           <div>
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
@@ -53,21 +62,23 @@ export const SessionWarning: React.FC = () => {
                 />
               </svg>
             </div>
-            
+
             <div className="mt-3 text-center sm:mt-5">
               <h3 className="text-base font-semibold leading-6 text-[var(--text)]">
                 Session Expiring Soon
               </h3>
               <div className="mt-2">
                 <p className="text-sm text-gray-500">
-                  Your session will expire in{' '}
-                  <span className="font-semibold text-[var(--text)]">{timeRemaining}</span>.
-                  Would you like to continue working?
+                  Your session will expire in{" "}
+                  <span className="font-semibold text-[var(--text)]">
+                    {timeRemaining}
+                  </span>
+                  . Would you like to continue working?
                 </p>
               </div>
             </div>
           </div>
-          
+
           <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
             <Button
               type="button"
@@ -79,7 +90,7 @@ export const SessionWarning: React.FC = () => {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => logout('manual')}
+              onClick={() => logout("manual")}
               className="mt-3 inline-flex w-full justify-center rounded-md bg-[var(--surface)] px-3 py-2 text-sm font-semibold text-[var(--text)] shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-[color:var(--surface-muted)] sm:col-start-1 sm:mt-0"
             >
               Log Out

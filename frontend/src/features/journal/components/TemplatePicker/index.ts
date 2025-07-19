@@ -1,1 +1,1 @@
-export { default } from './TemplatePicker';
+export { default } from "./TemplatePicker";

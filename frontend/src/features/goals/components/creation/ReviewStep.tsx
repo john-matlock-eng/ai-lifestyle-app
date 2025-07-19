@@ -1,7 +1,7 @@
-import React from 'react';
-import type { CreateGoalRequest } from '../../types/api.types';
-import { GOAL_PATTERNS, GOAL_CATEGORIES } from '../../types/ui.types';
-import Button from '../../../../components/common/Button';
+import React from "react";
+import type { CreateGoalRequest } from "../../types/api.types";
+import { GOAL_PATTERNS, GOAL_CATEGORIES } from "../../types/ui.types";
+import Button from "../../../../components/common/Button";
 
 interface ReviewStepProps {
   goalData: CreateGoalRequest;
@@ -9,14 +9,20 @@ interface ReviewStepProps {
   isSubmitting: boolean;
 }
 
-const ReviewStep: React.FC<ReviewStepProps> = ({ goalData, onSubmit, isSubmitting }) => {
+const ReviewStep: React.FC<ReviewStepProps> = ({
+  goalData,
+  onSubmit,
+  isSubmitting,
+}) => {
   const pattern = GOAL_PATTERNS[goalData.goalPattern];
-  const category = GOAL_CATEGORIES.find(c => c.value === goalData.category);
+  const category = GOAL_CATEGORIES.find((c) => c.value === goalData.category);
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-[var(--text)] mb-4">Review Your Goal</h3>
+        <h3 className="text-lg font-medium text-[var(--text)] mb-4">
+          Review Your Goal
+        </h3>
         <p className="text-sm text-muted">
           Make sure everything looks good before creating your goal.
         </p>
@@ -37,7 +43,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ goalData, onSubmit, isSubmittin
 
         {/* Title & Description */}
         <div>
-          <h4 className="text-xl font-semibold text-[var(--text)]">{goalData.title}</h4>
+          <h4 className="text-xl font-semibold text-[var(--text)]">
+            {goalData.title}
+          </h4>
           {goalData.description && (
             <p className="mt-1 text-muted">{goalData.description}</p>
           )}
@@ -64,7 +72,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ goalData, onSubmit, isSubmittin
         {/* Motivation */}
         {goalData.context?.motivation && (
           <div>
-            <span className="text-sm font-medium text-gray-500">Motivation:</span>
+            <span className="text-sm font-medium text-gray-500">
+              Motivation:
+            </span>
             <p className="text-gray-700">{goalData.context.motivation}</p>
           </div>
         )}
@@ -88,7 +98,8 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ goalData, onSubmit, isSubmittin
           </div>
           <div className="ml-3">
             <p className="text-sm text-blue-700">
-              Your goal is set to <strong>private</strong> by default. You can change visibility settings later.
+              Your goal is set to <strong>private</strong> by default. You can
+              change visibility settings later.
             </p>
           </div>
         </div>

@@ -111,6 +111,18 @@ class UserProfile(BaseModel):
         default=None,
         description="User preferences"
     )
+    encryptionEnabled: bool = Field(
+        default=False,
+        description="Whether encryption is enabled for this user"
+    )
+    encryptionSetupDate: Optional[datetime] = Field(
+        default=None,
+        description="When encryption was first set up"
+    )
+    encryptionKeyId: Optional[str] = Field(
+        default=None,
+        description="Public key ID for user's encryption key"
+    )
     createdAt: datetime = Field(
         ...,
         description="Account creation timestamp"
@@ -198,6 +210,9 @@ class DynamoDBUser(BaseModel):
     date_of_birth: Optional[str] = None
     timezone: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
+    encryption_enabled: bool = False
+    encryption_setup_date: Optional[str] = None
+    encryption_key_id: Optional[str] = None
     created_at: str
     updated_at: str
     
@@ -207,6 +222,11 @@ class DynamoDBUser(BaseModel):
         prefs = None
         if self.preferences:
             prefs = UserPreferences(**self.preferences)
+        
+        # Parse encryption setup date if it exists
+        enc_setup_date = None
+        if self.encryption_setup_date:
+            enc_setup_date = datetime.fromisoformat(self.encryption_setup_date.replace('Z', '+00:00'))
         
         return UserProfile(
             userId=self.user_id,
@@ -219,6 +239,9 @@ class DynamoDBUser(BaseModel):
             dateOfBirth=self.date_of_birth,
             timezone=self.timezone,
             preferences=prefs,
+            encryptionEnabled=self.encryption_enabled,
+            encryptionSetupDate=enc_setup_date,
+            encryptionKeyId=self.encryption_key_id,
             createdAt=datetime.fromisoformat(self.created_at.replace('Z', '+00:00')),
             updatedAt=datetime.fromisoformat(self.updated_at.replace('Z', '+00:00'))
         )

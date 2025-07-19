@@ -1,0 +1,61 @@
+/* Journal Template Picker Overrides */
+
+/* Ensure template cards have solid backgrounds and no glass effects */
+.enhanced-template-picker .template-card {
+  /* Force solid background colors */
+  background-color: var(--surface) !important;
+  /* Remove any backdrop filters */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  /* Ensure text remains readable */
+  position: relative;
+  z-index: 1;
+}
+
+/* Override any glass morphism on hover */
+.enhanced-template-picker .template-card:hover {
+  background-color: var(--surface-hover) !important;
+  /* Ensure no transparency */
+  opacity: 1 !important;
+}
+
+/* Ensure all text within template cards is readable */
+.enhanced-template-picker .template-card * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Remove any overlay effects that might interfere with readability */
+.enhanced-template-picker .template-card::before,
+.enhanced-template-picker .template-card::after {
+  display: none !important;
+}
+
+/* Specific fix for hover states */
+.enhanced-template-picker .template-card.group:hover {
+  /* Use solid colors instead of gradients */
+  background: var(--surface-hover) !important;
+  /* Ensure border is visible */
+  border-color: var(--accent) !important;
+  /* Remove any filters */
+  filter: none !important;
+}
+
+/* Fix for tag visibility */
+.enhanced-template-picker .tag {
+  background-color: var(--surface-muted) !important;
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+}
+
+/* Ensure icons remain visible */
+.enhanced-template-picker .template-card [class*="lucide"] {
+  opacity: 1 !important;
+  color: currentColor !important;
+}
+
+/* Fix for section preview dots */
+.enhanced-template-picker .template-card .w-1.h-1 {
+  background-color: var(--text-muted) !important;
+  opacity: 1 !important;
+}

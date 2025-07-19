@@ -97,12 +97,26 @@ module "users_table" {
     type = "S"
   }
 
-  global_secondary_indexes = [{
-    name            = "EmailIndex"
-    hash_key        = "gsi1_pk"
-    range_key       = "gsi1_sk"
-    projection_type = "ALL"
-  }]
+  global_secondary_indexes = [
+    {
+      name            = "EmailIndex"
+      hash_key        = "gsi1_pk"
+      range_key       = "gsi1_sk"
+      projection_type = "ALL"
+    },
+    {
+      name            = "RecipientSharesIndex"
+      hash_key        = "gsi2_pk"
+      range_key       = "gsi2_sk"
+      projection_type = "ALL"
+    },
+    {
+      name            = "ItemSharesIndex"
+      hash_key        = "gsi3_pk"
+      range_key       = "gsi3_sk"
+      projection_type = "ALL"
+    }
+  ]
 
   additional_attributes = [
     {
@@ -111,6 +125,22 @@ module "users_table" {
     },
     {
       name = "gsi1_sk"
+      type = "S"
+    },
+    {
+      name = "gsi2_pk"
+      type = "S"
+    },
+    {
+      name = "gsi2_sk"
+      type = "S"
+    },
+    {
+      name = "gsi3_pk"
+      type = "S"
+    },
+    {
+      name = "gsi3_sk"
       type = "S"
     }
   ]
@@ -126,6 +156,32 @@ module "goals_service" {
   
   tags = {
     Service = "goals"
+  }
+}
+
+# Journal Service Infrastructure
+module "journal_service" {
+  source = "./services/journal"
+
+  app_name     = "ai-lifestyle"
+  environment  = var.environment
+  aws_region   = var.aws_region
+  
+  tags = {
+    Service = "journal"
+  }
+}
+
+# Encryption Service Infrastructure
+module "encryption_service" {
+  source = "./services/encryption"
+
+  app_name     = "ai-lifestyle"
+  environment  = var.environment
+  aws_region   = var.aws_region
+  
+  tags = {
+    Service = "encryption"
   }
 }
 
@@ -149,14 +205,23 @@ module "api_lambda" {
     MAIN_TABLE_NAME = module.users_table.table_name # Same table
     # Goals environment variables
     GOAL_ATTACHMENTS_BUCKET = module.goals_service.goal_attachments_bucket_name
-    CORS_ORIGIN             = var.environment == "prod" ? "https://ailifestyle.app" : "https://d3qx4wyq22oaly.cloudfront.net"
+    # Journal environment variables
+    JOURNAL_ATTACHMENTS_BUCKET = module.journal_service.journal_attachments_bucket_name
+    # Encryption environment variables
+    AI_SERVICE_PUBLIC_KEY_PARAM = module.encryption_service.ai_service_public_key_parameter
+    AI_ANALYSIS_QUEUE_URL = module.encryption_service.ai_analysis_queue_url
+    CORS_ORIGIN                = var.environment == "prod" ? "https://ailifestyle.app" : "*"
+    # Feature flags
+    FEATURE_FLAG_DEBUG_PANELS = var.environment == "prod" ? "false" : "true"
   }
 
   additional_policies = [
     module.users_table.access_policy_arn,
     aws_iam_policy.cognito_access.arn,
     aws_iam_policy.main_table_dynamodb_access.arn,
-    aws_iam_policy.goals_s3_access.arn
+    aws_iam_policy.goals_s3_access.arn,
+    aws_iam_policy.journal_s3_access.arn,
+    aws_iam_policy.encryption_service_access.arn
   ]
 }
 
@@ -188,6 +253,11 @@ module "api_gateway" {
       authorization_type = "NONE"
     }
 
+    # Feature flags endpoint
+    "GET /config/features" = {
+      authorization_type = "NONE"
+    }
+
     # Authentication endpoints (public)
     "POST /auth/register" = {
       authorization_type = "NONE"
@@ -213,6 +283,12 @@ module "api_gateway" {
 
     # User endpoints
     "GET /users/profile" = {
+      authorization_type = "JWT"
+    }
+    "GET /users/by-email/{email}" = {
+      authorization_type = "JWT"
+    }
+    "GET /users/{userId}" = {
       authorization_type = "JWT"
     }
     "PUT /users/profile" = {
@@ -256,6 +332,72 @@ module "api_gateway" {
       authorization_type = "JWT"
     }
     "GET /goals/{goalId}/progress" = {
+      authorization_type = "JWT"
+    }
+
+    # Journal endpoints
+    "GET /journal" = {
+      authorization_type = "JWT"
+    }
+    "POST /journal" = {
+      authorization_type = "JWT"
+    }
+    "GET /journal/{entryId}" = {
+      authorization_type = "JWT"
+    }
+    "PUT /journal/{entryId}" = {
+      authorization_type = "JWT"
+    }
+    "DELETE /journal/{entryId}" = {
+      authorization_type = "JWT"
+    }
+    "GET /journal/stats" = {
+      authorization_type = "JWT"
+    }
+
+    # Share endpoints (generic - handles both encrypted and non-encrypted)
+    "POST /shares" = {
+      authorization_type = "JWT"
+    }
+    "GET /shares" = {
+      authorization_type = "JWT"
+    }
+    "DELETE /shares/{shareId}" = {
+      authorization_type = "JWT"
+    }
+    "POST /ai-shares" = {
+      authorization_type = "JWT"
+    }
+
+    # Encryption endpoints
+    "POST /encryption/setup" = {
+      authorization_type = "JWT"
+    }
+    "GET /encryption/check/{userId}" = {
+      authorization_type = "NONE"  # Public endpoint to check if user has encryption
+    }
+    "GET /encryption/user/{userId}" = {
+      authorization_type = "JWT"  # Get user's public key
+    }
+    "POST /encryption/shares" = {
+      authorization_type = "JWT"
+    }
+    "GET /encryption/shares" = {
+      authorization_type = "JWT"
+    }
+    "POST /encryption/ai-shares" = {
+      authorization_type = "JWT"
+    }
+    "DELETE /encryption/shares/{shareId}" = {
+      authorization_type = "JWT"
+    }
+    "POST /encryption/recovery" = {
+      authorization_type = "JWT"
+    }
+    "POST /encryption/recovery/attempt" = {
+      authorization_type = "NONE"  # Recovery doesn't require auth
+    }
+    "DELETE /encryption/keys" = {
       authorization_type = "JWT"
     }
   }
@@ -359,7 +501,60 @@ resource "aws_iam_policy" "goals_s3_access" {
   })
 }
 
-# Policy ARN will be referenced directly from the resource
+# IAM Policy for Journal S3 access
+resource "aws_iam_policy" "journal_s3_access" {
+  name        = "ai-lifestyle-journal-s3-${var.environment}"
+  description = "Policy for Lambda to access Journal S3 bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          module.journal_service.journal_attachments_bucket_arn,
+          "${module.journal_service.journal_attachments_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# IAM Policy for Encryption Service access
+resource "aws_iam_policy" "encryption_service_access" {
+  name        = "ai-lifestyle-encryption-${var.environment}"
+  description = "Policy for Lambda to access encryption service resources"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters"
+        ]
+        Resource = [
+          "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/ai-lifestyle-app/ai-service/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = module.encryption_service.ai_analysis_queue_arn
+      }
+    ]
+  })
+}
 
 # Outputs
 output "ecr_repository_url" {
@@ -410,4 +605,19 @@ output "main_table_name" {
 output "goal_attachments_bucket_name" {
   description = "Goal attachments S3 bucket name"
   value       = module.goals_service.goal_attachments_bucket_name
+}
+
+output "journal_attachments_bucket_name" {
+  description = "Journal attachments S3 bucket name"
+  value       = module.journal_service.journal_attachments_bucket_name
+}
+
+output "ai_analysis_queue_url" {
+  description = "AI analysis SQS queue URL"
+  value       = module.encryption_service.ai_analysis_queue_url
+}
+
+output "encryption_log_group_name" {
+  description = "CloudWatch log group for encryption service"
+  value       = module.encryption_service.encryption_log_group_name
 }

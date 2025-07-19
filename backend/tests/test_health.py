@@ -2,7 +2,13 @@
 Tests for health check Lambda
 """
 import json
-from src.health import handler
+import os
+
+# Set environment variables before importing
+os.environ['ENVIRONMENT'] = 'test'
+os.environ['USERS_TABLE_NAME'] = 'users-test'
+
+from health import handler
 
 
 def test_health_check_success(lambda_context, api_gateway_event, mock_dynamodb):

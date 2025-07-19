@@ -1,182 +1,128 @@
 # AI Lifestyle App - Frontend
 
-## 🚀 Quick Start
+## Overview
+This is the frontend application for the AI Lifestyle App, built with React, TypeScript, and Vite.
+
+## Documentation
+
+### 📚 Essential Reading
+1. **[Frontend Architecture Guide](./CLAUDE.md)** - Complete overview of the frontend architecture, patterns, and best practices
+2. **[TypeScript Guide](./TYPESCRIPT_GUIDE.md)** - Understanding our type system and avoiding common type errors
+3. **[Quick Reference](./QUICK_REFERENCE.md)** - Cheat sheet for common imports and patterns
+
+### 🔧 Feature Documentation
+- **[Journal Developer Guide](./src/features/journal/JOURNAL_DEVELOPER_GUIDE.md)** - Deep dive into the journal feature
+
+## Quick Start
 
 ### Prerequisites
-- Node.js 20+ (required by Vite 7 and react-router-dom)
-- npm 8+
-- Git
+- Node.js 18+
+- npm or yarn
 
 ### Installation
-
-**Note**: This project uses React 19. Some packages require `--legacy-peer-deps` flag.
-
-1. Install dependencies:
 ```bash
-# Recommended: Use fix-deps script to handle platform-specific issues
-npm run fix-deps
+# Install dependencies
+npm install
 
-# Or install manually with legacy peer deps
-npm install --legacy-peer-deps
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API URL
 ```
-
-2. Initialize MSW (for API mocking):
-```bash
-npm run msw:init
-```
-
-3. Start the development server:
-```bash
-npm run dev
-```
-
-The app will open at http://localhost:3000
-
-## 🧪 Test Accounts
-
-| Type | Email | Password | Notes |
-|------|-------|----------|-------|
-| Regular | user@example.com | ExistingP@ss123 | Standard login |
-| MFA | mfa@example.com | MfaUserP@ss123 | Requires 6-digit code |
-
-## 🎨 Features
-
-### Authentication System (✅ Complete)
-- User registration with validation
-- Login with optional 2FA
-- Protected routes
-- Session management
-- Professional navigation
-
-### Coming Soon
-- 2FA setup interface
-- Password reset flow
-- Profile management
-- Settings pages
-
-## 📁 Project Structure
-
-```
-src/
-├── api/                 # API client and configuration
-│   └── client.ts       # Axios instance with interceptors
-├── components/         # Reusable UI components
-│   ├── common/        # Generic components (Button, Input, etc.)
-│   └── layout/        # Layout components (Header, Footer, etc.)
-├── features/          # Feature-based modules
-│   └── auth/         # Authentication feature
-│       ├── components/   # Auth-specific components
-│       ├── hooks/       # Auth-specific hooks
-│       ├── services/    # API services
-│       ├── types/       # TypeScript types
-│       └── utils/       # Auth utilities
-├── hooks/             # Global custom hooks
-├── pages/             # Page components (route endpoints)
-├── types/             # Global TypeScript types
-└── utils/             # Global utilities
-```
-
-## 🔧 Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run test` - Run tests
-- `npm run test:ui` - Run tests with UI
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
-- `npm run type-check` - Check TypeScript types
-- `npm run fix-deps` - Fix dependency issues (platform-specific)
-
-## 🚨 Troubleshooting
-
-See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for common issues and solutions.
-
-**Quick fixes:**
-- Rollup platform errors: Run `npm run fix-deps`
-- React 19 compatibility: Always use `--legacy-peer-deps`
-- Test failures: Ensure Node 20+ is installed
-
-## 🎨 Design System
-
-We use Tailwind CSS with a custom color palette:
-
-- **Primary**: Blue (#2196f3)
-- **Error**: Red (#f44336)
-- **Success**: Green (#4caf50)
-- **Neutral**: Gray scale
-
-## 🧪 Testing
-
-Run tests with:
-```bash
-npm run test
-```
-
-For UI testing:
-```bash
-npm run test:ui
-```
-
-## 📝 Code Style
-
-- TypeScript for type safety
-- React Hook Form for forms
-- Zod for validation
-- React Query for server state
-- Tailwind CSS for styling
-- ESLint + Prettier for code formatting
-
-## 🔐 Authentication Flow
-
-1. **Registration**: `/register`
-   - Email/password validation
-   - Real-time password strength indicator
-   - Success page with email verification instructions
-
-2. **Login**: `/login` (coming soon)
-   - Email/password authentication
-   - 2FA support
-   - Remember me option
-
-3. **Protected Routes**: Wrapped with `ProtectedRoute` component
-   - Automatic token refresh
-   - Redirect to login on unauthorized
-
-## 🚀 Deployment
 
 ### Development
 ```bash
-npm run build:dev
-# Deploy to S3/CloudFront dev environment
+# Start development server
+npm run dev
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+
+# Format code
+npm run format
 ```
 
-### Production
+### Building
 ```bash
+# Build for production
 npm run build
-# Deploy to S3/CloudFront production
+
+# Preview production build
+npm run preview
 ```
 
-## 📚 Key Dependencies
+## Project Structure
+```
+frontend/
+├── src/
+│   ├── api/              # API client functions
+│   ├── components/       # Shared components
+│   ├── contexts/         # React contexts
+│   ├── features/         # Feature modules
+│   ├── hooks/           # Custom hooks
+│   ├── services/        # Business logic
+│   ├── styles/          # Global styles
+│   ├── types/           # TypeScript types (IMPORTANT: Always use these!)
+│   └── utils/           # Utilities
+├── public/              # Static assets
+└── index.html          
+```
 
-- **React 19**: UI library
-- **Vite**: Build tool
-- **React Router**: Client-side routing
-- **React Hook Form**: Form handling
-- **Zod**: Schema validation
-- **React Query**: Server state management
-- **Axios**: HTTP client
-- **Tailwind CSS**: Utility-first CSS
-- **Radix UI**: Accessible UI primitives
+## Key Technologies
+- **React 18** - UI library
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **React Query** - Server state management
+- **React Router** - Routing
+- **Tailwind CSS** - Styling
+- **React Hook Form** - Forms
+- **Zod** - Validation
 
-## 🤝 Contributing
+## Common Commands
+```bash
+# Install a new package
+npm install package-name
 
-1. Follow the existing code structure
-2. Use TypeScript for all new code
-3. Write tests for new features
-4. Update documentation as needed
-5. Run linter before committing
+# Add types for a package
+npm install --save-dev @types/package-name
 
-## 📞 Support
+# Check for outdated packages
+npm outdated
 
-For questions or issues, contact the AI Lifestyle team.
+# Update packages
+npm update
+```
+
+## Troubleshooting
+
+### Type Errors
+See [TypeScript Guide](./TYPESCRIPT_GUIDE.md) for common type issues and solutions.
+
+### Build Errors
+1. Clear node_modules: `rm -rf node_modules && npm install`
+2. Clear build cache: `rm -rf dist .vite`
+3. Check TypeScript: `npm run type-check`
+
+### Import Errors
+- Always use absolute imports: `@/components/...`
+- Import types from `@/types/...`
+- See [Quick Reference](./QUICK_REFERENCE.md) for import patterns
+
+## Contributing
+1. Read the documentation files above
+2. Follow existing patterns
+3. Ensure TypeScript types are correct
+4. Test your changes thoroughly
+5. Update documentation if needed
+
+## Support
+For questions or issues:
+1. Check the documentation
+2. Look for similar patterns in the codebase
+3. Check TypeScript errors carefully
+4. Create an issue with details
+
+## License
+Private - All rights reserved

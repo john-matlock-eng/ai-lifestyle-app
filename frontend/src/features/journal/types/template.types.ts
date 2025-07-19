@@ -3,7 +3,7 @@ export interface SectionDefinition {
   title: string;
   prompt: string;
   type?: string;
-  defaultPrivacy?: 'private' | 'ai' | 'shared' | 'public';
+  defaultPrivacy?: "private" | "ai" | "shared" | "public";
   aiPrompt?: string;
 }
 

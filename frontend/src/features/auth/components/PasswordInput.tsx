@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import Input from '../../../components/common/Input';
-import type { InputProps } from '../../../components/common/Input';
+import React, { useState } from "react";
+import Input from "../../../components/common/Input";
+import type { InputProps } from "../../../components/common/Input";
 
-export interface PasswordInputProps extends Omit<InputProps, 'type' | 'rightIcon'> {
+export interface PasswordInputProps
+  extends Omit<InputProps, "type" | "rightIcon"> {
   showToggle?: boolean;
 }
 
@@ -15,11 +16,16 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
         type="button"
         onClick={() => setShowPassword(!showPassword)}
         className="text-gray-400 hover:text-muted focus:outline-none focus:text-muted"
-        aria-label={showPassword ? 'Hide password' : 'Show password'}
+        aria-label={showPassword ? "Hide password" : "Show password"}
       >
         {showPassword ? (
           // Eye off icon
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -29,7 +35,12 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
           </svg>
         ) : (
           // Eye icon
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -50,14 +61,14 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
     return (
       <Input
         ref={ref}
-        type={showPassword ? 'text' : 'password'}
+        type={showPassword ? "text" : "password"}
         rightIcon={toggleIcon}
         {...props}
       />
     );
-  }
+  },
 );
 
-PasswordInput.displayName = 'PasswordInput';
+PasswordInput.displayName = "PasswordInput";
 
 export default PasswordInput;

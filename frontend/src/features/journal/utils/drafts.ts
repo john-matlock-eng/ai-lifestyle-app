@@ -1,4 +1,4 @@
-const PREFIX = 'journal-draft-';
+const PREFIX = "journal-draft-";
 
 export function purgeOldDrafts(days = 14) {
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;

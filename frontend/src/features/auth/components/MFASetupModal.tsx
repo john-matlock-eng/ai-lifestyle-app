@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { authService } from '../services/authService';
-import QRCodeDisplay from './QRCodeDisplay';
-import BackupCodesDisplay from './BackupCodesDisplay';
-import SetupInstructions from './SetupInstructions';
-import MfaCodeInput from './MfaCodeInput';
-import Button from '../../../components/common/Button';
-import { isApiError } from '../../../api/client';
+import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { authService } from "../services/authService";
+import QRCodeDisplay from "./QRCodeDisplay";
+import BackupCodesDisplay from "./BackupCodesDisplay";
+import SetupInstructions from "./SetupInstructions";
+import MfaCodeInput from "./MfaCodeInput";
+import Button from "../../../components/common/Button";
+import { isApiError } from "../../../api/client";
 
 interface MFASetupModalProps {
   isOpen: boolean;
@@ -14,7 +14,7 @@ interface MFASetupModalProps {
   onSuccess: () => void;
 }
 
-type SetupStep = 'instructions' | 'qrcode' | 'verify' | 'backup-codes';
+type SetupStep = "instructions" | "qrcode" | "verify" | "backup-codes";
 
 // Simple modal component as a temporary replacement for @headlessui/react Dialog
 const SimpleModal: React.FC<{
@@ -29,7 +29,7 @@ const SimpleModal: React.FC<{
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black bg-opacity-25" onClick={onClose} />
-      
+
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-[var(--surface)] p-6 text-left shadow-xl">
@@ -48,13 +48,13 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const [step, setStep] = useState<SetupStep>('instructions');
+  const [step, setStep] = useState<SetupStep>("instructions");
   const [setupData, setSetupData] = useState<{
     secret: string;
     qrCode: string;
     backupCodes?: string[];
   } | null>(null);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   // Setup MFA mutation
   const setupMutation = useMutation({
@@ -65,18 +65,21 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({
         qrCode: data.qrCodeUrl,
         backupCodes: data.backupCodes,
       });
-      setStep('qrcode');
-      setError('');
+      setStep("qrcode");
+      setError("");
     },
     onError: (error) => {
       if (isApiError(error)) {
         if (error.response?.status === 409) {
-          setError('Two-factor authentication is already enabled.');
+          setError("Two-factor authentication is already enabled.");
         } else {
-          setError(error.response?.data?.message || 'Failed to setup 2FA. Please try again.');
+          setError(
+            error.response?.data?.message ||
+              "Failed to setup 2FA. Please try again.",
+          );
         }
       } else {
-        setError('Unable to connect to the server. Please try again.');
+        setError("Unable to connect to the server. Please try again.");
       }
     },
   });
@@ -85,14 +88,14 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({
   const verifyMutation = useMutation({
     mutationFn: authService.verifyMfaSetup,
     onSuccess: () => {
-      setStep('backup-codes');
-      setError('');
+      setStep("backup-codes");
+      setError("");
     },
     onError: (error) => {
       if (isApiError(error)) {
-        setError('Invalid verification code. Please try again.');
+        setError("Invalid verification code. Please try again.");
       } else {
-        setError('Unable to verify. Please try again.');
+        setError("Unable to verify. Please try again.");
       }
     },
   });
@@ -111,25 +114,30 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({
   };
 
   const handleClose = () => {
-    setStep('instructions');
+    setStep("instructions");
     setSetupData(null);
-    setError('');
+    setError("");
     onClose();
   };
 
   const getModalTitle = () => {
     switch (step) {
-      case 'instructions': return 'Set Up Two-Factor Authentication';
-      case 'qrcode': return 'Scan QR Code';
-      case 'verify': return 'Verify Your Setup';
-      case 'backup-codes': return 'Save Your Backup Codes';
-      default: return '';
+      case "instructions":
+        return "Set Up Two-Factor Authentication";
+      case "qrcode":
+        return "Scan QR Code";
+      case "verify":
+        return "Verify Your Setup";
+      case "backup-codes":
+        return "Save Your Backup Codes";
+      default:
+        return "";
     }
   };
 
   const renderStepContent = () => {
     switch (step) {
-      case 'instructions':
+      case "instructions":
         return (
           <>
             <SetupInstructions />
@@ -144,19 +152,19 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({
           </>
         );
 
-      case 'qrcode':
+      case "qrcode":
         return setupData ? (
           <>
             <QRCodeDisplay
               qrCode={setupData.qrCode}
               secret={setupData.secret}
-              onContinue={() => setStep('verify')}
-              onBack={() => setStep('instructions')}
+              onContinue={() => setStep("verify")}
+              onBack={() => setStep("instructions")}
             />
           </>
         ) : null;
 
-      case 'verify':
+      case "verify":
         return (
           <>
             <div className="text-center mb-6">
@@ -164,19 +172,20 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({
                 Verify Your Setup
               </h3>
               <p className="mt-2 text-sm text-muted">
-                Enter the 6-digit code from your authenticator app to complete setup
+                Enter the 6-digit code from your authenticator app to complete
+                setup
               </p>
             </div>
             <MfaCodeInput
               onSubmit={handleVerify}
-              onCancel={() => setStep('qrcode')}
+              onCancel={() => setStep("qrcode")}
               isLoading={verifyMutation.isPending}
               error={error}
             />
           </>
         );
 
-      case 'backup-codes':
+      case "backup-codes":
         return setupData?.backupCodes ? (
           <BackupCodesDisplay
             codes={setupData.backupCodes}
@@ -192,7 +201,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({
       onClose={() => {}} // Don't allow closing by clicking backdrop
       title={getModalTitle()}
     >
-      {error && step !== 'verify' && (
+      {error && step !== "verify" && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm text-red-800">{error}</p>
         </div>

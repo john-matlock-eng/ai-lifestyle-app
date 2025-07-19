@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ProgressRingProps {
   progress: number; // 0-100
@@ -15,10 +15,10 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   progress,
   size = 120,
   strokeWidth = 8,
-  color = '#3B82F6',
-  backgroundColor = '#E5E7EB',
+  color = "#3B82F6",
+  backgroundColor = "var(--surface-muted)",
   showPercentage = true,
-  className = '',
+  className = "",
   children,
 }) => {
   // Ensure progress is between 0 and 100
@@ -29,7 +29,9 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   const strokeDashoffset = circumference - (safeProgress / 100) * circumference;
 
   return (
-    <div className={`relative inline-flex items-center justify-center ${className}`}>
+    <div
+      className={`relative inline-flex items-center justify-center ${className}`}
+    >
       <svg
         width={size}
         height={size}
@@ -45,7 +47,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
           strokeWidth={strokeWidth}
           fill="none"
         />
-        
+
         {/* Progress circle */}
         <circle
           cx={size / 2}
@@ -59,10 +61,11 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
           strokeLinecap="round"
           className="transition-all duration-500 ease-out"
           style={{
-            filter: progress > 0 ? `drop-shadow(0 0 6px ${color}40)` : undefined,
+            filter:
+              progress > 0 ? `drop-shadow(0 0 6px ${color}40)` : undefined,
           }}
         />
-        
+
         {/* Completion celebration effect */}
         {safeProgress === 100 && (
           <circle
@@ -78,7 +81,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
           />
         )}
       </svg>
-      
+
       {/* Center content */}
       <div className="absolute flex flex-col items-center justify-center">
         {showPercentage && !children && (
@@ -96,42 +99,48 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
 };
 
 // Compound component for goal-specific progress
-interface GoalProgressRingProps extends Omit<ProgressRingProps, 'children' | 'progress'> {
+interface GoalProgressRingProps
+  extends Omit<ProgressRingProps, "children" | "progress"> {
   current: number;
   target: number;
   unit: string;
-  goalType?: 'recurring' | 'milestone' | 'target' | 'limit' | 'streak';
+  goalType?: "recurring" | "milestone" | "target" | "limit" | "streak";
 }
 
 export const GoalProgressRing: React.FC<GoalProgressRingProps> = ({
   current,
   target,
   unit,
-  goalType = 'recurring',
+  goalType = "recurring",
   ...ringProps
 }) => {
   const progress = target > 0 ? (current / target) * 100 : 0;
   const isOverTarget = current > target;
-  
+
   // Adjust color for limit goals when over target
-  const color = goalType === 'limit' && isOverTarget 
-    ? '#EF4444' // Red for exceeded limits
-    : ringProps.color;
+  const color =
+    goalType === "limit" && isOverTarget
+      ? "var(--error)" // Red for exceeded limits
+      : ringProps.color;
 
   return (
-    <ProgressRing {...ringProps} progress={Math.min(progress, 100)} color={color}>
+    <ProgressRing
+      {...ringProps}
+      progress={Math.min(progress, 100)}
+      color={color}
+    >
       <div className="text-center">
         <div
           className="text-xl font-bold"
-          style={{ color: progress > 0 ? color : '#E5E7EB' }}
+          style={{ color: progress > 0 ? color : "var(--text-muted)" }}
         >
           {current.toFixed(2)}
         </div>
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-[var(--text-muted)]">
           of {target.toFixed(2)} {unit}
         </div>
-        {isOverTarget && goalType !== 'limit' && (
-          <div className="text-xs text-green-600 font-medium mt-1">
+        {isOverTarget && goalType !== "limit" && (
+          <div className="text-xs text-[var(--success)] font-medium mt-1">
             +{(current - target).toFixed(2)}
           </div>
         )}
@@ -145,7 +154,7 @@ export const MiniProgressRing: React.FC<{
   progress: number;
   color?: string;
   size?: number;
-}> = ({ progress, color = '#3B82F6', size = 40 }) => {
+}> = ({ progress, color = "#3B82F6", size = 40 }) => {
   return (
     <ProgressRing
       progress={progress}

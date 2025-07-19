@@ -1,5 +1,5 @@
-import React from 'react';
-import Button from './common/Button';
+import React from "react";
+import Button from "./common/Button";
 
 const ThemeShowcase: React.FC = () => {
   return (
@@ -39,23 +39,17 @@ const ThemeShowcase: React.FC = () => {
 
       {/* Buttons Showcase */}
       <div className="bg-surface p-6 rounded-xl hover-lift space-y-4">
-        <h2 className="text-2xl font-semibold text-theme">Interactive Elements</h2>
+        <h2 className="text-2xl font-semibold text-theme">
+          Interactive Elements
+        </h2>
         <div className="flex flex-wrap gap-3">
           <Button variant="primary" className="animate-pulse-glow">
             Primary Action
           </Button>
-          <Button variant="secondary">
-            Secondary
-          </Button>
-          <Button variant="outline">
-            Outline
-          </Button>
-          <Button variant="ghost">
-            Ghost Button
-          </Button>
-          <Button variant="danger">
-            Danger
-          </Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="ghost">Ghost Button</Button>
+          <Button variant="danger">Danger</Button>
         </div>
       </div>
 
@@ -65,13 +59,15 @@ const ThemeShowcase: React.FC = () => {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">🎯</span>
-              <h3 className="font-semibold text-lg text-theme">Daily Exercise Goal</h3>
+              <h3 className="font-semibold text-lg text-theme">
+                Daily Exercise Goal
+              </h3>
               <span className="text-xs px-2 py-1 bg-surface-muted text-muted rounded-full">
                 Fitness
               </span>
             </div>
             <p className="text-secondary mb-3">Complete 30 minutes of cardio</p>
-            
+
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
@@ -79,9 +75,9 @@ const ThemeShowcase: React.FC = () => {
                 <span className="text-accent font-medium">75%</span>
               </div>
               <div className="h-2 bg-surface-muted rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] animate-shimmer"
-                  style={{ width: '75%' }}
+                  style={{ width: "75%" }}
                 />
               </div>
             </div>
@@ -103,32 +99,68 @@ const ThemeShowcase: React.FC = () => {
       <div className="grid md:grid-cols-3 gap-4">
         <div className="bg-success-bg border border-[var(--success)] p-4 rounded-lg">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-[var(--success)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-5 h-5 text-[var(--success)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <span className="font-medium text-[var(--success)]">Success!</span>
           </div>
-          <p className="text-sm text-[var(--success)] mt-1">Goal completed successfully</p>
+          <p className="text-sm text-[var(--success)] mt-1">
+            Goal completed successfully
+          </p>
         </div>
-        
+
         <div className="bg-warning-bg border border-[var(--warning)] p-4 rounded-lg">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-[var(--warning)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              className="w-5 h-5 text-[var(--warning)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
             <span className="font-medium text-[var(--warning)]">Warning</span>
           </div>
-          <p className="text-sm text-[var(--warning)] mt-1">Approaching deadline</p>
+          <p className="text-sm text-[var(--warning)] mt-1">
+            Approaching deadline
+          </p>
         </div>
-        
+
         <div className="bg-error-bg border border-[var(--error)] p-4 rounded-lg">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-[var(--error)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-5 h-5 text-[var(--error)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             <span className="font-medium text-[var(--error)]">Error</span>
           </div>
-          <p className="text-sm text-[var(--error)] mt-1">Failed to sync data</p>
+          <p className="text-sm text-[var(--error)] mt-1">
+            Failed to sync data
+          </p>
         </div>
       </div>
 

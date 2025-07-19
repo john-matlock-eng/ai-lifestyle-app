@@ -28,8 +28,27 @@ from archive_goal.handler import lambda_handler as archive_goal_handler
 from log_activity.handler import lambda_handler as log_activity_handler
 from list_activities.handler import lambda_handler as list_activities_handler
 from get_progress.handler import lambda_handler as get_progress_handler
-# Future imports:
-# from update_user_profile.handler import lambda_handler as update_user_profile_handler
+# Journal endpoints
+from create_journal_entry.handler import lambda_handler as create_journal_entry_handler
+from get_journal_entry.handler import lambda_handler as get_journal_entry_handler
+from list_journal_entries.handler import lambda_handler as list_journal_entries_handler
+from update_journal_entry.handler import lambda_handler as update_journal_entry_handler
+from delete_journal_entry.handler import lambda_handler as delete_journal_entry_handler
+from get_journal_stats.handler import lambda_handler as get_journal_stats_handler
+from update_user_profile.handler import lambda_handler as update_user_profile_handler
+from get_user_by_email.handler import lambda_handler as get_user_by_email_handler
+from get_user_by_id.handler import lambda_handler as get_user_by_id_handler
+# Encryption endpoints
+from setup_encryption.handler import lambda_handler as setup_encryption_handler
+from check_encryption.handler import lambda_handler as check_encryption_handler
+from get_user_public_key.handler import lambda_handler as get_user_public_key_handler
+from create_share.handler import lambda_handler as create_share_handler
+from create_ai_share.handler import lambda_handler as create_ai_share_handler
+from list_shares.handler import lambda_handler as list_shares_handler
+from revoke_share.handler import lambda_handler as revoke_share_handler
+from setup_recovery.handler import lambda_handler as setup_recovery_handler
+from delete_encryption_keys.handler import lambda_handler as delete_encryption_keys_handler
+from get_feature_flags import lambda_handler as get_feature_flags_handler
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -48,14 +67,23 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     sanitized_event = {
         "httpMethod": event.get("httpMethod"),
         "path": event.get("path"),
+        "rawPath": event.get("rawPath"),
+        "resource": event.get("resource"),
         "headers": "<redacted>",
         "requestContext": {
             "requestId": event.get("requestContext", {}).get("requestId"),
             "accountId": event.get("requestContext", {}).get("accountId"),
-            "stage": event.get("requestContext", {}).get("stage")
+            "stage": event.get("requestContext", {}).get("stage"),
+            "path": event.get("requestContext", {}).get("path"),
+            "http": event.get("requestContext", {}).get("http", {})
         } if "requestContext" in event else None
     }
     print(f"Incoming request: {json.dumps(sanitized_event)}")
+    
+    # Additional debug logging
+    print(f"Event keys: {list(event.keys())}")
+    if "requestContext" in event:
+        print(f"RequestContext keys: {list(event['requestContext'].keys())}")
     
     # Try to extract HTTP method and path for both v1 and v2 formats
     # API Gateway v2 (HTTP API) format
@@ -69,6 +97,13 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     elif "httpMethod" in event:
         http_method = event.get("httpMethod", "").upper()
         path = event.get("path", "")
+        
+        # Check if stage is in the path (API Gateway REST API with stages)
+        # Extract stage from requestContext if available
+        stage = event.get("requestContext", {}).get("stage")
+        if stage and path.startswith(f"/{stage}"):
+            print(f"Removing stage '{stage}' from path: {path}")
+            path = path[len(stage)+1:]  # Remove stage prefix
     else:
         # Unknown format, try to get from top-level
         http_method = event.get("httpMethod", event.get("method", "")).upper()
@@ -83,12 +118,15 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # Define routing table
     routes = {
         "GET /health": health_check_handler,
+        "GET /config/features": get_feature_flags_handler,  # Feature flags
         "POST /auth/register": register_user_handler,
         "POST /auth/register-test": register_user_handler_minimal,  # Test minimal handler
         "POST /auth/login": login_user_handler,
         "GET /debug": debug_handler,  # Debug endpoint to inspect events
         "POST /auth/refresh": refresh_token_handler,
         "GET /users/profile": get_user_profile_handler,
+        "GET /users/by-email/{email}": get_user_by_email_handler,
+        "GET /users/{userId}": get_user_by_id_handler,
         "POST /auth/email/verify": verify_email_handler,
         "POST /auth/mfa/setup": setup_mfa_handler,
         "POST /auth/mfa/verify-setup": verify_mfa_setup_handler,
@@ -102,7 +140,29 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "GET /goals/{goalId}/activities": list_activities_handler,
         "POST /goals/{goalId}/activities": log_activity_handler,
         "GET /goals/{goalId}/progress": get_progress_handler,
-        # "PUT /users/profile": update_user_profile_handler,
+        # Journal endpoints
+        "GET /journal": list_journal_entries_handler,
+        "POST /journal": create_journal_entry_handler,
+        "GET /journal/{entryId}": get_journal_entry_handler,
+        "PUT /journal/{entryId}": update_journal_entry_handler,
+        "DELETE /journal/{entryId}": delete_journal_entry_handler,
+        "GET /journal/stats": get_journal_stats_handler,
+        "PUT /users/profile": update_user_profile_handler,
+        # Encryption endpoints
+        "POST /encryption/setup": setup_encryption_handler,
+        "GET /encryption/check/{userId}": check_encryption_handler,
+        "GET /encryption/user/{userId}": get_user_public_key_handler,
+        "POST /encryption/shares": create_share_handler,
+        "GET /encryption/shares": list_shares_handler,
+        "POST /encryption/ai-shares": create_ai_share_handler,
+        "DELETE /encryption/shares/{shareId}": revoke_share_handler,
+        # Share endpoints (generic - handles both encrypted and non-encrypted)
+        "POST /shares": create_share_handler,
+        "GET /shares": list_shares_handler,
+        "POST /ai-shares": create_ai_share_handler,
+        "DELETE /shares/{shareId}": revoke_share_handler,
+        "POST /encryption/recovery": setup_recovery_handler,
+        "DELETE /encryption/keys": delete_encryption_keys_handler,
     }
     
     # Find and execute the appropriate handler
@@ -141,6 +201,92 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         handler = log_activity_handler
                 elif path_parts[3] == 'progress' and http_method == 'GET':
                     handler = get_progress_handler
+        
+        # Check for journal-specific routes with {entryId}
+        elif len(path_parts) >= 3 and path_parts[1] == 'journal':
+            # Check if this is /journal/stats first (no path parameter)
+            if len(path_parts) == 3 and path_parts[2] == 'stats' and http_method == 'GET':
+                handler = get_journal_stats_handler
+            # Otherwise, treat as journal entry ID
+            elif len(path_parts) == 3:
+                # Extract entryId for path parameter
+                entry_id = path_parts[2]
+                
+                # Add path parameters to event if not present
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['entryId'] = entry_id
+                
+                # /journal/{entryId}
+                if http_method == 'GET':
+                    handler = get_journal_entry_handler
+                elif http_method == 'PUT':
+                    handler = update_journal_entry_handler
+                elif http_method == 'DELETE':
+                    handler = delete_journal_entry_handler
+        
+        # Check for share-specific routes (generic endpoint)
+        elif len(path_parts) >= 3 and path_parts[1] == 'shares':
+            # /shares/{shareId}
+            share_id = path_parts[2]
+            if 'pathParameters' not in event:
+                event['pathParameters'] = {}
+            event['pathParameters']['shareId'] = share_id
+            if http_method == 'DELETE':
+                handler = revoke_share_handler
+        
+        # Check for AI share routes
+        elif path == '/ai-shares' and http_method == 'POST':
+            handler = create_ai_share_handler
+        
+        # Check for encryption-specific routes with parameters
+        elif len(path_parts) >= 3 and path_parts[1] == 'encryption':
+            if len(path_parts) >= 4 and path_parts[2] == 'check':
+                # /encryption/check/{userId}
+                user_id = path_parts[3]
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['userId'] = user_id
+                if http_method == 'GET':
+                    handler = check_encryption_handler
+            elif len(path_parts) >= 4 and path_parts[2] == 'user':
+                # /encryption/user/{userId}
+                user_id = path_parts[3]
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['userId'] = user_id
+                if http_method == 'GET':
+                    handler = get_user_public_key_handler
+            elif len(path_parts) >= 4 and path_parts[2] == 'shares':
+                # /encryption/shares/{shareId}
+                share_id = path_parts[3]
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['shareId'] = share_id
+                if http_method == 'DELETE':
+                    handler = revoke_share_handler
+        
+        # Check for user-specific routes with email parameter
+        elif len(path_parts) >= 4 and path_parts[1] == 'users' and path_parts[2] == 'by-email':
+            # /users/by-email/{email}
+            email = path_parts[3]
+            if 'pathParameters' not in event:
+                event['pathParameters'] = {}
+            event['pathParameters']['email'] = email
+            if http_method == 'GET':
+                handler = get_user_by_email_handler
+        
+        # Check for user-specific routes with userId parameter
+        elif len(path_parts) == 3 and path_parts[1] == 'users':
+            # /users/{userId}
+            user_id = path_parts[2]
+            # Skip if it's a known static route
+            if user_id not in ['profile', 'by-email']:
+                if 'pathParameters' not in event:
+                    event['pathParameters'] = {}
+                event['pathParameters']['userId'] = user_id
+                if http_method == 'GET':
+                    handler = get_user_by_id_handler
     
     if handler:
         # Ensure the event has the expected format for handlers

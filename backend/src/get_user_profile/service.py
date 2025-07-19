@@ -5,7 +5,7 @@ Business logic service for user profile operations.
 from typing import Optional
 from aws_lambda_powertools import Logger, Tracer
 
-from .models import UserProfile
+from user_profile_common import UserProfile
 from .repository import UserRepository
 from .cognito_client import CognitoClient
 from .errors import ProfileError, UnauthorizedError

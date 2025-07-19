@@ -1,0 +1,36 @@
+/* Goal Pattern Selector Overrides */
+
+/* Ensure pattern cards have solid backgrounds */
+.pattern-selector button {
+  /* Force solid background colors */
+  background-color: var(--surface) !important;
+  /* Remove any backdrop filters */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  /* Ensure text remains readable */
+  opacity: 1 !important;
+}
+
+/* Override hover states to use solid colors */
+.pattern-selector button:hover {
+  background-color: var(--surface-hover) !important;
+  opacity: 1 !important;
+}
+
+/* Ensure all text is readable */
+.pattern-selector button * {
+  position: relative;
+  z-index: 1;
+  opacity: 1 !important;
+}
+
+/* Fix for selected state backgrounds */
+.pattern-selector button[data-selected="true"] {
+  opacity: 1 !important;
+}
+
+/* Remove any overlay effects */
+.pattern-selector button::before,
+.pattern-selector button::after {
+  display: none !important;
+}

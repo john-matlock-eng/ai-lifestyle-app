@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { AxiosError } from 'axios';
+import { useState, useCallback, useRef, useEffect } from "react";
+import { AxiosError } from "axios";
 
 interface RetryConfig {
   maxRetries?: number;
@@ -30,12 +30,12 @@ const DEFAULT_CONFIG: Required<RetryConfig> = {
 };
 
 export const useNetworkErrorRecovery = <T = unknown>(
-  config: RetryConfig = {}
+  config: RetryConfig = {},
 ): UseNetworkErrorRecoveryResult<T> => {
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [lastError, setLastError] = useState<Error | null>(null);
-  
+
   const retryTimeoutRef = useRef<number | undefined>(undefined);
 
   const reset = useCallback(() => {
@@ -78,15 +78,19 @@ export const useNetworkErrorRecovery = <T = unknown>(
 
           // Calculate delay with exponential backoff
           const delay = Math.min(
-            mergedConfig.initialDelay * Math.pow(mergedConfig.backoffMultiplier, currentRetry),
-            mergedConfig.maxDelay
+            mergedConfig.initialDelay *
+              Math.pow(mergedConfig.backoffMultiplier, currentRetry),
+            mergedConfig.maxDelay,
           );
 
           currentRetry++;
 
           // Wait before retrying
           await new Promise((resolve) => {
-            retryTimeoutRef.current = setTimeout(resolve, delay) as unknown as number;
+            retryTimeoutRef.current = setTimeout(
+              resolve,
+              delay,
+            ) as unknown as number;
           });
 
           return attempt();
@@ -95,7 +99,7 @@ export const useNetworkErrorRecovery = <T = unknown>(
 
       return attempt();
     },
-    [config, reset]
+    [config, reset],
   );
 
   return {
@@ -115,12 +119,12 @@ export const useNetworkStatus = () => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -159,12 +163,12 @@ export const useRequestQueue = <T = unknown>() => {
     queueRef.current = [];
 
     const results = await Promise.allSettled(
-      queue.map((item) => item.request())
+      queue.map((item) => item.request()),
     );
 
     // Re-queue failed requests
     results.forEach((result, index) => {
-      if (result.status === 'rejected') {
+      if (result.status === "rejected") {
         queueRef.current.push(queue[index]);
       }
     });

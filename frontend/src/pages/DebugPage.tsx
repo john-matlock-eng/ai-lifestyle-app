@@ -1,5 +1,5 @@
-import React from 'react';
-import ApiDebugger from '../components/debug/ApiDebugger';
+import React from "react";
+import ApiDebugger from "../components/debug/ApiDebugger";
 
 const DebugPage: React.FC = () => {
   return (

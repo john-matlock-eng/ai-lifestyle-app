@@ -1,11 +1,14 @@
 FROM public.ecr.aws/lambda/python:3.11
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy common modules first
+COPY user_profile_common /var/runtime/user_profile_common
 
 # Copy function code
-COPY . ${LAMBDA_TASK_ROOT}
+COPY get_user_profile/*.py ${LAMBDA_TASK_ROOT}/
 
-# Set the handler
+# Install dependencies
+COPY get_user_profile/requirements.txt .
+RUN pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+
+# Set the CMD to the handler
 CMD ["handler.lambda_handler"]

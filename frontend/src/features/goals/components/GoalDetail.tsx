@@ -1,27 +1,50 @@
-import React, { useState } from 'react';
-import { 
-  ArrowLeft, Calendar, TrendingUp, MoreVertical, Edit2, Pause, Play, 
-  Archive, Trash2, Plus, CheckCircle, XCircle, Clock, Target, Trophy,
-  Flame, ShieldAlert, BarChart3, Share2
-} from 'lucide-react';
-import type { Goal, GoalActivity, GoalStatistics, GoalProgress } from '../types/api.types';
-import { GOAL_PATTERN_COLORS } from '../types/goal.types';
-import { GoalProgressRing } from './GoalProgress/ProgressRing';
-import ProgressCharts from './GoalProgress/ProgressCharts';
-import { StreakCalendar } from './GoalProgress/StreakCalendar';
-import { MilestoneChart } from './GoalProgress/MilestoneChart';
-import { TrendLine } from './GoalProgress/TrendLine';
-import ActivityHistory from './GoalProgress/ActivityHistory';
-import { useEncryption } from '../../../hooks/useEncryption';
-import type { ShareableItem, ShareToken } from '../../../components/encryption';
-import { ShareDialog } from '../../../components/encryption';
+import React, { useState } from "react";
+import {
+  ArrowLeft,
+  Calendar,
+  TrendingUp,
+  MoreVertical,
+  Edit2,
+  Pause,
+  Play,
+  Archive,
+  Trash2,
+  Plus,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Target,
+  Trophy,
+  Flame,
+  ShieldAlert,
+  BarChart3,
+  Share2,
+} from "lucide-react";
+import type {
+  Goal,
+  GoalActivity,
+  GoalStatistics,
+  GoalProgress,
+} from "../types/api.types";
+import { GOAL_PATTERN_COLORS } from "../types/goal.types";
+import { GoalProgressRing } from "./GoalProgress/ProgressRing";
+import ProgressCharts from "./GoalProgress/ProgressCharts";
+import { StreakCalendar } from "./GoalProgress/StreakCalendar";
+import { MilestoneChart } from "./GoalProgress/MilestoneChart";
+import { TrendLine } from "./GoalProgress/TrendLine";
+import ActivityHistory from "./GoalProgress/ActivityHistory";
+import { useEncryption } from "../../../hooks/useEncryption";
+import type { ShareableItem, ShareToken } from "../../../components/encryption";
+import { ShareDialog } from "../../../components/encryption";
 
 interface GoalDetailProps {
   goal: Goal;
   activities: GoalActivity[];
   onBack: () => void;
   onEdit: (goal: Goal) => void;
-  onUpdateStatus: (status: 'active' | 'paused' | 'completed' | 'archived') => void;
+  onUpdateStatus: (
+    status: "active" | "paused" | "completed" | "archived",
+  ) => void;
   onDelete: () => void;
   onLogActivity: (activity: Partial<GoalActivity>) => void;
   progressData?: GoalProgress | null;
@@ -37,26 +60,32 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
   onUpdateStatus,
   onDelete,
   onLogActivity,
-  className = '',
+  className = "",
 }) => {
   const [showActions, setShowActions] = useState(false);
   const [showLogForm, setShowLogForm] = useState(false);
   const [activityValue, setActivityValue] = useState(1);
-  const [activityNote, setActivityNote] = useState('');
+  const [activityNote, setActivityNote] = useState("");
   const [showShareDialog, setShowShareDialog] = useState(false);
-  const { decrypt } = useEncryption('goals');
+  const { decrypt } = useEncryption("goals");
 
   // Get private notes if encrypted
   const [privateNotes, setPrivateNotes] = useState<string | null>(null);
   React.useEffect(() => {
     if (goal.metadata?.encryptedNotes) {
-      decrypt(goal.metadata.encryptedNotes).then((decrypted) => {
-        if (typeof decrypted === 'object' && decrypted !== null && 'notes' in decrypted) {
-          setPrivateNotes(decrypted.notes as string);
-        }
-      }).catch(err => {
-        console.error('Failed to decrypt notes:', err);
-      });
+      decrypt(goal.metadata.encryptedNotes)
+        .then((decrypted) => {
+          if (
+            typeof decrypted === "object" &&
+            decrypted !== null &&
+            "notes" in decrypted
+          ) {
+            setPrivateNotes(decrypted.notes as string);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to decrypt notes:", err);
+        });
     }
   }, [goal.metadata, decrypt]);
 
@@ -65,16 +94,16 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       goalId: goal.goalId,
       value: activityValue,
       unit: goal.target.unit,
-      activityType: 'progress',
+      activityType: "progress",
       note: activityNote || undefined,
     });
     setShowLogForm(false);
     setActivityValue(1);
-    setActivityNote('');
+    setActivityNote("");
   };
 
   const handleShare = (tokens: ShareToken[]) => {
-    console.log('Shared goal with tokens:', tokens);
+    console.log("Shared goal with tokens:", tokens);
     setShowShareDialog(false);
   };
 
@@ -91,49 +120,71 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
 
   const PatternIcon = getPatternIcon();
   const color = GOAL_PATTERN_COLORS[goal.goalPattern];
-
-  const progressInfo = React.useMemo<GoalProgress>(() => {
-    return progressData ?? {
-      goalId: goal.goalId,
-      period: 'current',
-      progress: goal.progress,
-      statistics: {} as GoalStatistics,
-    };
-  }, [progressData, goal.goalId, goal.progress]);
+  const progressInfo: GoalProgress = React.useMemo(
+    () =>
+      progressData ?? {
+        goalId: goal.goalId,
+        period: "current",
+        progress: goal.progress,
+        statistics: {} as GoalStatistics,
+      },
+    [progressData, goal.goalId, goal.progress],
+  );
 
   const ringCurrent = React.useMemo(() => {
     switch (goal.goalPattern) {
-      case 'recurring':
-      case 'limit':
+      case "recurring":
+      case "limit":
         return progressInfo.progress.currentPeriodValue || 0;
-      case 'milestone':
+      case "milestone":
         return progressInfo.progress.totalAccumulated || 0;
-      case 'streak':
+      case "streak":
         return progressInfo.progress.currentStreak || 0;
-      case 'target':
-        if (goal.target.currentValue !== undefined && goal.target.currentValue !== null) {
+      case "target":
+        if (
+          goal.target.currentValue !== undefined &&
+          goal.target.currentValue !== null
+        ) {
           return goal.target.currentValue;
         }
-        return (progressInfo.progress.percentComplete / 100) * goal.target.value;
+        return (
+          (progressInfo.progress.percentComplete / 100) * goal.target.value
+        );
       default:
         return 0;
     }
-  }, [goal.goalPattern, goal.target.currentValue, goal.target.value, progressInfo]);
+  }, [
+    goal.goalPattern,
+    goal.target.currentValue,
+    goal.target.value,
+    progressInfo,
+  ]);
 
   // Calculate streak data for streak goals
-  const streakData = goal.goalPattern === 'streak' ? {
-    completedDates: activities
-      .filter(a => a.activityType === 'completed' || a.activityType === 'progress')
-      .map(a => a.activityDate.split('T')[0]),
-    skippedDates: activities
-      .filter(a => a.activityType === 'skipped')
-      .map(a => a.activityDate.split('T')[0]),
-  } : null;
+  const streakData =
+    goal.goalPattern === "streak"
+      ? {
+          completedDates: activities
+            .filter(
+              (a) =>
+                a.activityType === "completed" || a.activityType === "progress",
+            )
+            .map((a) => a.activityDate.split("T")[0]),
+          skippedDates: activities
+            .filter((a) => a.activityType === "skipped")
+            .map((a) => a.activityDate.split("T")[0]),
+        }
+      : null;
 
   // Data for milestone and target analytics
   const milestoneData = activities
-    .filter(a => a.activityType === 'progress' || a.activityType === 'completed')
-    .sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime())
+    .filter(
+      (a) => a.activityType === "progress" || a.activityType === "completed",
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime(),
+    )
     .reduce<{ date: Date; value: number }[]>((acc, act) => {
       const last = acc.length > 0 ? acc[acc.length - 1].value : 0;
       acc.push({ date: new Date(act.activityDate), value: last + act.value });
@@ -141,9 +192,14 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
     }, []);
 
   const trendData = activities
-    .filter(a => a.activityType === 'progress' || a.activityType === 'completed')
-    .sort((a, b) => new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime())
-    .map(a => ({ date: new Date(a.activityDate), value: a.value }));
+    .filter(
+      (a) => a.activityType === "progress" || a.activityType === "completed",
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.activityDate).getTime() - new Date(b.activityDate).getTime(),
+    )
+    .map((a) => ({ date: new Date(a.activityDate), value: a.value }));
 
   // Recent activities
   const recentActivities = activities.slice(0, 5);
@@ -160,7 +216,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
             <ArrowLeft className="h-5 w-5" />
             Back to Goals
           </button>
-          
+
           <div className="relative">
             <button
               onClick={() => setShowActions(!showActions)}
@@ -169,7 +225,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
             >
               <MoreVertical className="h-5 w-5 text-gray-500" />
             </button>
-            
+
             {showActions && (
               <div className="absolute right-0 top-10 z-10 w-48 bg-[var(--surface)] rounded-lg shadow-lg border border-[color:var(--surface-muted)] py-1">
                 <button
@@ -182,7 +238,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   <Edit2 className="h-4 w-4" />
                   Edit Goal
                 </button>
-                
+
                 <button
                   onClick={() => {
                     setShowShareDialog(true);
@@ -193,11 +249,11 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   <Share2 className="h-4 w-4" />
                   Share Goal
                 </button>
-                
-                {goal.status === 'active' ? (
+
+                {goal.status === "active" ? (
                   <button
                     onClick={() => {
-                      onUpdateStatus('paused');
+                      onUpdateStatus("paused");
                       setShowActions(false);
                     }}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
@@ -208,7 +264,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                 ) : (
                   <button
                     onClick={() => {
-                      onUpdateStatus('active');
+                      onUpdateStatus("active");
                       setShowActions(false);
                     }}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
@@ -217,10 +273,10 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                     Resume Goal
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => {
-                    onUpdateStatus('completed');
+                    onUpdateStatus("completed");
                     setShowActions(false);
                   }}
                   className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
@@ -228,10 +284,10 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   <CheckCircle className="h-4 w-4" />
                   Mark Complete
                 </button>
-                
+
                 <button
                   onClick={() => {
-                    onUpdateStatus('archived');
+                    onUpdateStatus("archived");
                     setShowActions(false);
                   }}
                   className="w-full px-4 py-2 text-left text-sm hover:bg-[color:var(--surface-muted)] flex items-center gap-2"
@@ -239,12 +295,12 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   <Archive className="h-4 w-4" />
                   Archive Goal
                 </button>
-                
+
                 <hr className="my-1" />
-                
+
                 <button
                   onClick={() => {
-                    if (confirm('Are you sure you want to delete this goal?')) {
+                    if (confirm("Are you sure you want to delete this goal?")) {
                       onDelete();
                       setShowActions(false);
                     }
@@ -266,13 +322,15 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
           >
             <PatternIcon className="h-8 w-8" style={{ color }} />
           </div>
-          
+
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[var(--text)] mb-2">{goal.title}</h1>
+            <h1 className="text-2xl font-bold text-[var(--text)] mb-2">
+              {goal.title}
+            </h1>
             {goal.description && (
               <p className="text-muted">{goal.description}</p>
             )}
-            
+
             <div className="flex items-center gap-4 mt-3">
               <span
                 className="text-sm font-medium px-3 py-1 rounded-full"
@@ -283,12 +341,17 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
               >
                 {goal.goalPattern}
               </span>
-              <span className={`text-sm font-medium px-3 py-1 rounded-full ${
-                goal.status === 'active' ? 'bg-green-100 text-green-700' :
-                goal.status === 'completed' ? 'bg-blue-100 text-blue-700' :
-                goal.status === 'paused' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-[var(--surface-muted)] text-gray-700'
-              }`}>
+              <span
+                className={`text-sm font-medium px-3 py-1 rounded-full ${
+                  goal.status === "active"
+                    ? "bg-green-100 text-green-700"
+                    : goal.status === "completed"
+                      ? "bg-blue-100 text-blue-700"
+                      : goal.status === "paused"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-[var(--surface-muted)] text-gray-700"
+                }`}
+              >
                 {goal.status}
               </span>
               {goal.target.targetDate && (
@@ -299,7 +362,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
               )}
             </div>
           </div>
-          
+
           <div className="text-center">
             <GoalProgressRing
               current={ringCurrent}
@@ -318,8 +381,10 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
 
       {/* Quick Actions */}
       <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
-        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">Quick Actions</h2>
-        
+        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">
+          Quick Actions
+        </h2>
+
         {!showLogForm ? (
           <button
             onClick={() => setShowLogForm(true)}
@@ -327,20 +392,24 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
             style={{ borderColor: color }}
           >
             <Plus className="h-5 w-5" style={{ color }} />
-            <span className="font-medium" style={{ color }}>Log Progress</span>
+            <span className="font-medium" style={{ color }}>
+              Log Progress
+            </span>
           </button>
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                   Amount
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="number"
                     value={activityValue}
-                    onChange={(e) => setActivityValue(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setActivityValue(parseFloat(e.target.value) || 0)
+                    }
                     min={0}
                     step="0.1"
                     className="flex-1 px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
@@ -350,9 +419,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   </span>
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                   When
                 </label>
                 <select className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
@@ -362,9 +431,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                 </select>
               </div>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                 Note (optional)
               </label>
               <textarea
@@ -375,7 +444,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                 className="w-full px-3 py-2 border border-[color:var(--surface-muted)] rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               />
             </div>
-            
+
             <div className="flex gap-2">
               <button
                 onClick={handleLogActivity}
@@ -388,7 +457,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                 onClick={() => {
                   setShowLogForm(false);
                   setActivityValue(1);
-                  setActivityNote('');
+                  setActivityNote("");
                 }}
                 className="px-4 py-2 text-muted hover:text-[var(--text)]"
               >
@@ -406,7 +475,7 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
         progress={progressInfo}
       />
 
-      {goal.goalPattern === 'milestone' && milestoneData.length > 0 && (
+      {goal.goalPattern === "milestone" && milestoneData.length > 0 && (
         <MilestoneChart
           data={milestoneData}
           targetValue={goal.target.value}
@@ -416,19 +485,21 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
         />
       )}
 
-      {goal.goalPattern === 'target' && trendData.length > 0 && goal.target.targetDate && (
-        <TrendLine
-          data={trendData}
-          startValue={goal.target.startValue || 0}
-          targetValue={goal.target.value}
-          targetDate={new Date(goal.target.targetDate)}
-          unit={goal.target.unit}
-          direction={goal.target.direction as 'increase' | 'decrease'}
-          color={color}
-        />
-      )}
+      {goal.goalPattern === "target" &&
+        trendData.length > 0 &&
+        goal.target.targetDate && (
+          <TrendLine
+            data={trendData}
+            startValue={goal.target.startValue || 0}
+            targetValue={goal.target.value}
+            targetDate={new Date(goal.target.targetDate)}
+            unit={goal.target.unit}
+            direction={goal.target.direction as "increase" | "decrease"}
+            color={color}
+          />
+        )}
 
-      {goal.goalPattern === 'streak' && streakData && (
+      {goal.goalPattern === "streak" && streakData && (
         <StreakCalendar
           currentStreak={progressInfo.progress.currentStreak || 0}
           longestStreak={progressInfo.progress.longestStreak || 0}
@@ -463,8 +534,10 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
               <p className="text-sm text-muted">Last Activity</p>
               <p className="text-2xl font-bold text-[var(--text)]">
                 {progressInfo.progress.lastActivityDate
-                  ? new Date(progressInfo.progress.lastActivityDate).toLocaleDateString()
-                  : 'Never'}
+                  ? new Date(
+                      progressInfo.progress.lastActivityDate,
+                    ).toLocaleDateString()
+                  : "Never"}
               </p>
             </div>
           </div>
@@ -479,8 +552,10 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
               <p className="text-sm text-muted">Projected Completion</p>
               <p className="text-2xl font-bold text-[var(--text)]">
                 {progressInfo.progress.projectedCompletion
-                  ? new Date(progressInfo.progress.projectedCompletion).toLocaleDateString()
-                  : 'TBD'}
+                  ? new Date(
+                      progressInfo.progress.projectedCompletion,
+                    ).toLocaleDateString()
+                  : "TBD"}
               </p>
             </div>
           </div>
@@ -489,8 +564,10 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
 
       {/* Recent Activities */}
       <div className="bg-[var(--surface)] rounded-lg shadow-sm border border-[color:var(--surface-muted)] p-6">
-        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">Recent Activities</h2>
-        
+        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">
+          Recent Activities
+        </h2>
+
         {recentActivities.length > 0 ? (
           <div className="space-y-3">
             {recentActivities.map((activity) => (
@@ -499,15 +576,20 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                 className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
-                    activity.activityType === 'completed' ? 'bg-green-100' :
-                    activity.activityType === 'progress' ? 'bg-blue-100' :
-                    activity.activityType === 'skipped' ? 'bg-yellow-100' :
-                    'bg-[var(--surface-muted)]'
-                  }`}>
-                    {activity.activityType === 'completed' ? (
+                  <div
+                    className={`p-2 rounded-lg ${
+                      activity.activityType === "completed"
+                        ? "bg-green-100"
+                        : activity.activityType === "progress"
+                          ? "bg-blue-100"
+                          : activity.activityType === "skipped"
+                            ? "bg-yellow-100"
+                            : "bg-[var(--surface-muted)]"
+                    }`}
+                  >
+                    {activity.activityType === "completed" ? (
                       <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : activity.activityType === 'skipped' ? (
+                    ) : activity.activityType === "skipped" ? (
                       <XCircle className="h-5 w-5 text-yellow-600" />
                     ) : (
                       <TrendingUp className="h-5 w-5 text-blue-600" />
@@ -526,9 +608,9 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
                   <p className="text-sm font-medium text-[var(--text)]">
                     {new Date(activity.activityDate).toLocaleDateString()}
                   </p>
-                    <p className="text-xs text-gray-500">
-                      {activity.context?.timeOfDay}
-                    </p>
+                  <p className="text-xs text-gray-500">
+                    {activity.context?.timeOfDay}
+                  </p>
                 </div>
               </div>
             ))}
@@ -557,13 +639,17 @@ export const GoalDetail: React.FC<GoalDetailProps> = ({
       <ShareDialog
         isOpen={showShareDialog}
         onClose={() => setShowShareDialog(false)}
-          items={[{
-            id: goal.goalId,
-            title: goal.title,
-            type: 'goal',
-            createdAt: goal.createdAt,
-            encrypted: !!goal.metadata?.encryptedNotes,
-          }] as ShareableItem[]}
+        items={
+          [
+            {
+              id: goal.goalId,
+              title: goal.title,
+              type: "goal",
+              createdAt: goal.createdAt,
+              encrypted: !!goal.metadata?.encryptedNotes,
+            },
+          ] as ShareableItem[]
+        }
         onShare={handleShare}
       />
     </div>

@@ -1,35 +1,43 @@
-import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import type { GoalPattern, CreateGoalRequest } from '../../types/api.types';
-import type { 
+import React, { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import type { GoalPattern, CreateGoalRequest } from "../../types/api.types";
+import type {
   RecurringGoalFormData,
   TargetGoalFormData,
   MilestoneGoalFormData,
   StreakGoalFormData,
-  LimitGoalFormData
-} from '../../types/goal.types';
-import PatternSelector from './PatternSelector';
-import { RecurringGoalForm } from '../GoalCreator/RecurringGoalForm';
-import { TargetGoalForm } from '../GoalCreator/TargetGoalForm';
-import { MilestoneGoalForm } from '../GoalCreator/MilestoneGoalForm';
-import { StreakGoalForm } from '../GoalCreator/StreakGoalForm';
-import { LimitGoalForm } from '../GoalCreator/LimitGoalForm';
-import { createGoal } from '../../services/goalService';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+  LimitGoalFormData,
+} from "../../types/goal.types";
+import PatternSelector from "./PatternSelector";
+import { RecurringGoalForm } from "../GoalCreator/RecurringGoalForm";
+import { TargetGoalForm } from "../GoalCreator/TargetGoalForm";
+import { MilestoneGoalForm } from "../GoalCreator/MilestoneGoalForm";
+import { StreakGoalForm } from "../GoalCreator/StreakGoalForm";
+import { LimitGoalForm } from "../GoalCreator/LimitGoalForm";
+import { createGoal } from "../../services/goalService";
+import { ArrowLeft, Sparkles } from "lucide-react";
 
-type GoalFormData = RecurringGoalFormData | TargetGoalFormData | MilestoneGoalFormData | StreakGoalFormData | LimitGoalFormData;
+type GoalFormData =
+  | RecurringGoalFormData
+  | TargetGoalFormData
+  | MilestoneGoalFormData
+  | StreakGoalFormData
+  | LimitGoalFormData;
 
 const GoalWizard: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [selectedPattern, setSelectedPattern] = useState<GoalPattern | undefined>(undefined);
+  const [selectedPattern, setSelectedPattern] = useState<
+    GoalPattern | undefined
+  >(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isJournalLinked, setIsJournalLinked] = useState(false);
 
   const createGoalMutation = useMutation({
     mutationFn: createGoal,
     onSuccess: (goal) => {
-      queryClient.invalidateQueries({ queryKey: ['goals'] });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
       navigate(`/goals/${goal.goalId}`);
     },
   });
@@ -43,10 +51,12 @@ const GoalWizard: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate('/goals');
+    navigate("/goals");
   };
 
-  const transformFormDataToRequest = (formData: GoalFormData): CreateGoalRequest => {
+  const transformFormDataToRequest = (
+    formData: GoalFormData,
+  ): CreateGoalRequest => {
     // Common fields
     const baseRequest: Partial<CreateGoalRequest> = {
       title: formData.title,
@@ -55,41 +65,47 @@ const GoalWizard: React.FC = () => {
       icon: formData.icon,
       color: formData.color,
       goalPattern: formData.goalPattern,
+      metadata: {
+        isJournalLinked,
+      },
     };
 
     // Transform based on goal pattern
     switch (formData.goalPattern) {
-      case 'recurring': {
+      case "recurring": {
         const data = formData as RecurringGoalFormData;
         return {
           ...baseRequest,
           target: {
-            metric: 'count',
+            metric: "count",
             value: data.targetValue,
             unit: data.unit,
             period: data.period,
-            direction: 'increase',
-            targetType: 'minimum',
+            direction: "increase",
+            targetType: "minimum",
           },
           schedule: {
             frequency: data.frequency,
-            daysOfWeek: data.daysOfWeek && data.daysOfWeek.length > 0 ? data.daysOfWeek : undefined,
-            checkInFrequency: 'daily',
+            daysOfWeek:
+              data.daysOfWeek && data.daysOfWeek.length > 0
+                ? data.daysOfWeek
+                : undefined,
+            checkInFrequency: "daily",
             catchUpAllowed: true,
           },
         } as CreateGoalRequest;
       }
 
-      case 'target': {
+      case "target": {
         const data = formData as TargetGoalFormData;
         return {
           ...baseRequest,
           target: {
-            metric: 'custom',
+            metric: "custom",
             value: data.targetValue,
             unit: data.unit,
             direction: data.direction,
-            targetType: 'exact',
+            targetType: "exact",
             startValue: data.startValue,
             currentValue: data.startValue,
             targetDate: data.targetDate.toISOString(),
@@ -97,16 +113,16 @@ const GoalWizard: React.FC = () => {
         } as CreateGoalRequest;
       }
 
-      case 'milestone': {
+      case "milestone": {
         const data = formData as MilestoneGoalFormData;
         return {
           ...baseRequest,
           target: {
-            metric: 'custom',
+            metric: "custom",
             value: data.targetValue,
             unit: data.unit,
-            direction: 'increase',
-            targetType: 'exact',
+            direction: "increase",
+            targetType: "exact",
             startValue: data.currentValue || 0,
             currentValue: data.currentValue || 0,
             targetDate: data.targetDate?.toISOString(),
@@ -114,40 +130,40 @@ const GoalWizard: React.FC = () => {
         } as CreateGoalRequest;
       }
 
-      case 'streak': {
+      case "streak": {
         const data = formData as StreakGoalFormData;
         return {
           ...baseRequest,
           target: {
-            metric: 'count',
+            metric: "count",
             value: data.targetStreak,
-            unit: data.unit || 'days',
-            direction: 'increase',
-            targetType: 'exact',
+            unit: data.unit || "days",
+            direction: "increase",
+            targetType: "exact",
           },
           schedule: {
-            frequency: data.frequency || 'daily',
-            checkInFrequency: data.frequency || 'daily',
+            frequency: data.frequency || "daily",
+            checkInFrequency: data.frequency || "daily",
             allowSkipDays: 0,
             catchUpAllowed: false,
           },
         } as CreateGoalRequest;
       }
 
-      case 'limit': {
+      case "limit": {
         const data = formData as LimitGoalFormData;
         return {
           ...baseRequest,
           target: {
-            metric: 'custom',
+            metric: "custom",
             value: data.limitValue,
             unit: data.unit,
             period: data.period,
-            direction: data.targetType === 'maximum' ? 'decrease' : 'increase',
+            direction: data.targetType === "maximum" ? "decrease" : "increase",
             targetType: data.targetType,
           },
           schedule: {
-            checkInFrequency: 'daily',
+            checkInFrequency: "daily",
           },
         } as CreateGoalRequest;
       }
@@ -163,7 +179,7 @@ const GoalWizard: React.FC = () => {
       const goalData = transformFormDataToRequest(formData);
       await createGoalMutation.mutateAsync(goalData);
     } catch (error) {
-      console.error('Failed to create goal:', error);
+      console.error("Failed to create goal:", error);
       setIsSubmitting(false);
     }
   };
@@ -176,8 +192,12 @@ const GoalWizard: React.FC = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
               <Sparkles className="h-8 w-8 text-primary-600" />
             </div>
-            <h1 className="text-3xl font-bold text-[var(--text)] mb-2">Create Your Goal</h1>
-            <p className="text-lg text-muted">Choose a pattern that fits your journey</p>
+            <h1 className="text-3xl font-bold text-[var(--text)] mb-2">
+              Create Your Goal
+            </h1>
+            <p className="text-lg text-muted">
+              Choose a pattern that fits your journey
+            </p>
           </div>
           <PatternSelector
             onSelect={handlePatternSelect}
@@ -191,18 +211,20 @@ const GoalWizard: React.FC = () => {
     const commonProps = {
       onSubmit: handleFormSubmit,
       onCancel: handleBack,
+      isJournalLinked,
+      setIsJournalLinked,
     };
 
     switch (selectedPattern) {
-      case 'recurring':
+      case "recurring":
         return <RecurringGoalForm {...commonProps} />;
-      case 'target':
+      case "target":
         return <TargetGoalForm {...commonProps} />;
-      case 'milestone':
+      case "milestone":
         return <MilestoneGoalForm {...commonProps} />;
-      case 'streak':
+      case "streak":
         return <StreakGoalForm {...commonProps} />;
-      case 'limit':
+      case "limit":
         return <LimitGoalForm {...commonProps} />;
       default:
         return null;
@@ -219,15 +241,13 @@ const GoalWizard: React.FC = () => {
           disabled={isSubmitting}
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
-          {selectedPattern ? 'Choose Different Pattern' : 'Back to Goals'}
+          {selectedPattern ? "Choose Different Pattern" : "Back to Goals"}
         </button>
       </div>
 
       {/* Form Content */}
       <div className="bg-[var(--surface)] rounded-xl shadow-sm border border-[color:var(--surface-muted)]">
-        <div className="p-6 sm:p-8">
-          {renderForm()}
-        </div>
+        <div className="p-6 sm:p-8">{renderForm()}</div>
       </div>
 
       {/* Loading Overlay */}

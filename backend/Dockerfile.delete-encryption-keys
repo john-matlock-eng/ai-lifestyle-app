@@ -1,0 +1,14 @@
+FROM public.ecr.aws/lambda/python:3.11
+
+# Copy and install dependencies
+COPY src/delete_encryption_keys/requirements.txt ${LAMBDA_TASK_ROOT}/
+RUN pip install -r requirements.txt
+
+# Copy shared code
+COPY src/encryption_common/ ${LAMBDA_TASK_ROOT}/encryption_common/
+
+# Copy function code
+COPY src/delete_encryption_keys/*.py ${LAMBDA_TASK_ROOT}/
+
+# Set the CMD to the handler
+CMD ["handler.lambda_handler"]

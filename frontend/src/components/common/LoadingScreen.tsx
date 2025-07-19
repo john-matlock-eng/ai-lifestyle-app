@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const LoadingScreen: React.FC = () => {
   return (
@@ -27,7 +27,9 @@ const LoadingScreen: React.FC = () => {
           </svg>
         </div>
         <h2 className="text-lg font-medium text-theme">Loading...</h2>
-        <p className="mt-1 text-sm text-text-muted">Please wait while we get things ready</p>
+        <p className="mt-1 text-sm text-text-muted">
+          Please wait while we get things ready
+        </p>
       </div>
     </div>
   );

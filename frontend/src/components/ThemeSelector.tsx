@@ -1,6 +1,6 @@
-import React from 'react';
-import { useTheme } from '../contexts/useTheme';
-import type { Theme } from '../contexts/ThemeContextType';
+import React from "react";
+import { useTheme } from "../contexts/useTheme";
+import type { Theme } from "../contexts/ThemeContextType";
 
 interface ThemeOption {
   value: Theme;
@@ -15,63 +15,63 @@ interface ThemeOption {
 
 const themes: ThemeOption[] = [
   {
-    value: 'dark',
-    label: 'Dark',
-    description: 'Modern dark theme with blue accents',
+    value: "dark",
+    label: "Dark",
+    description: "Modern dark theme with blue accents",
     preview: {
-      bg: '#0A0E1A',
-      accent: '#60A5FA',
-      surface: '#1A1F2E',
+      bg: "#0A0E1A",
+      accent: "#60A5FA",
+      surface: "#1A1F2E",
     },
   },
   {
-    value: 'light',
-    label: 'Light',
-    description: 'Clean and professional',
+    value: "light",
+    label: "Light",
+    description: "Clean and professional",
     preview: {
-      bg: '#FFFFFF',
-      accent: '#3B82F6',
-      surface: '#F8FAFC',
+      bg: "#FFFFFF",
+      accent: "#3B82F6",
+      surface: "#F8FAFC",
     },
   },
   {
-    value: 'serene',
-    label: 'Serene',
-    description: 'Calm and natural green tones',
+    value: "serene",
+    label: "Serene",
+    description: "Calm and natural green tones",
     preview: {
-      bg: '#E6F4F1',
-      accent: '#10B981',
-      surface: '#FFFFFF',
+      bg: "#E6F4F1",
+      accent: "#10B981",
+      surface: "#FFFFFF",
     },
   },
   {
-    value: 'vibrant',
-    label: 'Vibrant',
-    description: 'Bold and energetic with neon accents',
+    value: "vibrant",
+    label: "Vibrant",
+    description: "Bold and energetic with neon accents",
     preview: {
-      bg: '#0A0F1C',
-      accent: '#FF006E',
-      surface: '#1A1F2E',
+      bg: "#0A0F1C",
+      accent: "#FF006E",
+      surface: "#1A1F2E",
     },
   },
   {
-    value: 'midnight',
-    label: 'Midnight',
-    description: 'Deep ocean blues with cyan highlights',
+    value: "midnight",
+    label: "Midnight",
+    description: "Deep ocean blues with cyan highlights",
     preview: {
-      bg: '#000814',
-      accent: '#00B4D8',
-      surface: '#001D3D',
+      bg: "#000814",
+      accent: "#00B4D8",
+      surface: "#001D3D",
     },
   },
   {
-    value: 'solarized',
-    label: 'Solarized',
-    description: 'Warm and comfortable amber tones',
+    value: "solarized",
+    label: "Solarized",
+    description: "Warm and comfortable amber tones",
     preview: {
-      bg: '#FDF6E3',
-      accent: '#B58900',
-      surface: '#EEE8D5',
+      bg: "#FDF6E3",
+      accent: "#B58900",
+      surface: "#EEE8D5",
     },
   },
 ];
@@ -90,16 +90,21 @@ const ThemeSelector: React.FC = () => {
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-full bg-accent animate-pulse-glow" />
           <span className="text-sm font-medium text-theme">
-            {themes.find(t => t.value === theme)?.label}
+            {themes.find((t) => t.value === theme)?.label}
           </span>
         </div>
         <svg
-          className={`w-4 h-4 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
@@ -119,7 +124,7 @@ const ThemeSelector: React.FC = () => {
                     setIsOpen(false);
                   }}
                   className={`w-full text-left p-3 rounded-lg transition-all duration-200 hover:bg-surface-hover group ${
-                    theme === themeOption.value ? 'bg-button-hover-bg' : ''
+                    theme === themeOption.value ? "bg-button-hover-bg" : ""
                   }`}
                 >
                   <div className="flex items-start gap-3">

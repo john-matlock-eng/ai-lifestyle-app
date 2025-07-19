@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import type { FormEvent, KeyboardEvent } from 'react';
+import React, { useState, useRef } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
 
 interface MfaCodeInputProps {
   onSubmit: (code: string) => void;
@@ -14,13 +14,13 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
   isLoading = false,
   error,
 }) => {
-  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) {
       // Handle paste
-      const pastedCode = value.slice(0, 6).split('');
+      const pastedCode = value.slice(0, 6).split("");
       const newCode = [...code];
       pastedCode.forEach((digit, i) => {
         if (index + i < 6) {
@@ -28,14 +28,14 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
         }
       });
       setCode(newCode);
-      
+
       // Focus last input or next empty input
       const lastFilledIndex = Math.min(index + pastedCode.length - 1, 5);
       inputRefs.current[lastFilledIndex]?.focus();
-      
+
       // Submit if complete
-      if (newCode.every(digit => digit !== '')) {
-        onSubmit(newCode.join(''));
+      if (newCode.every((digit) => digit !== "")) {
+        onSubmit(newCode.join(""));
       }
     } else {
       const newCode = [...code];
@@ -43,26 +43,26 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
       setCode(newCode);
 
       // Auto-focus next input
-      if (value !== '' && index < 5) {
+      if (value !== "" && index < 5) {
         inputRefs.current[index + 1]?.focus();
       }
 
       // Submit if complete
-      if (newCode.every(digit => digit !== '')) {
-        onSubmit(newCode.join(''));
+      if (newCode.every((digit) => digit !== "")) {
+        onSubmit(newCode.join(""));
       }
     }
   };
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && code[index] === '' && index > 0) {
+    if (e.key === "Backspace" && code[index] === "" && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const fullCode = code.join('');
+    const fullCode = code.join("");
     if (fullCode.length === 6) {
       onSubmit(fullCode);
     }
@@ -74,7 +74,7 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
         {code.map((digit, index) => (
           <input
             key={index}
-            ref={el => {
+            ref={(el) => {
               inputRefs.current[index] = el;
             }}
             type="text"
@@ -82,14 +82,17 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
             pattern="[0-9]"
             maxLength={6}
             value={digit}
-            onChange={(e) => handleChange(index, e.target.value.replace(/\D/g, ''))}
+            onChange={(e) =>
+              handleChange(index, e.target.value.replace(/\D/g, ""))
+            }
             onKeyDown={(e) => handleKeyDown(index, e)}
             className={`
               w-12 h-12 text-center text-lg font-semibold rounded-md
               border-2 transition-colors
-              ${error 
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                : 'border-[color:var(--surface-muted)] focus:border-primary-500 focus:ring-primary-500'
+              ${
+                error
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                  : "border-[color:var(--surface-muted)] focus:border-primary-500 focus:ring-primary-500"
               }
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)]
               disabled:opacity-50 disabled:cursor-not-allowed
@@ -101,17 +104,15 @@ const MfaCodeInput: React.FC<MfaCodeInputProps> = ({
         ))}
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 text-center">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
       <div className="flex space-x-3">
         <button
           type="submit"
-          disabled={code.some(digit => digit === '') || isLoading}
+          disabled={code.some((digit) => digit === "") || isLoading}
           className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[color:var(--bg)] focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Verifying...' : 'Verify'}
+          {isLoading ? "Verifying..." : "Verify"}
         </button>
         {onCancel && (
           <button

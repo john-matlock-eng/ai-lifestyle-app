@@ -1,4 +1,4 @@
-import type { JournalTemplate } from '../types/template.types';
+import type { JournalTemplate } from "../types/template.types";
 
 export interface SectionContent {
   id: string;
@@ -10,12 +10,10 @@ export interface SectionContent {
  */
 export function filterAiSections(
   template: JournalTemplate,
-  sections: SectionContent[]
+  sections: SectionContent[],
 ): SectionContent[] {
   const aiIds = new Set(
-    template.sections
-      .filter((s) => s.defaultPrivacy === 'ai')
-      .map((s) => s.id)
+    template.sections.filter((s) => s.defaultPrivacy === "ai").map((s) => s.id),
   );
   return sections.filter((s) => aiIds.has(s.id));
 }

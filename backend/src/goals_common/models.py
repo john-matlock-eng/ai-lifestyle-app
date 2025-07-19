@@ -317,6 +317,7 @@ class Goal(BaseModel):
     
     # Feature-specific extensions
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    is_journal_linked: bool = Field(False, description="Whether this goal is linked to journaling")
     
     @model_validator(mode='after')
     def validate_target_for_pattern(self):
@@ -416,6 +417,7 @@ class CreateGoalRequest(BaseModel):
     
     visibility: Visibility = Visibility.PRIVATE
     status: Optional[GoalStatus] = None
+    is_journal_linked: bool = Field(False, description="Link this goal to journaling")
 
 
 class UpdateGoalRequest(BaseModel):
@@ -434,6 +436,7 @@ class UpdateGoalRequest(BaseModel):
     
     visibility: Optional[Visibility] = None
     status: Optional[GoalStatus] = None
+    is_journal_linked: Optional[bool] = None
 
 
 class GoalListResponse(BaseModel):

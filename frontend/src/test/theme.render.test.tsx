@@ -1,11 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { ThemeProvider, AuthProvider } from '../contexts';
-import AppLayout from '../components/layout/AppLayout';
-import { MemoryRouter } from 'react-router-dom';
-import { test, expect } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen } from "@testing-library/react";
+import { ThemeProvider, AuthProvider } from "../contexts";
+import AppLayout from "../components/layout/AppLayout";
+import { MemoryRouter } from "react-router-dom";
+import { test, expect } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-test('renders navbar', () => {
+test("renders navbar", () => {
   const client = new QueryClient();
   render(
     <ThemeProvider>
@@ -16,7 +16,7 @@ test('renders navbar', () => {
           </AuthProvider>
         </QueryClientProvider>
       </MemoryRouter>
-    </ThemeProvider>
+    </ThemeProvider>,
   );
-  expect(screen.getByRole('navigation')).toBeInTheDocument();
+  expect(screen.getByRole("navigation")).toBeInTheDocument();
 });
