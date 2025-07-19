@@ -32,7 +32,7 @@ export const useAuthShihTzu = () => {
     if (companion.mood !== 'curious') {
       companion.setMood('curious');
     }
-  }, [companion.mood, companion]);
+  }, [companion]);
 
   // React to validation errors
   const handleError = useCallback(() => {
@@ -80,7 +80,7 @@ export const useAuthShihTzu = () => {
   }, [companion]);
 
   // React to field completion
-  const handleFieldComplete = useCallback((_fieldName: string) => {
+  const handleFieldComplete = useCallback(() => {
     // Quick happy animation
     const currentMood = companion.mood;
     companion.setMood('happy');
@@ -96,7 +96,7 @@ export const useAuthShihTzu = () => {
       case 'unauthorized':
         handleError();
         break;
-      case 'rate-limit':
+      case 'rate-limit': {
         // Dizzy animation - walking in circles
         companion.setMood('walking');
         const center = companion.position;
@@ -110,6 +110,7 @@ export const useAuthShihTzu = () => {
         });
         companion.followPath(circlePositions);
         break;
+      }
       case 'server':
         companion.showCuriosity();
         break;

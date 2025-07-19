@@ -22,6 +22,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   const [generalError, setGeneralError] = useState<string>("");
   const [completedFields, setCompletedFields] = useState<Set<string>>(new Set());
   const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const totalFields = 5; // firstName, lastName, email, password, confirmPassword
 
@@ -29,7 +30,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting, touchedFields, isValid },
+    formState: { errors, isSubmitting },
     setError,
     getFieldState,
   } = useForm<RegisterFormData>({
@@ -41,18 +42,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   // Get all watched values
   const watchedValues = watch();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('Form state:', {
-      errors,
-      touchedFields,
-      watchedValues,
-      isValid,
-      completedFields: Array.from(completedFields),
-    });
-  }, [errors, touchedFields, watchedValues, isValid, completedFields]);
-
-  // Track completed fields based on touched and valid state
+  // Track completed fields based on valid state
   useEffect(() => {
     const fields: (keyof RegisterFormData)[] = ['firstName', 'lastName', 'email', 'password', 'confirmPassword'];
     const newCompletedFields = new Set<string>();
@@ -74,7 +64,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
       
       // Celebrate each new field completion
       if (newCompletedFields.size > completedFields.size && companion) {
-        companion.handleFieldComplete('field');
+        companion.handleFieldComplete();
       }
     }
   }, [watchedValues, errors, getFieldState, completedFields, companion]);
@@ -153,12 +143,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     }
   }, [companion]);
 
-  // React to errors
+  // React to errors (only when there are actual errors shown)
   useEffect(() => {
-    if (Object.keys(errors).length > 0 && Object.keys(touchedFields).length > 0 && companion) {
+    const visibleErrors = Object.keys(errors).filter(key => errors[key as keyof typeof errors]?.message);
+    if (visibleErrors.length > 0 && companion) {
       companion.handleError();
     }
-  }, [errors, touchedFields, companion]);
+  }, [errors, companion]);
 
   const registerMutation = useMutation({
     mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
@@ -263,6 +254,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
 
   const onSubmit = async (data: RegisterFormData) => {
     setGeneralError("");
+    
+    // Check if terms are accepted
+    if (!termsAccepted) {
+      setGeneralError("Please accept the Terms and Conditions to continue.");
+      return;
+    }
+    
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
@@ -416,7 +414,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
                 id="terms"
                 type="checkbox"
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
+                checked={termsAccepted}
                 onChange={(e) => {
+                  setTermsAccepted(e.target.checked);
                   if (e.target.checked && companion) {
                     companion.setMood('happy');
                     setTimeout(() => companion.setMood('idle'), 1500);
@@ -452,7 +452,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
               size="lg"
               isLoading={isSubmitting || registerMutation.isPending}
               loadingText="Creating account..."
-              disabled={!isValid}
             >
               Create account
             </Button>
