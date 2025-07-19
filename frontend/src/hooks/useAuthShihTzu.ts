@@ -19,7 +19,7 @@ export const useAuthShihTzu = () => {
     setTimeout(() => {
       companion.setMood('idle');
     }, 3000);
-  }, []);
+  }, [companion]);
 
   // React to form input focus
   const handleInputFocus = useCallback((inputElement: HTMLInputElement | HTMLElement) => {
@@ -80,7 +80,7 @@ export const useAuthShihTzu = () => {
   }, [companion]);
 
   // React to field completion
-  const handleFieldComplete = useCallback(() => {
+  const handleFieldComplete = useCallback((fieldName: string) => {
     // Quick happy animation
     const currentMood = companion.mood;
     companion.setMood('happy');
