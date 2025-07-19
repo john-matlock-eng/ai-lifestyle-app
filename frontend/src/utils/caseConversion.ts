@@ -19,55 +19,55 @@ export function camelToSnake(str: string): string {
 /**
  * Recursively convert object keys from snake_case to camelCase
  */
-export function snakeToCamelObject<T = any>(obj: any): T {
+export function snakeToCamelObject<T = unknown>(obj: unknown): T {
   if (obj === null || obj === undefined) {
-    return obj;
+    return obj as T;
   }
   
   if (Array.isArray(obj)) {
-    return obj.map(item => snakeToCamelObject(item)) as any;
+    return obj.map(item => snakeToCamelObject(item)) as T;
   }
   
   if (typeof obj === 'object' && obj.constructor === Object) {
-    const result: any = {};
+    const result: Record<string, unknown> = {};
     
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const camelKey = snakeToCamel(key);
-        result[camelKey] = snakeToCamelObject(obj[key]);
+        result[camelKey] = snakeToCamelObject((obj as Record<string, unknown>)[key]);
       }
     }
     
-    return result;
+    return result as T;
   }
   
-  return obj;
+  return obj as T;
 }
 
 /**
  * Recursively convert object keys from camelCase to snake_case
  */
-export function camelToSnakeObject<T = any>(obj: any): T {
+export function camelToSnakeObject<T = unknown>(obj: unknown): T {
   if (obj === null || obj === undefined) {
-    return obj;
+    return obj as T;
   }
   
   if (Array.isArray(obj)) {
-    return obj.map(item => camelToSnakeObject(item)) as any;
+    return obj.map(item => camelToSnakeObject(item)) as T;
   }
   
   if (typeof obj === 'object' && obj.constructor === Object) {
-    const result: any = {};
+    const result: Record<string, unknown> = {};
     
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const snakeKey = camelToSnake(key);
-        result[snakeKey] = camelToSnakeObject(obj[key]);
+        result[snakeKey] = camelToSnakeObject((obj as Record<string, unknown>)[key]);
       }
     }
     
-    return result;
+    return result as T;
   }
   
-  return obj;
+  return obj as T;
 }
