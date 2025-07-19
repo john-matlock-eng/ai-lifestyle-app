@@ -41,7 +41,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     try:
         # Extract user ID from authorizer context
-        user_id = event['requestContext']['authorizer']['claims']['sub']
+        user_id = event['requestContext']['authorizer']['jwt']['claims']['sub']
         
         # Get user stats
         stats = service.get_user_stats(user_id)

@@ -39,7 +39,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         # Extract user ID from authorizer
-        user_id = event['requestContext']['authorizer']['claims']['sub']
+        user_id = event['requestContext']['authorizer']['jwt']['claims']['sub']
         
         # Parse request body
         body = json.loads(event.get('body', '{}'))

@@ -41,7 +41,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     try:
         # Extract user ID from authorizer context
-        user_id = event['requestContext']['authorizer']['claims']['sub']
+        user_id = event['requestContext']['authorizer']['jwt']['claims']['sub']
         
         # Get today's habits with stats
         response = service.get_today_habits(user_id)

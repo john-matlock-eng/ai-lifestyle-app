@@ -4,7 +4,7 @@ import { useHabits } from '../hooks/useHabits';
 import { HabitForm } from '../components/HabitForm';
 import type { CreateHabitRequest, UpdateHabitRequest } from '@/types/habits';
 import { ArrowLeft } from 'lucide-react';
-import Button from '@/components/common/Button';
+import { Button } from '@/components/common';
 // TODO: Add toast notifications
 
 export const CreateHabitPage: React.FC = () => {
@@ -19,7 +19,7 @@ export const CreateHabitPage: React.FC = () => {
       navigate('/habits');
     } catch (error) {
       console.error('Failed to create habit:', error);
-      console.error('Failed to create habit. Please try again.');
+      // TODO: Show error notification
     }
   };
   

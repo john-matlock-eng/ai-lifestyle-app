@@ -4,7 +4,7 @@ import { useHabits } from '../hooks/useHabits';
 import { HabitForm } from '../components/HabitForm';
 import type { UpdateHabitRequest, Habit } from '@/types/habits';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-import Button from '@/components/common/Button';
+import { Button } from '@/components/common';
 // TODO: Add toast notifications
 import { habitService } from '../services/habitService';
 
@@ -29,7 +29,7 @@ export const EditHabitPage: React.FC = () => {
         setHabit(habitData);
       } catch (error) {
         console.error('Failed to load habit:', error);
-        console.error('Failed to load habit');
+        // TODO: Show error notification
         navigate('/habits');
       } finally {
         setIsLoading(false);
@@ -48,7 +48,7 @@ export const EditHabitPage: React.FC = () => {
       navigate('/habits');
     } catch (error) {
       console.error('Failed to update habit:', error);
-      console.error('Failed to update habit. Please try again.');
+      // TODO: Show error notification
     }
   };
   
@@ -61,7 +61,7 @@ export const EditHabitPage: React.FC = () => {
       navigate('/habits');
     } catch (error) {
       console.error('Failed to delete habit:', error);
-      console.error('Failed to delete habit. Please try again.');
+      // TODO: Show error notification
     }
   };
   
