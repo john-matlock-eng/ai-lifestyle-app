@@ -2,10 +2,13 @@ import React, { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { ThemeSwitcher } from "../components/common";
 import EncryptionSettings from "./settings/EncryptionSettings";
+import { useAuth } from "../contexts";
+import ProfileSection from "../components/settings/ProfileSection";
 
 const SettingsPage: React.FC = () => {
   const location = useLocation();
   const encryptionRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
 
   // Scroll to encryption section if navigated from onboarding
   useEffect(() => {
@@ -38,6 +41,8 @@ const SettingsPage: React.FC = () => {
           Manage your account preferences and security
         </p>
       </div>
+
+      {user && <ProfileSection user={user} />}
 
       {/* Theme Settings */}
       <div className="bg-[var(--surface)] rounded-lg shadow-[var(--shadow-md)] p-6 border border-[var(--surface-muted)]">

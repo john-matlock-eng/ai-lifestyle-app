@@ -1857,6 +1857,11 @@ components:
           pattern: '^[a-zA-Z\s-]+$'
           description: User's last name
           example: "Doe"
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Preferred display name
 
     RegisterResponse:
       type: object
@@ -2044,6 +2049,7 @@ components:
         - email
         - firstName
         - lastName
+        - displayName
         - createdAt
         - updatedAt
         - emailVerified
@@ -2062,6 +2068,9 @@ components:
         lastName:
           type: string
           description: User's last name
+        displayName:
+          type: string
+          description: Preferred display name
         emailVerified:
           type: boolean
           description: Whether email is verified
@@ -2103,6 +2112,10 @@ components:
           minLength: 1
           maxLength: 50
           pattern: '^[a-zA-Z\s-]+$'
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 50
         phoneNumber:
           type: string
           pattern: '^\+?[1-9]\d{1,14}$'
@@ -2683,7 +2696,7 @@ components:
             type: number
           minItems: 2
           maxItems: 2
-          description: [longitude, latitude]
+          description: "[longitude, latitude]"
 
     ActivityContext:
       type: object
@@ -3656,43 +3669,6 @@ components:
               count:
                 type: integer
 
-    # Share Schemas
-    CreateShareRequest:
-      type: object
-      required:
-        - itemType
-        - itemId
-        - recipientId
-        - permissions
-      properties:
-        itemType:
-          type: string
-          enum: [journal, goal]
-          description: Type of item being shared
-        itemId:
-          type: string
-          format: uuid
-          description: ID of the item being shared
-        recipientId:
-          type: string
-          format: uuid
-          description: User ID of the recipient
-        encryptedKey:
-          type: string
-          description: Re-encrypted content key for recipient (required for encrypted items)
-        permissions:
-          type: array
-          items:
-            type: string
-            enum: [read, write, share]
-          default: [read]
-        expiresInHours:
-          type: integer
-          minimum: 1
-          maximum: 720
-          default: 24
-          description: Hours until share expires (max 30 days)
-
     ShareResponse:
       type: object
       required:
@@ -3772,32 +3748,6 @@ components:
           items:
             $ref: '#/components/schemas/Share'
 
-    CreateAIShareRequest:
-      type: object
-      required:
-        - itemType
-        - itemIds
-        - analysisType
-      properties:
-        itemType:
-          type: string
-          enum: [journal]
-        itemIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-          minItems: 1
-          maxItems: 100
-        analysisType:
-          type: string
-          enum: [sentiment, themes, patterns, suggestions, wellness]
-        context:
-          type: string
-          description: Additional context for AI analysis
-        expiresInMinutes:
-          type: integer
-          minimum: 1
           maximum: 60
           default: 30
 

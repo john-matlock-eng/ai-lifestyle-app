@@ -66,6 +66,7 @@ class UserProfileRepository:
             field_mapping = {
                 "firstName": "first_name",
                 "lastName": "last_name",
+                "displayName": "display_name",
                 "phoneNumber": "phone_number",
                 "dateOfBirth": "date_of_birth",
                 "timezone": "timezone",

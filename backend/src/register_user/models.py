@@ -36,6 +36,12 @@ class RegisterRequest(BaseModel):
         description="User's last name",
         example="Doe"
     )
+    displayName: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=50,
+        description="Preferred display name"
+    )
 
     @field_validator('password')
     @classmethod
@@ -112,6 +118,7 @@ class DynamoDBUser(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
+    display_name: str
     email_verified: bool = False
     mfa_enabled: bool = False
     created_at: datetime

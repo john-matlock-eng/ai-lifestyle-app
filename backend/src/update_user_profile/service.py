@@ -46,6 +46,9 @@ class UpdateUserProfileService:
             
             if request.lastName is not None:
                 updates["lastName"] = request.lastName
+
+            if request.displayName is not None:
+                updates["displayName"] = request.displayName
             
             if request.phoneNumber is not None:
                 updates["phoneNumber"] = request.phoneNumber

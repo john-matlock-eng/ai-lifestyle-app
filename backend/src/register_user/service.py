@@ -81,6 +81,7 @@ class RegistrationService:
                 email=request.email,
                 first_name=request.firstName,
                 last_name=request.lastName,
+                display_name=(request.displayName or f"{request.firstName} {request.lastName}").strip(),
                 email_verified=False,
                 mfa_enabled=False,
                 created_at=now,

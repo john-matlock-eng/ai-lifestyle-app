@@ -85,6 +85,10 @@ class UserProfile(BaseModel):
         ...,
         description="User's last name"
     )
+    displayName: str = Field(
+        ...,
+        description="Preferred display name"
+    )
     emailVerified: bool = Field(
         ...,
         description="Whether email is verified"
@@ -204,6 +208,7 @@ class DynamoDBUser(BaseModel):
     email: str
     first_name: str
     last_name: str
+    display_name: str
     email_verified: bool = False
     mfa_enabled: bool = False
     phone_number: Optional[str] = None
@@ -233,6 +238,7 @@ class DynamoDBUser(BaseModel):
             email=self.email,
             firstName=self.first_name,
             lastName=self.last_name,
+            displayName=self.display_name,
             emailVerified=self.email_verified,
             mfaEnabled=self.mfa_enabled,
             phoneNumber=self.phone_number,
