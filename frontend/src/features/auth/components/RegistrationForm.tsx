@@ -261,8 +261,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
       return;
     }
     
+    // Debug: Log what we're sending
+    console.log('Form data being submitted:', data);
+    
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
+    
+    console.log('Data being sent to API:', registerData);
+    
     await registerMutation.mutateAsync(registerData);
   };
 
