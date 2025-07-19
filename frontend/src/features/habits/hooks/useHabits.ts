@@ -22,15 +22,15 @@ export const useHabits = () => {
   const serverStats = todayData?.stats;
   
   // Use stats from today's habits response or fallback to separate query
-  const stats = serverStats || {
-    totalPoints: 0,
-    currentLevel: 1,
-    nextLevelProgress: 0,
-    weeklyStreak: 0,
-    perfectDays: 0,
-    totalCheckIns: 0,
-    habitsCompletedToday: 0,
-    totalHabits: 0
+  const stats = {
+    totalPoints: serverStats?.totalPoints ?? 0,
+    currentLevel: serverStats?.currentLevel ?? 1,
+    nextLevelProgress: serverStats?.nextLevelProgress ?? 0,
+    weeklyStreak: serverStats?.weeklyStreak ?? 0,
+    perfectDays: serverStats?.perfectDays ?? 0,
+    totalCheckIns: serverStats?.totalCheckIns ?? 0,
+    habitsCompletedToday: serverStats?.habitsCompletedToday ?? 0,
+    totalHabits: serverStats?.totalHabits ?? 0
   };
   
   // Check in mutation
@@ -67,11 +67,11 @@ export const useHabits = () => {
             ...todayData,
             stats: {
               ...todayData.stats,
-              totalPoints: todayData.stats.totalPoints + data.points,
-              totalCheckIns: todayData.stats.totalCheckIns + 1,
+              totalPoints: (todayData.stats?.totalPoints ?? 0) + data.points,
+              totalCheckIns: (todayData.stats?.totalCheckIns ?? 0) + 1,
               // Recalculate level progress
-              nextLevelProgress: ((todayData.stats.totalPoints + data.points) % (todayData.stats.currentLevel * 100)) / (todayData.stats.currentLevel * 100) * 100,
-              currentLevel: Math.floor((todayData.stats.totalPoints + data.points) / 100) + 1
+              nextLevelProgress: (((todayData.stats?.totalPoints ?? 0) + data.points) % ((todayData.stats?.currentLevel ?? 1) * 100)) / ((todayData.stats?.currentLevel ?? 1) * 100) * 100,
+              currentLevel: Math.floor(((todayData.stats?.totalPoints ?? 0) + data.points) / 100) + 1
             }
           });
         }
