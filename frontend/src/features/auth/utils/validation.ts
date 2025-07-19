@@ -23,9 +23,9 @@ const nameSchema = z
 // Registration form schema
 export const registerSchema = z
   .object({
-    email: z.string().email("Invalid email address"),
+    email: z.string().min(1, "Email is required").email("Invalid email address"),
     password: passwordSchema,
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
     firstName: nameSchema,
     lastName: nameSchema,
   })

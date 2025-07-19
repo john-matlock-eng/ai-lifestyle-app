@@ -30,7 +30,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, touchedFields },
     setError,
     getFieldState,
   } = useForm<RegisterFormData>({
@@ -51,9 +51,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
       const fieldState = getFieldState(fieldName);
       const fieldValue = watchedValues[fieldName];
       
-      // Field is completed if it has a value and no errors
-      if (fieldValue && fieldValue.toString().trim() !== '' && !fieldState.error) {
-        newCompletedFields.add(fieldName);
+      // Field is completed if it has a value and either:
+      // 1. It hasn't been touched yet (no validation run), OR
+      // 2. It has been touched and has no errors
+      if (fieldValue && fieldValue.toString().trim() !== '') {
+        if (!touchedFields[fieldName] || !fieldState.error) {
+          newCompletedFields.add(fieldName);
+        }
       }
     });
     
@@ -67,7 +71,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
         companion.handleFieldComplete();
       }
     }
-  }, [watchedValues, errors, getFieldState, completedFields, companion]);
+  }, [watchedValues, errors, getFieldState, completedFields, companion, touchedFields]);
 
   // React to form progress
   useEffect(() => {
@@ -145,11 +149,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
 
   // React to errors (only when there are actual errors shown)
   useEffect(() => {
-    const visibleErrors = Object.keys(errors).filter(key => errors[key as keyof typeof errors]?.message);
+    const visibleErrors = Object.keys(errors).filter(key => {
+      const fieldName = key as keyof typeof errors;
+      return touchedFields[fieldName] && errors[fieldName]?.message;
+    });
     if (visibleErrors.length > 0 && companion) {
       companion.handleError();
     }
-  }, [errors, companion]);
+  }, [errors, companion, touchedFields]);
 
   const registerMutation = useMutation({
     mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
@@ -336,7 +343,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
               label="First name"
               isRequired
               {...register("firstName")}
-              error={errors.firstName?.message}
+              error={touchedFields.firstName ? errors.firstName?.message : undefined}
               autoComplete="given-name"
               onFocus={handleInputFocus}
               onChange={handleInputChange}
@@ -346,7 +353,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
               label="Last name"
               isRequired
               {...register("lastName")}
-              error={errors.lastName?.message}
+              error={touchedFields.lastName ? errors.lastName?.message : undefined}
               autoComplete="family-name"
               onFocus={handleInputFocus}
               onChange={handleInputChange}
@@ -358,7 +365,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             type="email"
             isRequired
             {...register("email")}
-            error={errors.email?.message}
+            error={touchedFields.email ? errors.email?.message : undefined}
             autoComplete="email"
             onFocus={handleInputFocus}
             onChange={handleInputChange}
@@ -384,7 +391,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
               label="Password"
               isRequired
               {...register("password")}
-              error={errors.password?.message}
+              error={touchedFields.password ? errors.password?.message : undefined}
               autoComplete="new-password"
               hint="Must be at least 8 characters with uppercase, lowercase, number, and special character"
               onFocus={handleInputFocus}
@@ -402,7 +409,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             label="Confirm password"
             isRequired
             {...register("confirmPassword")}
-            error={errors.confirmPassword?.message}
+            error={touchedFields.confirmPassword ? errors.confirmPassword?.message : undefined}
             autoComplete="new-password"
             onFocus={handleInputFocus}
             onChange={handleInputChange}
