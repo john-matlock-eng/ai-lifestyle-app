@@ -90,10 +90,15 @@ class CognitoClient:
             auth_params = {
                 'REFRESH_TOKEN': refresh_token
             }
-            
-            # IMPORTANT: For REFRESH_TOKEN_AUTH flow, we should NOT include SECRET_HASH
-            # when the app client doesn't have a secret. The Terraform config shows
-            # generate_secret = false, so we should not calculate or send a secret hash.
+
+            # Include SECRET_HASH only when a client secret is configured. For
+            # refresh token auth, Cognito expects the secret hash to be
+            # calculated with the refresh token value.
+            if self.client_secret:
+                auth_params['SECRET_HASH'] = self._calculate_secret_hash(
+                    refresh_token
+                )
+
             
             logger.info(
                 "Initiating token refresh",
