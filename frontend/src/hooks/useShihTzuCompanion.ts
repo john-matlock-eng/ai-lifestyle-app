@@ -124,14 +124,20 @@ export const useShihTzuCompanion = ({
     }, 3000);
   }, [setMood]);
 
-  // Move to a specific element with placement options
-  const moveToElement = useCallback((element: HTMLElement, placement: 'above' | 'below' | 'left' | 'right' = 'above') => {
+  // Move to a specific element with improved positioning
+  const moveToElement = useCallback((element: HTMLElement, placement: 'above' | 'below' | 'left' | 'right' = 'right') => {
     const rect = element.getBoundingClientRect();
     const companionSize = 80; // Size of the companion (md size)
-    const offset = 20; // Space between companion and element
+    const isMobile = window.innerWidth < 640;
+    const offset = isMobile ? 10 : 20; // Closer on mobile
     
     let x: number;
     let y: number;
+    
+    // Adjust placement based on screen size if not specified
+    if (!placement && isMobile) {
+      placement = 'above'; // Default to above on mobile to save horizontal space
+    }
     
     switch (placement) {
       case 'above':
@@ -145,14 +151,26 @@ export const useShihTzuCompanion = ({
       case 'below':
         x = rect.left + rect.width / 2 - companionSize / 2;
         y = rect.bottom + offset;
+        // Make sure it doesn't go off bottom
+        if (y > window.innerHeight - companionSize - 10) {
+          y = rect.top - companionSize - offset; // Switch to above
+        }
         break;
       case 'left':
         x = rect.left - companionSize - offset;
         y = rect.top + rect.height / 2 - companionSize / 2;
+        // Make sure it doesn't go off left
+        if (x < 10) {
+          x = rect.right + offset; // Switch to right
+        }
         break;
       case 'right':
         x = rect.right + offset;
         y = rect.top + rect.height / 2 - companionSize / 2;
+        // Make sure it doesn't go off right
+        if (x > window.innerWidth - companionSize - 10) {
+          x = rect.left - companionSize - offset; // Switch to left
+        }
         break;
     }
     

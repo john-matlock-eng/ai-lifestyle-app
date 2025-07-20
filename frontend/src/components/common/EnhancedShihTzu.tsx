@@ -14,6 +14,7 @@ interface EnhancedShihTzuProps {
   particleEffect?: 'hearts' | 'sparkles' | 'treats' | 'zzz' | null;
   variant?: 'default' | 'winter' | 'party' | 'workout';
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({ 
@@ -28,7 +29,8 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
   thoughtText = '',
   particleEffect = null,
   variant = 'default',
-  className
+  className,
+  style
 }) => {
   const [currentPosition, setCurrentPosition] = useState(position);
   const [isMoving, setIsMoving] = useState(false);
@@ -138,26 +140,32 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
     <div
       ref={companionRef}
       className={clsx(
-        "absolute cursor-pointer transition-all duration-1000 ease-in-out select-none",
+        "cursor-pointer transition-all duration-1000 ease-in-out select-none",
         isPetting && "scale-110",
         className
       )}
       style={{
+        position: style?.position || 'absolute',
         left: `${currentPosition.x}px`,
         top: `${currentPosition.y}px`,
         transform: isMoving ? 'translateY(-10px)' : 'translateY(0)',
-        zIndex: 100
+        zIndex: 100,
+        ...style
       }}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {/* Thought Bubble */}
+      {/* Thought Bubble - position adjusted for mobile */}
       {showThoughtBubble && thoughtText && (
-        <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-          <div className="bg-white rounded-full px-4 py-2 shadow-lg relative text-black animate-float-subtle">
-            <p className="text-sm font-medium">{thoughtText}</p>
+        <div className="absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap"
+          style={{
+            top: window.innerWidth < 640 ? '-60px' : '-80px', // Closer on mobile
+          }}
+        >
+          <div className="bg-white rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-lg relative text-black animate-float-subtle">
+            <p className="text-xs sm:text-sm font-medium">{thoughtText}</p>
             <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
               <div className="w-3 h-3 bg-white rounded-full"></div>
               <div className="w-2 h-2 bg-white rounded-full ml-1 mt-1"></div>
@@ -170,7 +178,7 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className="absolute pointer-events-none text-2xl animate-float-up"
+          className="absolute pointer-events-none text-xl sm:text-2xl animate-float-up"
           style={{
             left: '50%',
             top: '20%',

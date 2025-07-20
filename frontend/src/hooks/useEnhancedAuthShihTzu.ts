@@ -1,4 +1,4 @@
-// Enhanced version of useAuthShihTzu with new features for testing
+// Enhanced version of useAuthShihTzu with improved positioning
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useShihTzuCompanion } from './useShihTzuCompanion';
 
@@ -28,12 +28,38 @@ interface ThoughtBubble {
 }
 
 export const useEnhancedAuthShihTzu = () => {
-  const formWidth = 400;
-  const formCenterX = window.innerWidth / 2;
-  const initialX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
+  // Calculate initial position based on viewport
+  const getInitialPosition = () => {
+    const isMobile = window.innerWidth < 640; // sm breakpoint
+    const isTablet = window.innerWidth < 1024; // lg breakpoint
+    
+    if (isMobile) {
+      // On mobile, position at top right, visible but not intrusive
+      return { 
+        x: window.innerWidth - 100, 
+        y: 60 
+      };
+    } else if (isTablet) {
+      // On tablet, position to the right of form area
+      const formWidth = 448; // max-w-md = 28rem = 448px
+      const formCenterX = window.innerWidth / 2;
+      return {
+        x: formCenterX + formWidth / 2 + 40,
+        y: 120
+      };
+    } else {
+      // On desktop, position to the right of form
+      const formWidth = 448;
+      const formCenterX = window.innerWidth / 2;
+      return {
+        x: Math.min(formCenterX + formWidth / 2 + 60, window.innerWidth - 120),
+        y: 150
+      };
+    }
+  };
   
   const companion = useShihTzuCompanion({
-    initialPosition: { x: initialX, y: 200 },
+    initialPosition: getInitialPosition(),
     idleTimeout: 10000,
   });
 
@@ -56,6 +82,20 @@ export const useEnhancedAuthShihTzu = () => {
   const particleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastPasswordStrength = useRef<'weak' | 'medium' | 'strong' | null>(null);
   const hasGreeted = useRef(false);
+
+  // Update position on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      // Only reposition if companion is in default/idle position
+      if (companionState === 'idle' && !currentField) {
+        const newPosition = getInitialPosition();
+        companion.setPosition(newPosition);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [companionState, currentField, companion]);
 
   // Show thought bubble
   const showThought = useCallback((text: string, duration = 3000) => {
@@ -83,11 +123,21 @@ export const useEnhancedAuthShihTzu = () => {
     }, 3000);
   }, []);
 
-  // Enhanced greet with personality
+  // Enhanced greet with better positioning
   useEffect(() => {
     if (!hasGreeted.current) {
       hasGreeted.current = true;
       const greetTimeout = setTimeout(() => {
+        // Move to a position near where the first field will be
+        const isMobile = window.innerWidth < 640;
+        if (!isMobile) {
+          // Find the approximate position of the first input field
+          const firstInput = document.querySelector('input[type="email"], input[type="text"]');
+          if (firstInput) {
+            companion.moveToElement(firstInput as HTMLElement, 'right');
+          }
+        }
+        
         companion.setMood('excited' as any);
         showThought("Welcome! Let's get you signed in! 🎉", 4000);
         triggerParticleEffect('sparkles');
@@ -95,11 +145,11 @@ export const useEnhancedAuthShihTzu = () => {
         setTimeout(() => {
           companion.setMood('idle');
         }, 3000);
-      }, 500);
+      }, 800);
       
       return () => clearTimeout(greetTimeout);
     }
-  }, []);
+  }, [companion, showThought, triggerParticleEffect]);
 
   // Update personality needs over time
   useEffect(() => {
@@ -127,13 +177,17 @@ export const useEnhancedAuthShihTzu = () => {
     };
   }, []);
 
-  // Enhanced input focus with thought bubbles
+  // Enhanced input focus with closer positioning
   const handleInputFocus = useCallback((inputElement: HTMLInputElement | HTMLElement) => {
     const fieldName = inputElement.getAttribute('name') || inputElement.getAttribute('id') || 'field';
     setCurrentField(fieldName);
     setCompanionState('focused');
     
-    companion.moveToElement(inputElement, 'above');
+    // Use closer positioning based on screen size
+    const isMobile = window.innerWidth < 640;
+    const placement = isMobile ? 'above' : 'right';
+    
+    companion.moveToElement(inputElement, placement);
     
     // Field-specific thoughts
     if (fieldName === 'email') {
@@ -207,7 +261,7 @@ export const useEnhancedAuthShihTzu = () => {
     }, 3000);
   }, [companion, showThought]);
 
-  // Enhanced success celebration
+  // Enhanced success celebration with centered position
   const handleSuccess = useCallback(() => {
     setCompanionState('success');
     companion.setMood('celebrating' as any);
@@ -216,11 +270,19 @@ export const useEnhancedAuthShihTzu = () => {
     showThought("Welcome aboard! 🎊", 4000);
     triggerParticleEffect('sparkles');
     
-    // Victory dance
-    companion.setPosition({
-      x: window.innerWidth / 2 - 50,
-      y: window.innerHeight / 2 - 50,
-    });
+    // Victory dance - move to center but account for mobile
+    const isMobile = window.innerWidth < 640;
+    if (isMobile) {
+      companion.setPosition({
+        x: window.innerWidth / 2 - 40,
+        y: 200,
+      });
+    } else {
+      companion.setPosition({
+        x: window.innerWidth / 2 - 50,
+        y: window.innerHeight / 2 - 50,
+      });
+    }
     
     // Update personality
     setPersonality(prev => ({
@@ -249,10 +311,12 @@ export const useEnhancedAuthShihTzu = () => {
     companion.setMood('walking');
     showThought("Checking your info... 🔍", 2000);
     
-    // Pacing animation
+    // Pacing animation - smaller movements on mobile
+    const isMobile = window.innerWidth < 640;
+    const paceDistance = isMobile ? 20 : 30;
     const pacePositions = [
-      { x: companion.position.x - 30, y: companion.position.y },
-      { x: companion.position.x + 30, y: companion.position.y },
+      { x: companion.position.x - paceDistance, y: companion.position.y },
+      { x: companion.position.x + paceDistance, y: companion.position.y },
       { x: companion.position.x, y: companion.position.y }
     ];
     companion.followPath(pacePositions);
@@ -332,9 +396,10 @@ export const useEnhancedAuthShihTzu = () => {
       case 'rate-limit':
         companion.setMood('protective' as any);
         showThought("Let's take a breather... ⏱️", 5000);
-        // Dizzy animation
+        // Dizzy animation with smaller radius on mobile
+        const isMobile = window.innerWidth < 640;
+        const radius = isMobile ? 20 : 30;
         const center = companion.position;
-        const radius = 30;
         const circlePositions = Array.from({ length: 8 }, (_, i) => {
           const angle = (i / 8) * 2 * Math.PI;
           return {
@@ -364,10 +429,18 @@ export const useEnhancedAuthShihTzu = () => {
     if (companionState === 'typing' || companionState === 'focused') {
       setCompanionState('idle');
       companion.setMood('idle');
+      
+      // Return to default position after a delay
+      setTimeout(() => {
+        if (companionState === 'idle' && !currentField) {
+          const defaultPosition = getInitialPosition();
+          companion.setPosition(defaultPosition);
+        }
+      }, 2000);
     }
     
     setCurrentField(null);
-  }, [companion, companionState]);
+  }, [companion, companionState, currentField]);
 
   // Interactive features
   const pet = useCallback(() => {
@@ -403,8 +476,71 @@ export const useEnhancedAuthShihTzu = () => {
     triggerParticleEffect('sparkles');
   }, [companion, showThought, triggerParticleEffect]);
 
+  // Override moveToElement for better positioning
+  const moveToElement = useCallback((element: HTMLElement, placement?: 'above' | 'below' | 'left' | 'right') => {
+    const rect = element.getBoundingClientRect();
+    const companionSize = 80; // Size of the companion (md size)
+    const isMobile = window.innerWidth < 640;
+    const offset = isMobile ? 10 : 20; // Closer on mobile
+    
+    let x: number;
+    let y: number;
+    
+    // Default placement based on screen size
+    const defaultPlacement = placement || (isMobile ? 'above' : 'right');
+    
+    switch (defaultPlacement) {
+      case 'above':
+        x = rect.left + rect.width / 2 - companionSize / 2;
+        y = rect.top - companionSize - offset;
+        // Make sure it doesn't go off the top of the screen
+        if (y < 10) {
+          // Try below instead
+          y = rect.bottom + offset;
+        }
+        break;
+      case 'below':
+        x = rect.left + rect.width / 2 - companionSize / 2;
+        y = rect.bottom + offset;
+        break;
+      case 'left':
+        x = rect.left - companionSize - offset;
+        y = rect.top + rect.height / 2 - companionSize / 2;
+        // Make sure it doesn't go off the left
+        if (x < 10) {
+          // Try right instead
+          x = rect.right + offset;
+        }
+        break;
+      case 'right':
+        x = rect.right + offset;
+        y = rect.top + rect.height / 2 - companionSize / 2;
+        // Make sure it doesn't go off the right
+        if (x > window.innerWidth - companionSize - 10) {
+          // Try left instead
+          x = rect.left - companionSize - offset;
+        }
+        break;
+    }
+    
+    // Ensure the companion stays within viewport bounds
+    x = Math.max(10, Math.min(x, window.innerWidth - companionSize - 10));
+    y = Math.max(10, Math.min(y, window.innerHeight - companionSize - 10));
+    
+    companion.setPosition({ x, y });
+    
+    // Don't change mood if already in a special state
+    if (companion.mood !== 'happy' && companion.mood !== 'curious') {
+      companion.setMood('walking');
+      setTimeout(() => {
+        companion.setMood('idle');
+      }, 1000);
+    }
+  }, [companion]);
+
   return {
     ...companion,
+    moveToElement, // Override with our custom implementation
     handleInputFocus,
     handleInputBlur,
     handleTyping,

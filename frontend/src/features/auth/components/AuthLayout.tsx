@@ -39,7 +39,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onShihTzuReady
         })}
       </div>
       
-      {/* Enhanced Animated Shih Tzu */}
+      {/* Enhanced Animated Shih Tzu - with higher z-index for mobile */}
       <EnhancedShihTzu
         mood={companion.mood}
         position={companion.position}
@@ -50,7 +50,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onShihTzuReady
         showThoughtBubble={companion.thoughtBubble.show}
         thoughtText={companion.thoughtBubble.text}
         particleEffect={companion.particleEffect}
-        className="z-20 drop-shadow-lg"
+        className="z-[100] drop-shadow-lg"
+        style={{
+          // Ensure companion is always visible and not cut off
+          position: 'fixed' as const,
+          pointerEvents: 'auto' as const,
+        }}
       />
       
       {/* Helper styles for floating animations */}
