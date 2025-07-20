@@ -1,5 +1,6 @@
 import React, { forwardRef, useRef, useImperativeHandle } from 'react';
-import Input, { InputProps } from '../../../components/common/Input';
+import Input from '../../../components/common/Input';
+import type { InputProps } from '../../../components/common/Input';
 import type { useEnhancedAuthShihTzu } from '../../../hooks/useEnhancedAuthShihTzu';
 
 interface CompanionInputProps extends InputProps {

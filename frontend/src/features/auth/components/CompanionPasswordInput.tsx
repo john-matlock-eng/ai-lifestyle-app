@@ -1,5 +1,6 @@
 import React, { forwardRef, useRef, useImperativeHandle } from 'react';
-import PasswordInput, { PasswordInputProps } from './PasswordInput';
+import PasswordInput from './PasswordInput';
+import type { PasswordInputProps } from './PasswordInput';
 import type { useEnhancedAuthShihTzu } from '../../../hooks/useEnhancedAuthShihTzu';
 
 interface CompanionPasswordInputProps extends PasswordInputProps {
