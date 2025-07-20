@@ -2,7 +2,7 @@
 // This file provides the foundation for the enhanced companion system
 
 // Keep existing type for backward compatibility
-export type { AnimatedShihTzuProps } from '../../components/common/AnimatedShihTzu';
+export type { AnimatedShihTzuProps } from '../components/common/AnimatedShihTzu';
 
 // Enhanced mood system - start with existing moods and add new ones gradually
 export type CompanionMood = 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
 
 interface EnhancedShihTzuProps {
@@ -37,7 +37,7 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
   const [particles, setParticles] = useState<Array<{id: number; x: number; y: number}>>([]);
   const companionRef = useRef<HTMLDivElement>(null);
   const particleIdRef = useRef(0);
-  const positionTimerRef = useRef<NodeJS.Timeout>();
+  const positionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const sizeMap = {
     sm: { width: 60, height: 60 },

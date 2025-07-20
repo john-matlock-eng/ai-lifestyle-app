@@ -50,10 +50,10 @@ export const useEnhancedAuthShihTzu = () => {
   const [accessories, setAccessories] = useState<string[]>([]);
   
   // Refs
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
-  const moodTimeoutRef = useRef<NodeJS.Timeout>();
-  const thoughtTimerRef = useRef<NodeJS.Timeout>();
-  const particleTimerRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const moodTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const thoughtTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const particleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastPasswordStrength = useRef<'weak' | 'medium' | 'strong' | null>(null);
   const hasGreeted = useRef(false);
 

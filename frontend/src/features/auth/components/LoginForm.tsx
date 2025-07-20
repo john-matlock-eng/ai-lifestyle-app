@@ -28,12 +28,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
   const [showMfa, setShowMfa] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const typingDebounceRef = useRef<NodeJS.Timeout>();
+  const typingDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, touchedFields, isValid },
+    formState: { errors, isSubmitting, touchedFields },
     setError,
     trigger,
     watch,
@@ -45,7 +45,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     },
   });
 
-  const watchedValues = watch();
+  // const watchedValues = watch(); // Commented out - unused
 
   // React to form errors with enhanced companion
   useEffect(() => {
@@ -69,6 +69,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
   }, [generalError, companion]);
 
   // Create enhanced field props with companion interactions
+  // Commented out - not compatible with current form field type expectations
+  /*
   const createEnhancedFieldProps = (fieldName: keyof LoginFormData) => {
     const fieldRegistration = register(fieldName);
     
@@ -76,10 +78,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
       ...fieldRegistration,
       onFocus: async (e: React.FocusEvent<HTMLInputElement>) => {
         setHasInteracted(true);
-        
-        if (fieldRegistration.onFocus) {
-          await fieldRegistration.onFocus(e);
-        }
         
         if (companion && e.target) {
           companion.handleInputFocus(e.target);
@@ -137,6 +135,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
       }
     };
   };
+  */
 
   // Cleanup on unmount
   useEffect(() => {
@@ -370,7 +369,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
             label="Email address"
             type="email"
             isRequired
-            {...createEnhancedFieldProps("email")}
+            {...register("email")}
             error={errors.email?.message}
             autoComplete="email"
             leftIcon={
@@ -393,7 +392,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
           <PasswordInput
             label="Password"
             isRequired
-            {...createEnhancedFieldProps("password")}
+            {...register("password")}
             error={errors.password?.message}
             autoComplete="current-password"
           />

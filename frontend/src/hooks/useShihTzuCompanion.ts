@@ -30,8 +30,8 @@ export const useShihTzuCompanion = ({
   const [mood, setMoodState] = useState<AnimatedShihTzuProps['mood']>(initialMood);
   const [position, setPositionState] = useState(initialPosition);
   const [lastInteraction, setLastInteraction] = useState(Date.now());
-  const idleCheckIntervalRef = useRef<NodeJS.Timeout>();
-  const animationTimeoutRef = useRef<NodeJS.Timeout>();
+  const idleCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-idle functionality
   useEffect(() => {

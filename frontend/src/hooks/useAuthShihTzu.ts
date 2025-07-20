@@ -18,8 +18,8 @@ export const useAuthShihTzu = () => {
   // State management for companion behavior
   const [companionState, setCompanionState] = useState<CompanionState>('idle');
   const [currentField, setCurrentField] = useState<string | null>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
-  const moodTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const moodTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastPasswordStrength = useRef<'weak' | 'medium' | 'strong' | null>(null);
   const hasGreeted = useRef(false);
 
@@ -167,14 +167,14 @@ export const useAuthShihTzu = () => {
 
   // React to field completion
   const handleFieldComplete = useCallback(() => {
-    // Only react if not in error or success state
-    if (companionState !== 'error' && companionState !== 'success') {
+    // Only react if in appropriate state
+    if (companionState === 'idle' || companionState === 'focused' || companionState === 'typing' || companionState === 'validating') {
       // Quick happy animation
       const previousMood = companion.mood;
       companion.setMood('happy');
       
       moodTimeoutRef.current = setTimeout(() => {
-        if (companionState !== 'error' && companionState !== 'success') {
+        if (companionState === 'idle' || companionState === 'focused' || companionState === 'typing' || companionState === 'validating') {
           companion.setMood(previousMood === 'happy' ? 'idle' : previousMood);
         }
       }, 1000);

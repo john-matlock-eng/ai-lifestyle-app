@@ -52,11 +52,11 @@ export const useEnhancedCompanion = (options: UseEnhancedCompanionOptions = {}) 
   });
 
   const [particleEffect, setParticleEffect] = useState<ParticleEffect | null>(null);
-  const [accessories, setAccessories] = useState<string[]>([]);
+  const [accessories] = useState<string[]>([]);
 
   // Refs for managing timers
-  const thoughtTimerRef = useRef<NodeJS.Timeout>();
-  const particleTimerRef = useRef<NodeJS.Timeout>();
+  const thoughtTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const particleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Enhanced celebrate that works with existing code
   const celebrate = useCallback(() => {

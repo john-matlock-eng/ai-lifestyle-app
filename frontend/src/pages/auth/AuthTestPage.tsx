@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import LoginForm from '../../features/auth/components/LoginForm';
 import { useEnhancedAuthShihTzu } from '../../hooks/useEnhancedAuthShihTzu';
 import EnhancedShihTzu from '../../components/common/EnhancedShihTzu';

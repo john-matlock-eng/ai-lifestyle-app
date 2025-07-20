@@ -22,7 +22,7 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
   const [isMoving, setIsMoving] = useState(false);
   const [currentMood, setCurrentMood] = useState(mood);
   const shihTzuRef = useRef<HTMLDivElement>(null);
-  const positionTimerRef = useRef<NodeJS.Timeout>();
+  const positionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const sizeMap = {
     sm: { width: 60, height: 60 },
