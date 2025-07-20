@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import LoginForm from "../../features/auth/components/LoginForm";
+import EnhancedLoginForm from "../../features/auth/components/EnhancedLoginForm";
 import AuthLayout from "../../features/auth/components/AuthLayout";
 import { EllieLogo } from "../../components/common";
+import type { useEnhancedAuthShihTzu } from "../../hooks/useEnhancedAuthShihTzu";
 
 const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -10,6 +11,7 @@ const LoginPage: React.FC = () => {
     type: "info" | "error";
     text: string;
   } | null>(null);
+  const [companion, setCompanion] = useState<ReturnType<typeof useEnhancedAuthShihTzu> | undefined>(undefined);
 
   useEffect(() => {
     const messageParam = searchParams.get("message");
@@ -33,7 +35,7 @@ const LoginPage: React.FC = () => {
   }, [searchParams]);
 
   return (
-    <AuthLayout>
+    <AuthLayout onShihTzuReady={setCompanion}>
       <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-theme">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
@@ -61,7 +63,7 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
           )}
-          <LoginForm />
+          <EnhancedLoginForm companion={companion} />
         </div>
       </div>
     </AuthLayout>

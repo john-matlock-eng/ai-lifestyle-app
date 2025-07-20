@@ -1,11 +1,14 @@
-import React from "react";
-import RegistrationForm from "../../features/auth/components/RegistrationForm";
+import React, { useState } from "react";
+import EnhancedRegistrationForm from "../../features/auth/components/EnhancedRegistrationForm";
 import AuthLayout from "../../features/auth/components/AuthLayout";
 import { EllieLogo } from "../../components/common";
+import type { useEnhancedAuthShihTzu } from "../../hooks/useEnhancedAuthShihTzu";
 
 const RegisterPage: React.FC = () => {
+  const [companion, setCompanion] = useState<ReturnType<typeof useEnhancedAuthShihTzu> | undefined>(undefined);
+
   return (
-    <AuthLayout>
+    <AuthLayout onShihTzuReady={setCompanion}>
       <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-theme">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
@@ -20,7 +23,7 @@ const RegisterPage: React.FC = () => {
         </div>
 
         <div className="mt-8">
-          <RegistrationForm />
+          <EnhancedRegistrationForm companion={companion} />
         </div>
       </div>
     </AuthLayout>
