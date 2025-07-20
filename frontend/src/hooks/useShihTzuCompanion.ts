@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { AnimatedShihTzuProps } from '../components/common/AnimatedShihTzu';
 
 interface UseShihTzuCompanionOptions {
   initialMood?: AnimatedShihTzuProps['mood'];
   initialPosition?: { x: number; y: number };
   idleTimeout?: number; // Time in ms before dog goes to idle/sleeping
+  enableAutoIdle?: boolean; // Whether to enable auto-idle behavior
 }
 
 interface UseShihTzuCompanionReturn {
@@ -16,7 +17,7 @@ interface UseShihTzuCompanionReturn {
   showCuriosity: () => void;
   startJournaling: () => void;
   walk: () => void;
-  moveToElement: (element: HTMLElement) => void;
+  moveToElement: (element: HTMLElement, placement?: 'above' | 'below' | 'left' | 'right') => void;
   followPath: (path: { x: number; y: number }[]) => void;
 }
 
@@ -24,98 +25,191 @@ export const useShihTzuCompanion = ({
   initialMood = 'idle',
   initialPosition = { x: 100, y: 100 },
   idleTimeout = 30000, // 30 seconds default
+  enableAutoIdle = true,
 }: UseShihTzuCompanionOptions = {}): UseShihTzuCompanionReturn => {
-  const [mood, setMood] = useState<AnimatedShihTzuProps['mood']>(initialMood);
-  const [position, setPosition] = useState(initialPosition);
+  const [mood, setMoodState] = useState<AnimatedShihTzuProps['mood']>(initialMood);
+  const [position, setPositionState] = useState(initialPosition);
   const [lastInteraction, setLastInteraction] = useState(Date.now());
+  const idleCheckIntervalRef = useRef<NodeJS.Timeout>();
+  const animationTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Auto-idle functionality
   useEffect(() => {
+    if (!enableAutoIdle) return;
+
     const checkIdle = () => {
       const timeSinceInteraction = Date.now() - lastInteraction;
+      
+      // Only change to idle/sleeping if not in a special animation state
+      if (mood === 'happy' || mood === 'walking') {
+        return; // Don't interrupt these animations
+      }
+      
       if (timeSinceInteraction > idleTimeout && mood !== 'sleeping' && mood !== 'idle') {
-        setMood('idle');
+        setMoodState('idle');
       }
       if (timeSinceInteraction > idleTimeout * 2 && mood === 'idle') {
-        setMood('sleeping');
+        setMoodState('sleeping');
       }
     };
 
-    const interval = setInterval(checkIdle, 5000); // Check every 5 seconds
-    return () => clearInterval(interval);
-  }, [mood, lastInteraction, idleTimeout]);
+    idleCheckIntervalRef.current = setInterval(checkIdle, 5000); // Check every 5 seconds
+    
+    return () => {
+      if (idleCheckIntervalRef.current) {
+        clearInterval(idleCheckIntervalRef.current);
+      }
+    };
+  }, [mood, lastInteraction, idleTimeout, enableAutoIdle]);
 
-  const updateMood = useCallback((newMood: AnimatedShihTzuProps['mood']) => {
-    setMood(newMood);
+  // Cleanup animation timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+      if (idleCheckIntervalRef.current) {
+        clearInterval(idleCheckIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const setMood = useCallback((newMood: AnimatedShihTzuProps['mood']) => {
+    setMoodState(newMood);
     setLastInteraction(Date.now());
   }, []);
 
-  const updatePosition = useCallback((newPosition: { x: number; y: number }) => {
-    setPosition(newPosition);
+  const setPosition = useCallback((newPosition: { x: number; y: number }) => {
+    setPositionState(newPosition);
     setLastInteraction(Date.now());
   }, []);
 
   // Preset animations
   const celebrate = useCallback(() => {
-    updateMood('happy');
-    // Reset to idle after celebration
-    setTimeout(() => updateMood('idle'), 5000);
-  }, [updateMood]);
+    // Clear any existing animation timeout
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+    
+    setMood('happy');
+    // Don't auto-reset from celebration - let the calling code decide when to stop
+  }, [setMood]);
 
   const showCuriosity = useCallback(() => {
-    updateMood('curious');
+    // Clear any existing animation timeout
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+    
+    setMood('curious');
     // Reset to idle after being curious
-    setTimeout(() => updateMood('idle'), 4000);
-  }, [updateMood]);
+    animationTimeoutRef.current = setTimeout(() => {
+      setMood('idle');
+    }, 4000);
+  }, [setMood]);
 
   const startJournaling = useCallback(() => {
-    updateMood('sleeping');
+    setMood('sleeping');
     // Move to bottom right corner
     const x = window.innerWidth - 150;
     const y = window.innerHeight - 150;
-    updatePosition({ x, y });
-  }, [updateMood, updatePosition]);
+    setPosition({ x, y });
+  }, [setMood, setPosition]);
 
   const walk = useCallback(() => {
-    updateMood('walking');
+    setMood('walking');
     // Reset to idle after walking
-    setTimeout(() => updateMood('idle'), 3000);
-  }, [updateMood]);
+    animationTimeoutRef.current = setTimeout(() => {
+      setMood('idle');
+    }, 3000);
+  }, [setMood]);
 
-  // Move to a specific element
-  const moveToElement = useCallback((element: HTMLElement) => {
+  // Move to a specific element with placement options
+  const moveToElement = useCallback((element: HTMLElement, placement: 'above' | 'below' | 'left' | 'right' = 'above') => {
     const rect = element.getBoundingClientRect();
-    const x = rect.left + rect.width / 2 - 40; // Center the dog
-    const y = rect.top + rect.height / 2 - 40;
+    const companionSize = 80; // Size of the companion (md size)
+    const offset = 20; // Space between companion and element
     
-    updateMood('walking');
-    updatePosition({ x, y });
+    let x: number;
+    let y: number;
+    
+    switch (placement) {
+      case 'above':
+        x = rect.left + rect.width / 2 - companionSize / 2;
+        y = rect.top - companionSize - offset;
+        // Make sure it doesn't go off the top of the screen
+        if (y < 10) {
+          y = rect.bottom + offset; // Switch to below if no room above
+        }
+        break;
+      case 'below':
+        x = rect.left + rect.width / 2 - companionSize / 2;
+        y = rect.bottom + offset;
+        break;
+      case 'left':
+        x = rect.left - companionSize - offset;
+        y = rect.top + rect.height / 2 - companionSize / 2;
+        break;
+      case 'right':
+        x = rect.right + offset;
+        y = rect.top + rect.height / 2 - companionSize / 2;
+        break;
+    }
+    
+    // Ensure the companion stays within viewport bounds
+    x = Math.max(10, Math.min(x, window.innerWidth - companionSize - 10));
+    y = Math.max(10, Math.min(y, window.innerHeight - companionSize - 10));
+    
+    // Don't change mood if already in a special state
+    if (mood !== 'happy' && mood !== 'curious') {
+      setMood('walking');
+    }
+    
+    setPosition({ x, y });
     
     // Stop walking when arrived
-    setTimeout(() => updateMood('idle'), 1000);
-  }, [updateMood, updatePosition]);
+    if (mood === 'walking') {
+      animationTimeoutRef.current = setTimeout(() => {
+        setMood('idle');
+      }, 1000);
+    }
+  }, [setMood, setPosition, mood]);
 
   // Follow a path of positions
   const followPath = useCallback((path: { x: number; y: number }[]) => {
-    updateMood('walking');
+    // Don't change mood if in a special state
+    if (mood !== 'happy' && mood !== 'curious') {
+      setMood('walking');
+    }
+    
+    let pathTimeouts: NodeJS.Timeout[] = [];
     
     path.forEach((point, index) => {
-      setTimeout(() => {
-        updatePosition(point);
+      const timeout = setTimeout(() => {
+        setPosition(point);
         
         // Stop walking at the end
-        if (index === path.length - 1) {
-          setTimeout(() => updateMood('idle'), 500);
+        if (index === path.length - 1 && mood === 'walking') {
+          animationTimeoutRef.current = setTimeout(() => {
+            setMood('idle');
+          }, 500);
         }
       }, index * 800); // Move every 800ms
+      
+      pathTimeouts.push(timeout);
     });
-  }, [updateMood, updatePosition]);
+    
+    // Store timeouts for cleanup if needed
+    return () => {
+      pathTimeouts.forEach(clearTimeout);
+    };
+  }, [setMood, setPosition, mood]);
 
   return {
     mood,
     position,
-    setMood: updateMood,
-    setPosition: updatePosition,
+    setMood,
+    setPosition,
     celebrate,
     showCuriosity,
     startJournaling,

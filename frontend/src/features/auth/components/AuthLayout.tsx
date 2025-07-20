@@ -1,18 +1,20 @@
 // src/features/auth/components/AuthLayout.tsx
-import React from 'react';
-import AnimatedShihTzu from '@/components/common/AnimatedShihTzu';
-import { useAuthShihTzu } from '@/hooks/useAuthShihTzu';
+import React, { useRef, useEffect } from 'react';
+import { useEnhancedAuthShihTzu } from '@/hooks/useEnhancedAuthShihTzu';
+import EnhancedShihTzu from '@/components/common/EnhancedShihTzu';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
-  onShihTzuReady?: (companion: ReturnType<typeof useAuthShihTzu>) => void;
+  onShihTzuReady?: (companion: ReturnType<typeof useEnhancedAuthShihTzu>) => void;
 }
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onShihTzuReady }) => {
-  const companion = useAuthShihTzu();
+  const companion = useEnhancedAuthShihTzu();
+  const readyCallbackRef = useRef(false);
 
-  React.useEffect(() => {
-    if (onShihTzuReady) {
+  useEffect(() => {
+    if (onShihTzuReady && !readyCallbackRef.current) {
+      readyCallbackRef.current = true;
       onShihTzuReady(companion);
     }
   }, [companion, onShihTzuReady]);
@@ -28,15 +30,26 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onShihTzuReady
       
       {/* Content */}
       <div className="relative z-10">
-        {children}
+        {React.Children.map(children, child => {
+          if (React.isValidElement(child)) {
+            // Pass companion to children components
+            return React.cloneElement(child as React.ReactElement<any>, { companion });
+          }
+          return child;
+        })}
       </div>
       
-      {/* Animated Shih Tzu */}
-      <AnimatedShihTzu
+      {/* Enhanced Animated Shih Tzu */}
+      <EnhancedShihTzu
         mood={companion.mood}
         position={companion.position}
         onPositionChange={companion.setPosition}
+        onPet={companion.pet}
         size="md"
+        accessories={companion.accessories}
+        showThoughtBubble={companion.thoughtBubble.show}
+        thoughtText={companion.thoughtBubble.text}
+        particleEffect={companion.particleEffect}
         className="z-20 drop-shadow-lg"
       />
       

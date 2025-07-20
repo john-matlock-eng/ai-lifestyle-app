@@ -30,7 +30,10 @@
       "Bash(npm run test:*)",
       "Bash(node fix-imports.js)",
       "Bash(node:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(make fmt:*)",
+      "Bash(black:*)",
+      "Bash(set PYTHONPATH=src)"
     ],
     "deny": []
   }

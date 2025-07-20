@@ -12,3 +12,5 @@ export { Confetti } from "./Confetti";
 export { default as AnimatedShihTzu } from "./AnimatedShihTzu";
 export type { AnimatedShihTzuProps } from "./AnimatedShihTzu";
 export { default as ShihTzuCompanionExample } from "./ShihTzuCompanionExample";
+export { default as EnhancedShihTzu } from "./EnhancedShihTzu";
+export { default as EllieLogo } from "./EllieLogo";

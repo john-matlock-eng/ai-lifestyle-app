@@ -1,6 +1,75 @@
-<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="48" height="48" rx="10" fill="#2196F3"/>
-  <path d="M24 8L12 20L16 24L24 16L32 24L36 20L24 8Z" fill="white"/>
-  <path d="M24 40L36 28L32 24L24 32L16 24L12 28L24 40Z" fill="white"/>
-  <circle cx="24" cy="24" r="6" fill="white"/>
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Soft gradient for depth -->
+    <radialGradient id="logoBodyGradient">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f3f4f6" />
+    </radialGradient>
+    
+    <!-- Subtle shadow -->
+    <filter id="logoSoftShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background circle (optional - remove if you want transparent) -->
+  <circle cx="60" cy="60" r="58" fill="#faf9f7" stroke="#e5e7eb" stroke-width="1" opacity="0.5" />
+  
+  <!-- Shadow underneath -->
+  <ellipse cx="60" cy="95" rx="25" ry="6" fill="#000000" opacity="0.1" />
+  
+  <!-- Body -->
+  <ellipse cx="60" cy="70" rx="28" ry="23" fill="url(#logoBodyGradient)" filter="url(#logoSoftShadow)" />
+  
+  <!-- Chest fluff detail -->
+  <ellipse cx="60" cy="75" rx="15" ry="10" fill="#ffffff" opacity="0.8" />
+  
+  <!-- Head -->
+  <circle cx="60" cy="45" r="22" fill="url(#logoBodyGradient)" filter="url(#logoSoftShadow)" />
+  
+  <!-- Ears -->
+  <ellipse cx="40" cy="35" rx="8" ry="12" fill="#ffffff" transform="rotate(-20 40 35)" filter="url(#logoSoftShadow)" />
+  <ellipse cx="80" cy="35" rx="8" ry="12" fill="#ffffff" transform="rotate(20 80 35)" filter="url(#logoSoftShadow)" />
+  
+  <!-- Inner ear detail -->
+  <ellipse cx="42" cy="37" rx="4" ry="6" fill="#f3f4f6" transform="rotate(-20 42 37)" opacity="0.5" />
+  <ellipse cx="78" cy="37" rx="4" ry="6" fill="#f3f4f6" transform="rotate(20 78 37)" opacity="0.5" />
+  
+  <!-- Eyes -->
+  <circle cx="50" cy="45" r="3" fill="#1f2937" />
+  <circle cx="70" cy="45" r="3" fill="#1f2937" />
+  
+  <!-- Eye shine -->
+  <circle cx="51" cy="44" r="1" fill="#ffffff" />
+  <circle cx="71" cy="44" r="1" fill="#ffffff" />
+  
+  <!-- Nose -->
+  <ellipse cx="60" cy="52" rx="3" ry="2" fill="#8B4513" />
+  
+  <!-- Mouth -->
+  <path d="M 55 54 Q 60 56 65 54" stroke="#1f2937" stroke-width="1" fill="none" stroke-linecap="round" />
+  
+  <!-- Paws -->
+  <ellipse cx="45" cy="85" rx="7" ry="9" fill="#ffffff" filter="url(#logoSoftShadow)" />
+  <ellipse cx="75" cy="85" rx="7" ry="9" fill="#ffffff" filter="url(#logoSoftShadow)" />
+  
+  <!-- Paw pads -->
+  <ellipse cx="45" cy="87" rx="3" ry="2" fill="#8B4513" opacity="0.3" />
+  <ellipse cx="75" cy="87" rx="3" ry="2" fill="#8B4513" opacity="0.3" />
+  
+  <!-- Tail -->
+  <ellipse cx="35" cy="65" rx="12" ry="6" fill="#ffffff" transform="rotate(-45 35 65)" filter="url(#logoSoftShadow)" />
+  
+  <!-- Optional: Add a subtle sparkle for personality -->
+  <circle cx="85" cy="25" r="2" fill="#fbbf24" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite" />
+  </circle>
 </svg>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
@@ -6,25 +6,27 @@ import { useMutation } from "@tanstack/react-query";
 import { registerSchema } from "../utils/validation";
 import type { RegisterFormData } from "../utils/validation";
 import { authService } from "../services/authService";
-import { isValidationError } from "../../../api/client";
+import { checkPasswordStrength } from "../utils/passwordStrength";
 import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import PasswordInput from "./PasswordInput";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
-import type { useAuthShihTzu } from "../../../hooks/useAuthShihTzu";
+import type { useEnhancedAuthShihTzu } from "../../../hooks/useEnhancedAuthShihTzu";
+
+type FormData = RegisterFormData;
 
 interface RegistrationFormProps {
-  companion?: ReturnType<typeof useAuthShihTzu>;
+  companion?: ReturnType<typeof useEnhancedAuthShihTzu>;
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   const navigate = useNavigate();
   const [generalError, setGeneralError] = useState<string>("");
-  const [completedFields, setCompletedFields] = useState<Set<string>>(new Set());
-  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const totalFields = 5; // firstName, lastName, email, password, confirmPassword
+  const typingDebounceRef = useRef<NodeJS.Timeout>();
+  const passwordStrengthDebounceRef = useRef<NodeJS.Timeout>();
+  const lastPasswordStrength = useRef<number>(-1);
 
   const {
     register,
@@ -32,161 +34,206 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     watch,
     formState: { errors, isSubmitting, touchedFields },
     setError,
-    getFieldState,
-  } = useForm<RegisterFormData>({
+    trigger,
+  } = useForm<FormData>({
     resolver: zodResolver(registerSchema),
-    mode: "onChange",
-    criteriaMode: "all",
+    mode: 'onChange',
+    defaultValues: {
+      termsAccepted: false,
+    }
   });
 
-  // Get all watched values
+  const password = watch("password");
   const watchedValues = watch();
 
-  // Track completed fields based on valid state
+  // Enhanced password strength reactions
   useEffect(() => {
-    const fields: (keyof RegisterFormData)[] = ['firstName', 'lastName', 'email', 'password', 'confirmPassword'];
-    const newCompletedFields = new Set<string>();
-    
-    fields.forEach(fieldName => {
-      const fieldState = getFieldState(fieldName);
-      const fieldValue = watchedValues[fieldName];
-      
-      // Field is completed if it has a value and either:
-      // 1. It hasn't been touched yet (no validation run), OR
-      // 2. It has been touched and has no errors
-      if (fieldValue && fieldValue.toString().trim() !== '') {
-        if (!touchedFields[fieldName] || !fieldState.error) {
-          newCompletedFields.add(fieldName);
-        }
+    if (password && companion && hasInteracted) {
+      if (passwordStrengthDebounceRef.current) {
+        clearTimeout(passwordStrengthDebounceRef.current);
       }
-    });
-    
-    // Only update if there's a change to avoid infinite loops
-    if (newCompletedFields.size !== completedFields.size || 
-        Array.from(newCompletedFields).sort().join(',') !== Array.from(completedFields).sort().join(',')) {
-      setCompletedFields(newCompletedFields);
       
-      // Celebrate each new field completion
-      if (newCompletedFields.size > completedFields.size && companion) {
-        companion.handleFieldComplete();
-      }
-    }
-  }, [watchedValues, errors, getFieldState, completedFields, companion, touchedFields]);
-
-  // React to form progress
-  useEffect(() => {
-    if (companion) {
-      const progress = completedFields.size / totalFields;
-      
-      if (progress === 0) {
-        companion.setMood('idle');
-      } else if (progress < 0.4) {
-        companion.setMood('curious');
-      } else if (progress < 0.8) {
-        // Getting excited
-        if (companion.mood !== 'happy') {
-          companion.setMood('happy');
-          setTimeout(() => companion.setMood('curious'), 2000);
-        }
-      } else if (progress >= 0.8) {
-        // Very happy, almost done!
-        companion.setMood('happy');
-      }
-
-      // Move companion based on progress
-      if (progress > 0 && progress < 1) {
-        const formRect = formRef.current?.getBoundingClientRect();
-        if (formRect) {
-          companion.setPosition({
-            x: formRect.right + 20,
-            y: formRect.top + (formRect.height * progress),
-          });
-        }
-      }
-    }
-  }, [completedFields, companion]);
-
-  // Track password strength
-  const password = watch("password");
-  
-  useEffect(() => {
-    if (password) {
-      // Simple password strength calculation
-      let strength: 'weak' | 'medium' | 'strong' = 'weak';
-      
-      if (password.length >= 8) {
-        const hasUpper = /[A-Z]/.test(password);
-        const hasLower = /[a-z]/.test(password);
-        const hasNumber = /\d/.test(password);
-        const hasSpecial = /[^A-Za-z0-9]/.test(password);
+      passwordStrengthDebounceRef.current = setTimeout(() => {
+        const strength = checkPasswordStrength(password);
         
-        const criteriaCount = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
-        
-        if (criteriaCount >= 4 && password.length >= 12) {
-          strength = 'strong';
-        } else if (criteriaCount >= 3) {
-          strength = 'medium';
+        if (strength.score !== lastPasswordStrength.current) {
+          lastPasswordStrength.current = strength.score;
+          
+          // Enhanced reactions with thoughts and particles
+          if (strength.score <= 1) {
+            companion.handlePasswordStrength('weak');
+            companion.showThought("Let's make it stronger! 💪", 2000);
+          } else if (strength.score <= 3) {
+            companion.handlePasswordStrength('medium');
+            companion.showThought("Getting better! 🔐", 2000);
+            companion.triggerParticleEffect('sparkles');
+          } else {
+            companion.handlePasswordStrength('strong');
+            companion.showThought("Perfect password! 🛡️", 2000);
+            companion.triggerParticleEffect('hearts');
+          }
         }
-      }
-      
-      setPasswordStrength(strength);
-      companion?.handlePasswordStrength(strength);
+      }, 500);
     }
-  }, [password, companion]);
+  }, [password, companion, hasInteracted]);
 
-  // Handle companion interactions
-  const handleInputFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    if (companion && e.target) {
-      companion.handleInputFocus(e.target);
-    }
-  }, [companion]);
-
-  const handleInputChange = useCallback(() => {
-    if (companion) {
-      companion.handleTyping();
-    }
-  }, [companion]);
-
-  // React to errors (only when there are actual errors shown)
+  // React to form errors with enhanced companion
   useEffect(() => {
-    const visibleErrors = Object.keys(errors).filter(key => {
-      const fieldName = key as keyof typeof errors;
-      return touchedFields[fieldName] && errors[fieldName]?.message;
-    });
-    if (visibleErrors.length > 0 && companion) {
+    const errorCount = Object.keys(errors).length;
+    if (errorCount > 0 && companion && hasInteracted && companion.companionState !== 'error') {
       companion.handleError();
+      
+      // Specific error messages
+      if (errors.email) {
+        companion.showThought("Check your email format 📧", 3000);
+      } else if (errors.password) {
+        companion.showThought("Password needs work 🔐", 3000);
+      } else if (errors.confirmPassword) {
+        companion.showThought("Passwords must match! 🔄", 3000);
+      }
     }
-  }, [errors, companion, touchedFields]);
+  }, [errors, companion, hasInteracted]);
+
+  // React to general errors
+  useEffect(() => {
+    if (generalError && companion) {
+      companion.handleSpecificError('server');
+      companion.showThought("Hmm, let me check... 🤔", 3000);
+    }
+  }, [generalError, companion]);
+
+  // Cleanup timeouts
+  useEffect(() => {
+    return () => {
+      if (typingDebounceRef.current) clearTimeout(typingDebounceRef.current);
+      if (passwordStrengthDebounceRef.current) clearTimeout(passwordStrengthDebounceRef.current);
+    };
+  }, []);
+
+  // Enhanced field props with companion interactions
+  const createEnhancedFieldProps = (fieldName: keyof FormData) => {
+    const fieldRegistration = register(fieldName);
+    
+    return {
+      ...fieldRegistration,
+      onFocus: async (e: React.FocusEvent<HTMLInputElement>) => {
+        setHasInteracted(true);
+        
+        if (fieldRegistration.onFocus) {
+          await fieldRegistration.onFocus(e);
+        }
+        
+        if (companion && e.target) {
+          companion.handleInputFocus(e.target);
+          
+          // Field-specific welcome messages
+          switch (fieldName) {
+            case 'firstName':
+              companion.showThought("Let's start with your name! 👋", 2000);
+              break;
+            case 'lastName':
+              companion.showThought("And your last name... ✍️", 2000);
+              break;
+            case 'email':
+              companion.showThought("Your email address please! 📧", 2000);
+              break;
+            case 'password':
+              companion.showThought("Choose a strong password! 🔐", 2000);
+              break;
+            case 'confirmPassword':
+              companion.showThought("One more time! 🔄", 2000);
+              break;
+          }
+        }
+      },
+      onChange: async (e: React.ChangeEvent<HTMLInputElement>) => {
+        await fieldRegistration.onChange(e);
+        
+        if (hasInteracted) {
+          await trigger(fieldName);
+        }
+        
+        // Typing animation for non-password fields
+        if (companion && hasInteracted && fieldName !== 'password') {
+          if (typingDebounceRef.current) {
+            clearTimeout(typingDebounceRef.current);
+          }
+          
+          typingDebounceRef.current = setTimeout(() => {
+            companion.handleTyping();
+            
+            // Random encouragement
+            if (Math.random() < 0.15) {
+              const encouragements = [
+                "Looking good! 👍",
+                "Keep going! ⭐",
+                "You're doing great! 🌟",
+                "Almost there! 🎯"
+              ];
+              companion.showThought(
+                encouragements[Math.floor(Math.random() * encouragements.length)],
+                1500
+              );
+            }
+          }, 100);
+        }
+      },
+      onBlur: async (e: React.FocusEvent<HTMLInputElement>) => {
+        if (fieldRegistration.onBlur) {
+          await fieldRegistration.onBlur(e);
+        }
+        
+        if (typingDebounceRef.current) {
+          clearTimeout(typingDebounceRef.current);
+        }
+        
+        if (companion) {
+          companion.handleInputBlur();
+          
+          const fieldError = errors[fieldName];
+          const fieldValue = e.target.value;
+          
+          // Celebrate valid fields
+          if (!fieldError && fieldValue && touchedFields[fieldName]) {
+            companion.handleFieldComplete();
+            
+            // Special celebrations for specific fields
+            if (fieldName === 'email' && fieldValue.includes('@')) {
+              companion.showThought("Great email! ✅", 1500);
+              companion.triggerParticleEffect('sparkles');
+            } else if (fieldName === 'confirmPassword' && password === fieldValue) {
+              companion.showThought("Passwords match! 🎯", 1500);
+              companion.triggerParticleEffect('hearts');
+            }
+          }
+        }
+      }
+    };
+  };
 
   const registerMutation = useMutation({
-    mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
+    mutationFn: (data: Omit<FormData, "confirmPassword" | "termsAccepted">) => 
       authService.register(data),
     onMutate: () => {
       if (companion) {
         companion.handleLoading();
+        companion.showThought("Creating your account... 🚀", 3000);
       }
     },
     onSuccess: (data) => {
       if (companion) {
-        // Major celebration for successful registration!
         companion.handleSuccess();
+        companion.showThought("Account created! Welcome! 🎊", 4000);
         
-        // Extra celebration animations
+        // Extra celebration for new users
         setTimeout(() => {
-          companion.setMood('happy');
-          // Do a little dance (move in a pattern)
-          const celebrationPath = [
-            { x: window.innerWidth / 2 - 50, y: window.innerHeight / 2 - 100 },
-            { x: window.innerWidth / 2 + 50, y: window.innerHeight / 2 - 100 },
-            { x: window.innerWidth / 2 + 50, y: window.innerHeight / 2 },
-            { x: window.innerWidth / 2 - 50, y: window.innerHeight / 2 },
-            { x: window.innerWidth / 2, y: window.innerHeight / 2 - 50 },
-          ];
-          companion.followPath(celebrationPath);
+          companion.triggerParticleEffect('hearts');
         }, 500);
+        setTimeout(() => {
+          companion.triggerParticleEffect('sparkles');
+        }, 1000);
       }
       
-      // Navigate to success page after celebration
       setTimeout(() => {
         navigate("/register/success", {
           state: {
@@ -194,147 +241,83 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             message: data.message,
           },
         });
-      }, 2500);
+      }, 2000);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Registration error:", error);
       
-      if (companion) {
-        if (error.toString().includes("ERR_NETWORK")) {
-          companion.handleSpecificError('network');
-        } else {
-          companion.handleError();
-        }
-      }
-      
-      if (isValidationError(error)) {
-        // Handle field-specific validation errors from the API
-        error.response?.data.validation_errors.forEach((validationError) => {
-          const field = validationError.field as keyof RegisterFormData;
-          if (
-            field === "email" ||
-            field === "password" ||
-            field === "firstName" ||
-            field === "lastName" ||
-            field === "confirmPassword"
-          ) {
+      if (error.response?.data?.validation_errors) {
+        error.response.data.validation_errors.forEach((validationError: any) => {
+          const field = validationError.field as keyof FormData;
+          if (field in errors) {
             setError(field, {
               message: validationError.message,
             });
           }
         });
-      } else {
-        // Type guard for axios-like errors
-        const axiosError = error as {
-          response?: {
-            status?: number;
-            data?: {
-              message?: string;
-            };
-          };
-          code?: string;
-        };
-
-        if (axiosError.response?.status === 409) {
-          // Email already exists
-          setError("email", {
-            message: "An account with this email already exists",
-          });
-        } else if (
-          axiosError.code === "ERR_NETWORK" ||
-          axiosError.code === "ERR_CONNECTION_REFUSED"
-        ) {
-          // Network error - backend not available
-          setGeneralError(
-            "Unable to connect to the server. Make sure the backend is running or MSW is properly configured.",
-          );
-        } else {
-          // General error
-          setGeneralError(
-            axiosError.response?.data?.message ||
-              "Something went wrong. Please try again.",
-          );
+        
+        if (companion) {
+          companion.showThought("Let's fix these issues... 📝", 3000);
         }
+      } else if (error.response?.status === 409) {
+        setError("email", {
+          message: "An account with this email already exists",
+        });
+        
+        if (companion) {
+          companion.showThought("This email is taken! 🤷", 3000);
+        }
+      } else if (error.code === "ERR_NETWORK") {
+        setGeneralError(
+          "Unable to connect to the server. Make sure the backend is running."
+        );
+      } else {
+        setGeneralError(
+          error.response?.data?.message || "Something went wrong. Please try again."
+        );
       }
     },
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (data: FormData) => {
     setGeneralError("");
     
-    // Check if terms are accepted
-    if (!termsAccepted) {
-      setGeneralError("Please accept the Terms and Conditions to continue.");
-      return;
+    // Enhanced: pre-submit encouragement
+    if (companion) {
+      companion.encourage();
+      companion.showThought("Here we go! 🎉", 1500);
     }
     
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirmPassword, ...registerData } = data;
+    const { confirmPassword, termsAccepted, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
   };
-
-  // Show form completion percentage
-  const completionPercentage = Math.round((completedFields.size / totalFields) * 100);
 
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-[var(--surface)] py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
-        <div className="mb-6">
-          <h2 className="text-center text-3xl font-extrabold text-[var(--text)]">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-muted">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-primary-600 hover:text-primary-500"
-              onMouseEnter={() => companion?.showCuriosity()}
-              onMouseLeave={() => companion?.setMood('idle')}
-            >
-              Sign in
-            </Link>
-          </p>
-          
-          {/* Progress indicator */}
-          {completedFields.size > 0 && (
-            <div className="mt-4">
-              <div className="relative pt-1">
-                <div className="flex mb-2 items-center justify-between">
-                  <div>
-                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-primary-600 bg-primary-200">
-                      Progress
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-semibold inline-block text-primary-600">
-                      {completionPercentage}%
-                    </span>
-                  </div>
-                </div>
-                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-primary-200">
-                  <div 
-                    style={{ width: `${completionPercentage}%` }}
-                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-500 transition-all duration-500"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <h2 className="text-center text-3xl font-extrabold text-[var(--text)] mb-6">
+          Create your account
+        </h2>
+        
+        <p className="text-center text-sm text-muted mb-6">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-medium text-primary-600 hover:text-primary-500"
+            onMouseEnter={() => {
+              companion?.showCuriosity();
+              companion?.showThought("Have an account? 🤔", 2000);
+            }}
+            onMouseLeave={() => companion?.setMood('idle')}
+          >
+            Sign in
+          </Link>
+        </p>
 
-        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {generalError && (
-            <div
-              className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm"
-              role="alert"
-            >
-              <div>{generalError}</div>
-              {generalError.includes("Unable to connect") && (
-                <div className="mt-2 text-xs">
-                  <strong>Quick Fix:</strong> Restart the dev server (Ctrl+C
-                  then npm run dev)
-                </div>
-              )}
+            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
+              {generalError}
             </div>
           )}
 
@@ -342,21 +325,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             <Input
               label="First name"
               isRequired
-              {...register("firstName")}
-              error={touchedFields.firstName ? errors.firstName?.message : undefined}
+              {...createEnhancedFieldProps("firstName")}
+              error={errors.firstName?.message}
               autoComplete="given-name"
-              onFocus={handleInputFocus}
-              onChange={handleInputChange}
             />
 
             <Input
               label="Last name"
               isRequired
-              {...register("lastName")}
-              error={touchedFields.lastName ? errors.lastName?.message : undefined}
+              {...createEnhancedFieldProps("lastName")}
+              error={errors.lastName?.message}
               autoComplete="family-name"
-              onFocus={handleInputFocus}
-              onChange={handleInputChange}
             />
           </div>
 
@@ -364,123 +343,108 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             label="Email address"
             type="email"
             isRequired
-            {...register("email")}
-            error={touchedFields.email ? errors.email?.message : undefined}
+            {...createEnhancedFieldProps("email")}
+            error={errors.email?.message}
             autoComplete="email"
-            onFocus={handleInputFocus}
-            onChange={handleInputChange}
-            leftIcon={
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            }
           />
 
           <div>
             <PasswordInput
               label="Password"
               isRequired
-              {...register("password")}
-              error={touchedFields.password ? errors.password?.message : undefined}
+              {...createEnhancedFieldProps("password")}
+              error={errors.password?.message}
               autoComplete="new-password"
-              hint="Must be at least 8 characters with uppercase, lowercase, number, and special character"
-              onFocus={handleInputFocus}
-              onChange={handleInputChange}
             />
-            <PasswordStrengthMeter password={password || ""} />
-            {passwordStrength === 'strong' && companion && (
-              <p className="mt-1 text-sm text-green-600">
-                Great password! Your companion is impressed! 🎉
-              </p>
+            {password && (
+              <PasswordStrengthMeter
+                password={password}
+                showFeedback={touchedFields.password || !!errors.password}
+              />
             )}
           </div>
 
           <PasswordInput
             label="Confirm password"
             isRequired
-            {...register("confirmPassword")}
-            error={touchedFields.confirmPassword ? errors.confirmPassword?.message : undefined}
+            {...createEnhancedFieldProps("confirmPassword")}
+            error={errors.confirmPassword?.message}
             autoComplete="new-password"
-            onFocus={handleInputFocus}
-            onChange={handleInputChange}
           />
 
-          <div className="space-y-4">
-            <div className="flex items-start">
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
               <input
-                id="terms"
+                id="termsAccepted"
                 type="checkbox"
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
-                checked={termsAccepted}
-                onChange={(e) => {
-                  setTermsAccepted(e.target.checked);
-                  if (e.target.checked && companion) {
-                    companion.setMood('happy');
-                    setTimeout(() => companion.setMood('idle'), 1500);
+                {...register("termsAccepted")}
+                onChange={async (e) => {
+                  const registration = register("termsAccepted");
+                  await registration.onChange(e);
+                  
+                  // Enhanced: celebrate terms acceptance
+                  if (e.target.checked && companion && companion.companionState !== 'error') {
+                    companion.handleFieldComplete();
+                    companion.showThought("Almost ready! ✔️", 1500);
+                    companion.triggerParticleEffect('sparkles');
                   }
                 }}
               />
-              <label
-                htmlFor="terms"
-                className="ml-2 block text-sm text-[var(--text)]"
-              >
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="termsAccepted" className="font-medium text-[var(--text)]">
                 I agree to the{" "}
                 <Link
                   to="/terms"
-                  className="font-medium text-primary-600 hover:text-primary-500"
+                  className="text-primary-600 hover:text-primary-500"
                   target="_blank"
+                  onMouseEnter={() => {
+                    companion?.showCuriosity();
+                    companion?.showThought("Good to read these! 📄", 2000);
+                  }}
+                  onMouseLeave={() => companion?.setMood('idle')}
                 >
                   Terms and Conditions
                 </Link>{" "}
                 and{" "}
                 <Link
                   to="/privacy"
-                  className="font-medium text-primary-600 hover:text-primary-500"
+                  className="text-primary-600 hover:text-primary-500"
                   target="_blank"
+                  onMouseEnter={() => {
+                    companion?.showCuriosity();
+                    companion?.showThought("Privacy matters! 🔒", 2000);
+                  }}
+                  onMouseLeave={() => companion?.setMood('idle')}
                 >
                   Privacy Policy
                 </Link>
               </label>
+              {errors.termsAccepted && (
+                <p className="mt-1 text-red-600 text-xs">{errors.termsAccepted.message}</p>
+              )}
             </div>
-
-            <Button
-              type="submit"
-              fullWidth
-              size="lg"
-              isLoading={isSubmitting || registerMutation.isPending}
-              loadingText="Creating account..."
-            >
-              Create account
-            </Button>
           </div>
+
+          <Button
+            type="submit"
+            fullWidth
+            size="lg"
+            isLoading={isSubmitting || registerMutation.isPending}
+            loadingText="Creating account..."
+            disabled={!watchedValues.termsAccepted}
+            onMouseEnter={() => {
+              if (watchedValues.termsAccepted && companion) {
+                companion.showThought("Ready to join? 🚀", 1500);
+                companion.setMood('excited' as any);
+              }
+            }}
+            onMouseLeave={() => companion?.setMood('idle')}
+          >
+            Create account
+          </Button>
         </form>
-
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[color:var(--surface-muted)]" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[var(--surface)] text-gray-500">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-6 text-center text-sm text-gray-500">
-            We'll send you a verification email to confirm your account
-          </div>
-        </div>
       </div>
     </div>
   );

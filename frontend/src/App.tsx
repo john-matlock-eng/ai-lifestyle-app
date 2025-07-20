@@ -18,6 +18,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RegisterPage from "./pages/auth/RegisterPage";
 import RegisterSuccessPage from "./pages/auth/RegisterSuccessPage";
 import LoginPage from "./pages/auth/LoginPage";
+import AuthTestPage from "./pages/auth/AuthTestPage";
+import TestPage from "./pages/TestPage"; // Temporary test page
+import RegisterTestPage from "./pages/RegisterTestPage"; // Direct API test
+import LogoShowcase from "./pages/LogoShowcase"; // Logo showcase
 
 // Pages - App
 import DashboardPage from "./pages/ImprovedDashboardPage";
@@ -50,6 +54,7 @@ import DevTools from "./components/common/DevTools";
 import { SessionWarning } from "./components/SessionWarning";
 import { EncryptionUnlockPrompt } from "./components/EncryptionUnlockPrompt";
 import { ShihTzuCompanionExample } from "./components/common";
+import TestNavigation from "./components/TestNavigation";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -88,6 +93,10 @@ function App() {
                     path="/register/success"
                     element={<RegisterSuccessPage />}
                   />
+                  <Route path="/auth-test" element={<AuthTestPage />} />
+                  <Route path="/test" element={<TestPage />} />
+                  <Route path="/test-direct" element={<RegisterTestPage />} />
+                  <Route path="/logo-showcase" element={<LogoShowcase />} />
                   <Route
                     path="/forgot-password"
                     element={<div>Forgot Password - Coming Soon</div>}
@@ -191,6 +200,7 @@ function App() {
               <SessionWarning />
               <EncryptionUnlockPrompt />
               <DevTools />
+              {process.env.NODE_ENV === 'development' && <TestNavigation />}
             </EncryptionProvider>
           </FeatureFlagsProvider>
         </AuthProvider>

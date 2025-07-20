@@ -22,6 +22,7 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
   const [isMoving, setIsMoving] = useState(false);
   const [currentMood, setCurrentMood] = useState(mood);
   const shihTzuRef = useRef<HTMLDivElement>(null);
+  const positionTimerRef = useRef<NodeJS.Timeout>();
 
   const sizeMap = {
     sm: { width: 60, height: 60 },
@@ -31,21 +32,42 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
 
   const currentSize = sizeMap[size];
 
+  // Sync mood changes from props
   useEffect(() => {
-    setCurrentMood(mood);
-  }, [mood]);
+    if (mood !== currentMood) {
+      setCurrentMood(mood);
+    }
+  }, [mood]); // Only depend on mood, not currentMood to avoid loops
 
+  // Handle position changes
   useEffect(() => {
+    // Clear any existing timer
+    if (positionTimerRef.current) {
+      clearTimeout(positionTimerRef.current);
+    }
+
+    // Check if position actually changed
     if (position.x !== currentPosition.x || position.y !== currentPosition.y) {
       setIsMoving(true);
-      const timer = setTimeout(() => {
+      
+      positionTimerRef.current = setTimeout(() => {
         setCurrentPosition(position);
         setIsMoving(false);
-        onPositionChange?.(position);
+        
+        // Only call onPositionChange if it exists and position actually changed
+        if (onPositionChange) {
+          onPositionChange(position);
+        }
       }, 50);
-      return () => clearTimeout(timer);
     }
-  }, [position, currentPosition, onPositionChange]);
+    
+    // Cleanup function
+    return () => {
+      if (positionTimerRef.current) {
+        clearTimeout(positionTimerRef.current);
+      }
+    };
+  }, [position.x, position.y]); // Only depend on position values, not the entire object or callbacks
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

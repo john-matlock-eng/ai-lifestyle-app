@@ -1,0 +1,81 @@
+<svg width="280" height="80" viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for Ellie -->
+    <radialGradient id="headerLogoGradient">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f3f4f6" />
+    </radialGradient>
+    
+    <!-- Text gradient for a subtle effect -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+    
+    <!-- Shadow filter -->
+    <filter id="headerSoftShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+      <feOffset dx="0" dy="1" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ellie the Shih Tzu -->
+  <g transform="translate(10, 10)">
+    <!-- Shadow -->
+    <ellipse cx="30" cy="55" rx="15" ry="4" fill="#000000" opacity="0.1" />
+    
+    <!-- Body -->
+    <ellipse cx="30" cy="45" rx="18" ry="15" fill="url(#headerLogoGradient)" filter="url(#headerSoftShadow)" />
+    
+    <!-- Head -->
+    <circle cx="30" cy="28" r="15" fill="url(#headerLogoGradient)" filter="url(#headerSoftShadow)" />
+    
+    <!-- Ears -->
+    <ellipse cx="18" cy="23" rx="6" ry="8" fill="#ffffff" transform="rotate(-25 18 23)" filter="url(#headerSoftShadow)" />
+    <ellipse cx="42" cy="23" rx="6" ry="8" fill="#ffffff" transform="rotate(25 42 23)" filter="url(#headerSoftShadow)" />
+    
+    <!-- Eyes -->
+    <circle cx="24" cy="28" r="2" fill="#1f2937" />
+    <circle cx="36" cy="28" r="2" fill="#1f2937" />
+    <circle cx="24.5" cy="27.5" r="0.7" fill="#ffffff" />
+    <circle cx="36.5" cy="27.5" r="0.7" fill="#ffffff" />
+    
+    <!-- Nose -->
+    <ellipse cx="30" cy="33" rx="2" ry="1.5" fill="#8B4513" />
+    
+    <!-- Mouth -->
+    <path d="M 27 34 Q 30 35.5 33 34" stroke="#1f2937" stroke-width="0.8" fill="none" stroke-linecap="round" />
+    
+    <!-- Paws -->
+    <ellipse cx="22" cy="53" rx="5" ry="6" fill="#ffffff" filter="url(#headerSoftShadow)" />
+    <ellipse cx="38" cy="53" rx="5" ry="6" fill="#ffffff" filter="url(#headerSoftShadow)" />
+    
+    <!-- Tail -->
+    <ellipse cx="15" cy="42" rx="8" ry="4" fill="#ffffff" transform="rotate(-45 15 42)" filter="url(#headerSoftShadow)" />
+  </g>
+  
+  <!-- App Name -->
+  <g transform="translate(80, 25)">
+    <!-- Main text -->
+    <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="url(#textGradient)">
+      AI Lifestyle
+    </text>
+    
+    <!-- Subtitle -->
+    <text x="0" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="400" fill="#6b7280">
+      with Ellie, your wellness companion
+    </text>
+  </g>
+  
+  <!-- Decorative sparkle -->
+  <circle cx="250" cy="20" r="2" fill="#fbbf24" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite" />
+  </circle>
+</svg>

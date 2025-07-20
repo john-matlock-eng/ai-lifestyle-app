@@ -28,6 +28,7 @@ export const registerSchema = z
     confirmPassword: z.string().min(1, "Please confirm your password"),
     firstName: nameSchema,
     lastName: nameSchema,
+    termsAccepted: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

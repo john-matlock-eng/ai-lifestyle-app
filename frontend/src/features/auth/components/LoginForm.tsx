@@ -12,10 +12,10 @@ import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import PasswordInput from "./PasswordInput";
 import MfaCodeInput from "./MfaCodeInput";
-import type { useAuthShihTzu } from "../../../hooks/useAuthShihTzu";
+import type { useEnhancedAuthShihTzu } from "../../../hooks/useEnhancedAuthShihTzu";
 
 interface LoginFormProps {
-  companion?: ReturnType<typeof useAuthShihTzu>;
+  companion?: ReturnType<typeof useEnhancedAuthShihTzu>;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
@@ -28,27 +28,34 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
   const [showMfa, setShowMfa] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const typingDebounceRef = useRef<NodeJS.Timeout>();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, touchedFields, isValid },
     setError,
+    trigger,
+    watch,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    mode: 'onChange',
     defaultValues: {
       rememberMe: false,
     },
   });
 
-  // React to form errors
+  const watchedValues = watch();
+
+  // React to form errors with enhanced companion
   useEffect(() => {
-    if (Object.keys(errors).length > 0 && companion && hasInteracted) {
+    const errorCount = Object.keys(errors).length;
+    if (errorCount > 0 && companion && hasInteracted && companion.companionState !== 'error') {
       companion.handleError();
     }
   }, [errors, companion, hasInteracted]);
 
-  // React to general errors
+  // React to general errors with enhanced features
   useEffect(() => {
     if (generalError && companion) {
       if (generalError.includes("Too many")) {
@@ -61,44 +68,98 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     }
   }, [generalError, companion]);
 
-  // Create wrapped event handlers that preserve react-hook-form's handlers
-  const createFieldHandlers = (fieldName: keyof LoginFormData) => {
+  // Create enhanced field props with companion interactions
+  const createEnhancedFieldProps = (fieldName: keyof LoginFormData) => {
     const fieldRegistration = register(fieldName);
     
     return {
       ...fieldRegistration,
-      onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+      onFocus: async (e: React.FocusEvent<HTMLInputElement>) => {
         setHasInteracted(true);
-        // Our custom handler
+        
+        if (fieldRegistration.onFocus) {
+          await fieldRegistration.onFocus(e);
+        }
+        
         if (companion && e.target) {
           companion.handleInputFocus(e.target);
+          
+          // Field-specific thoughts for enhanced companion
+          if (fieldName === 'email') {
+            companion.showThought("Let's get you logged in! 📧", 2000);
+          } else if (fieldName === 'password') {
+            companion.showThought("Type carefully... 🔐", 2000);
+          }
         }
       },
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Call react-hook-form's handler first
-        fieldRegistration.onChange(e);
-        // Then our handler
+      onChange: async (e: React.ChangeEvent<HTMLInputElement>) => {
+        await fieldRegistration.onChange(e);
+        
+        if (hasInteracted) {
+          await trigger(fieldName);
+        }
+        
         if (companion && hasInteracted) {
-          companion.handleTyping();
+          if (typingDebounceRef.current) {
+            clearTimeout(typingDebounceRef.current);
+          }
+          
+          typingDebounceRef.current = setTimeout(() => {
+            companion.handleTyping();
+          }, 100);
+        }
+      },
+      onBlur: async (e: React.FocusEvent<HTMLInputElement>) => {
+        if (fieldRegistration.onBlur) {
+          await fieldRegistration.onBlur(e);
+        }
+        
+        if (typingDebounceRef.current) {
+          clearTimeout(typingDebounceRef.current);
+        }
+        
+        if (companion) {
+          companion.handleInputBlur();
+          
+          const fieldError = errors[fieldName];
+          const fieldValue = e.target.value;
+          
+          if (!fieldError && fieldValue && touchedFields[fieldName]) {
+            companion.handleFieldComplete();
+            
+            // Enhanced: celebrate email validation
+            if (fieldName === 'email' && fieldValue.includes('@')) {
+              companion.showThought("Valid email! ✅", 1500);
+              companion.triggerParticleEffect('sparkles');
+            }
+          }
         }
       }
     };
   };
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (typingDebounceRef.current) {
+        clearTimeout(typingDebounceRef.current);
+      }
+    };
+  }, []);
+
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onMutate: () => {
-      // Show loading state
       if (companion) {
         companion.handleLoading();
+        companion.showThought("Verifying credentials... 🔍", 2000);
       }
     },
     onSuccess: (data) => {
       if ("mfaRequired" in data) {
-        // MFA is required - show curious shih tzu
         if (companion) {
           companion.showCuriosity();
-          // Move near MFA section
+          companion.showThought("Two-factor required! 📱", 3000);
           if (formRef.current) {
             const rect = formRef.current.getBoundingClientRect();
             companion.setPosition({
@@ -110,12 +171,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
         setMfaSession({ sessionToken: data.sessionToken });
         setShowMfa(true);
       } else {
-        // Login successful - celebrate!
         if (companion) {
           companion.handleSuccess();
+          companion.showThought("Welcome back! 🎉", 3000);
         }
         queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-        // Delay navigation to show celebration
         setTimeout(() => {
           navigate("/dashboard", { replace: true });
         }, 1500);
@@ -129,6 +189,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
           });
           if (companion) {
             companion.handleSpecificError('unauthorized');
+            companion.showThought("Let's try again... 🤔", 3000);
           }
         } else if (error.response?.status === 429) {
           setGeneralError("Too many login attempts. Please try again later.");
@@ -155,12 +216,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     onMutate: () => {
       if (companion) {
         companion.handleLoading();
+        companion.showThought("Checking code... 🔢", 2000);
       }
     },
     onSuccess: () => {
-      // MFA verification successful
       if (companion) {
         companion.handleSuccess();
+        companion.showThought("Perfect! Welcome aboard! 🚀", 3000);
       }
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       setTimeout(() => {
@@ -171,8 +233,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
       if (isApiError(error)) {
         if (error.response?.status === 400) {
           setGeneralError("Invalid verification code. Please try again.");
+          if (companion) {
+            companion.showThought("That code didn't work... 🤨", 2000);
+          }
         } else if (error.response?.status === 401) {
-          // Session expired
           setGeneralError("Your session has expired. Please log in again.");
           setShowMfa(false);
           setMfaSession(null);
@@ -188,10 +252,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
 
   const onSubmit = async (data: LoginFormData) => {
     setGeneralError("");
-    // Set remember me preference before login
     if (data.rememberMe !== undefined) {
       setRememberMe(data.rememberMe);
     }
+    
+    // Enhanced: encourage before submit
+    if (companion) {
+      companion.encourage();
+    }
+    
     await loginMutation.mutateAsync(data);
   };
 
@@ -210,7 +279,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     setGeneralError("");
     if (companion) {
       companion.setMood('idle');
-      // Move back to default position
+      companion.showThought("No problem, let's try again! 👍", 2000);
       const formWidth = 400;
       const formCenterX = window.innerWidth / 2;
       const defaultX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
@@ -276,7 +345,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
             <Link
               to="/register"
               className="font-medium text-primary-600 hover:text-primary-500"
-              onMouseEnter={() => companion?.showCuriosity()}
+              onMouseEnter={() => {
+                companion?.showCuriosity();
+                companion?.showThought("Need an account? 🤔", 2000);
+              }}
               onMouseLeave={() => companion?.setMood('idle')}
             >
               create a new account
@@ -298,7 +370,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
             label="Email address"
             type="email"
             isRequired
-            {...createFieldHandlers("email")}
+            {...createEnhancedFieldProps("email")}
             error={errors.email?.message}
             autoComplete="email"
             leftIcon={
@@ -321,7 +393,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
           <PasswordInput
             label="Password"
             isRequired
-            {...createFieldHandlers("password")}
+            {...createEnhancedFieldProps("password")}
             error={errors.password?.message}
             autoComplete="current-password"
           />
@@ -333,6 +405,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
                 type="checkbox"
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
                 {...register("rememberMe")}
+                onChange={async (e) => {
+                  const registration = register("rememberMe");
+                  await registration.onChange(e);
+                  
+                  // Enhanced: react to remember me
+                  if (e.target.checked && companion) {
+                    companion.showThought("I'll remember you! 🧠", 1500);
+                    companion.triggerParticleEffect('hearts');
+                  }
+                }}
               />
               <label
                 htmlFor="rememberMe"
@@ -346,7 +428,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
               <Link
                 to="/forgot-password"
                 className="font-medium text-primary-600 hover:text-primary-500"
-                onMouseEnter={() => companion?.showCuriosity()}
+                onMouseEnter={() => {
+                  companion?.showCuriosity();
+                  companion?.showThought("Forgot something? 🤷", 2000);
+                }}
                 onMouseLeave={() => companion?.setMood('idle')}
               >
                 Forgot your password?
