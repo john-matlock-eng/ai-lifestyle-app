@@ -22,7 +22,7 @@ interface RegistrationFormProps {
 const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   const navigate = useNavigate();
   const [generalError, setGeneralError] = useState<string>("");
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [hasInteracted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const typingDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const passwordStrengthDebounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -34,7 +34,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     watch,
     formState: { errors, isSubmitting, touchedFields },
     setError,
-    trigger,
   } = useForm<FormData>({
     resolver: zodResolver(registerSchema),
     mode: 'onChange',
@@ -291,7 +290,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
       companion.showThought("Here we go! 🎉", 1500);
     }
     
-    const { confirmPassword, termsAccepted, ...registerData } = data;
+    const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
   };
 

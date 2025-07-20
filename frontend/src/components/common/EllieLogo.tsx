@@ -32,23 +32,22 @@ const EllieLogo: React.FC<EllieLogo> = ({
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <radialGradient id="iconGradient">
+          <radialGradient id="iconBodyGradient">
             <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#f3f4f6" />
+            <stop offset="100%" stopColor="#f9fafb" />
           </radialGradient>
         </defs>
         
         <ellipse cx="16" cy="28" rx="8" ry="2" fill="#000000" opacity="0.1" />
-        <ellipse cx="16" cy="20" rx="9" ry="7" fill="url(#iconGradient)" />
-        <circle cx="16" cy="12" r="8" fill="url(#iconGradient)" />
-        <circle cx="10" cy="9" r="3" fill="#ffffff" />
-        <circle cx="22" cy="9" r="3" fill="#ffffff" />
-        <circle cx="13" cy="12" r="1.5" fill="#1f2937" />
-        <circle cx="19" cy="12" r="1.5" fill="#1f2937" />
-        <circle cx="13.5" cy="11.5" r="0.5" fill="#ffffff" />
-        <circle cx="19.5" cy="11.5" r="0.5" fill="#ffffff" />
-        <ellipse cx="16" cy="14.5" rx="1.5" ry="1" fill="#8B4513" />
-        <path d="M 14 15 Q 16 16 18 15" stroke="#1f2937" strokeWidth="0.5" fill="none" strokeLinecap="round" />
+        <circle cx="16" cy="20" r="9" fill="url(#iconBodyGradient)" />
+        <circle cx="16" cy="11" r="7" fill="#ffffff" />
+        <circle cx="11" cy="8" r="3" fill="#ffffff" />
+        <circle cx="21" cy="8" r="3" fill="#ffffff" />
+        <circle cx="13.5" cy="11" r="1.2" fill="#1f2937" />
+        <circle cx="18.5" cy="11" r="1.2" fill="#1f2937" />
+        <ellipse cx="16" cy="13.5" rx="1.5" ry="1" fill="#92400e" />
+        <ellipse cx="10" cy="18" rx="3" ry="4" fill="#ffffff" transform="rotate(-30 10 18)" />
+        <ellipse cx="22" cy="20" rx="2.5" ry="3.5" fill="#ffffff" />
       </svg>
     );
   }
@@ -64,9 +63,9 @@ const EllieLogo: React.FC<EllieLogo> = ({
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <radialGradient id="headerLogoGradient">
+          <radialGradient id="headerBodyGradient">
             <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#f3f4f6" />
+            <stop offset="100%" stopColor="#f9fafb" />
           </radialGradient>
           
           <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -74,11 +73,11 @@ const EllieLogo: React.FC<EllieLogo> = ({
             <stop offset="100%" stopColor="#7c3aed" />
           </linearGradient>
           
-          <filter id="headerSoftShadow">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
-            <feOffset dx="0" dy="1" result="offsetblur"/>
+          <filter id="headerShadow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+            <feOffset dx="0" dy="2" result="offsetblur"/>
             <feComponentTransfer>
-              <feFuncA type="linear" slope="0.2"/>
+              <feFuncA type="linear" slope="0.15"/>
             </feComponentTransfer>
             <feMerge> 
               <feMergeNode/>
@@ -87,21 +86,23 @@ const EllieLogo: React.FC<EllieLogo> = ({
           </filter>
         </defs>
         
-        <g transform="translate(10, 10)">
-          <ellipse cx="30" cy="55" rx="15" ry="4" fill="#000000" opacity="0.1" />
-          <ellipse cx="30" cy="45" rx="18" ry="15" fill="url(#headerLogoGradient)" filter="url(#headerSoftShadow)" />
-          <circle cx="30" cy="28" r="15" fill="url(#headerLogoGradient)" filter="url(#headerSoftShadow)" />
-          <ellipse cx="18" cy="23" rx="6" ry="8" fill="#ffffff" transform="rotate(-25 18 23)" filter="url(#headerSoftShadow)" />
-          <ellipse cx="42" cy="23" rx="6" ry="8" fill="#ffffff" transform="rotate(25 42 23)" filter="url(#headerSoftShadow)" />
-          <circle cx="24" cy="28" r="2" fill="#1f2937" />
-          <circle cx="36" cy="28" r="2" fill="#1f2937" />
-          <circle cx="24.5" cy="27.5" r="0.7" fill="#ffffff" />
-          <circle cx="36.5" cy="27.5" r="0.7" fill="#ffffff" />
-          <ellipse cx="30" cy="33" rx="2" ry="1.5" fill="#8B4513" />
-          <path d="M 27 34 Q 30 35.5 33 34" stroke="#1f2937" strokeWidth="0.8" fill="none" strokeLinecap="round" />
-          <ellipse cx="22" cy="53" rx="5" ry="6" fill="#ffffff" filter="url(#headerSoftShadow)" />
-          <ellipse cx="38" cy="53" rx="5" ry="6" fill="#ffffff" filter="url(#headerSoftShadow)" />
-          <ellipse cx="15" cy="42" rx="8" ry="4" fill="#ffffff" transform="rotate(-45 15 42)" filter="url(#headerSoftShadow)" />
+        <g transform="translate(20, 15)">
+          <ellipse cx="25" cy="45" rx="15" ry="3" fill="#000000" opacity="0.1" />
+          <ellipse cx="25" cy="35" rx="18" ry="16" fill="url(#headerBodyGradient)" filter="url(#headerShadow)" />
+          <circle cx="25" cy="20" r="15" fill="#ffffff" filter="url(#headerShadow)" />
+          <ellipse cx="15" cy="15" rx="7" ry="9" fill="#ffffff" filter="url(#headerShadow)" />
+          <ellipse cx="35" cy="15" rx="7" ry="9" fill="#ffffff" filter="url(#headerShadow)" />
+          <circle cx="20" cy="20" r="2" fill="#1f2937" />
+          <circle cx="30" cy="20" r="2" fill="#1f2937" />
+          <circle cx="20.5" cy="19.5" r="0.7" fill="#ffffff" />
+          <circle cx="30.5" cy="19.5" r="0.7" fill="#ffffff" />
+          <ellipse cx="25" cy="24" rx="2.5" ry="1.8" fill="#92400e" />
+          <ellipse cx="12" cy="30" rx="5" ry="8" fill="#ffffff" transform="rotate(-35 12 30)" filter="url(#headerShadow)" />
+          <ellipse cx="38" cy="33" rx="5" ry="7" fill="#ffffff" transform="rotate(20 38 33)" filter="url(#headerShadow)" />
+          <ellipse cx="18" cy="42" rx="6" ry="5" fill="#ffffff" filter="url(#headerShadow)" />
+          <ellipse cx="32" cy="42" rx="6" ry="5" fill="#ffffff" filter="url(#headerShadow)" />
+          <ellipse cx="18" cy="42" rx="3" ry="2.5" fill="#d4c5b0" opacity="0.6" />
+          <ellipse cx="32" cy="42" rx="3" ry="2.5" fill="#d4c5b0" opacity="0.6" />
         </g>
         
         <g transform="translate(80, 25)">
@@ -132,16 +133,16 @@ const EllieLogo: React.FC<EllieLogo> = ({
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <radialGradient id="logoBodyGradient">
+        <radialGradient id="bodyGradient">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#f3f4f6" />
+          <stop offset="100%" stopColor="#f9fafb" />
         </radialGradient>
         
-        <filter id="logoSoftShadow">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
-          <feOffset dx="0" dy="2" result="offsetblur"/>
+        <filter id="softShadow">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+          <feOffset dx="0" dy="4" result="offsetblur"/>
           <feComponentTransfer>
-            <feFuncA type="linear" slope="0.2"/>
+            <feFuncA type="linear" slope="0.15"/>
           </feComponentTransfer>
           <feMerge> 
             <feMergeNode/>
@@ -150,26 +151,26 @@ const EllieLogo: React.FC<EllieLogo> = ({
         </filter>
       </defs>
       
-      <circle cx="60" cy="60" r="58" fill="#faf9f7" stroke="#e5e7eb" strokeWidth="1" opacity="0.5" />
-      <ellipse cx="60" cy="95" rx="25" ry="6" fill="#000000" opacity="0.1" />
-      <ellipse cx="60" cy="70" rx="28" ry="23" fill="url(#logoBodyGradient)" filter="url(#logoSoftShadow)" />
-      <ellipse cx="60" cy="75" rx="15" ry="10" fill="#ffffff" opacity="0.8" />
-      <circle cx="60" cy="45" r="22" fill="url(#logoBodyGradient)" filter="url(#logoSoftShadow)" />
-      <ellipse cx="40" cy="35" rx="8" ry="12" fill="#ffffff" transform="rotate(-20 40 35)" filter="url(#logoSoftShadow)" />
-      <ellipse cx="80" cy="35" rx="8" ry="12" fill="#ffffff" transform="rotate(20 80 35)" filter="url(#logoSoftShadow)" />
-      <ellipse cx="42" cy="37" rx="4" ry="6" fill="#f3f4f6" transform="rotate(-20 42 37)" opacity="0.5" />
-      <ellipse cx="78" cy="37" rx="4" ry="6" fill="#f3f4f6" transform="rotate(20 78 37)" opacity="0.5" />
+      <circle cx="60" cy="60" r="55" fill="#9ca3af" opacity="0.3" />
+      <ellipse cx="60" cy="100" rx="25" ry="5" fill="#000000" opacity="0.1" />
+      <ellipse cx="60" cy="75" rx="28" ry="30" fill="url(#bodyGradient)" filter="url(#softShadow)" />
+      <circle cx="60" cy="45" r="25" fill="url(#bodyGradient)" filter="url(#softShadow)" />
+      <ellipse cx="45" cy="35" rx="12" ry="15" fill="#ffffff" filter="url(#softShadow)" />
+      <ellipse cx="75" cy="35" rx="12" ry="15" fill="#ffffff" filter="url(#softShadow)" />
+      <ellipse cx="45" cy="37" rx="6" ry="8" fill="#fce7f3" opacity="0.5" />
+      <ellipse cx="75" cy="37" rx="6" ry="8" fill="#fce7f3" opacity="0.5" />
       <circle cx="50" cy="45" r="3" fill="#1f2937" />
       <circle cx="70" cy="45" r="3" fill="#1f2937" />
       <circle cx="51" cy="44" r="1" fill="#ffffff" />
       <circle cx="71" cy="44" r="1" fill="#ffffff" />
-      <ellipse cx="60" cy="52" rx="3" ry="2" fill="#8B4513" />
-      <path d="M 55 54 Q 60 56 65 54" stroke="#1f2937" strokeWidth="1" fill="none" strokeLinecap="round" />
-      <ellipse cx="45" cy="85" rx="7" ry="9" fill="#ffffff" filter="url(#logoSoftShadow)" />
-      <ellipse cx="75" cy="85" rx="7" ry="9" fill="#ffffff" filter="url(#logoSoftShadow)" />
-      <ellipse cx="45" cy="87" rx="3" ry="2" fill="#8B4513" opacity="0.3" />
-      <ellipse cx="75" cy="87" rx="3" ry="2" fill="#8B4513" opacity="0.3" />
-      <ellipse cx="35" cy="65" rx="12" ry="6" fill="#ffffff" transform="rotate(-45 35 65)" filter="url(#logoSoftShadow)" />
+      <ellipse cx="60" cy="52" rx="4" ry="3" fill="#92400e" />
+      <path d="M 56 54 Q 60 56 64 54" stroke="#d4d4d8" strokeWidth="1" fill="none" strokeLinecap="round" />
+      <ellipse cx="40" cy="70" rx="8" ry="12" fill="#ffffff" transform="rotate(-20 40 70)" filter="url(#softShadow)" />
+      <ellipse cx="80" cy="70" rx="8" ry="12" fill="#ffffff" transform="rotate(20 80 70)" filter="url(#softShadow)" />
+      <ellipse cx="48" cy="90" rx="10" ry="8" fill="#ffffff" filter="url(#softShadow)" />
+      <ellipse cx="72" cy="90" rx="10" ry="8" fill="#ffffff" filter="url(#softShadow)" />
+      <ellipse cx="48" cy="90" rx="5" ry="4" fill="#d4c5b0" opacity="0.6" />
+      <ellipse cx="72" cy="90" rx="5" ry="4" fill="#d4c5b0" opacity="0.6" />
       
       {animated && (
         <circle cx="85" cy="25" r="2" fill="#fbbf24" opacity="0.8">

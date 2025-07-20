@@ -27,16 +27,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
   );
   const [showMfa, setShowMfa] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const [hasInteracted] = useState(false);
   const typingDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, touchedFields },
+    formState: { errors, isSubmitting },
     setError,
-    trigger,
-    watch,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     mode: 'onChange',
