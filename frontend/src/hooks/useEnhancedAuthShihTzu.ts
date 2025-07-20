@@ -432,7 +432,7 @@ export const useEnhancedAuthShihTzu = () => {
       
       // Return to default position after a delay
       setTimeout(() => {
-        if (companionState === 'idle' && !currentField) {
+        if (!currentField) {
           const defaultPosition = getInitialPosition();
           companion.setPosition(defaultPosition);
         }
