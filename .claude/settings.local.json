@@ -35,7 +35,13 @@
       "Bash(black:*)",
       "Bash(set PYTHONPATH=src)",
       "Bash(make test:*)",
-      "Bash(set PYTHONPATH=%cd%src)"
+      "Bash(set PYTHONPATH=%cd%src)",
+      "Bash(for file in src/*/handler.py)",
+      "Bash(do if grep -q \"json\\.\" \"$file\")",
+      "Bash(then if ! grep -q \"^import json\" \"$file\")",
+      "Bash(then echo \"Missing json import: $file\")",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": []
   }
