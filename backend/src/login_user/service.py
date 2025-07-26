@@ -4,6 +4,7 @@ Service layer for user login operations.
 
 import os
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, Optional, Union
 
 from aws_lambda_powertools import Logger

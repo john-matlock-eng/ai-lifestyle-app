@@ -6,6 +6,7 @@ Provides common database access patterns for the Enhanced Goal System.
 
 import os
 from datetime import datetime, timedelta
+from decimal import Decimal
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 

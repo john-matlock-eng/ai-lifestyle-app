@@ -5,6 +5,7 @@ AWS Lambda handler for user login endpoint.
 """
 
 import os
+from decimal import Decimal
 from typing import Any, Dict
 
 from aws_lambda_powertools import Logger, Metrics, Tracer
