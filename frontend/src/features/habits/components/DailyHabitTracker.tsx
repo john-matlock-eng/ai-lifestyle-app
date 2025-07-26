@@ -118,9 +118,8 @@ const StatsCard: React.FC<{
     <div className="relative z-10 flex items-center justify-between">
       <div>
         <p className="text-xs text-[var(--text-muted)]">{label}</p>
-        <p className="text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent" 
-           style={{ backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))` }}
-           className={clsx(gradient)}>
+        <p className={clsx("text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent", gradient)} 
+           style={{ backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))` }}>
           {value}
         </p>
       </div>

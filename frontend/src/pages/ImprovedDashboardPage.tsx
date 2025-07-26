@@ -11,7 +11,6 @@ import { QuickActions } from "@/features/habits/components/QuickActions";
 import { UpcomingChallenges } from "@/features/habits/components/UpcomingChallenges";
 import { useHabits } from "@/features/habits/hooks/useHabits";
 import { Confetti } from "@/components/common/Confetti";
-import { clsx } from "clsx";
 import "../styles/dashboard.css";
 import "../styles/habit-dashboard.css";
 // import { useNavigate } from "react-router-dom";
@@ -153,7 +152,7 @@ const ImprovedDashboardPage: React.FC = () => {
         <div className="relative overflow-hidden rounded-xl p-4 bg-gradient-to-br from-blue-500 to-cyan-500 text-white hover:scale-105 transition-transform cursor-pointer">
           <div className="relative z-10">
             <div className="text-3xl mb-1">🎯</div>
-            <div className="text-2xl font-bold">{stats.completedToday || 0}</div>
+            <div className="text-2xl font-bold">{stats.habitsCompletedToday || 0}</div>
             <div className="text-sm opacity-90">Completed Today</div>
           </div>
           <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-white/10" />
@@ -162,7 +161,7 @@ const ImprovedDashboardPage: React.FC = () => {
         <div className="relative overflow-hidden rounded-xl p-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white hover:scale-105 transition-transform cursor-pointer">
           <div className="relative z-10">
             <div className="text-3xl mb-1">🔥</div>
-            <div className="text-2xl font-bold">{stats.currentStreak || 0}</div>
+            <div className="text-2xl font-bold">{stats.weeklyStreak || 0}</div>
             <div className="text-sm opacity-90">Day Streak</div>
           </div>
           <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-white/10" />
@@ -180,8 +179,8 @@ const ImprovedDashboardPage: React.FC = () => {
         <div className="relative overflow-hidden rounded-xl p-4 bg-gradient-to-br from-orange-500 to-yellow-500 text-white hover:scale-105 transition-transform cursor-pointer">
           <div className="relative z-10">
             <div className="text-3xl mb-1">📈</div>
-            <div className="text-2xl font-bold">{stats.weeklyAverage || 0}%</div>
-            <div className="text-sm opacity-90">Weekly Average</div>
+            <div className="text-2xl font-bold">{stats.perfectDays || 0}</div>
+            <div className="text-sm opacity-90">Perfect Days</div>
           </div>
           <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-white/10" />
         </div>
