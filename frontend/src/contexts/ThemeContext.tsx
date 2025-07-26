@@ -9,6 +9,7 @@ interface ThemeProviderProps {
 
 const THEME_KEY = "theme-preference";
 const themes: Theme[] = [
+  "balloon",
   "light",
   "dark",
   "serene",
@@ -19,12 +20,13 @@ const themes: Theme[] = [
 
 const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem(THEME_KEY) as Theme) || "dark",
+    () => (localStorage.getItem(THEME_KEY) as Theme) || "balloon",
   );
 
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove(
+      "balloon",
       "light",
       "dark",
       "serene",

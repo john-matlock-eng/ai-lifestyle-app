@@ -1,16 +1,15 @@
 # Journal Common Module
 
 from .models import (
-    JournalEntry,
-    JournalTemplate,
     CreateJournalEntryRequest,
-    UpdateJournalEntryRequest,
+    GoalProgress,
+    JournalEntry,
     JournalListResponse,
     JournalStats,
-    GoalProgress,
-    TemplateUsage
+    JournalTemplate,
+    TemplateUsage,
+    UpdateJournalEntryRequest,
 )
-
 from .repository import JournalRepository
 
 __all__ = [
@@ -22,5 +21,5 @@ __all__ = [
     "JournalStats",
     "GoalProgress",
     "TemplateUsage",
-    "JournalRepository"
+    "JournalRepository",
 ]

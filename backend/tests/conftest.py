@@ -1,13 +1,15 @@
 """
 Test configuration and fixtures
 """
-import pytest
+
 import os
 import sys
 from unittest.mock import Mock
 
+import pytest
+
 # Add src to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
 @pytest.fixture
@@ -38,7 +40,7 @@ def api_gateway_event():
             "x-amzn-trace-id": "Root=1-test",
             "x-forwarded-for": "127.0.0.1",
             "x-forwarded-port": "443",
-            "x-forwarded-proto": "https"
+            "x-forwarded-proto": "https",
         },
         "requestContext": {
             "accountId": "123456789012",
@@ -50,15 +52,15 @@ def api_gateway_event():
                 "path": "/health",
                 "protocol": "HTTP/1.1",
                 "sourceIp": "127.0.0.1",
-                "userAgent": "pytest"
+                "userAgent": "pytest",
             },
             "requestId": "test-request-id",
             "routeKey": "GET /health",
             "stage": "v1",
             "time": "01/Jan/2024:00:00:00 +0000",
-            "timeEpoch": 1234567890
+            "timeEpoch": 1234567890,
         },
-        "isBase64Encoded": False
+        "isBase64Encoded": False,
     }
 
 
@@ -66,27 +68,23 @@ def api_gateway_event():
 def mock_dynamodb(monkeypatch):
     """Mock DynamoDB client"""
     mock_client = Mock()
-    mock_client.describe_table.return_value = {
-        'Table': {
-            'TableStatus': 'ACTIVE',
-            'ItemCount': 0
-        }
-    }
-    
+    mock_client.describe_table.return_value = {"Table": {"TableStatus": "ACTIVE", "ItemCount": 0}}
+
     # Mock at the module level where it's imported
     import health
-    monkeypatch.setattr(health, 'dynamodb', mock_client)
-    
+
+    monkeypatch.setattr(health, "dynamodb", mock_client)
+
     return mock_client
 
 
 @pytest.fixture(autouse=True)
 def set_env_vars(monkeypatch):
     """Set environment variables for tests"""
-    monkeypatch.setenv('ENVIRONMENT', 'test')
-    monkeypatch.setenv('TABLE_NAME', 'test-table')
-    monkeypatch.setenv('USERS_TABLE_NAME', 'users-test')
-    monkeypatch.setenv('LOG_LEVEL', 'DEBUG')
-    monkeypatch.setenv('AWS_REGION', 'us-east-1')
-    monkeypatch.setenv('POWERTOOLS_SERVICE_NAME', 'test-service')
-    monkeypatch.setenv('POWERTOOLS_METRICS_NAMESPACE', 'test-namespace')
+    monkeypatch.setenv("ENVIRONMENT", "test")
+    monkeypatch.setenv("TABLE_NAME", "test-table")
+    monkeypatch.setenv("USERS_TABLE_NAME", "users-test")
+    monkeypatch.setenv("LOG_LEVEL", "DEBUG")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
+    monkeypatch.setenv("POWERTOOLS_SERVICE_NAME", "test-service")
+    monkeypatch.setenv("POWERTOOLS_METRICS_NAMESPACE", "test-namespace")

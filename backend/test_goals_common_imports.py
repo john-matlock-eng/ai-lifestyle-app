@@ -8,17 +8,19 @@ import sys
 import os
 
 # Add the src directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+
 
 def test_imports():
     """Test that all exports from goals_common can be imported."""
     print("Testing goals_common imports...")
-    
+
     try:
         # Test the specific import that was failing
         from goals_common import GoalValidationError
+
         print("✅ GoalValidationError import successful")
-        
+
         # Test all error imports
         from goals_common import (
             GoalError,
@@ -35,20 +37,22 @@ def test_imports():
             AttachmentUploadError,
             GoalSyncError,
         )
+
         print("✅ All error imports successful")
-        
+
         # Test that we can instantiate the error
         error = GoalValidationError(["Test error"])
         assert error.error_code == "GOAL_VALIDATION_ERROR"
         print("✅ GoalValidationError instantiation successful")
-        
+
         # Test a few other imports to ensure nothing broke
         from goals_common import Goal, GoalActivity, GoalsRepository
+
         print("✅ Model and repository imports successful")
-        
+
         print("\n🎉 All imports working correctly!")
         return True
-        
+
     except ImportError as e:
         print(f"\n❌ Import error: {e}")
         return False

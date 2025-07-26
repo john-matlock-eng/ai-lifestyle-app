@@ -5,7 +5,7 @@ import { store } from "./store";
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
-import { AuthProvider } from "./contexts";
+import { AuthProvider, ThemeProvider } from "./contexts";
 import { EncryptionProvider } from "./contexts/EncryptionContext";
 import { FeatureFlagsProvider } from "./contexts/FeatureFlagsContext";
 
@@ -18,9 +18,13 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RegisterPage from "./pages/auth/RegisterPage";
 import RegisterSuccessPage from "./pages/auth/RegisterSuccessPage";
 import LoginPage from "./pages/auth/LoginPage";
+import AuthTestPage from "./pages/auth/AuthTestPage";
+import TestPage from "./pages/TestPage"; // Temporary test page
+import RegisterTestPage from "./pages/RegisterTestPage"; // Direct API test
+import LogoShowcase from "./pages/LogoShowcase"; // Logo showcase
 
 // Pages - App
-import DashboardPage from "./pages/DashboardPage";
+import DashboardPage from "./pages/ImprovedDashboardPage";
 import SettingsPage from "./pages/SettingsPage";
 
 // Pages - Goals
@@ -38,10 +42,19 @@ import {
 } from "./features/journal/pages";
 import JournalDebugPage from "./pages/journal/JournalDebugPage";
 
+// Pages - Habits
+import {
+  HabitsPage,
+  CreateHabitPage,
+  EditHabitPage
+} from "./features/habits/pages";
+
 // Components
 import DevTools from "./components/common/DevTools";
 import { SessionWarning } from "./components/SessionWarning";
 import { EncryptionUnlockPrompt } from "./components/EncryptionUnlockPrompt";
+import { ShihTzuCompanionExample } from "./components/common";
+import TestNavigation from "./components/TestNavigation";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -68,9 +81,10 @@ function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <FeatureFlagsProvider>
-            <EncryptionProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <FeatureFlagsProvider>
+              <EncryptionProvider>
               <Routes>
                 {/* Public Routes */}
                 <Route element={<PublicLayout />}>
@@ -80,6 +94,10 @@ function App() {
                     path="/register/success"
                     element={<RegisterSuccessPage />}
                   />
+                  <Route path="/auth-test" element={<AuthTestPage />} />
+                  <Route path="/test" element={<TestPage />} />
+                  <Route path="/test-direct" element={<RegisterTestPage />} />
+                  <Route path="/logo-showcase" element={<LogoShowcase />} />
                   <Route
                     path="/forgot-password"
                     element={<div>Forgot Password - Coming Soon</div>}
@@ -126,6 +144,26 @@ function App() {
                     path="/workouts"
                     element={<div>Workouts - Coming Soon</div>}
                   />
+                  
+                  {/* Habit Routes */}
+                  <Route path="/habits" element={<HabitsPage />} />
+                  <Route path="/habits/new" element={<CreateHabitPage />} />
+                  <Route path="/habits/:habitId/edit" element={<EditHabitPage />} />
+                  <Route
+                    path="/habits/manage"
+                    element={<div>Manage Habits - Coming Soon</div>}
+                  />
+                  <Route
+                    path="/habits/analytics"
+                    element={<div>Habit Analytics - Coming Soon</div>}
+                  />
+                  <Route
+                    path="/habits/rewards"
+                    element={<div>Rewards - Coming Soon</div>}
+                  />
+
+                  {/* Demo Route */}
+                  <Route path="/demo/shih-tzu" element={<ShihTzuCompanionExample />} />
 
                   {/* Journal Routes */}
                   <Route path="/journal" element={<JournalPageEnhanced />} />
@@ -163,11 +201,13 @@ function App() {
               <SessionWarning />
               <EncryptionUnlockPrompt />
               <DevTools />
+              {process.env.NODE_ENV === 'development' && <TestNavigation />}
             </EncryptionProvider>
-          </FeatureFlagsProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+            </FeatureFlagsProvider>
+            </AuthProvider>
+              </ThemeProvider>
+            </QueryClientProvider>
+              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </Provider>
   );
 }

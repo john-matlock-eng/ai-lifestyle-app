@@ -3,16 +3,16 @@ Common user profile module.
 """
 
 from .models import (
-    UserProfile,
-    UserProfileResponse,
-    UserPreferences,
-    NotificationPreferences,
-    MeasurementUnit,
     DietaryRestriction,
-    FitnessGoal,
     DynamoDBUser,
     ErrorResponse,
-    UpdateUserProfileRequest
+    FitnessGoal,
+    MeasurementUnit,
+    NotificationPreferences,
+    UpdateUserProfileRequest,
+    UserPreferences,
+    UserProfile,
+    UserProfileResponse,
 )
 from .public_info import UserPublicInfo
 
@@ -27,5 +27,5 @@ __all__ = [
     "DynamoDBUser",
     "ErrorResponse",
     "UpdateUserProfileRequest",
-    "UserPublicInfo"
+    "UserPublicInfo",
 ]
