@@ -200,7 +200,7 @@ export const useShihTzuCompanion = ({
       setMood('walking');
     }
     
-    let pathTimeouts: NodeJS.Timeout[] = [];
+    const pathTimeouts: NodeJS.Timeout[] = [];
     
     path.forEach((point, index) => {
       const timeout = setTimeout(() => {

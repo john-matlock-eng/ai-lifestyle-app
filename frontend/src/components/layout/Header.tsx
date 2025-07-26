@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, useTheme } from "../../contexts";
-import type { Theme } from "../../contexts/ThemeContextType";
+import { THEME_OPTIONS } from "../../config/themes";
 
 interface HeaderProps {
   onMobileMenuToggle: () => void;
@@ -251,22 +251,11 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                         Theme
                       </div>
                       <div className="px-2">
-                        {[
-                          { value: "light", label: "Light", icon: "☀️" },
-                          { value: "dark", label: "Dark", icon: "🌙" },
-                          { value: "serene", label: "Serene", icon: "🌿" },
-                          { value: "vibrant", label: "Vibrant", icon: "🎨" },
-                          { value: "midnight", label: "Midnight", icon: "🌌" },
-                          {
-                            value: "solarized",
-                            label: "Solarized",
-                            icon: "🌅",
-                          },
-                        ].map((themeOption) => (
+                        {THEME_OPTIONS.map((themeOption) => (
                           <button
                             key={themeOption.value}
                             onClick={() => {
-                              setTheme(themeOption.value as Theme);
+                              setTheme(themeOption.value);
                               setIsUserMenuOpen(false);
                             }}
                             className={`w-full text-left px-2 py-1.5 text-sm rounded flex items-center gap-2 transition-colors ${
@@ -275,6 +264,7 @@ const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                                 : "text-text-secondary hover:bg-button-hover-bg hover:text-accent"
                             }`}
                             role="menuitem"
+                            title={themeOption.description}
                           >
                             <span>{themeOption.icon}</span>
                             <span>{themeOption.label}</span>

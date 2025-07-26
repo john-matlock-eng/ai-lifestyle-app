@@ -1,4 +1,5 @@
 import uuid
+
 """
 Service layer for activity logging business logic.
 """

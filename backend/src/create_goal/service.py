@@ -1,4 +1,5 @@
 import uuid
+
 """
 Service layer for goal creation business logic.
 """
