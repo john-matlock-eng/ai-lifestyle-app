@@ -2,9 +2,8 @@
 Service layer for activity logging business logic.
 """
 
-import uuid
+from datetime import datetime
 from datetime import datetime, timezone
-from typing import Optional
 
 from aws_lambda_powertools import Logger
 

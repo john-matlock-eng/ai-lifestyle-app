@@ -2,7 +2,6 @@
 Unit tests for email verification handler.
 """
 
-import json
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest

@@ -2,8 +2,7 @@
 Lambda handler for logging goal activities.
 """
 
-import json
-import uuid
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict
 

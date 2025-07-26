@@ -2,7 +2,7 @@
 Lambda handler for listing user goals with filtering and pagination.
 """
 
-import json
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 

@@ -2,7 +2,6 @@
 Debug handler to inspect API Gateway events
 """
 
-import json
 
 
 def handler(event, context):

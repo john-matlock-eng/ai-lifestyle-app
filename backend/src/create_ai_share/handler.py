@@ -2,8 +2,7 @@
 Lambda handler for creating AI analysis shares.
 """
 
-import json
-import uuid
+from datetime import datetime, timedelta
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 

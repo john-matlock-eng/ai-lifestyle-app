@@ -2,7 +2,6 @@
 Simplified test handler for debugging registration issues
 """
 
-import json
 import os
 from typing import Any, Dict
 

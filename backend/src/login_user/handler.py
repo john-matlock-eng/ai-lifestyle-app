@@ -2,7 +2,6 @@
 AWS Lambda handler for user login endpoint.
 """
 
-import json
 import os
 from typing import Any, Dict
 

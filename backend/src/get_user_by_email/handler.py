@@ -3,7 +3,6 @@ Lambda handler for getting user by email.
 Used for sharing functionality to look up recipients.
 """
 
-import json
 from typing import Any, Dict
 
 from aws_lambda_powertools import Logger, Metrics, Tracer

@@ -3,12 +3,12 @@ Service for listing encrypted shares.
 """
 
 import os
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import boto3
 from aws_lambda_powertools import Logger, Tracer
-from boto3.dynamodb.conditions import Key
 
 logger = Logger()
 tracer = Tracer()

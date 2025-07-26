@@ -2,7 +2,6 @@
 Business logic service for user profile operations.
 """
 
-from typing import Optional
 
 from aws_lambda_powertools import Logger, Tracer
 

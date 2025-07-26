@@ -2,7 +2,7 @@
 Lambda handler for listing journal entries.
 """
 
-import json
+from datetime import datetime, timedelta
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 

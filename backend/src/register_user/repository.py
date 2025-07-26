@@ -4,11 +4,9 @@ Repository layer for user data access in DynamoDB.
 
 import os
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 import boto3
-from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 from .errors import DynamoDBError
@@ -109,7 +107,8 @@ class UserRepository:
             user_id: User ID to delete
         """
         try:
-            self.table.delete_item(Key={"pk": f"USER#{str(user_id)}", "sk": f"USER#{str(user_id)}"})
+            self.table.delete_item(Key={"pk": f"USER#{str(user_id)}",
+                "sk": f"USER#{str(user_id)}"})
         except ClientError:
             # Ignore errors during cleanup
             pass

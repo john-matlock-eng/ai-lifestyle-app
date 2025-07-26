@@ -5,6 +5,7 @@ These models support journaling functionality with templates, goal linking,
 encryption, and comprehensive analytics.
 """
 
+from datetime import datetime
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional

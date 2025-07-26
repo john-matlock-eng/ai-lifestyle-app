@@ -2,7 +2,6 @@
 Lambda handler for MFA verification during login.
 """
 
-import json
 from datetime import datetime
 from typing import Any, Dict
 

@@ -2,7 +2,6 @@
 Unit tests for get user profile handler.
 """
 
-import json
 import os
 from datetime import datetime
 from unittest.mock import Mock, patch

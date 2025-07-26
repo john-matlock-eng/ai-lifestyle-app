@@ -2,7 +2,6 @@
 Lambda handler for MFA setup endpoint.
 """
 
-import json
 from datetime import datetime
 from typing import Any, Dict
 

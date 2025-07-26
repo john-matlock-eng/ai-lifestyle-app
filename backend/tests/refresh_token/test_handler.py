@@ -2,7 +2,6 @@
 Unit tests for token refresh handler.
 """
 
-import json
 import os
 from datetime import datetime
 from unittest.mock import MagicMock, Mock, patch

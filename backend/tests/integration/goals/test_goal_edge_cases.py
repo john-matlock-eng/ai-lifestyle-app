@@ -3,8 +3,6 @@ Edge case and error scenario tests for goal system.
 Tests boundary conditions, validation, and error handling.
 """
 
-import json
-import uuid
 from datetime import date, datetime, timedelta
 
 import pytest

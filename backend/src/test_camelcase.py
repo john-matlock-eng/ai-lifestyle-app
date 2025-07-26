@@ -3,7 +3,6 @@
 Test script to verify camelCase handling in goal models.
 """
 
-import json
 import os
 import sys
 

@@ -2,7 +2,6 @@
 
 import logging
 from datetime import date, datetime, timedelta
-from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 import boto3
@@ -28,7 +27,8 @@ class HabitRepository:
 
     def _get_checkin_key(self, user_id: str, habit_id: str, check_date: date) -> Dict[str, str]:
         """Generate the primary key for a habit check-in."""
-        return {"pk": f"USER#{user_id}#HABIT#{habit_id}", "sk": f"CHECKIN#{check_date.isoformat()}"}
+        return {"pk": f"USER#{user_id}#HABIT#{habit_id}",
+            "sk": f"CHECKIN#{check_date.isoformat()}"}
 
     def _get_stats_key(self, user_id: str) -> Dict[str, str]:
         """Generate the primary key for user stats."""

@@ -3,6 +3,7 @@ Service layer for retrieving a journal entry.
 """
 
 import os
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 

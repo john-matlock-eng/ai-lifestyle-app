@@ -2,7 +2,6 @@
 Health check Lambda handler
 """
 
-import json
 import os
 from datetime import datetime
 

@@ -2,7 +2,6 @@
 Lambda handler for listing goal activities.
 """
 
-import json
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 

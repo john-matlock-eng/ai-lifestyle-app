@@ -2,7 +2,6 @@
 Lambda handler for email verification endpoint.
 """
 
-import json
 from typing import Any, Dict
 
 from aws_lambda_powertools import Logger, Metrics, Tracer

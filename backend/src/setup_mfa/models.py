@@ -3,7 +3,6 @@ Pydantic models for MFA setup endpoint.
 Matches OpenAPI contract exactly.
 """
 
-from typing import Optional
 
 from pydantic import BaseModel, Field
 

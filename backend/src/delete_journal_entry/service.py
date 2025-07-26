@@ -2,6 +2,7 @@
 Service layer for deleting journal entries.
 """
 
+from datetime import datetime
 from datetime import datetime, timezone
 
 from aws_lambda_powertools import Logger

@@ -2,7 +2,6 @@
 Lambda handler for retrieving a specific goal.
 """
 
-import json
 from datetime import datetime
 from typing import Any, Dict
 

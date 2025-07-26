@@ -2,7 +2,6 @@
 Tests for main API handler
 """
 
-import json
 
 from src.main import app, handler
 

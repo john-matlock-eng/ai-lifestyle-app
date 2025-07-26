@@ -6,7 +6,6 @@ Provides progress calculations, date helpers, and other utilities.
 
 import calendar
 from datetime import date, datetime, timedelta
-from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
 from .models import (

@@ -1,4 +1,4 @@
-// Enhanced version of useAuthShihTzu with improved positioning
+// Enhanced version of useAuthShihTzu with improved positioning and reduced floating
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useShihTzuCompanion } from './useShihTzuCompanion';
 
@@ -28,23 +28,27 @@ interface ThoughtBubble {
 }
 
 export const useEnhancedAuthShihTzu = () => {
-  // Calculate initial position based on viewport
+  // Calculate initial position based on viewport with proper companion sizing
   const getInitialPosition = () => {
     const isMobile = window.innerWidth < 640; // sm breakpoint
     const isTablet = window.innerWidth < 1024; // lg breakpoint
     
+    // Companion size in pixels
+    const companionSize = isMobile ? 60 : 80;
+    const padding = 20; // Padding from screen edges
+    
     if (isMobile) {
-      // On mobile, position at top right, visible but not intrusive
+      // On mobile, position at top right with proper spacing
       return { 
-        x: window.innerWidth - 100, 
-        y: 60 
+        x: window.innerWidth - companionSize - padding, 
+        y: 80 // Below header area
       };
     } else if (isTablet) {
       // On tablet, position to the right of form area
       const formWidth = 448; // max-w-md = 28rem = 448px
       const formCenterX = window.innerWidth / 2;
       return {
-        x: formCenterX + formWidth / 2 + 40,
+        x: Math.min(formCenterX + formWidth / 2 + 40, window.innerWidth - companionSize - padding),
         y: 120
       };
     } else {
@@ -52,7 +56,7 @@ export const useEnhancedAuthShihTzu = () => {
       const formWidth = 448;
       const formCenterX = window.innerWidth / 2;
       return {
-        x: Math.min(formCenterX + formWidth / 2 + 60, window.innerWidth - 120),
+        x: Math.min(formCenterX + formWidth / 2 + 60, window.innerWidth - companionSize - padding),
         y: 150
       };
     }
@@ -60,7 +64,8 @@ export const useEnhancedAuthShihTzu = () => {
   
   const companion = useShihTzuCompanion({
     initialPosition: getInitialPosition(),
-    idleTimeout: 10000,
+    idleTimeout: 15000, // Increased timeout for less movement
+    enableAutoIdle: true,
   });
 
   // Enhanced state
@@ -82,19 +87,28 @@ export const useEnhancedAuthShihTzu = () => {
   const particleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastPasswordStrength = useRef<'weak' | 'medium' | 'strong' | null>(null);
   const hasGreeted = useRef(false);
+  const isMovingToField = useRef(false);
 
-  // Update position on window resize
+  // Update position on window resize with debouncing
   useEffect(() => {
+    let resizeTimeout: NodeJS.Timeout;
+    
     const handleResize = () => {
-      // Only reposition if companion is in default/idle position
-      if (companionState === 'idle' && !currentField) {
-        const newPosition = getInitialPosition();
-        companion.setPosition(newPosition);
-      }
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // Only reposition if companion is in default/idle position and not moving to a field
+        if (companionState === 'idle' && !currentField && !isMovingToField.current) {
+          const newPosition = getInitialPosition();
+          companion.setPosition(newPosition);
+        }
+      }, 300); // Debounce resize events
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
+    };
   }, [companionState, currentField, companion]);
 
   // Show thought bubble
@@ -123,23 +137,13 @@ export const useEnhancedAuthShihTzu = () => {
     }, 3000);
   }, []);
 
-  // Enhanced greet with better positioning
+  // Enhanced greet with subtle animation
   useEffect(() => {
     if (!hasGreeted.current) {
       hasGreeted.current = true;
       const greetTimeout = setTimeout(() => {
-        // Move to a position near where the first field will be
-        const isMobile = window.innerWidth < 640;
-        if (!isMobile) {
-          // Find the approximate position of the first input field
-          const firstInput = document.querySelector('input[type="email"], input[type="text"]');
-          if (firstInput) {
-            companion.moveToElement(firstInput as HTMLElement, 'right');
-          }
-        }
-        
         companion.setMood('excited' as any);
-        showThought("Welcome! Let's get you signed in! 🎉", 4000);
+        showThought("Welcome! Let's get started 👋", 3500);
         triggerParticleEffect('sparkles');
         
         setTimeout(() => {
@@ -151,18 +155,18 @@ export const useEnhancedAuthShihTzu = () => {
     }
   }, [companion, showThought, triggerParticleEffect]);
 
-  // Update personality needs over time
+  // Update personality needs over time (less frequently)
   useEffect(() => {
     const interval = setInterval(() => {
       setPersonality(prev => ({
         ...prev,
         needs: {
-          attention: Math.max(0, prev.needs.attention - 2),
-          rest: Math.min(100, prev.needs.rest + (companion.mood === 'sleeping' ? 5 : -1)),
-          exercise: Math.max(0, prev.needs.exercise - 1)
+          attention: Math.max(0, prev.needs.attention - 1),
+          rest: Math.min(100, prev.needs.rest + (companion.mood === 'sleeping' ? 3 : -0.5)),
+          exercise: Math.max(0, prev.needs.exercise - 0.5)
         }
       }));
-    }, 30000); // Every 30 seconds
+    }, 60000); // Every minute (doubled from 30s)
 
     return () => clearInterval(interval);
   }, [companion.mood]);
@@ -177,13 +181,14 @@ export const useEnhancedAuthShihTzu = () => {
     };
   }, []);
 
-  // Enhanced input focus with closer positioning
+  // Enhanced input focus with improved positioning
   const handleInputFocus = useCallback((inputElement: HTMLInputElement | HTMLElement) => {
     const fieldName = inputElement.getAttribute('name') || inputElement.getAttribute('id') || 'field';
     setCurrentField(fieldName);
     setCompanionState('focused');
+    isMovingToField.current = true;
     
-    // Use closer positioning based on screen size
+    // Use appropriate positioning based on screen size
     const isMobile = window.innerWidth < 640;
     const placement = isMobile ? 'above' : 'right';
     
@@ -191,10 +196,10 @@ export const useEnhancedAuthShihTzu = () => {
     
     // Field-specific thoughts
     if (fieldName === 'email') {
-      showThought("Let's start with your email! 📧", 2000);
+      showThought("Your email address 📧", 2500);
       companion.setMood('curious');
     } else if (fieldName === 'password') {
-      showThought("Keep it secure! 🔒", 2000);
+      showThought("Keep it secure 🔒", 2500);
       companion.setMood('protective' as any);
     }
     
@@ -203,9 +208,14 @@ export const useEnhancedAuthShihTzu = () => {
       ...prev,
       bond: { ...prev.bond, interactions: prev.bond.interactions + 1 }
     }));
+    
+    // Reset moving flag after animation
+    setTimeout(() => {
+      isMovingToField.current = false;
+    }, 1500);
   }, [companion, showThought]);
 
-  // Enhanced typing with encouragement
+  // Enhanced typing with less frequent encouragements
   const handleTyping = useCallback(() => {
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
@@ -214,8 +224,8 @@ export const useEnhancedAuthShihTzu = () => {
     if (companionState !== 'error' && companionState !== 'success') {
       setCompanionState('typing');
       
-      // Random typing encouragements
-      if (Math.random() < 0.1) { // 10% chance
+      // Reduced chance of encouragements
+      if (Math.random() < 0.05) { // 5% chance (reduced from 10%)
         const encouragements = [
           "You're doing great! 💪",
           "Almost there! ⭐",
@@ -230,24 +240,17 @@ export const useEnhancedAuthShihTzu = () => {
         setCompanionState('idle');
         companion.setMood('idle');
       }
-    }, 1500);
+    }, 2000); // Increased delay
   }, [companion, companionState, showThought]);
 
-  // Enhanced error with personality
+  // Enhanced error without excessive shaking
   const handleError = useCallback(() => {
     setCompanionState('error');
     companion.setMood('concerned' as any);
-    showThought("Oops! Let's fix that together 🤝", 3000);
+    showThought("Let's try again 🤝", 3000);
     
-    // Shake animation
-    const currentPos = companion.position;
-    const shakePositions = [
-      { x: currentPos.x - 10, y: currentPos.y },
-      { x: currentPos.x + 10, y: currentPos.y },
-      { x: currentPos.x - 10, y: currentPos.y },
-      { x: currentPos.x, y: currentPos.y },
-    ];
-    companion.followPath(shakePositions);
+    // Subtle head shake only (no position movement)
+    // The concerned mood already has a head tilt animation
     
     // Update personality
     setPersonality(prev => ({
@@ -261,7 +264,7 @@ export const useEnhancedAuthShihTzu = () => {
     }, 3000);
   }, [companion, showThought]);
 
-  // Enhanced success celebration with centered position
+  // Enhanced success celebration with controlled positioning
   const handleSuccess = useCallback(() => {
     setCompanionState('success');
     companion.setMood('celebrating' as any);
@@ -270,19 +273,14 @@ export const useEnhancedAuthShihTzu = () => {
     showThought("Welcome aboard! 🎊", 4000);
     triggerParticleEffect('sparkles');
     
-    // Victory dance - move to center but account for mobile
+    // Move to center-top area (less intrusive)
     const isMobile = window.innerWidth < 640;
-    if (isMobile) {
-      companion.setPosition({
-        x: window.innerWidth / 2 - 40,
-        y: 200,
-      });
-    } else {
-      companion.setPosition({
-        x: window.innerWidth / 2 - 50,
-        y: window.innerHeight / 2 - 50,
-      });
-    }
+    const companionSize = isMobile ? 60 : 80;
+    
+    companion.setPosition({
+      x: (window.innerWidth / 2) - (companionSize / 2),
+      y: isMobile ? 100 : 150,
+    });
     
     // Update personality
     setPersonality(prev => ({
@@ -302,24 +300,19 @@ export const useEnhancedAuthShihTzu = () => {
     
     setTimeout(() => {
       setAccessories([]);
+      // Return to default position after celebration
+      const defaultPosition = getInitialPosition();
+      companion.setPosition(defaultPosition);
     }, 5000);
   }, [companion, showThought, triggerParticleEffect]);
 
-  // Enhanced loading with movement
+  // Enhanced loading with minimal movement
   const handleLoading = useCallback(() => {
     setCompanionState('validating');
-    companion.setMood('walking');
-    showThought("Checking your info... 🔍", 2000);
+    companion.setMood('curious'); // Changed from walking to reduce movement
+    showThought("Checking... 🔍", 2000);
     
-    // Pacing animation - smaller movements on mobile
-    const isMobile = window.innerWidth < 640;
-    const paceDistance = isMobile ? 20 : 30;
-    const pacePositions = [
-      { x: companion.position.x - paceDistance, y: companion.position.y },
-      { x: companion.position.x + paceDistance, y: companion.position.y },
-      { x: companion.position.x, y: companion.position.y }
-    ];
-    companion.followPath(pacePositions);
+    // No pacing animation - just mood change
   }, [companion, showThought]);
 
   // Enhanced password strength feedback
@@ -332,7 +325,7 @@ export const useEnhancedAuthShihTzu = () => {
       switch (strength) {
         case 'weak':
           companion.setMood('concerned' as any);
-          showThought("Let's make it stronger! 💪", 2000);
+          showThought("Add more characters 💪", 2000);
           break;
         case 'medium':
           companion.setMood('curious');
@@ -341,7 +334,7 @@ export const useEnhancedAuthShihTzu = () => {
           break;
         case 'strong':
           companion.setMood('proud' as any);
-          showThought("Perfect password! 🛡️", 2000);
+          showThought("Strong password! 🛡️", 2000);
           triggerParticleEffect('hearts');
           // Update personality for achievement
           setPersonality(prev => ({
@@ -353,18 +346,13 @@ export const useEnhancedAuthShihTzu = () => {
     }
   }, [companion, companionState, showThought, triggerParticleEffect]);
 
-  // Enhanced field completion
+  // Enhanced field completion without excessive movement
   const handleFieldComplete = useCallback(() => {
     if (companionState !== 'error' && companionState !== 'success') {
       companion.setMood('happy');
       triggerParticleEffect('sparkles');
       
-      // Quick celebration
-      const celebratePositions = [
-        { x: companion.position.x, y: companion.position.y - 10 },
-        { x: companion.position.x, y: companion.position.y }
-      ];
-      companion.followPath(celebratePositions);
+      // No position animation - just mood and particles
       
       // Personality update
       setPersonality(prev => ({
@@ -374,44 +362,32 @@ export const useEnhancedAuthShihTzu = () => {
       
       moodTimeoutRef.current = setTimeout(() => {
         companion.setMood('idle');
-      }, 1000);
+      }, 1500);
     }
   }, [companion, companionState, triggerParticleEffect]);
 
-  // Enhanced specific error handling
+  // Enhanced specific error handling with minimal animations
   const handleSpecificError = useCallback((errorType: 'network' | 'unauthorized' | 'rate-limit' | 'server') => {
     setCompanionState('error');
     
     switch (errorType) {
       case 'network':
         companion.setMood('sleeping');
-        showThought("Can't reach the server... 😴", 4000);
+        showThought("Connection lost... 😴", 4000);
         triggerParticleEffect('zzz');
         break;
       case 'unauthorized':
         companion.setMood('concerned' as any);
-        showThought("Hmm, that doesn't match... 🤔", 3000);
-        handleError();
+        showThought("Check your details 🤔", 3000);
         break;
       case 'rate-limit':
-        companion.setMood('protective' as any);
-        showThought("Let's take a breather... ⏱️", 5000);
-        // Dizzy animation with smaller radius on mobile
-        const isMobile = window.innerWidth < 640;
-        const radius = isMobile ? 20 : 30;
-        const center = companion.position;
-        const circlePositions = Array.from({ length: 8 }, (_, i) => {
-          const angle = (i / 8) * 2 * Math.PI;
-          return {
-            x: center.x + radius * Math.cos(angle),
-            y: center.y + radius * Math.sin(angle),
-          };
-        });
-        companion.followPath(circlePositions);
+        companion.setMood('zen' as any);
+        showThought("Let's take a break ⏱️", 5000);
+        // No dizzy animation - zen mode is calmer
         break;
       case 'server':
         companion.setMood('curious');
-        showThought("Something's wrong on our end... 🔧", 4000);
+        showThought("Technical difficulties 🔧", 4000);
         break;
     }
     
@@ -419,7 +395,7 @@ export const useEnhancedAuthShihTzu = () => {
       setCompanionState('idle');
       companion.setMood('idle');
     }, 5000);
-  }, [companion, handleError, showThought, triggerParticleEffect]);
+  }, [companion, showThought, triggerParticleEffect]);
 
   const handleInputBlur = useCallback(() => {
     if (typingTimeoutRef.current) {
@@ -432,11 +408,11 @@ export const useEnhancedAuthShihTzu = () => {
       
       // Return to default position after a delay
       setTimeout(() => {
-        if (!currentField) {
+        if (!currentField && !isMovingToField.current) {
           const defaultPosition = getInitialPosition();
           companion.setPosition(defaultPosition);
         }
-      }, 2000);
+      }, 3000); // Increased delay
     }
     
     setCurrentField(null);
@@ -446,7 +422,7 @@ export const useEnhancedAuthShihTzu = () => {
   const pet = useCallback(() => {
     companion.setMood('happy');
     triggerParticleEffect('hearts');
-    showThought("Aww, thanks! 🥰", 2000);
+    showThought("Thanks! 🥰", 2000);
     
     // Update personality
     setPersonality(prev => ({
@@ -460,28 +436,23 @@ export const useEnhancedAuthShihTzu = () => {
   const celebrate = useCallback(() => {
     companion.setMood('celebrating' as any);
     triggerParticleEffect('sparkles');
-    showThought("Woohoo! 🎉", 2000);
+    showThought("Yay! 🎉", 2000);
     
-    // Jump animation
-    const jumpPositions = [
-      { x: companion.position.x, y: companion.position.y - 30 },
-      { x: companion.position.x, y: companion.position.y }
-    ];
-    companion.followPath(jumpPositions);
+    // No jump animation - just mood and effects
   }, [companion, showThought, triggerParticleEffect]);
 
   const encourage = useCallback(() => {
-    companion.setMood('encouraging' as any);
-    showThought("You can do this! 💪", 3000);
+    companion.setMood('happy'); // Changed from 'encouraging' to use existing mood
+    showThought("You got this! 💪", 3000);
     triggerParticleEffect('sparkles');
   }, [companion, showThought, triggerParticleEffect]);
 
   // Override moveToElement for better positioning
   const moveToElement = useCallback((element: HTMLElement, placement?: 'above' | 'below' | 'left' | 'right') => {
     const rect = element.getBoundingClientRect();
-    const companionSize = 80; // Size of the companion (md size)
     const isMobile = window.innerWidth < 640;
-    const offset = isMobile ? 10 : 20; // Closer on mobile
+    const companionSize = isMobile ? 60 : 80;
+    const offset = isMobile ? 15 : 25; // Slightly larger offset
     
     let x: number;
     let y: number;
@@ -489,47 +460,47 @@ export const useEnhancedAuthShihTzu = () => {
     // Default placement based on screen size
     const defaultPlacement = placement || (isMobile ? 'above' : 'right');
     
+    // Add scroll position to get absolute coordinates
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    
     switch (defaultPlacement) {
       case 'above':
-        x = rect.left + rect.width / 2 - companionSize / 2;
-        y = rect.top - companionSize - offset;
-        // Make sure it doesn't go off the top of the screen
-        if (y < 10) {
-          // Try below instead
-          y = rect.bottom + offset;
+        x = rect.left + scrollX + rect.width / 2 - companionSize / 2;
+        y = rect.top + scrollY - companionSize - offset;
+        // Ensure minimum distance from top
+        if (y < 20) {
+          y = rect.bottom + scrollY + offset; // Switch to below
         }
         break;
       case 'below':
-        x = rect.left + rect.width / 2 - companionSize / 2;
-        y = rect.bottom + offset;
+        x = rect.left + scrollX + rect.width / 2 - companionSize / 2;
+        y = rect.bottom + scrollY + offset;
         break;
       case 'left':
-        x = rect.left - companionSize - offset;
-        y = rect.top + rect.height / 2 - companionSize / 2;
-        // Make sure it doesn't go off the left
-        if (x < 10) {
-          // Try right instead
-          x = rect.right + offset;
+        x = rect.left + scrollX - companionSize - offset;
+        y = rect.top + scrollY + rect.height / 2 - companionSize / 2;
+        if (x < 20) {
+          x = rect.right + scrollX + offset; // Switch to right
         }
         break;
       case 'right':
-        x = rect.right + offset;
-        y = rect.top + rect.height / 2 - companionSize / 2;
-        // Make sure it doesn't go off the right
-        if (x > window.innerWidth - companionSize - 10) {
-          // Try left instead
-          x = rect.left - companionSize - offset;
+      default:
+        x = rect.right + scrollX + offset;
+        y = rect.top + scrollY + rect.height / 2 - companionSize / 2;
+        if (x > window.innerWidth - companionSize - 20) {
+          x = rect.left + scrollX - companionSize - offset; // Switch to left
         }
         break;
     }
     
     // Ensure the companion stays within viewport bounds
-    x = Math.max(10, Math.min(x, window.innerWidth - companionSize - 10));
-    y = Math.max(10, Math.min(y, window.innerHeight - companionSize - 10));
+    x = Math.max(20, Math.min(x, window.innerWidth - companionSize - 20));
+    y = Math.max(20, Math.min(y, window.innerHeight - companionSize - 20));
     
     companion.setPosition({ x, y });
     
-    // Don't change mood if already in a special state
+    // Subtle walking animation
     if (companion.mood !== 'happy' && companion.mood !== 'curious') {
       companion.setMood('walking');
       setTimeout(() => {

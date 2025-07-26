@@ -41,10 +41,11 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
   const particleIdRef = useRef(0);
   const positionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Responsive size map - smaller on mobile
   const sizeMap = {
-    sm: { width: 60, height: 60 },
-    md: { width: 80, height: 80 },
-    lg: { width: 100, height: 100 }
+    sm: { width: window.innerWidth < 640 ? 50 : 60, height: window.innerWidth < 640 ? 50 : 60 },
+    md: { width: window.innerWidth < 640 ? 60 : 80, height: window.innerWidth < 640 ? 60 : 80 },
+    lg: { width: window.innerWidth < 640 ? 80 : 100, height: window.innerWidth < 640 ? 80 : 100 }
   };
 
   const currentSize = sizeMap[size];
@@ -56,7 +57,7 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
     }
   }, [mood]);
 
-  // Handle position changes
+  // Handle position changes with smoother transitions
   useEffect(() => {
     if (positionTimerRef.current) {
       clearTimeout(positionTimerRef.current);
@@ -65,14 +66,16 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
     if (position.x !== currentPosition.x || position.y !== currentPosition.y) {
       setIsMoving(true);
       
+      // Immediate update for responsiveness
+      setCurrentPosition(position);
+      
       positionTimerRef.current = setTimeout(() => {
-        setCurrentPosition(position);
         setIsMoving(false);
         
         if (onPositionChange) {
           onPositionChange(position);
         }
-      }, 50);
+      }, 1000); // Extend duration for smoother movement
     }
     
     return () => {
@@ -145,7 +148,7 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
         className
       )}
       style={{
-        position: style?.position || 'absolute',
+        position: style?.position || 'fixed', // Use fixed positioning to avoid scroll issues
         left: `${currentPosition.x}px`,
         top: `${currentPosition.y}px`,
         transform: isMoving ? 'translateY(-10px)' : 'translateY(0)',
@@ -157,18 +160,23 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {/* Thought Bubble - position adjusted for mobile */}
+      {/* Thought Bubble - improved positioning and structure */}
       {showThoughtBubble && thoughtText && (
-        <div className="absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap"
+        <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
           style={{
-            top: window.innerWidth < 640 ? '-60px' : '-80px', // Closer on mobile
+            top: window.innerWidth < 640 ? '-55px' : '-75px', // Adjusted for better mobile spacing
+            zIndex: -1 // Ensure bubble is behind companion
           }}
         >
-          <div className="bg-white rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-lg relative text-black animate-float-subtle">
-            <p className="text-xs sm:text-sm font-medium">{thoughtText}</p>
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-              <div className="w-2 h-2 bg-white rounded-full ml-1 mt-1"></div>
+          <div className="relative">
+            {/* Main bubble */}
+            <div className="bg-white rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-lg relative text-black animate-float-subtle">
+              <p className="text-xs sm:text-sm font-medium relative z-10">{thoughtText}</p>
+            </div>
+            {/* Tail circles - positioned below main bubble */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-3">
+              <div className="w-3 h-3 bg-white rounded-full shadow-sm"></div>
+              <div className="w-2 h-2 bg-white rounded-full shadow-sm ml-1 mt-0.5"></div>
             </div>
           </div>
         </div>
@@ -178,7 +186,7 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className="absolute pointer-events-none text-xl sm:text-2xl animate-float-up"
+          className="absolute pointer-events-none text-lg sm:text-xl animate-float-up"
           style={{
             left: '50%',
             top: '20%',
@@ -197,8 +205,8 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
         height={currentSize.height}
         viewBox="0 0 100 100"
         className={clsx(
-          currentMood === 'happy' && 'animate-bounce',
-          currentMood === 'excited' && 'animate-wiggle',
+          currentMood === 'happy' && 'animate-bounce-subtle',
+          currentMood === 'excited' && 'animate-wiggle-subtle',
           currentMood === 'playful' && 'animate-spin-slow',
           currentMood === 'walking' && 'animate-walk',
           currentMood === 'celebrating' && 'animate-wiggle'
@@ -226,14 +234,25 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
             {`
               @keyframes wag-enhanced {
                 0%, 100% { transform: rotate(-45deg); }
-                25% { transform: rotate(-80deg); }
-                75% { transform: rotate(-10deg); }
+                25% { transform: rotate(-65deg); }
+                75% { transform: rotate(-25deg); }
               }
               
               @keyframes wiggle {
                 0%, 100% { transform: rotate(0deg); }
                 25% { transform: rotate(-5deg); }
                 75% { transform: rotate(5deg); }
+              }
+              
+              @keyframes wiggle-subtle {
+                0%, 100% { transform: rotate(0deg); }
+                25% { transform: rotate(-3deg); }
+                75% { transform: rotate(3deg); }
+              }
+              
+              @keyframes bounce-subtle {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-5px); }
               }
               
               @keyframes spin-slow {
@@ -263,16 +282,24 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
               
               @keyframes float-subtle {
                 0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-5px); }
+                50% { transform: translateY(-3px); }
               }
               
               .animate-wag-enhanced {
-                animation: wag-enhanced 0.5s ease-in-out infinite;
+                animation: wag-enhanced 0.6s ease-in-out infinite;
                 transform-origin: 30px 57px;
               }
               
               .animate-wiggle {
                 animation: wiggle 2s ease-in-out infinite;
+              }
+              
+              .animate-wiggle-subtle {
+                animation: wiggle-subtle 3s ease-in-out infinite;
+              }
+              
+              .animate-bounce-subtle {
+                animation: bounce-subtle 2s ease-in-out infinite;
               }
               
               .animate-spin-slow {
@@ -347,8 +374,8 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
               attributeName="transform"
               attributeType="XML"
               type="rotate"
-              values="0 50 35; 0 50 35; 12 50 35; 12 50 35; 12 50 35; 0 50 35"
-              dur="3s"
+              values="0 50 35; 0 50 35; 8 50 35; 8 50 35; 8 50 35; 0 50 35"
+              dur="4s"
               repeatCount="indefinite"
             />
           )}
@@ -482,8 +509,8 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
         
         {currentMood === 'excited' && (
           <>
-            <text x="15" y="30" className="animate-bounce" fontSize="14">!</text>
-            <text x="75" y="25" className="animate-bounce" style={{ animationDelay: '0.2s' }} fontSize="14">!</text>
+            <text x="15" y="30" className="animate-bounce-subtle" fontSize="14">!</text>
+            <text x="75" y="25" className="animate-bounce-subtle" style={{ animationDelay: '0.2s' }} fontSize="14">!</text>
           </>
         )}
         

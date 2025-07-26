@@ -3,7 +3,6 @@ Cognito client wrapper for email verification operations.
 """
 
 import os
-from typing import Optional
 
 import boto3
 from aws_lambda_powertools import Logger

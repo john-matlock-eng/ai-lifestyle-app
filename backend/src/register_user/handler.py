@@ -2,7 +2,6 @@
 Lambda handler for user registration endpoint.
 """
 
-import json
 import logging
 import os
 import traceback
@@ -70,7 +69,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
         result = _handle_registration(event, context, request_id)
         print(
-            f"=== REGISTRATION HANDLER END - Returning status: {result.get('statusCode', 'unknown')} ==="
+            f"=== REGISTRATION HANDLER END - Returning status: {result.get('statusCode',
+                'unknown')} ==="
         )
         return result
     except Exception as e:

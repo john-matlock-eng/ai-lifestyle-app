@@ -5,8 +5,8 @@ Provides common database access patterns for the Enhanced Goal System.
 """
 
 import os
+from datetime import datetime, timedelta
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
 import boto3

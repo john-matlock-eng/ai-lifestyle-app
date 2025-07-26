@@ -2,8 +2,8 @@
 Lambda handler for setting up encryption recovery methods.
 """
 
-import json
 import os
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict
 

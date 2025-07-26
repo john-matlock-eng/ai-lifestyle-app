@@ -2,9 +2,8 @@
 Service layer for journal entry creation business logic.
 """
 
-import uuid
+from datetime import datetime
 from datetime import datetime, timezone
-from typing import Optional
 
 from aws_lambda_powertools import Logger
 
@@ -219,8 +218,6 @@ class CreateJournalEntryService:
             from datetime import timedelta
 
             now = datetime.now(timezone.utc)
-            week_ago = now - timedelta(days=7)
-            month_ago = now - timedelta(days=30)
 
             # For now, just increment if this is the first entry or reset if needed
             if not stats.last_entry_date:
@@ -245,7 +242,9 @@ class CreateJournalEntryService:
 
             # Log stats before saving
             logger.info(
-                f"Updating stats for user {user_id}: entries={stats.total_entries}, words={stats.total_words}, week={stats.entries_this_week}, month={stats.entries_this_month}"
+                f"Updating stats for user {user_id}: entries={stats.total_entries}, "
+                f"words={stats.total_words}, week={stats.entries_this_week}, "
+                f"month={stats.entries_this_month}"
             )
 
             # Save updated stats

@@ -2,7 +2,6 @@
 Service layer for get user by ID functionality.
 """
 
-from typing import Optional
 
 import jwt
 from aws_lambda_powertools import Logger
@@ -98,7 +97,7 @@ class UserService:
             user_data = self.repository.get_user_by_id(user_id)
 
             if not user_data:
-                raise UserNotFoundError(message=f"User not found", details={"user_id": user_id})
+                raise UserNotFoundError(message="User not found", details={"user_id": user_id})
 
             # Return only public information
             return UserPublicInfo(

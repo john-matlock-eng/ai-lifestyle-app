@@ -9,8 +9,8 @@ These models support all 5 goal patterns:
 5. Limit Goals - "Keep X below Y"
 """
 
+from datetime import datetime
 from datetime import datetime, timezone
-from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -147,7 +147,6 @@ class GoalTarget(BaseModel):
         """Ensure target date is in the future for new goals."""
         if v:
             # Make comparison timezone-aware
-            from datetime import timezone
 
             current_time = datetime.now(timezone.utc)
 

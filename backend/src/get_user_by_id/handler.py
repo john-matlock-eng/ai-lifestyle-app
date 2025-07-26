@@ -2,7 +2,6 @@
 AWS Lambda handler for get user by ID endpoint.
 """
 
-import json
 import os
 from typing import Any, Dict
 

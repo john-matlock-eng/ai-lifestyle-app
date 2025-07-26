@@ -2,8 +2,7 @@
 Lambda handler for archiving (soft deleting) a goal.
 """
 
-import json
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict
 
 from aws_lambda_powertools import Logger, Metrics, Tracer

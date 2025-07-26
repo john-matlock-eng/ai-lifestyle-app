@@ -3,8 +3,8 @@ Fixed Lambda handler for setting up user encryption.
 Now also updates the user profile to set encryptionEnabled = true.
 """
 
-import json
 import os
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict
 
@@ -12,7 +12,6 @@ import boto3
 from aws_lambda_powertools import Logger, Metrics, Tracer
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.metrics import MetricUnit
-from boto3.dynamodb.conditions import Key
 
 from encryption_common import EncryptionKeys, EncryptionRepository, EncryptionSetupRequest
 

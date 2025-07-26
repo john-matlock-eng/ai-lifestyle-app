@@ -2,7 +2,6 @@
 Tests for health check Lambda
 """
 
-import json
 import os
 
 # Set environment variables before importing

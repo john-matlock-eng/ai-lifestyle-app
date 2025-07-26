@@ -4,7 +4,6 @@ Updated to explicitly trigger verification email after sign_up.
 """
 
 import os
-from typing import Optional
 from uuid import UUID
 
 import boto3

@@ -1,6 +1,5 @@
 """Lambda handler for getting habit analytics."""
 
-import json
 import logging
 import os
 from typing import Any, Dict

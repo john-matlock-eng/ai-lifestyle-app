@@ -2,7 +2,6 @@
 Unit tests for login Lambda handler.
 """
 
-import json
 import os
 from datetime import datetime
 from unittest.mock import MagicMock, Mock, patch

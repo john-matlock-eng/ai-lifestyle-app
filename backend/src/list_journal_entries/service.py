@@ -3,12 +3,12 @@ Service layer for listing journal entries.
 """
 
 import os
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 from aws_lambda_powertools import Logger
-from boto3.dynamodb.conditions import Key
 
 from encryption_common import ShareRepository
 from journal_common import JournalEntry, JournalListResponse, JournalRepository
@@ -110,7 +110,8 @@ class ListJournalEntriesService:
             }
 
             logger.info(
-                f"Listed {len(paginated_entries)} journal entries for user {user_id} (page {page}, filter: {filter_type})"
+                f"Listed {len(paginated_entries)} journal entries for user {user_id} (page {page},
+                    filter: {filter_type})"
             )
 
             return response

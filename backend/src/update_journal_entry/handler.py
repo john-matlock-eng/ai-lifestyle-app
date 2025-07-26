@@ -2,7 +2,7 @@
 Lambda handler for updating a journal entry.
 """
 
-import json
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict
 

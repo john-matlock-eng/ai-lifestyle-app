@@ -2,7 +2,7 @@
 Lambda handler for getting journal statistics.
 """
 
-import json
+from datetime import datetime, timedelta
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 

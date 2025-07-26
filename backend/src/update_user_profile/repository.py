@@ -3,12 +3,12 @@ Repository layer for user profile operations.
 """
 
 import os
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import boto3
 from aws_lambda_powertools import Logger
-from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 logger = Logger()

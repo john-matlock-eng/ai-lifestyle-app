@@ -3,8 +3,8 @@ Lambda handler for deleting user encryption keys.
 This is called when a user resets their encryption.
 """
 
-import json
 import os
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict
 

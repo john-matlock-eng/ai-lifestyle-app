@@ -4,7 +4,6 @@ This aligns with the GitHub Actions workflow that deploys a single Lambda.
 Supports both API Gateway v1 (REST) and v2 (HTTP) event formats.
 """
 
-import json
 import os
 from typing import Any, Dict
 

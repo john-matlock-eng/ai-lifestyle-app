@@ -5,9 +5,8 @@ Handles storage and retrieval of encryption keys, shares, and recovery data
 using DynamoDB single-table design.
 """
 
-import json
+from datetime import datetime
 from datetime import datetime, timezone
-from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 import boto3

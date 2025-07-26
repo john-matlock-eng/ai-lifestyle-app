@@ -2,9 +2,8 @@
 Service layer for goal creation business logic.
 """
 
-import uuid
+from datetime import datetime
 from datetime import datetime, timezone
-from typing import Optional
 
 from aws_lambda_powertools import Logger
 
@@ -169,7 +168,6 @@ class CreateGoalService:
         # Target date must be in the future for new goals
         if goal.target.target_date:
             # Make both datetimes timezone-aware for comparison
-            from datetime import timezone as tz
 
             target_date = goal.target.target_date
             if target_date.tzinfo is None:

@@ -2,7 +2,6 @@
 Lambda handler for updating user profile.
 """
 
-import json
 import os
 from typing import Any, Dict
 

@@ -2,8 +2,8 @@
 Lambda handler for getting a user's public encryption key.
 """
 
-import json
 import os
+from datetime import datetime
 from datetime import datetime, timezone
 from typing import Any, Dict
 
@@ -121,7 +121,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         is_self_request = requesting_user_id == target_user_id
 
         logger.info(
-            f"User {requesting_user_id} requesting encryption data for {target_user_id}, is_self={is_self_request}"
+            f"User {requesting_user_id} requesting encryption data for {target_user_id},
+                is_self={is_self_request}"
         )
 
         # Track metrics

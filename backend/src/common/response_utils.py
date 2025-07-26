@@ -3,10 +3,8 @@ Common response utilities for Lambda handlers.
 Ensures consistent CORS headers across all responses.
 """
 
-import json
 import os
 from datetime import date, datetime
-from decimal import Decimal
 from typing import Any, Dict, Optional
 
 
@@ -49,7 +47,9 @@ def create_response(
         "Content-Type": "application/json",
         "X-Request-ID": request_id,
         "Access-Control-Allow-Origin": cors_origin,
-        "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+        "Access-Control-Allow-Headers": (
+            "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+        ),
         "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
     }
 
@@ -89,6 +89,7 @@ def create_error_response(
     Returns:
         Lambda proxy response dict
     """
+    from datetime import datetime
     from datetime import datetime, timezone
 
     error_body = {

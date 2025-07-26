@@ -2,7 +2,6 @@
 Feature flags endpoint handler - returns configuration flags from environment variables.
 """
 
-import json
 import os
 from typing import Any, Dict
 

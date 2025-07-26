@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional
 
 import boto3
 from aws_lambda_powertools import Logger
-from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 from .errors import DatabaseError

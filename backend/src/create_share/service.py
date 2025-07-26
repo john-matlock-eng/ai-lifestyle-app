@@ -3,13 +3,12 @@ Service for creating shares (both encrypted and non-encrypted).
 """
 
 import os
-import uuid
+from datetime import datetime, timedelta
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import boto3
 from aws_lambda_powertools import Logger, Tracer
-from boto3.dynamodb.conditions import Key
 
 logger = Logger()
 tracer = Tracer()

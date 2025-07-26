@@ -5,8 +5,8 @@ Implements single-table design patterns for journal entries.
 """
 
 import os
+from datetime import datetime
 from datetime import datetime, timezone
-from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
 import boto3

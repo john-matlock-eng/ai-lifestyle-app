@@ -52,6 +52,7 @@ class GetJournalStatsService:
 
                 if all_entries:
                     # Calculate stats from entries
+                    from datetime import datetime, timedelta
                     from datetime import datetime, timedelta, timezone
 
                     now = datetime.now(timezone.utc)
@@ -102,7 +103,7 @@ class GetJournalStatsService:
                     # Save the calculated stats
                     try:
                         self.repository.update_user_stats(user_id, stats)
-                    except:
+                    except Exception:
                         pass  # Don't fail if save fails
 
             logger.info(

@@ -125,7 +125,6 @@ class MFALoginService:
         # 2. Extract the 'sub' claim which is the user ID
 
         import base64
-        import json
 
         try:
             # JWT format: header.payload.signature

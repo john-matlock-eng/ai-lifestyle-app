@@ -1,6 +1,5 @@
 """Common errors for habit tracking."""
 
-from typing import Optional
 
 
 class HabitError(Exception):
