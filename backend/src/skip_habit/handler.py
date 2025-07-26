@@ -1,3 +1,5 @@
+
+import json
 """Lambda handler for skipping a habit."""
 
 import logging

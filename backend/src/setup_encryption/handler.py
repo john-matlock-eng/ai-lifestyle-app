@@ -1,3 +1,5 @@
+
+import json
 """
 Fixed Lambda handler for setting up user encryption.
 Now also updates the user profile to set encryptionEnabled = true.

@@ -110,8 +110,8 @@ class ListJournalEntriesService:
             }
 
             logger.info(
-                f"Listed {len(paginated_entries)} journal entries for user {user_id} (page {page},
-                    filter: {filter_type})"
+                f"Listed {len(paginated_entries)} journal entries for user {user_id} (page {page}, "
+                f"filter: {filter_type})"
             )
 
             return response

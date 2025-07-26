@@ -1,3 +1,5 @@
+
+import json
 """
 Integration tests for complete goal user journey.
 Tests all goal endpoints working together in realistic scenarios.

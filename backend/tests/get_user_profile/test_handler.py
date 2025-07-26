@@ -1,3 +1,5 @@
+
+import json
 """
 Unit tests for get user profile handler.
 """

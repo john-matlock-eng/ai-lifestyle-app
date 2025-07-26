@@ -1,3 +1,5 @@
+
+import json
 """
 Minimal registration handler for debugging
 """

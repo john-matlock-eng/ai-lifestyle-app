@@ -1,6 +1,9 @@
+
 """
 Lambda handler for archiving (soft deleting) a goal.
 """
+
+import json
 
 from datetime import datetime
 from typing import Any, Dict

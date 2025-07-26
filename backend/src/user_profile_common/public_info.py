@@ -2,6 +2,7 @@
 Public user info model for sharing features.
 """
 
+from typing import Optional
 
 from pydantic import BaseModel, Field
 

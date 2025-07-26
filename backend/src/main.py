@@ -1,3 +1,5 @@
+
+import json
 """
 Main Lambda handler that routes requests to appropriate function handlers.
 This aligns with the GitHub Actions workflow that deploys a single Lambda.

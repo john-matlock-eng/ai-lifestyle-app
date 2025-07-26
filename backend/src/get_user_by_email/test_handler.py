@@ -1,3 +1,5 @@
+
+import json
 """
 Tests for get_user_by_email handler.
 """

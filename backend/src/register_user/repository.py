@@ -2,11 +2,13 @@
 Repository layer for user data access in DynamoDB.
 """
 
+from typing import Optional
 import os
 from datetime import datetime
 from uuid import UUID
 
 import boto3
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 from .errors import DynamoDBError

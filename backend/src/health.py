@@ -1,3 +1,5 @@
+
+import json
 """
 Health check Lambda handler
 """

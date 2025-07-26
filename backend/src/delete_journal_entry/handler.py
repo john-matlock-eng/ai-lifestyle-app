@@ -1,3 +1,5 @@
+
+import json
 """
 Lambda handler for deleting a journal entry.
 """

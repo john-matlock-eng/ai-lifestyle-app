@@ -3,6 +3,7 @@ AWS Cognito client wrapper for user registration.
 Updated to explicitly trigger verification email after sign_up.
 """
 
+from typing import Optional
 import os
 from uuid import UUID
 

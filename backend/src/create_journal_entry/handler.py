@@ -1,3 +1,5 @@
+
+import json
 """
 Lambda handler for creating a new journal entry.
 """

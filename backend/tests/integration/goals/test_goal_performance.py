@@ -1,3 +1,5 @@
+
+import json
 """
 Performance and load tests for goal system.
 Tests system performance under various load conditions.

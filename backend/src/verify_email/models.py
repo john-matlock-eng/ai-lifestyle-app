@@ -3,6 +3,7 @@ Pydantic models for email verification endpoint.
 Matches OpenAPI contract exactly.
 """
 
+from typing import Optional
 from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator

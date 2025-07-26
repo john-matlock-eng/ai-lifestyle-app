@@ -1,3 +1,5 @@
+
+import json
 """Lambda handler for getting user stats."""
 
 import logging

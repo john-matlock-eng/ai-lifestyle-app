@@ -1,3 +1,5 @@
+
+import json
 """
 Feature flags endpoint handler - returns configuration flags from environment variables.
 """

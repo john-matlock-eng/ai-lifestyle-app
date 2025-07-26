@@ -1,3 +1,5 @@
+
+import json
 """Lambda handler for habit check-in."""
 
 import logging

@@ -1,3 +1,5 @@
+
+import json
 """
 Tests for main API handler
 """

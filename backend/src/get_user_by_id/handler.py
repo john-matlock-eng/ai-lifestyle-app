@@ -1,3 +1,5 @@
+
+import json
 """
 AWS Lambda handler for get user by ID endpoint.
 """

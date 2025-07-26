@@ -3,6 +3,7 @@ Pydantic models for user registration endpoint.
 Matches the OpenAPI contract exactly.
 """
 
+from typing import Optional
 from datetime import datetime
 from uuid import UUID
 

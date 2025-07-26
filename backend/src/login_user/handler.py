@@ -1,3 +1,5 @@
+
+import json
 """
 AWS Lambda handler for user login endpoint.
 """

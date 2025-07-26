@@ -4,7 +4,7 @@ Repository layer for MFA data storage in DynamoDB.
 
 import os
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import boto3
 from aws_lambda_powertools import Logger
