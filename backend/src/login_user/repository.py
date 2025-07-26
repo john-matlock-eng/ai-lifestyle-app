@@ -4,6 +4,7 @@ Repository for user data access operations.
 
 import os
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, Dict, Optional
 
 import boto3
