@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Quote } from 'lucide-react';
+import { Quote, RefreshCcw } from 'lucide-react';
+import { clsx } from 'clsx';
 
 const quotes = [
   { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
@@ -23,15 +24,52 @@ export const MotivationalQuote: React.FC = () => {
     setQuote(randomQuote);
   }, []);
   
+  const handleNewQuote = () => {
+    const currentIndex = quotes.indexOf(quote);
+    let newIndex = Math.floor(Math.random() * quotes.length);
+    // Ensure we get a different quote
+    while (newIndex === currentIndex && quotes.length > 1) {
+      newIndex = Math.floor(Math.random() * quotes.length);
+    }
+    setQuote(quotes[newIndex]);
+  };
+  
   return (
-    <div className="glass rounded-lg p-6 border border-surface-muted hover-lift">
-      <div className="flex items-start space-x-3">
-        <div className="p-2 rounded-lg bg-accent" style={{ background: 'var(--button-hover-bg)' }}>
-          <Quote className="w-5 h-5 text-accent" />
+    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-blue-600/10 p-6 border border-purple-500/20">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 opacity-10 rounded-full blur-2xl" />
+      
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
+              <Quote className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Daily Inspiration
+            </h3>
+          </div>
+          <button
+            onClick={handleNewQuote}
+            className={clsx(
+              "p-2 rounded-lg transition-all duration-300",
+              "hover:bg-purple-500/10 hover:scale-110",
+              "text-[var(--text-muted)] hover:text-purple-600"
+            )}
+            title="Get new quote"
+          >
+            <RefreshCcw className="w-4 h-4" />
+          </button>
         </div>
-        <div className="flex-1">
-          <p className="text-sm text-theme italic mb-2">"{quote.text}"</p>
-          <p className="text-xs text-muted">— {quote.author}</p>
+        
+        <div className="space-y-3">
+          <p className="text-lg text-[var(--text)] font-medium italic leading-relaxed">
+            "{quote.text}"
+          </p>
+          <p className="text-sm text-[var(--text-muted)] flex items-center gap-2">
+            <span className="text-lg">✨</span>
+            <span>— {quote.author}</span>
+          </p>
         </div>
       </div>
     </div>
