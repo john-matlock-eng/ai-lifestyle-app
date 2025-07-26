@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Lock } from "lucide-react";
 import { useEncryption } from "../contexts/useEncryption";
-import { Button } from "./common";
+import { Button, Input } from "./common";
 import { useNavigate } from "react-router-dom";
 import { securePasswordStorage } from "../services/encryption/securePasswordStorage";
 
@@ -55,35 +55,30 @@ export const EncryptionUnlockPrompt: React.FC = () => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
+      <div className="bg-[var(--surface)] rounded-lg max-w-md w-full p-6">
         <div className="flex items-center mb-4">
-          <Lock className="h-8 w-8 text-yellow-600 mr-3" />
-          <h2 className="text-2xl font-bold">Unlock Encryption</h2>
+          <Lock className="h-8 w-8 text-[var(--warning)] mr-3" />
+          <h2 className="text-2xl font-bold text-[var(--text)]">Unlock Encryption</h2>
         </div>
 
         <div className="space-y-4">
           {isEncryptionSetup ? (
             <>
-              <p className="text-gray-600">
+              <p className="text-[var(--text-muted)]">
                 Enter your master encryption password to access encrypted
                 content.
               </p>
 
               <form onSubmit={handleUnlock} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Master Encryption Password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter your master password"
-                    autoFocus
-                    required
-                  />
-                </div>
+                <Input
+                  label="Master Encryption Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your master password"
+                  autoFocus
+                  required
+                />
 
                 <div className="flex items-center">
                   <input
@@ -91,19 +86,19 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                     id="rememberPassword"
                     checked={rememberPassword}
                     onChange={(e) => setRememberPassword(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-[var(--accent)] focus:ring-[var(--accent)] border-[var(--surface-muted)] rounded"
                   />
                   <label
                     htmlFor="rememberPassword"
-                    className="ml-2 text-sm text-gray-700"
+                    className="ml-2 text-sm text-[var(--text)]"
                   >
                     Remember password on this device (30 days)
                   </label>
                 </div>
 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 rounded p-3">
-                    <p className="text-sm text-red-700">{error}</p>
+                  <div className="bg-[var(--error-bg)] border border-[var(--error)] rounded p-3">
+                    <p className="text-sm text-[var(--error)]">{error}</p>
                   </div>
                 )}
 
@@ -111,7 +106,7 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleGoToSettings}
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    className="text-sm text-[var(--accent)] hover:text-[var(--accent-hover)]"
                   >
                     Forgot password?
                   </button>
@@ -127,26 +122,21 @@ export const EncryptionUnlockPrompt: React.FC = () => {
             </>
           ) : (
             <>
-              <p className="text-gray-600">
+              <p className="text-[var(--text-muted)]">
                 Your encryption is set up on another device. Enter your master
                 password to access encrypted content on this device.
               </p>
 
               <form onSubmit={handleUnlock} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Master Encryption Password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter your master password"
-                    autoFocus
-                    required
-                  />
-                </div>
+                <Input
+                  label="Master Encryption Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your master password"
+                  autoFocus
+                  required
+                />
 
                 <div className="flex items-center">
                   <input
@@ -154,19 +144,19 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                     id="rememberPassword"
                     checked={rememberPassword}
                     onChange={(e) => setRememberPassword(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-[var(--accent)] focus:ring-[var(--accent)] border-[var(--surface-muted)] rounded"
                   />
                   <label
                     htmlFor="rememberPassword"
-                    className="ml-2 text-sm text-gray-700"
+                    className="ml-2 text-sm text-[var(--text)]"
                   >
                     Remember password on this device (30 days)
                   </label>
                 </div>
 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 rounded p-3">
-                    <p className="text-sm text-red-700">{error}</p>
+                  <div className="bg-[var(--error-bg)] border border-[var(--error)] rounded p-3">
+                    <p className="text-sm text-[var(--error)]">{error}</p>
                   </div>
                 )}
 
@@ -174,7 +164,7 @@ export const EncryptionUnlockPrompt: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleGoToSettings}
-                    className="text-sm text-red-600 hover:text-red-700"
+                    className="text-sm text-[var(--error)] hover:text-[var(--error)]/80"
                   >
                     Reset encryption
                   </button>

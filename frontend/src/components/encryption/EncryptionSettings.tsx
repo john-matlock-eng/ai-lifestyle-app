@@ -29,10 +29,10 @@ export const EncryptionSettings: React.FC = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-[var(--surface)] rounded-lg shadow p-6">
       <div className="flex items-center mb-4">
-        <Shield className="h-6 w-6 text-blue-600 mr-2" />
-        <h2 className="text-xl font-semibold">Encryption Settings</h2>
+        <Shield className="h-6 w-6 text-[var(--accent)] mr-2" />
+        <h2 className="text-xl font-semibold text-[var(--text)]">Encryption Settings</h2>
       </div>
 
       <div className="space-y-4">
@@ -41,8 +41,8 @@ export const EncryptionSettings: React.FC = () => {
           <h3 className="text-lg font-medium mb-2">Password Storage</h3>
 
           {hasStoredPassword ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800 mb-3">
+            <div className="bg-[var(--accent-bg)] border border-[var(--accent)]/20 rounded-lg p-4">
+              <p className="text-sm text-[var(--text)] mb-3">
                 Your master password is securely stored on this device. It will
                 automatically expire after 30 days for security.
               </p>
@@ -57,8 +57,8 @@ export const EncryptionSettings: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-sm text-gray-700">
+            <div className="bg-[var(--surface-muted)] border border-[var(--surface-muted)] rounded-lg p-4">
+              <p className="text-sm text-[var(--text)]">
                 No password is stored on this device. You can choose to remember
                 your password when unlocking encryption.
               </p>
@@ -69,7 +69,7 @@ export const EncryptionSettings: React.FC = () => {
         {/* Security Information */}
         <div className="border-t pt-4">
           <h3 className="text-lg font-medium mb-2">Security Information</h3>
-          <div className="space-y-2 text-sm text-gray-600">
+          <div className="space-y-2 text-sm text-[var(--text-muted)]">
             <p>• Stored passwords are encrypted using device-specific keys</p>
             <p>• Passwords expire automatically after 30 days</p>
             <p>• Clearing browser data will remove stored passwords</p>
