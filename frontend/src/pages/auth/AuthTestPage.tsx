@@ -35,7 +35,7 @@ const AuthTestPage: React.FC = () => {
       <div className="relative z-10 min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-theme">
         {/* Enhanced Debug Controls */}
         {showDebugInfo && (
-          <div className="fixed top-4 right-4 bg-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+          <div className="fixed top-4 right-4 bg-white p-4 rounded-lg shadow-lg z-50 max-w-md">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-bold text-sm">Companion Debug Panel</h3>
               <button
@@ -153,7 +153,7 @@ const AuthTestPage: React.FC = () => {
                 {/* Variants */}
                 <div className="border-t pt-2 mt-2">
                   <h4 className="text-xs font-semibold mb-2">Variants</h4>
-                  <div className="grid grid-cols-2 gap-1">
+                  <div className="grid grid-cols-3 gap-1">
                     {(['default', 'winter', 'party', 'workout', 'balloon'] as const).map(variant => (
                       <button
                         key={variant}

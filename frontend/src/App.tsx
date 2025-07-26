@@ -5,7 +5,7 @@ import { store } from "./store";
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools'; // Commented out for React 19 compatibility
 
 // Context
-import { AuthProvider } from "./contexts";
+import { AuthProvider, ThemeProvider } from "./contexts";
 import { EncryptionProvider } from "./contexts/EncryptionContext";
 import { FeatureFlagsProvider } from "./contexts/FeatureFlagsContext";
 
@@ -81,9 +81,10 @@ function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <FeatureFlagsProvider>
-            <EncryptionProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <FeatureFlagsProvider>
+              <EncryptionProvider>
               <Routes>
                 {/* Public Routes */}
                 <Route element={<PublicLayout />}>
@@ -202,10 +203,11 @@ function App() {
               <DevTools />
               {process.env.NODE_ENV === 'development' && <TestNavigation />}
             </EncryptionProvider>
-          </FeatureFlagsProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+            </FeatureFlagsProvider>
+            </AuthProvider>
+              </ThemeProvider>
+            </QueryClientProvider>
+              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </Provider>
   );
 }
