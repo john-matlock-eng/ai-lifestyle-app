@@ -1,5 +1,5 @@
-
 import json
+
 """
 Lambda handler for setting up encryption recovery methods.
 """

@@ -1,5 +1,6 @@
-
 import json
+import uuid
+
 """
 Integration tests for complete goal user journey.
 Tests all goal endpoints working together in realistic scenarios.
@@ -142,8 +143,7 @@ class TestGoalUserJourney:
         assert activities["pagination"]["total"] == 15  # 8 + 6 + 1
 
         # 4. Get current progress
-        response = api_client.get(f"/v1/goals/{goal_id}/progress?period=week",
-            headers=auth_headers)
+        response = api_client.get(f"/v1/goals/{goal_id}/progress?period=week", headers=auth_headers)
         assert response.status_code == 200
         progress = response.json()
         assert progress["statistics"]["totalActivities"] == 15
@@ -401,8 +401,7 @@ class TestGoalUserJourney:
                 days_over_limit += 1
 
         # 3. Check limit compliance
-        response = api_client.get(f"/v1/goals/{goal_id}/progress?period=week",
-            headers=auth_headers)
+        response = api_client.get(f"/v1/goals/{goal_id}/progress?period=week", headers=auth_headers)
         assert response.status_code == 200
         progress = response.json()
 

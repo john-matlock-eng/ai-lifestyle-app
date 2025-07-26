@@ -1,5 +1,5 @@
-
 import json
+
 """
 AWS Lambda handler for get user profile endpoint.
 """

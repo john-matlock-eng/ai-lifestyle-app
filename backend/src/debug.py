@@ -1,9 +1,8 @@
-
 import json
+
 """
 Debug handler to inspect API Gateway events
 """
-
 
 
 def handler(event, context):

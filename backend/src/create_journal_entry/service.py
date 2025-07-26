@@ -1,3 +1,4 @@
+import uuid
 """
 Service layer for journal entry creation business logic.
 """

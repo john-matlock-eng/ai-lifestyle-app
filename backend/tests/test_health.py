@@ -1,5 +1,5 @@
-
 import json
+
 """
 Tests for health check Lambda
 """

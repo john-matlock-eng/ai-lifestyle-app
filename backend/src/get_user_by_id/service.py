@@ -2,7 +2,6 @@
 Service layer for get user by ID functionality.
 """
 
-
 import jwt
 from aws_lambda_powertools import Logger
 

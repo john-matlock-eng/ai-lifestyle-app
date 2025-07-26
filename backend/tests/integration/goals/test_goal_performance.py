@@ -1,5 +1,6 @@
-
 import json
+import uuid
+
 """
 Performance and load tests for goal system.
 Tests system performance under various load conditions.
@@ -215,8 +216,7 @@ class TestGoalPerformance:
         burst_time = time.time() - start_time
 
         # Verify all activities were logged
-        response = api_client.get(f"/v1/goals/{goal_id}/activities?limit=100",
-            headers=auth_headers)
+        response = api_client.get(f"/v1/goals/{goal_id}/activities?limit=100", headers=auth_headers)
         assert response.status_code == 200
         activities = response.json()
 

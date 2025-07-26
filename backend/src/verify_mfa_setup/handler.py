@@ -1,5 +1,5 @@
-
 import json
+
 """
 Lambda handler for MFA setup verification endpoint.
 """

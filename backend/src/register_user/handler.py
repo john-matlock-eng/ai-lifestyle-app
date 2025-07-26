@@ -1,5 +1,5 @@
-
 import json
+
 """
 Lambda handler for user registration endpoint.
 """

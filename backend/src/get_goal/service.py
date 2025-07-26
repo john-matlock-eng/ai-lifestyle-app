@@ -2,7 +2,6 @@
 Service layer for goal retrieval business logic.
 """
 
-
 from aws_lambda_powertools import Logger
 
 from goals_common import (

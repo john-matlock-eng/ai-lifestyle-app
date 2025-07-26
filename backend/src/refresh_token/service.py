@@ -2,7 +2,6 @@
 Business logic service for token refresh operations.
 """
 
-
 from aws_lambda_powertools import Logger, Tracer
 
 from .cognito_client import CognitoClient

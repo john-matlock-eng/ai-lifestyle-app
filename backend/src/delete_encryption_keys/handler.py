@@ -1,5 +1,5 @@
-
 import json
+
 """
 Lambda handler for deleting user encryption keys.
 This is called when a user resets their encryption.

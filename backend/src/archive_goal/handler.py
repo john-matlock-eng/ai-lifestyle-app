@@ -1,4 +1,3 @@
-
 """
 Lambda handler for archiving (soft deleting) a goal.
 """

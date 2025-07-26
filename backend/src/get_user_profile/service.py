@@ -2,7 +2,6 @@
 Business logic service for user profile operations.
 """
 
-
 from aws_lambda_powertools import Logger, Tracer
 
 from user_profile_common import UserProfile

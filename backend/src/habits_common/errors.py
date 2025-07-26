@@ -1,7 +1,6 @@
 """Common errors for habit tracking."""
 
 
-
 class HabitError(Exception):
     """Base exception for habit-related errors."""
 

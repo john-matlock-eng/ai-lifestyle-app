@@ -1,3 +1,4 @@
+import uuid
 """
 Service for creating shares (both encrypted and non-encrypted).
 """

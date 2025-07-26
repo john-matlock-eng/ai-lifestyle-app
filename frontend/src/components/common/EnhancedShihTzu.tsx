@@ -112,6 +112,14 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    if (onPet) {
+      setIsPetting(true);
+      onPet();
+    }
+  };
+
   const handleMouseUp = () => {
     setIsPetting(false);
   };
@@ -155,31 +163,36 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
         left: `${currentPosition.x}px`,
         top: `${currentPosition.y}px`,
         transform: isMoving ? 'translateY(-10px)' : 'translateY(0)',
-        zIndex: 100,
+        zIndex: style?.zIndex || 9999, // High z-index but allow override
         ...style
       }}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleMouseUp}
     >
       {/* Thought Bubble - improved positioning and structure */}
       {showThoughtBubble && thoughtText && (
-        <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none"
+        <div 
+          className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none whitespace-nowrap"
           style={{
-            top: window.innerWidth < 640 ? '-55px' : '-75px', // Adjusted for better mobile spacing
-            zIndex: -1 // Ensure bubble is behind companion
+            bottom: `${currentSize.height + 10}px`, // Position above companion with consistent spacing
+            maxWidth: '250px', // Maximum width for longer thoughts
+            zIndex: 110 // Higher than companion to ensure visibility
           }}
         >
-          <div className="relative">
-            {/* Main bubble */}
-            <div className="bg-white rounded-full px-3 py-1.5 sm:px-4 sm:py-2 shadow-lg relative text-black animate-float-subtle">
-              <p className="text-xs sm:text-sm font-medium relative z-10">{thoughtText}</p>
+          <div className="relative animate-float-subtle">
+            {/* Main bubble with dynamic width */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-xl border border-gray-100 relative">
+              <p className="text-xs sm:text-sm font-medium text-gray-800 whitespace-normal text-center">
+                {thoughtText}
+              </p>
             </div>
-            {/* Tail circles - positioned below main bubble */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-3">
-              <div className="w-3 h-3 bg-white rounded-full shadow-sm"></div>
-              <div className="w-2 h-2 bg-white rounded-full shadow-sm ml-1 mt-0.5"></div>
+            {/* Improved tail with better positioning */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-2">
+              <div className="w-0 h-0 border-l-[6px] border-l-transparent border-t-[8px] border-t-white/95 border-r-[6px] border-r-transparent"></div>
             </div>
           </div>
         </div>
@@ -299,6 +312,15 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
               @keyframes float-subtle {
                 0%, 100% { transform: translateY(0); }
                 50% { transform: translateY(-3px); }
+              }
+              
+              @keyframes fade-in {
+                from { opacity: 0; transform: translateY(5px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+              
+              .animate-fade-in {
+                animation: fade-in 0.3s ease-out;
               }
               
               .animate-wag-enhanced {

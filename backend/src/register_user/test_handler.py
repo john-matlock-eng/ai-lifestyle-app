@@ -1,5 +1,5 @@
-
 import json
+
 """
 Simplified test handler for debugging registration issues
 """

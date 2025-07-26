@@ -1,5 +1,5 @@
-
 import json
+
 """Lambda handler for deleting a habit."""
 
 import logging

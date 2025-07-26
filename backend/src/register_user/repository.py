@@ -109,8 +109,7 @@ class UserRepository:
             user_id: User ID to delete
         """
         try:
-            self.table.delete_item(Key={"pk": f"USER#{str(user_id)}",
-                "sk": f"USER#{str(user_id)}"})
+            self.table.delete_item(Key={"pk": f"USER#{str(user_id)}", "sk": f"USER#{str(user_id)}"})
         except ClientError:
             # Ignore errors during cleanup
             pass

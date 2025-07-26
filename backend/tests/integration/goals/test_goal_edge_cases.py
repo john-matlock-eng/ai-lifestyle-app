@@ -1,5 +1,6 @@
-
 import json
+import uuid
+
 """
 Edge case and error scenario tests for goal system.
 Tests boundary conditions, validation, and error handling.

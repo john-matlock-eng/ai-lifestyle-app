@@ -1,5 +1,5 @@
-
 import json
+
 """
 Lambda handler for creating a new goal.
 """

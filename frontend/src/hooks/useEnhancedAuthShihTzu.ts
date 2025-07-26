@@ -33,31 +33,36 @@ export const useEnhancedAuthShihTzu = () => {
     const isMobile = window.innerWidth < 640; // sm breakpoint
     const isTablet = window.innerWidth < 1024; // lg breakpoint
     
-    // Companion size in pixels
+    // Companion size in pixels (including thought bubble space)
     const companionSize = isMobile ? 60 : 80;
-    const padding = 20; // Padding from screen edges
+    const thoughtBubbleHeight = 60; // Extra space for thought bubble
+    const padding = 30; // Increased padding from screen edges
     
     if (isMobile) {
-      // On mobile, position at top right with proper spacing
+      // On mobile, position at bottom right to avoid content
       return { 
         x: window.innerWidth - companionSize - padding, 
-        y: 80 // Below header area
+        y: window.innerHeight - companionSize - padding - 100 // Above potential fixed footer
       };
     } else if (isTablet) {
-      // On tablet, position to the right of form area
+      // On tablet, position to the right of form area with safe margins
       const formWidth = 448; // max-w-md = 28rem = 448px
       const formCenterX = window.innerWidth / 2;
+      const rightEdge = formCenterX + formWidth / 2 + 80;
+      
       return {
-        x: Math.min(formCenterX + formWidth / 2 + 40, window.innerWidth - companionSize - padding),
-        y: 120
+        x: Math.min(rightEdge, window.innerWidth - companionSize - padding),
+        y: window.innerHeight / 2 - companionSize // Centered vertically
       };
     } else {
-      // On desktop, position to the right of form
+      // On desktop, position to the right with dynamic vertical centering
       const formWidth = 448;
       const formCenterX = window.innerWidth / 2;
+      const rightEdge = formCenterX + formWidth / 2 + 100;
+      
       return {
-        x: Math.min(formCenterX + formWidth / 2 + 60, window.innerWidth - companionSize - padding),
-        y: 150
+        x: Math.min(rightEdge, window.innerWidth - companionSize - padding),
+        y: Math.max(thoughtBubbleHeight + padding, window.innerHeight / 2 - companionSize)
       };
     }
   };
@@ -452,51 +457,87 @@ export const useEnhancedAuthShihTzu = () => {
     const rect = element.getBoundingClientRect();
     const isMobile = window.innerWidth < 640;
     const companionSize = isMobile ? 60 : 80;
-    const offset = isMobile ? 15 : 25; // Slightly larger offset
+    const thoughtBubbleHeight = 60;
+    const offset = isMobile ? 20 : 35; // Larger offset to prevent overlap
     
     let x: number;
     let y: number;
     
-    // Default placement based on screen size
-    const defaultPlacement = placement || (isMobile ? 'above' : 'right');
+    // Smart placement based on available space
+    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceLeft = rect.left;
+    const spaceRight = window.innerWidth - rect.right;
     
-    // Add scroll position to get absolute coordinates
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    // Determine best placement if not specified
+    if (!placement) {
+      if (isMobile) {
+        // On mobile, prefer above/below to save horizontal space
+        placement = spaceAbove > spaceBelow + thoughtBubbleHeight ? 'above' : 'below';
+      } else {
+        // On desktop, prefer sides but check available space
+        if (spaceRight >= companionSize + offset + 20) {
+          placement = 'right';
+        } else if (spaceLeft >= companionSize + offset + 20) {
+          placement = 'left';
+        } else {
+          placement = spaceAbove > spaceBelow + thoughtBubbleHeight ? 'above' : 'below';
+        }
+      }
+    }
     
-    switch (defaultPlacement) {
+    // Calculate position based on placement
+    switch (placement) {
       case 'above':
-        x = rect.left + scrollX + rect.width / 2 - companionSize / 2;
-        y = rect.top + scrollY - companionSize - offset;
-        // Ensure minimum distance from top
-        if (y < 20) {
-          y = rect.bottom + scrollY + offset; // Switch to below
+        x = rect.left + rect.width / 2 - companionSize / 2;
+        y = rect.top - companionSize - offset - thoughtBubbleHeight;
+        // Ensure enough space for thought bubble
+        if (y < thoughtBubbleHeight + 20) {
+          // Not enough space above, switch to below
+          y = rect.bottom + offset;
+          placement = 'below';
         }
         break;
+        
       case 'below':
-        x = rect.left + scrollX + rect.width / 2 - companionSize / 2;
-        y = rect.bottom + scrollY + offset;
-        break;
-      case 'left':
-        x = rect.left + scrollX - companionSize - offset;
-        y = rect.top + scrollY + rect.height / 2 - companionSize / 2;
-        if (x < 20) {
-          x = rect.right + scrollX + offset; // Switch to right
+        x = rect.left + rect.width / 2 - companionSize / 2;
+        y = rect.bottom + offset;
+        // Check if it goes off bottom
+        if (y + companionSize > window.innerHeight - 20) {
+          y = window.innerHeight - companionSize - 20;
         }
         break;
+        
+      case 'left':
+        x = rect.left - companionSize - offset;
+        y = rect.top + rect.height / 2 - companionSize / 2;
+        if (x < 20) {
+          // Not enough space on left, switch to right
+          x = rect.right + offset;
+          placement = 'right';
+        }
+        break;
+        
       case 'right':
       default:
-        x = rect.right + scrollX + offset;
-        y = rect.top + scrollY + rect.height / 2 - companionSize / 2;
-        if (x > window.innerWidth - companionSize - 20) {
-          x = rect.left + scrollX - companionSize - offset; // Switch to left
+        x = rect.right + offset;
+        y = rect.top + rect.height / 2 - companionSize / 2;
+        if (x + companionSize > window.innerWidth - 20) {
+          // Not enough space on right, try left
+          x = rect.left - companionSize - offset;
+          if (x < 20) {
+            // No space on sides, go above
+            x = rect.left + rect.width / 2 - companionSize / 2;
+            y = rect.top - companionSize - offset - thoughtBubbleHeight;
+            placement = 'above';
+          }
         }
         break;
     }
     
-    // Ensure the companion stays within viewport bounds
+    // Final bounds check with thought bubble consideration
     x = Math.max(20, Math.min(x, window.innerWidth - companionSize - 20));
-    y = Math.max(20, Math.min(y, window.innerHeight - companionSize - 20));
+    y = Math.max(thoughtBubbleHeight + 20, Math.min(y, window.innerHeight - companionSize - 20));
     
     companion.setPosition({ x, y });
     

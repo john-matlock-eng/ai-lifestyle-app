@@ -1,3 +1,4 @@
+import uuid
 """
 Service layer for goal creation business logic.
 """
@@ -171,8 +172,8 @@ class CreateGoalService:
 
             target_date = goal.target.target_date
             if target_date.tzinfo is None:
-                target_date = target_date.replace(tzinfo=tz.utc)
-            current_time = datetime.now(tz.utc)
+                target_date = target_date.replace(tzinfo=timezone.utc)
+            current_time = datetime.now(timezone.utc)
 
             if target_date < current_time:
                 errors.append("Target date must be in the future")
