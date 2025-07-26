@@ -7,7 +7,7 @@ const AuthTestPage: React.FC = () => {
   const companion = useEnhancedAuthShihTzu();
   const [showDebugInfo, setShowDebugInfo] = useState(true);
   const [useEnhanced, setUseEnhanced] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<'default' | 'winter' | 'party' | 'workout'>('default');
+  const [selectedVariant, setSelectedVariant] = useState<'default' | 'winter' | 'party' | 'workout' | 'balloon'>('balloon');
 
   const testPositioning = () => {
     const firstInput = document.querySelector('input[type="email"], input[type="text"]') as HTMLElement;
@@ -154,7 +154,7 @@ const AuthTestPage: React.FC = () => {
                 <div className="border-t pt-2 mt-2">
                   <h4 className="text-xs font-semibold mb-2">Variants</h4>
                   <div className="grid grid-cols-2 gap-1">
-                    {(['default', 'winter', 'party', 'workout'] as const).map(variant => (
+                    {(['default', 'winter', 'party', 'workout', 'balloon'] as const).map(variant => (
                       <button
                         key={variant}
                         onClick={() => setSelectedVariant(variant)}
@@ -162,7 +162,7 @@ const AuthTestPage: React.FC = () => {
                           selectedVariant === variant ? 'bg-purple-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
                         }`}
                       >
-                        {variant}
+                        {variant === 'balloon' ? '🎈 Balloon' : variant}
                       </button>
                     ))}
                   </div>

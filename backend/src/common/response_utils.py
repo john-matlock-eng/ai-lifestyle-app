@@ -3,8 +3,10 @@ Common response utilities for Lambda handlers.
 Ensures consistent CORS headers across all responses.
 """
 
+import json
 import os
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Any, Dict, Optional
 
 

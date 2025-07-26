@@ -12,7 +12,7 @@ interface EnhancedShihTzuProps {
   showThoughtBubble?: boolean;
   thoughtText?: string;
   particleEffect?: 'hearts' | 'sparkles' | 'treats' | 'zzz' | null;
-  variant?: 'default' | 'winter' | 'party' | 'workout';
+  variant?: 'default' | 'winter' | 'party' | 'workout' | 'balloon';
   className?: string;
   style?: React.CSSProperties;
 }
@@ -28,7 +28,7 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
   showThoughtBubble = false,
   thoughtText = '',
   particleEffect = null,
-  variant = 'default',
+  variant = 'balloon',
   className,
   style
 }) => {
@@ -132,6 +132,9 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
         return { primary: '#FEF3C7', secondary: '#FDE68A', accent: '#F59E0B' };
       case 'workout':
         return { primary: '#D1FAE5', secondary: '#6EE7B7', accent: '#10B981' };
+      case 'balloon':
+        // Vibrant balloon party colors - purple, teal, pink
+        return { primary: '#FDE2E4', secondary: '#E0B1CB', accent: '#BE185D' }; // Pink tones with hot pink accent
       default:
         return { primary: 'white', secondary: '#e5e7eb', accent: '#8B4513' };
     }
@@ -217,6 +220,19 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
             <stop offset="0%" stopColor={colors.primary} />
             <stop offset="100%" stopColor={colors.secondary} />
           </radialGradient>
+          
+          {variant === 'balloon' && (
+            <>
+              <radialGradient id="balloonGradient1">
+                <stop offset="0%" stopColor="#E879F9" />
+                <stop offset="100%" stopColor="#9333EA" />
+              </radialGradient>
+              <radialGradient id="balloonGradient2">
+                <stop offset="0%" stopColor="#5EEAD4" />
+                <stop offset="100%" stopColor="#14B8A6" />
+              </radialGradient>
+            </>
+          )}
           
           <filter id="softshadow">
             <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
@@ -497,6 +513,21 @@ const EnhancedShihTzu: React.FC<EnhancedShihTzuProps> = ({
           <g transform="translate(50, 15)">
             <path d="M 0 0 L -10 15 L 10 15 Z" fill="#FF6B6B" stroke="#C92A2A" strokeWidth="1" />
             <circle cx="0" cy="0" r="3" fill="#FFD700" />
+          </g>
+        )}
+        
+        {/* Balloon decorations for balloon variant */}
+        {variant === 'balloon' && (
+          <g>
+            {/* Floating balloons */}
+            <circle cx="15" cy="20" r="8" fill="url(#balloonGradient1)" opacity="0.8" className="animate-float-subtle" />
+            <line x1="15" y1="28" x2="18" y2="40" stroke="#9333EA" strokeWidth="0.5" />
+            
+            <circle cx="85" cy="15" r="6" fill="url(#balloonGradient2)" opacity="0.8" className="animate-float-subtle" style={{ animationDelay: '1s' }} />
+            <line x1="85" y1="21" x2="82" y2="30" stroke="#14B8A6" strokeWidth="0.5" />
+            
+            <circle cx="75" cy="35" r="5" fill="#EC4899" opacity="0.7" className="animate-float-subtle" style={{ animationDelay: '2s' }} />
+            <line x1="75" y1="40" x2="73" y2="48" stroke="#BE185D" strokeWidth="0.5" />
           </g>
         )}
         
