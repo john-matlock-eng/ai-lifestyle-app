@@ -33,7 +33,7 @@ export const useEnhancedCompanion = (options: UseEnhancedCompanionOptions = {}) 
 
   // Use existing companion hook as foundation
   const baseCompanion = useShihTzuCompanion({
-    initialMood: options.initialMood as Parameters<typeof useShihTzuCompanion>[0]['initialMood'],
+    initialMood: options.initialMood,
     initialPosition: options.initialPosition
   });
 
