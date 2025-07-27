@@ -1,6 +1,6 @@
 /* Dashboard Animations and Effects */
 
-/* Gradient text animation for welcome message */
+/* Gradient animation - now used for decorative elements only */
 @keyframes gradient-shift {
   0%, 100% {
     background-position: 0% 50%;
@@ -8,11 +8,6 @@
   50% {
     background-position: 100% 50%;
   }
-}
-
-.animate-gradient-text {
-  background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
 }
 
 /* Floating orbs animation - moved to enhanced section below */
@@ -408,8 +403,8 @@
   opacity: 1;
 }
 
-/* Enhanced gradient text for balloon theme */
-[data-theme="balloon"] .animate-gradient-text {
+/* Enhanced gradient text for balloon theme - now used sparingly for decorative elements only */
+[data-theme="balloon"] .animate-gradient-text-decorative {
   background: linear-gradient(
     90deg,
     #8b5cf6 0%,
@@ -424,6 +419,18 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: gradient-shift 4s ease infinite;
+}
+
+/* Strong text shadows for better readability on gradient backgrounds */
+[data-theme="balloon"] .text-shadow-strong {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure white text is always visible */
+[data-theme="balloon"] .text-white {
+  color: #ffffff !important;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.2);
 }
 
 /* Vibrant theme enhancements */
@@ -587,7 +594,7 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-float-orb,
   .animate-shimmer,
-  .animate-gradient-text,
+  .animate-gradient-text-decorative,
   .animate-fire-flicker {
     animation: none !important;
   }

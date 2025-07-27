@@ -151,7 +151,8 @@ const ImprovedDashboardPage: React.FC = () => {
           isVibrantTheme ? 'bg-gradient-to-r from-[#ff006e] via-[#8338ec] to-[#3a86ff]' :
           'bg-gradient-to-r from-accent via-accent-hover to-accent'
         }`} />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10" />
+        {/* Enhanced overlay for better text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/20" />
         
         {/* Enhanced balloon decorations in banner */}
         {theme === 'balloon' && (
@@ -165,31 +166,29 @@ const ImprovedDashboardPage: React.FC = () => {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h2 className={`text-3xl sm:text-4xl font-bold leading-tight text-white mb-2 ${
-                theme === 'balloon' ? 'animate-gradient-text' : ''
-              }`}>
-                Welcome back, {user?.firstName}! {todayProgress === 100 ? '🎉' : theme === 'balloon' ? '🎈' : '👋'}
+            <div className="flex-1 min-w-0 bg-black/10 backdrop-blur-sm rounded-lg p-4">
+              <h2 className="text-3xl sm:text-4xl font-bold leading-tight text-white mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                Welcome back, {user?.firstName}! <span className="inline-block">{todayProgress === 100 ? '🎉' : theme === 'balloon' ? '🎈' : '👋'}</span>
               </h2>
-              <p className="text-lg text-white/90">
+              <p className="text-lg text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                 {todayProgress === 100 
                   ? "Perfect day! All habits completed! You're on fire!" 
                   : `You're ${Math.round(todayProgress)}% done with today's habits. Keep going!`}
               </p>
             </div>
-            <div className="mt-4 md:mt-0">
+            <div className="mt-4 md:mt-0 md:ml-4">
               <QuickStats stats={stats} />
             </div>
           </div>
           
           {/* Enhanced Level Progress */}
-          <div className="mt-6">
+          <div className="mt-6 bg-black/10 backdrop-blur-sm rounded-lg p-4">
             <div className="flex justify-between text-sm font-medium text-white mb-2">
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                 <span className="text-2xl">{theme === 'balloon' ? '🎈' : '⭐'}</span>
                 Level {stats.currentLevel}
               </span>
-              <span className="text-white/90">
+              <span className="text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                 {Math.round(stats.nextLevelProgress)}% to Level {stats.currentLevel + 1}
               </span>
             </div>
