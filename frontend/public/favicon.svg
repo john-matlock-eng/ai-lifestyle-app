@@ -1,0 +1,34 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="iconBodyGradient">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f9fafb" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Simple shadow -->
+  <ellipse cx="16" cy="28" rx="8" ry="2" fill="#000000" opacity="0.1" />
+  
+  <!-- Body (round) -->
+  <circle cx="16" cy="20" r="9" fill="url(#iconBodyGradient)" />
+  
+  <!-- Head -->
+  <circle cx="16" cy="11" r="7" fill="#ffffff" />
+  
+  <!-- Ears (simple) -->
+  <circle cx="11" cy="8" r="3" fill="#ffffff" />
+  <circle cx="21" cy="8" r="3" fill="#ffffff" />
+  
+  <!-- Eyes -->
+  <circle cx="13.5" cy="11" r="1.2" fill="#1f2937" />
+  <circle cx="18.5" cy="11" r="1.2" fill="#1f2937" />
+  
+  <!-- Nose -->
+  <ellipse cx="16" cy="13.5" rx="1.5" ry="1" fill="#92400e" />
+  
+  <!-- Waving arm -->
+  <ellipse cx="10" cy="18" rx="3" ry="4" fill="#ffffff" transform="rotate(-30 10 18)" />
+  
+  <!-- Other arm -->
+  <ellipse cx="22" cy="20" rx="2.5" ry="3.5" fill="#ffffff" />
+</svg>

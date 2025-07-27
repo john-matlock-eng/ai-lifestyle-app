@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
@@ -6,133 +6,343 @@ import { useMutation } from "@tanstack/react-query";
 import { registerSchema } from "../utils/validation";
 import type { RegisterFormData } from "../utils/validation";
 import { authService } from "../services/authService";
-import { isValidationError } from "../../../api/client";
+import { checkPasswordStrength } from "../utils/passwordStrength";
 import Input from "../../../components/common/Input";
 import Button from "../../../components/common/Button";
 import PasswordInput from "./PasswordInput";
 import PasswordStrengthMeter from "./PasswordStrengthMeter";
+import type { useEnhancedAuthShihTzu } from "../../../hooks/useEnhancedAuthShihTzu";
 
-const RegistrationForm: React.FC = () => {
+type FormData = RegisterFormData;
+
+interface RegistrationFormProps {
+  companion?: ReturnType<typeof useEnhancedAuthShihTzu>;
+}
+
+const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   const navigate = useNavigate();
   const [generalError, setGeneralError] = useState<string>("");
+  const [hasInteracted] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const typingDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const passwordStrengthDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const lastPasswordStrength = useRef<number>(-1);
 
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, touchedFields },
     setError,
-  } = useForm<RegisterFormData>({
+  } = useForm<FormData>({
     resolver: zodResolver(registerSchema),
-    mode: "onBlur",
+    mode: "onChange",
+    defaultValues: {
+      termsAccepted: false,
+    },
   });
 
+  const password = watch("password");
+  const watchedValues = watch();
+
+  // Enhanced password strength reactions
+  useEffect(() => {
+    if (password && companion && hasInteracted) {
+      if (passwordStrengthDebounceRef.current) {
+        clearTimeout(passwordStrengthDebounceRef.current);
+      }
+
+      passwordStrengthDebounceRef.current = setTimeout(() => {
+        const strength = checkPasswordStrength(password);
+
+        if (strength.score !== lastPasswordStrength.current) {
+          lastPasswordStrength.current = strength.score;
+
+          // Enhanced reactions with thoughts and particles
+          if (strength.score <= 1) {
+            companion.handlePasswordStrength("weak");
+            companion.showThought("Let's make it stronger! 💪", 2000);
+          } else if (strength.score <= 3) {
+            companion.handlePasswordStrength("medium");
+            companion.showThought("Getting better! 🔐", 2000);
+            companion.triggerParticleEffect("sparkles");
+          } else {
+            companion.handlePasswordStrength("strong");
+            companion.showThought("Perfect password! 🛡️", 2000);
+            companion.triggerParticleEffect("hearts");
+          }
+        }
+      }, 500);
+    }
+  }, [password, companion, hasInteracted]);
+
+  // React to form errors with enhanced companion
+  useEffect(() => {
+    const errorCount = Object.keys(errors).length;
+    if (
+      errorCount > 0 &&
+      companion &&
+      hasInteracted &&
+      companion.companionState !== "error"
+    ) {
+      companion.handleError();
+
+      // Specific error messages
+      if (errors.email) {
+        companion.showThought("Check your email format 📧", 3000);
+      } else if (errors.password) {
+        companion.showThought("Password needs work 🔐", 3000);
+      } else if (errors.confirmPassword) {
+        companion.showThought("Passwords must match! 🔄", 3000);
+      }
+    }
+  }, [errors, companion, hasInteracted]);
+
+  // React to general errors
+  useEffect(() => {
+    if (generalError && companion) {
+      companion.handleSpecificError("server");
+      companion.showThought("Hmm, let me check... 🤔", 3000);
+    }
+  }, [generalError, companion]);
+
+  // Cleanup timeouts
+  useEffect(() => {
+    return () => {
+      if (typingDebounceRef.current) clearTimeout(typingDebounceRef.current);
+      if (passwordStrengthDebounceRef.current)
+        clearTimeout(passwordStrengthDebounceRef.current);
+    };
+  }, []);
+
+  // Enhanced field props with companion interactions
+  // Commented out - not compatible with current form field type expectations
+  /*
+  const createEnhancedFieldProps = (fieldName: keyof FormData) => {
+    const fieldRegistration = register(fieldName);
+    
+    return {
+      ...fieldRegistration,
+      onFocus: async (e: React.FocusEvent<HTMLInputElement>) => {
+        setHasInteracted(true);
+        
+        if (fieldRegistration.onFocus) {
+          await fieldRegistration.onFocus(e);
+        }
+        
+        if (companion && e.target) {
+          companion.handleInputFocus(e.target);
+          
+          // Field-specific welcome messages
+          switch (fieldName) {
+            case 'firstName':
+              companion.showThought("Let's start with your name! 👋", 2000);
+              break;
+            case 'lastName':
+              companion.showThought("And your last name... ✍️", 2000);
+              break;
+            case 'email':
+              companion.showThought("Your email address please! 📧", 2000);
+              break;
+            case 'password':
+              companion.showThought("Choose a strong password! 🔐", 2000);
+              break;
+            case 'confirmPassword':
+              companion.showThought("One more time! 🔄", 2000);
+              break;
+          }
+        }
+      },
+      onChange: async (e: React.ChangeEvent<HTMLInputElement>) => {
+        await fieldRegistration.onChange(e);
+        
+        if (hasInteracted) {
+          await trigger(fieldName);
+        }
+        
+        // Typing animation for non-password fields
+        if (companion && hasInteracted && fieldName !== 'password') {
+          if (typingDebounceRef.current) {
+            clearTimeout(typingDebounceRef.current);
+          }
+          
+          typingDebounceRef.current = setTimeout(() => {
+            companion.handleTyping();
+            
+            // Random encouragement
+            if (Math.random() < 0.15) {
+              const encouragements = [
+                "Looking good! 👍",
+                "Keep going! ⭐",
+                "You're doing great! 🌟",
+                "Almost there! 🎯"
+              ];
+              companion.showThought(
+                encouragements[Math.floor(Math.random() * encouragements.length)],
+                1500
+              );
+            }
+          }, 100);
+        }
+      },
+      onBlur: async (e: React.FocusEvent<HTMLInputElement>) => {
+        if (fieldRegistration.onBlur) {
+          await fieldRegistration.onBlur(e);
+        }
+        
+        if (typingDebounceRef.current) {
+          clearTimeout(typingDebounceRef.current);
+        }
+        
+        if (companion) {
+          companion.handleInputBlur();
+          
+          const fieldError = errors[fieldName];
+          const fieldValue = e.target.value;
+          
+          // Celebrate valid fields
+          if (!fieldError && fieldValue && touchedFields[fieldName]) {
+            companion.handleFieldComplete();
+            
+            // Special celebrations for specific fields
+            if (fieldName === 'email' && fieldValue.includes('@')) {
+              companion.showThought("Great email! ✅", 1500);
+              companion.triggerParticleEffect('sparkles');
+            } else if (fieldName === 'confirmPassword' && password === fieldValue) {
+              companion.showThought("Passwords match! 🎯", 1500);
+              companion.triggerParticleEffect('hearts');
+            }
+          }
+        }
+      }
+    };
+  };
+  */
+
   const registerMutation = useMutation({
-    mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
+    mutationFn: (data: Omit<FormData, "confirmPassword">) =>
       authService.register(data),
-    onSuccess: (data) => {
-      // Navigate to success page or show success message
-      navigate("/register/success", {
-        state: {
-          email: data.email,
-          message: data.message,
-        },
-      });
+    onMutate: () => {
+      if (companion) {
+        companion.handleLoading();
+        companion.showThought("Creating your account... 🚀", 3000);
+      }
     },
-    onError: (error) => {
+    onSuccess: (data) => {
+      if (companion) {
+        companion.handleSuccess();
+        companion.showThought("Account created! Welcome! 🎊", 4000);
+
+        // Extra celebration for new users
+        setTimeout(() => {
+          companion.triggerParticleEffect("hearts");
+        }, 500);
+        setTimeout(() => {
+          companion.triggerParticleEffect("sparkles");
+        }, 1000);
+      }
+
+      setTimeout(() => {
+        navigate("/register/success", {
+          state: {
+            email: data.email,
+            message: data.message,
+          },
+        });
+      }, 2000);
+    },
+    onError: (error: unknown) => {
       console.error("Registration error:", error);
-      if (isValidationError(error)) {
-        // Handle field-specific validation errors from the API
-        error.response?.data.validation_errors.forEach((validationError) => {
-          const field = validationError.field as keyof RegisterFormData;
-          if (
-            field === "email" ||
-            field === "password" ||
-            field === "firstName" ||
-            field === "lastName" ||
-            field === "confirmPassword"
-          ) {
+
+      const errorData = error as {
+        response?: {
+          data?: {
+            validation_errors?: Array<{ field: string; message: string }>;
+            message?: string;
+          };
+          status?: number;
+        };
+        code?: string;
+      };
+
+      if (errorData.response?.data?.validation_errors) {
+        errorData.response.data.validation_errors.forEach((validationError) => {
+          const field = validationError.field as keyof FormData;
+          if (field in errors) {
             setError(field, {
               message: validationError.message,
             });
           }
         });
-      } else {
-        // Type guard for axios-like errors
-        const axiosError = error as {
-          response?: {
-            status?: number;
-            data?: {
-              message?: string;
-            };
-          };
-          code?: string;
-        };
 
-        if (axiosError.response?.status === 409) {
-          // Email already exists
-          setError("email", {
-            message: "An account with this email already exists",
-          });
-        } else if (
-          axiosError.code === "ERR_NETWORK" ||
-          axiosError.code === "ERR_CONNECTION_REFUSED"
-        ) {
-          // Network error - backend not available
-          setGeneralError(
-            "Unable to connect to the server. Make sure the backend is running or MSW is properly configured.",
-          );
-        } else {
-          // General error
-          setGeneralError(
-            axiosError.response?.data?.message ||
-              "Something went wrong. Please try again.",
-          );
+        if (companion) {
+          companion.showThought("Let's fix these issues... 📝", 3000);
         }
+      } else if (errorData.response?.status === 409) {
+        setError("email", {
+          message: "An account with this email already exists",
+        });
+
+        if (companion) {
+          companion.showThought("This email is taken! 🤷", 3000);
+        }
+      } else if (errorData.code === "ERR_NETWORK") {
+        setGeneralError(
+          "Unable to connect to the server. Make sure the backend is running.",
+        );
+      } else {
+        setGeneralError(
+          errorData.response?.data?.message ||
+            "Something went wrong. Please try again.",
+        );
       }
     },
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (data: FormData) => {
     setGeneralError("");
+
+    // Enhanced: pre-submit encouragement
+    if (companion) {
+      companion.encourage();
+      companion.showThought("Here we go! 🎉", 1500);
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
   };
 
-  const password = watch("password");
-
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-[var(--surface)] py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
-        <div className="mb-6">
-          <h2 className="text-center text-3xl font-extrabold text-[var(--text)]">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-muted">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-primary-600 hover:text-primary-500"
-            >
-              Sign in
-            </Link>
-          </p>
-        </div>
+        <h2 className="text-center text-3xl font-extrabold text-[var(--text)] mb-6">
+          Create your account
+        </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <p className="text-center text-sm text-muted mb-6">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-medium text-primary-600 hover:text-primary-500"
+            onMouseEnter={() => {
+              companion?.showCuriosity();
+              companion?.showThought("Have an account? 🤔", 2000);
+            }}
+            onMouseLeave={() => companion?.setMood("idle")}
+          >
+            Sign in
+          </Link>
+        </p>
+
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
           {generalError && (
-            <div
-              className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm"
-              role="alert"
-            >
-              <div>{generalError}</div>
-              {generalError.includes("Unable to connect") && (
-                <div className="mt-2 text-xs">
-                  <strong>Quick Fix:</strong> Restart the dev server (Ctrl+C
-                  then npm run dev)
-                </div>
-              )}
+            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
+              {generalError}
             </div>
           )}
 
@@ -161,21 +371,6 @@ const RegistrationForm: React.FC = () => {
             {...register("email")}
             error={errors.email?.message}
             autoComplete="email"
-            leftIcon={
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            }
           />
 
           <div>
@@ -185,9 +380,13 @@ const RegistrationForm: React.FC = () => {
               {...register("password")}
               error={errors.password?.message}
               autoComplete="new-password"
-              hint="Must be at least 8 characters with uppercase, lowercase, number, and special character"
             />
-            <PasswordStrengthMeter password={password || ""} />
+            {password && (
+              <PasswordStrengthMeter
+                password={password}
+                showFeedback={touchedFields.password || !!errors.password}
+              />
+            )}
           </div>
 
           <PasswordInput
@@ -198,65 +397,90 @@ const RegistrationForm: React.FC = () => {
             autoComplete="new-password"
           />
 
-          <div className="space-y-4">
-            <div className="flex items-start">
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
               <input
-                id="terms"
+                id="termsAccepted"
                 type="checkbox"
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[color:var(--surface-muted)] rounded"
-                required
+                {...register("termsAccepted")}
+                onChange={async (e) => {
+                  const registration = register("termsAccepted");
+                  await registration.onChange(e);
+
+                  // Enhanced: celebrate terms acceptance
+                  if (
+                    e.target.checked &&
+                    companion &&
+                    companion.companionState !== "error"
+                  ) {
+                    companion.handleFieldComplete();
+                    companion.showThought("Almost ready! ✔️", 1500);
+                    companion.triggerParticleEffect("sparkles");
+                  }
+                }}
               />
+            </div>
+            <div className="ml-3 text-sm">
               <label
-                htmlFor="terms"
-                className="ml-2 block text-sm text-[var(--text)]"
+                htmlFor="termsAccepted"
+                className="font-medium text-[var(--text)]"
               >
                 I agree to the{" "}
                 <Link
                   to="/terms"
-                  className="font-medium text-primary-600 hover:text-primary-500"
+                  className="text-primary-600 hover:text-primary-500"
                   target="_blank"
+                  onMouseEnter={() => {
+                    companion?.showCuriosity();
+                    companion?.showThought("Good to read these! 📄", 2000);
+                  }}
+                  onMouseLeave={() => companion?.setMood("idle")}
                 >
                   Terms and Conditions
                 </Link>{" "}
                 and{" "}
                 <Link
                   to="/privacy"
-                  className="font-medium text-primary-600 hover:text-primary-500"
+                  className="text-primary-600 hover:text-primary-500"
                   target="_blank"
+                  onMouseEnter={() => {
+                    companion?.showCuriosity();
+                    companion?.showThought("Privacy matters! 🔒", 2000);
+                  }}
+                  onMouseLeave={() => companion?.setMood("idle")}
                 >
                   Privacy Policy
                 </Link>
               </label>
+              {errors.termsAccepted && (
+                <p className="mt-1 text-red-600 text-xs">
+                  {errors.termsAccepted.message}
+                </p>
+              )}
             </div>
-
-            <Button
-              type="submit"
-              fullWidth
-              size="lg"
-              isLoading={isSubmitting || registerMutation.isPending}
-              loadingText="Creating account..."
-            >
-              Create account
-            </Button>
           </div>
+
+          <Button
+            type="submit"
+            fullWidth
+            size="lg"
+            isLoading={isSubmitting || registerMutation.isPending}
+            loadingText="Creating account..."
+            disabled={!watchedValues.termsAccepted}
+            onMouseEnter={() => {
+              if (watchedValues.termsAccepted && companion) {
+                companion.showThought("Ready to join? 🚀", 1500);
+                companion.setMood(
+                  "excited" as Parameters<typeof companion.setMood>[0],
+                );
+              }
+            }}
+            onMouseLeave={() => companion?.setMood("idle")}
+          >
+            Create account
+          </Button>
         </form>
-
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[color:var(--surface-muted)]" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[var(--surface)] text-gray-500">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-6 text-center text-sm text-gray-500">
-            We'll send you a verification email to confirm your account
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -30,28 +30,36 @@ export class EncryptionService {
       // First, check if we have valid local keys that we can use
       const localSalt = await keyStore.getSalt();
       const localKeys = await keyStore.getPersonalKeys();
-      
+
       if (localSalt && localKeys) {
-        console.log("[Encryption] Found existing local keys, attempting to use them");
-        
+        console.log(
+          "[Encryption] Found existing local keys, attempting to use them",
+        );
+
         // Try to initialize with local keys first
         try {
           this.masterKey = await this.deriveMasterKey(password, localSalt);
           await this.loadPersonalKeys(localKeys.privateKey);
           this.publicKeyId = localKeys.publicKeyId;
-          
+
           console.log("[Encryption] Successfully initialized with local keys", {
-            publicKeyId: this.publicKeyId
+            publicKeyId: this.publicKeyId,
           });
-          
+
           // Verify these keys match server if possible (non-blocking)
-          this.verifyKeysWithServer(userId).catch(error => {
-            console.warn("[Encryption] Could not verify keys with server:", error);
+          this.verifyKeysWithServer(userId).catch((error) => {
+            console.warn(
+              "[Encryption] Could not verify keys with server:",
+              error,
+            );
           });
-          
+
           return; // Success with local keys
         } catch (localError) {
-          console.warn("[Encryption] Failed to use local keys, will check server:", localError);
+          console.warn(
+            "[Encryption] Failed to use local keys, will check server:",
+            localError,
+          );
           // Continue to server check
         }
       }
@@ -125,7 +133,7 @@ export class EncryptionService {
         console.log(
           "[Encryption] Check endpoint says no encryption, setting up new user",
         );
-        
+
         // IMPORTANT: Only set up new encryption if we don't have local keys
         // and we're not already setting up
         if (!localSalt && !localKeys && !this.isSettingUp) {
@@ -133,12 +141,16 @@ export class EncryptionService {
         } else if (localSalt && localKeys) {
           // We have local keys but server says no encryption
           // This might be a timing issue - try to use local keys
-          console.log("[Encryption] Using existing local keys despite server response");
+          console.log(
+            "[Encryption] Using existing local keys despite server response",
+          );
           this.masterKey = await this.deriveMasterKey(password, localSalt);
           await this.loadPersonalKeys(localKeys.privateKey);
           this.publicKeyId = localKeys.publicKeyId;
         } else if (this.isSettingUp) {
-          console.log("[Encryption] Already setting up encryption, skipping duplicate setup");
+          console.log(
+            "[Encryption] Already setting up encryption, skipping duplicate setup",
+          );
           throw new Error("Encryption setup already in progress");
         }
       }
@@ -170,17 +182,17 @@ export class EncryptionService {
     try {
       const userResponse = await apiClient.get(`/encryption/user/${userId}`);
       const serverData = userResponse.data;
-      
-      if (serverData.publicKeyId && serverData.publicKeyId !== this.publicKeyId) {
-        console.error(
-          "[Encryption] Local keys do not match server keys!",
-          {
-            localKeyId: this.publicKeyId,
-            serverKeyId: serverData.publicKeyId,
-          }
-        );
+
+      if (
+        serverData.publicKeyId &&
+        serverData.publicKeyId !== this.publicKeyId
+      ) {
+        console.error("[Encryption] Local keys do not match server keys!", {
+          localKeyId: this.publicKeyId,
+          serverKeyId: serverData.publicKeyId,
+        });
         throw new Error(
-          "Encryption keys are out of sync. Please reset encryption in your profile settings."
+          "Encryption keys are out of sync. Please reset encryption in your profile settings.",
         );
       }
     } catch (error) {
@@ -243,9 +255,9 @@ export class EncryptionService {
       console.log("[Encryption] Setup already in progress, skipping");
       return;
     }
-    
+
     this.isSettingUp = true;
-    
+
     try {
       // Generate random salt
       const salt = crypto.getRandomValues(new Uint8Array(32));
@@ -274,7 +286,8 @@ export class EncryptionService {
         "pkcs8",
         this.personalKeyPair.privateKey,
       );
-      const encryptedPrivateKey = await this.encryptWithMasterKey(privateKeyData);
+      const encryptedPrivateKey =
+        await this.encryptWithMasterKey(privateKeyData);
 
       // Export public key
       const publicKeyData = await crypto.subtle.exportKey(
@@ -298,25 +311,33 @@ export class EncryptionService {
           publicKey: publicKeyBase64,
           publicKeyId: this.publicKeyId,
         });
-        console.log("[Encryption] Successfully saved new encryption keys to server");
+        console.log(
+          "[Encryption] Successfully saved new encryption keys to server",
+        );
       } catch (error) {
-        if (error instanceof Error && 'response' in error) {
-          const axiosError = error as { response?: { status?: number, data?: unknown } };
+        if (error instanceof Error && "response" in error) {
+          const axiosError = error as {
+            response?: { status?: number; data?: unknown };
+          };
           if (axiosError.response?.status === 409) {
-            console.log("[Encryption] Server already has encryption setup (409)");
-            
+            console.log(
+              "[Encryption] Server already has encryption setup (409)",
+            );
+
             // If we get a 409, the server already has encryption set up
             // This likely means another request completed while we were setting up
             // We should NOT try to fetch server keys here as it could cause
             // infinite recursion. Instead, we'll use the keys we just generated
             // locally since they're already stored.
-            console.log("[Encryption] Using locally generated keys despite 409 response");
-            
+            console.log(
+              "[Encryption] Using locally generated keys despite 409 response",
+            );
+
             // The keys are already set up locally, so we're good to go
             return;
           }
         }
-        
+
         // For other errors, log but continue with local-only encryption
         console.warn("Failed to save encryption keys to server:", error);
       }
@@ -371,10 +392,15 @@ export class EncryptionService {
    */
   async encryptContent(content: string): Promise<EncryptedData> {
     if (!this.isInitialized()) {
-      throw new Error("Encryption not initialized. Please set up or unlock encryption first.");
+      throw new Error(
+        "Encryption not initialized. Please set up or unlock encryption first.",
+      );
     }
 
-    console.log("[Encryption] Encrypting content with publicKeyId:", this.publicKeyId);
+    console.log(
+      "[Encryption] Encrypting content with publicKeyId:",
+      this.publicKeyId,
+    );
 
     // Generate content key
     const contentKey = await crypto.subtle.generateKey(
@@ -416,7 +442,9 @@ export class EncryptionService {
    */
   async decryptContent(encryptedData: EncryptedData): Promise<string> {
     if (!this.isInitialized()) {
-      throw new Error("Encryption not initialized. Please unlock encryption first.");
+      throw new Error(
+        "Encryption not initialized. Please unlock encryption first.",
+      );
     }
 
     try {
@@ -427,7 +455,7 @@ export class EncryptionService {
         encryptedKeyLength: encryptedKey.byteLength,
         hasPrivateKey: !!this.personalKeyPair!.privateKey,
         publicKeyId: this.publicKeyId,
-        keyPairFingerprint: this.personalKeyPair ? 'present' : 'missing'
+        keyPairFingerprint: this.personalKeyPair ? "present" : "missing",
       });
 
       const rawContentKey = await crypto.subtle.decrypt(
@@ -473,32 +501,35 @@ export class EncryptionService {
   /**
    * Try to decrypt content with fallback to server re-sync
    */
-  async tryDecryptWithFallback(
-    encryptedData: EncryptedData
-  ): Promise<string> {
+  async tryDecryptWithFallback(encryptedData: EncryptedData): Promise<string> {
     if (!this.isInitialized()) {
-      throw new Error("Encryption not initialized. Please unlock encryption to view encrypted content.");
+      throw new Error(
+        "Encryption not initialized. Please unlock encryption to view encrypted content.",
+      );
     }
 
     try {
       // First, try with current keys
       return await this.decryptContent(encryptedData);
     } catch (error) {
-      console.error("[Decryption] Failed with current keys, checking for alternatives", error);
-      
+      console.error(
+        "[Decryption] Failed with current keys, checking for alternatives",
+        error,
+      );
+
       // Check if this might be a key mismatch issue
       if (error instanceof Error && error.name === "OperationError") {
         // This typically indicates wrong key was used for decryption
-        const errorMessage = 
+        const errorMessage =
           "Unable to decrypt content. This may be due to:\n" +
           "1. The content was encrypted with a different encryption key\n" +
           "2. Your encryption keys are out of sync\n" +
           "3. The content may be corrupted\n\n" +
           "Try resetting your encryption in Settings > Security, or contact support.";
-        
+
         throw new Error(errorMessage);
       }
-      
+
       throw error;
     }
   }
@@ -566,7 +597,9 @@ export class EncryptionService {
     context?: string,
   ): Promise<{ analysisRequestId: string; shareIds: string[] }> {
     if (!this.isInitialized()) {
-      throw new Error("Encryption not initialized. Please unlock encryption first.");
+      throw new Error(
+        "Encryption not initialized. Please unlock encryption first.",
+      );
     }
 
     try {
@@ -680,7 +713,9 @@ export class EncryptionService {
     permissions?: string[],
   ): Promise<{ shareId: string; encryptedKey: string }> {
     if (!this.isInitialized()) {
-      throw new Error("Encryption not initialized. Please unlock encryption first.");
+      throw new Error(
+        "Encryption not initialized. Please unlock encryption first.",
+      );
     }
 
     try {
@@ -822,7 +857,7 @@ export class EncryptionService {
     const hexString = Array.from(bytes)
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
-    
+
     console.log("[Encryption] Generated new key ID:", hexString);
     return hexString;
   }
@@ -862,10 +897,14 @@ export class EncryptionService {
    * Safe decrypt for background/caching operations
    * Returns null if encryption is not initialized instead of throwing
    */
-  async safeDecryptContent(encryptedData: EncryptedData): Promise<string | null> {
+  async safeDecryptContent(
+    encryptedData: EncryptedData,
+  ): Promise<string | null> {
     try {
       if (!this.isInitialized()) {
-        console.log("[Encryption] Skipping decryption - encryption not initialized");
+        console.log(
+          "[Encryption] Skipping decryption - encryption not initialized",
+        );
         return null;
       }
       return await this.decryptContent(encryptedData);
@@ -912,8 +951,10 @@ export class EncryptionService {
 
       // If server has incomplete data, we can safely delete and recreate
       if (!serverData.salt || !serverData.encryptedPrivateKey) {
-        console.log("[Encryption] Server has incomplete data, resetting everything");
-        
+        console.log(
+          "[Encryption] Server has incomplete data, resetting everything",
+        );
+
         // Clear all local data
         await this.reset();
 
@@ -929,17 +970,19 @@ export class EncryptionService {
         await this.initialize(password, userId);
       } else {
         // Server has complete data, try to sync with it
-        console.log("[Encryption] Server has complete data, attempting to sync");
-        
+        console.log(
+          "[Encryption] Server has complete data, attempting to sync",
+        );
+
         // Clear local data only
         await this.reset();
-        
+
         // Re-initialize will pull from server
         await this.initialize(password, userId);
       }
     } catch (error) {
       console.error("[Encryption] Error checking server data:", error);
-      
+
       // If we can't check server data, just clear local and try to init
       await this.reset();
       await this.initialize(password, userId);

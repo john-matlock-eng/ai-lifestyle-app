@@ -3,19 +3,22 @@ Pydantic models for user profile endpoints.
 """
 
 from datetime import datetime
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field, field_validator
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field, field_validator
 
 
 class MeasurementUnit(str, Enum):
     """Measurement unit options."""
+
     METRIC = "metric"
     IMPERIAL = "imperial"
 
 
 class DietaryRestriction(str, Enum):
     """Dietary restriction options."""
+
     VEGAN = "vegan"
     VEGETARIAN = "vegetarian"
     GLUTEN_FREE = "gluten-free"
@@ -27,6 +30,7 @@ class DietaryRestriction(str, Enum):
 
 class FitnessGoal(str, Enum):
     """Fitness goal options."""
+
     WEIGHT_LOSS = "weight-loss"
     MUSCLE_GAIN = "muscle-gain"
     ENDURANCE = "endurance"
@@ -36,102 +40,104 @@ class FitnessGoal(str, Enum):
 
 class NotificationPreferences(BaseModel):
     """User notification preferences."""
+
     email: bool = Field(default=True, description="Email notifications enabled")
     push: bool = Field(default=True, description="Push notifications enabled")
     sms: bool = Field(default=False, description="SMS notifications enabled")
 
 
+class TutorialStep(str, Enum):
+    """Tutorial step identifiers."""
+    
+    DASHBOARD_INTRO = "dashboard_intro"
+    ENCRYPTION_SETUP = "encryption_setup"
+    HABIT_CREATION = "habit_creation"
+    JOURNAL_INTRO = "journal_intro"
+    GOALS_INTRO = "goals_intro"
+    MEALS_INTRO = "meals_intro"
+    WORKOUTS_INTRO = "workouts_intro"
+    PROFILE_COMPLETION = "profile_completion"
+    SETTINGS_OVERVIEW = "settings_overview"
+
+
+class TutorialPreferences(BaseModel):
+    """User tutorial preferences and progress."""
+    
+    enabled: bool = Field(default=True, description="Whether tutorials are enabled")
+    completedSteps: List[TutorialStep] = Field(
+        default_factory=list, description="List of completed tutorial steps"
+    )
+    skippedSteps: List[TutorialStep] = Field(
+        default_factory=list, description="List of skipped tutorial steps"
+    )
+    lastShownStep: Optional[TutorialStep] = Field(
+        default=None, description="Last tutorial step shown to user"
+    )
+    lastShownAt: Optional[datetime] = Field(
+        default=None, description="When the last tutorial was shown"
+    )
+
+
 class UserPreferences(BaseModel):
     """User preferences model."""
+
     units: MeasurementUnit = Field(
-        default=MeasurementUnit.METRIC,
-        description="Measurement unit preference"
+        default=MeasurementUnit.METRIC, description="Measurement unit preference"
     )
     language: str = Field(
         default="en-US",
         description="Language preference (ISO 639-1)",
-        pattern=r'^[a-z]{2}(-[A-Z]{2})?$'
+        pattern=r"^[a-z]{2}(-[A-Z]{2})?$",
     )
     notifications: NotificationPreferences = Field(
-        default_factory=NotificationPreferences,
-        description="Notification preferences"
+        default_factory=NotificationPreferences, description="Notification preferences"
     )
     dietaryRestrictions: List[DietaryRestriction] = Field(
-        default_factory=list,
-        description="List of dietary restrictions"
+        default_factory=list, description="List of dietary restrictions"
     )
     fitnessGoals: List[FitnessGoal] = Field(
-        default_factory=list,
-        description="List of fitness goals"
+        default_factory=list, description="List of fitness goals"
+    )
+    tutorials: TutorialPreferences = Field(
+        default_factory=TutorialPreferences, description="Tutorial preferences and progress"
     )
 
 
 class UserProfileResponse(BaseModel):
     """User profile response model."""
+
     userId: str = Field(
         ...,
         description="Unique user identifier",
-        pattern=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     )
-    email: str = Field(
-        ...,
-        description="User's email address"
-    )
-    firstName: str = Field(
-        ...,
-        description="User's first name"
-    )
-    lastName: str = Field(
-        ...,
-        description="User's last name"
-    )
-    emailVerified: bool = Field(
-        ...,
-        description="Whether email is verified"
-    )
-    mfaEnabled: bool = Field(
-        default=False,
-        description="Whether 2FA is enabled"
-    )
+    email: str = Field(..., description="User's email address")
+    firstName: str = Field(..., description="User's first name")
+    lastName: str = Field(..., description="User's last name")
+    emailVerified: bool = Field(..., description="Whether email is verified")
+    mfaEnabled: bool = Field(default=False, description="Whether 2FA is enabled")
     phoneNumber: Optional[str] = Field(
         default=None,
         description="User's phone number (E.164 format)",
-        pattern=r'^\+?[1-9]\d{1,14}$'
+        pattern=r"^\+?[1-9]\d{1,14}$",
     )
-    dateOfBirth: Optional[str] = Field(
-        default=None,
-        description="User's date of birth"
-    )
+    dateOfBirth: Optional[str] = Field(default=None, description="User's date of birth")
     timezone: Optional[str] = Field(
-        default=None,
-        description="User's timezone (IANA format)",
-        example="America/New_York"
+        default=None, description="User's timezone (IANA format)", example="America/New_York"
     )
-    preferences: Optional[UserPreferences] = Field(
-        default=None,
-        description="User preferences"
-    )
+    preferences: Optional[UserPreferences] = Field(default=None, description="User preferences")
     encryptionEnabled: bool = Field(
-        default=False,
-        description="Whether encryption is enabled for this user"
+        default=False, description="Whether encryption is enabled for this user"
     )
     encryptionSetupDate: Optional[datetime] = Field(
-        default=None,
-        description="When encryption was first set up"
+        default=None, description="When encryption was first set up"
     )
     encryptionKeyId: Optional[str] = Field(
-        default=None,
-        description="Public key ID for user's encryption key"
+        default=None, description="Public key ID for user's encryption key"
     )
-    createdAt: datetime = Field(
-        ...,
-        description="Account creation timestamp"
-    )
-    updatedAt: datetime = Field(
-        ...,
-        description="Last update timestamp"
-    )
-    
+    createdAt: datetime = Field(..., description="Account creation timestamp")
+    updatedAt: datetime = Field(..., description="Last update timestamp")
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -147,50 +153,41 @@ class UserProfileResponse(BaseModel):
                 "preferences": {
                     "units": "metric",
                     "language": "en-US",
-                    "notifications": {
-                        "email": True,
-                        "push": True,
-                        "sms": False
-                    },
+                    "notifications": {"email": True, "push": True, "sms": False},
                     "dietaryRestrictions": ["vegetarian", "gluten-free"],
-                    "fitnessGoals": ["weight-loss", "endurance"]
+                    "fitnessGoals": ["weight-loss", "endurance"],
+                    "tutorials": {
+                        "enabled": True,
+                        "completedSteps": ["dashboard_intro"],
+                        "skippedSteps": [],
+                        "lastShownStep": "dashboard_intro",
+                        "lastShownAt": "2025-01-01T10:00:00Z"
+                    },
                 },
                 "createdAt": "2025-01-01T10:00:00Z",
-                "updatedAt": "2025-01-01T12:00:00Z"
+                "updatedAt": "2025-01-01T12:00:00Z",
             }
         }
 
 
 class ErrorResponse(BaseModel):
     """Standard error response."""
-    error: str = Field(
-        ...,
-        description="Error type/code"
-    )
-    message: str = Field(
-        ...,
-        description="Human-readable error message"
-    )
-    details: Optional[Dict[str, Any]] = Field(
-        default=None,
-        description="Additional error details"
-    )
+
+    error: str = Field(..., description="Error type/code")
+    message: str = Field(..., description="Human-readable error message")
+    details: Optional[Dict[str, Any]] = Field(default=None, description="Additional error details")
     request_id: Optional[str] = Field(
-        default=None,
-        description="Unique request identifier for debugging"
+        default=None, description="Unique request identifier for debugging"
     )
-    timestamp: datetime = Field(
-        default_factory=datetime.utcnow,
-        description="Error timestamp"
-    )
-    
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Error timestamp")
+
     class Config:
         json_schema_extra = {
             "example": {
                 "error": "UNAUTHORIZED",
                 "message": "Invalid or missing authentication token",
                 "request_id": "req_123456",
-                "timestamp": "2025-01-01T10:00:00Z"
+                "timestamp": "2025-01-01T10:00:00Z",
             }
         }
 
@@ -198,6 +195,7 @@ class ErrorResponse(BaseModel):
 # Internal models for data transformation
 class DynamoDBUser(BaseModel):
     """Internal model for DynamoDB user data."""
+
     pk: str
     sk: str
     user_id: str
@@ -215,19 +213,21 @@ class DynamoDBUser(BaseModel):
     encryption_key_id: Optional[str] = None
     created_at: str
     updated_at: str
-    
-    def to_user_profile(self) -> 'UserProfile':
+
+    def to_user_profile(self) -> "UserProfile":
         """Convert DynamoDB data to API response model."""
         # Parse preferences if they exist
         prefs = None
         if self.preferences:
             prefs = UserPreferences(**self.preferences)
-        
+
         # Parse encryption setup date if it exists
         enc_setup_date = None
         if self.encryption_setup_date:
-            enc_setup_date = datetime.fromisoformat(self.encryption_setup_date.replace('Z', '+00:00'))
-        
+            enc_setup_date = datetime.fromisoformat(
+                self.encryption_setup_date.replace("Z", "+00:00")
+            )
+
         return UserProfile(
             userId=self.user_id,
             email=self.email,
@@ -242,52 +242,36 @@ class DynamoDBUser(BaseModel):
             encryptionEnabled=self.encryption_enabled,
             encryptionSetupDate=enc_setup_date,
             encryptionKeyId=self.encryption_key_id,
-            createdAt=datetime.fromisoformat(self.created_at.replace('Z', '+00:00')),
-            updatedAt=datetime.fromisoformat(self.updated_at.replace('Z', '+00:00'))
+            createdAt=datetime.fromisoformat(self.created_at.replace("Z", "+00:00")),
+            updatedAt=datetime.fromisoformat(self.updated_at.replace("Z", "+00:00")),
         )
 
 
 class UpdateUserProfileRequest(BaseModel):
     """Request model for updating user profile."""
-    firstName: Optional[str] = Field(
-        default=None,
-        description="User's first name"
-    )
-    lastName: Optional[str] = Field(
-        default=None,
-        description="User's last name"
-    )
+
+    firstName: Optional[str] = Field(default=None, description="User's first name")
+    lastName: Optional[str] = Field(default=None, description="User's last name")
     phoneNumber: Optional[str] = Field(
         default=None,
         description="User's phone number (E.164 format)",
-        pattern=r'^\+?[1-9]\d{1,14}$'
+        pattern=r"^\+?[1-9]\d{1,14}$",
     )
-    dateOfBirth: Optional[str] = Field(
-        default=None,
-        description="User's date of birth"
-    )
+    dateOfBirth: Optional[str] = Field(default=None, description="User's date of birth")
     timezone: Optional[str] = Field(
-        default=None,
-        description="User's timezone (IANA format)",
-        example="America/New_York"
+        default=None, description="User's timezone (IANA format)", example="America/New_York"
     )
-    preferences: Optional[UserPreferences] = Field(
-        default=None,
-        description="User preferences"
-    )
+    preferences: Optional[UserPreferences] = Field(default=None, description="User preferences")
     encryptionEnabled: Optional[bool] = Field(
-        default=None,
-        description="Whether encryption is enabled for this user"
+        default=None, description="Whether encryption is enabled for this user"
     )
     encryptionSetupDate: Optional[datetime] = Field(
-        default=None,
-        description="When encryption was first set up"
+        default=None, description="When encryption was first set up"
     )
     encryptionKeyId: Optional[str] = Field(
-        default=None,
-        description="Public key ID for user's encryption key"
+        default=None, description="Public key ID for user's encryption key"
     )
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -296,77 +280,46 @@ class UpdateUserProfileRequest(BaseModel):
                 "phoneNumber": "+1234567890",
                 "timezone": "America/New_York",
                 "encryptionEnabled": True,
-                "encryptionKeyId": "abc123def456"
+                "encryptionKeyId": "abc123def456",
             }
         }
 
 
 class UserProfile(BaseModel):
     """User profile response model."""
+
     userId: str = Field(
         ...,
         description="Unique user identifier",
-        pattern=r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     )
-    email: str = Field(
-        ...,
-        description="User's email address"
-    )
-    firstName: str = Field(
-        ...,
-        description="User's first name"
-    )
-    lastName: str = Field(
-        ...,
-        description="User's last name"
-    )
-    emailVerified: bool = Field(
-        ...,
-        description="Whether email is verified"
-    )
-    mfaEnabled: bool = Field(
-        default=False,
-        description="Whether 2FA is enabled"
-    )
+    email: str = Field(..., description="User's email address")
+    firstName: str = Field(..., description="User's first name")
+    lastName: str = Field(..., description="User's last name")
+    emailVerified: bool = Field(..., description="Whether email is verified")
+    mfaEnabled: bool = Field(default=False, description="Whether 2FA is enabled")
     phoneNumber: Optional[str] = Field(
         default=None,
         description="User's phone number (E.164 format)",
-        pattern=r'^\+?[1-9]\d{1,14}$'
+        pattern=r"^\+?[1-9]\d{1,14}$",
     )
-    dateOfBirth: Optional[str] = Field(
-        default=None,
-        description="User's date of birth"
-    )
+    dateOfBirth: Optional[str] = Field(default=None, description="User's date of birth")
     timezone: Optional[str] = Field(
-        default=None,
-        description="User's timezone (IANA format)",
-        example="America/New_York"
+        default=None, description="User's timezone (IANA format)", example="America/New_York"
     )
-    preferences: Optional[UserPreferences] = Field(
-        default=None,
-        description="User preferences"
-    )
+    preferences: Optional[UserPreferences] = Field(default=None, description="User preferences")
     encryptionEnabled: bool = Field(
-        default=False,
-        description="Whether encryption is enabled for this user"
+        default=False, description="Whether encryption is enabled for this user"
     )
     encryptionSetupDate: Optional[datetime] = Field(
-        default=None,
-        description="When encryption was first set up"
+        default=None, description="When encryption was first set up"
     )
     encryptionKeyId: Optional[str] = Field(
-        default=None,
-        description="Public key ID for user's encryption key"
+        default=None, description="Public key ID for user's encryption key"
     )
-    createdAt: datetime = Field(
-        ...,
-        description="Account creation timestamp"
-    )
-    updatedAt: datetime = Field(
-        ...,
-        description="Last update timestamp"
-    )
-    
+    createdAt: datetime = Field(..., description="Account creation timestamp")
+    updatedAt: datetime = Field(..., description="Last update timestamp")
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -382,15 +335,18 @@ class UserProfile(BaseModel):
                 "preferences": {
                     "units": "metric",
                     "language": "en-US",
-                    "notifications": {
-                        "email": True,
-                        "push": True,
-                        "sms": False
-                    },
+                    "notifications": {"email": True, "push": True, "sms": False},
                     "dietaryRestrictions": ["vegetarian", "gluten-free"],
-                    "fitnessGoals": ["weight-loss", "endurance"]
+                    "fitnessGoals": ["weight-loss", "endurance"],
+                    "tutorials": {
+                        "enabled": True,
+                        "completedSteps": ["dashboard_intro"],
+                        "skippedSteps": [],
+                        "lastShownStep": "dashboard_intro",
+                        "lastShownAt": "2025-01-01T10:00:00Z"
+                    },
                 },
                 "createdAt": "2025-01-01T10:00:00Z",
-                "updatedAt": "2025-01-01T12:00:00Z"
+                "updatedAt": "2025-01-01T12:00:00Z",
             }
         }

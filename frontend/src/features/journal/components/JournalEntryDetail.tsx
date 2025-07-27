@@ -70,12 +70,16 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
       } else if (isSharedWithMe && !isEncryptionSetup) {
         // If this is a shared entry and encryption isn't set up, show an error
         setDecryptionError(
-          new Error("Encryption must be set up to view shared encrypted content. Please set up encryption in your profile."),
+          new Error(
+            "Encryption must be set up to view shared encrypted content. Please set up encryption in your profile.",
+          ),
         );
       } else if (isEncryptionSetup && isEncryptionLocked) {
         // Encryption is set up but locked
         setDecryptionError(
-          new Error("Encryption is locked. Please unlock encryption to view encrypted content."),
+          new Error(
+            "Encryption is locked. Please unlock encryption to view encrypted content.",
+          ),
         );
       }
     } else {
@@ -112,9 +116,11 @@ const JournalEntryDetail: React.FC<JournalEntryDetailProps> = ({
       });
     } catch (error) {
       console.error("Failed to decrypt content:", error);
-      
+
       // Store the error for the error handler
-      setDecryptionError(error instanceof Error ? error : new Error("Failed to decrypt content"));
+      setDecryptionError(
+        error instanceof Error ? error : new Error("Failed to decrypt content"),
+      );
       setDecryptedEntry(null);
     } finally {
       setIsDecrypting(false);

@@ -1,0 +1,76 @@
+/* Theme Switcher Styles */
+
+/* Dropdown animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-0.25rem);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.slide-in-from-top-1 {
+  animation: slideInFromTop 0.2s ease-out;
+}
+
+/* Dropdown styles */
+.theme-dropdown-button {
+  @apply w-full px-4 py-2.5 text-left;
+  @apply bg-[var(--surface)] border-2 border-[var(--surface-muted)] rounded-lg;
+  @apply hover:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2;
+  @apply transition-all duration-200 flex items-center justify-between gap-2;
+  @apply cursor-pointer;
+}
+
+.theme-dropdown-menu {
+  @apply absolute z-10 mt-2 w-full;
+  @apply bg-[var(--surface)] border-2 border-[var(--surface-muted)];
+  @apply rounded-lg shadow-lg py-1 max-h-60 overflow-auto;
+}
+
+.theme-dropdown-item {
+  @apply w-full px-4 py-2.5 text-left;
+  @apply hover:bg-[var(--button-hover-bg)] transition-colors;
+  @apply flex items-center gap-3;
+}
+
+.theme-dropdown-item.selected {
+  background-color: var(--accent);
+  opacity: 0.1;
+}
+
+/* Focus styles for accessibility */
+.theme-dropdown-button:focus-visible {
+  @apply ring-2 ring-[var(--accent)] ring-offset-2;
+}
+
+.theme-dropdown-item:focus-visible {
+  @apply outline-none bg-[var(--button-hover-bg)];
+}
+
+/* Smooth transition for dropdown arrow */
+.dropdown-arrow {
+  @apply h-5 w-5 text-[var(--text-muted)] transition-transform duration-200;
+}
+
+.dropdown-arrow.open {
+  @apply rotate-180;
+}

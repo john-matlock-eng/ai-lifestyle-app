@@ -4,19 +4,21 @@ Test script to verify camelCase handling in goal models.
 """
 
 import json
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'goals_common'))
 
-from models import LogActivityRequest, ActivityContext, ActivityType
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "goals_common"))
+
+from models import ActivityContext, ActivityType, LogActivityRequest
 
 # Test 1: Basic activity request with camelCase
 print("Test 1: Basic activity request")
 test_data = {
     "value": 12500,
-    "unit": "steps", 
+    "unit": "steps",
     "activityType": "completed",
-    "activityDate": "2024-01-20"
+    "activityDate": "2024-01-20",
 }
 
 try:
@@ -31,15 +33,15 @@ print("\nTest 2: Activity request with context")
 test_data_with_context = {
     "value": 12500,
     "unit": "steps",
-    "activityType": "completed", 
+    "activityType": "completed",
     "activityDate": "2024-01-20",
     "context": {
         "timeOfDay": "evening",
         "dayOfWeek": "monday",
         "isWeekend": False,
         "energyLevel": 8,
-        "enjoyment": 9
-    }
+        "enjoyment": 9,
+    },
 }
 
 try:
@@ -50,6 +52,7 @@ try:
 except Exception as e:
     print(f"❌ Failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 3: Check field names in validation errors
@@ -57,7 +60,7 @@ print("\nTest 3: Check validation error field names")
 test_invalid = {
     "value": -1,  # Invalid: negative value
     "unit": "steps",
-    "activityType": "invalid_type"  # Invalid enum value
+    "activityType": "invalid_type",  # Invalid enum value
 }
 
 try:
@@ -65,6 +68,6 @@ try:
     print("❌ Should have failed validation!")
 except Exception as e:
     print(f"✅ Validation error (expected): {e}")
-    if hasattr(e, 'errors'):
+    if hasattr(e, "errors"):
         for error in e.errors():
             print(f"   Field: {error['loc']}, Message: {error['msg']}")

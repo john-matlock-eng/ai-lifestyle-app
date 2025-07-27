@@ -1,0 +1,87 @@
+<svg width="280" height="80" viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for Ellie -->
+    <radialGradient id="headerBodyGradient">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f9fafb" />
+    </radialGradient>
+    
+    <!-- Text gradient -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+    
+    <!-- Shadow filter -->
+    <filter id="headerShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.15"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ellie the puppy -->
+  <g transform="translate(20, 15)">
+    <!-- Shadow -->
+    <ellipse cx="25" cy="45" rx="15" ry="3" fill="#000000" opacity="0.1" />
+    
+    <!-- Body -->
+    <ellipse cx="25" cy="35" rx="18" ry="16" fill="url(#headerBodyGradient)" filter="url(#headerShadow)" />
+    
+    <!-- Head -->
+    <circle cx="25" cy="20" r="15" fill="#ffffff" filter="url(#headerShadow)" />
+    
+    <!-- Ears -->
+    <ellipse cx="15" cy="15" rx="7" ry="9" fill="#ffffff" filter="url(#headerShadow)" />
+    <ellipse cx="35" cy="15" rx="7" ry="9" fill="#ffffff" filter="url(#headerShadow)" />
+    
+    <!-- Eyes -->
+    <circle cx="20" cy="20" r="2" fill="#1f2937" />
+    <circle cx="30" cy="20" r="2" fill="#1f2937" />
+    
+    <!-- Eye shine -->
+    <circle cx="20.5" cy="19.5" r="0.7" fill="#ffffff" />
+    <circle cx="30.5" cy="19.5" r="0.7" fill="#ffffff" />
+    
+    <!-- Nose -->
+    <ellipse cx="25" cy="24" rx="2.5" ry="1.8" fill="#92400e" />
+    
+    <!-- Waving arm -->
+    <ellipse cx="12" cy="30" rx="5" ry="8" fill="#ffffff" transform="rotate(-35 12 30)" filter="url(#headerShadow)" />
+    
+    <!-- Other arm -->
+    <ellipse cx="38" cy="33" rx="5" ry="7" fill="#ffffff" transform="rotate(20 38 33)" filter="url(#headerShadow)" />
+    
+    <!-- Feet -->
+    <ellipse cx="18" cy="42" rx="6" ry="5" fill="#ffffff" filter="url(#headerShadow)" />
+    <ellipse cx="32" cy="42" rx="6" ry="5" fill="#ffffff" filter="url(#headerShadow)" />
+    
+    <!-- Paw pads -->
+    <ellipse cx="18" cy="42" rx="3" ry="2.5" fill="#d4c5b0" opacity="0.6" />
+    <ellipse cx="32" cy="42" rx="3" ry="2.5" fill="#d4c5b0" opacity="0.6" />
+  </g>
+  
+  <!-- App Name -->
+  <g transform="translate(80, 25)">
+    <!-- Main text -->
+    <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="url(#textGradient)">
+      AI Lifestyle
+    </text>
+    
+    <!-- Subtitle -->
+    <text x="0" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="400" fill="#6b7280">
+      with Ellie, your wellness companion
+    </text>
+  </g>
+  
+  <!-- Decorative sparkle -->
+  <circle cx="250" cy="20" r="2" fill="#fbbf24" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite" />
+  </circle>
+</svg>

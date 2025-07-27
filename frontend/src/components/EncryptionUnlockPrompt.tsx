@@ -58,7 +58,9 @@ export const EncryptionUnlockPrompt: React.FC = () => {
       <div className="bg-[var(--surface)] rounded-lg max-w-md w-full p-6">
         <div className="flex items-center mb-4">
           <Lock className="h-8 w-8 text-[var(--warning)] mr-3" />
-          <h2 className="text-2xl font-bold text-[var(--text)]">Unlock Encryption</h2>
+          <h2 className="text-2xl font-bold text-[var(--text)]">
+            Unlock Encryption
+          </h2>
         </div>
 
         <div className="space-y-4">

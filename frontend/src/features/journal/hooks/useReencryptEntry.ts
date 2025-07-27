@@ -18,12 +18,12 @@ export function useReencryptEntry(options?: UseReencryptEntryOptions) {
       // Update the cache with the re-encrypted entry
       queryClient.setQueryData(
         ["journal-entry", updatedEntry.entryId],
-        updatedEntry
+        updatedEntry,
       );
-      
+
       // Invalidate the list to show updated encryption status
       queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
-      
+
       options?.onSuccess?.(updatedEntry);
     },
     onError: (error) => {

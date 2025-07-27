@@ -93,17 +93,21 @@ export const EncryptionResetDialog: React.FC<EncryptionResetDialogProps> = ({
                 </p>
                 <ul className="list-disc list-inside text-sm text-orange-700 mt-2 space-y-1">
                   <li>Generate new encryption keys</li>
+                  <li>Make previously encrypted journals inaccessible</li>
                   <li>
-                    Make previously encrypted journals inaccessible
+                    Make previously shared journals inaccessible to recipients
                   </li>
-                  <li>Make previously shared journals inaccessible to recipients</li>
-                  <li>Require you to re-share any journals you want to share</li>
+                  <li>
+                    Require you to re-share any journals you want to share
+                  </li>
                 </ul>
               </div>
             ) : (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> This will sync your local encryption with the server. Your existing encrypted content will remain accessible.
+                  <strong>Note:</strong> This will sync your local encryption
+                  with the server. Your existing encrypted content will remain
+                  accessible.
                 </p>
               </div>
             )}

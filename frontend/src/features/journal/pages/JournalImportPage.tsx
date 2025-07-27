@@ -32,7 +32,7 @@ export const JournalImportPage: React.FC = () => {
 
   const handleImport = async (importData: CreateJournalEntryRequest) => {
     setIsSubmitting(true);
-    
+
     try {
       // Note: Encryption should be handled at the API layer if needed
       await createMutation.mutateAsync(importData);

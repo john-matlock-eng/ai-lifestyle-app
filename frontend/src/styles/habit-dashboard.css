@@ -1,0 +1,237 @@
+/* Additional theme-specific enhancements for the habit dashboard */
+
+/* Balloon theme special effects */
+[data-theme="balloon"] {
+  /* Extra festive gradient backgrounds */
+  --habit-gradient-1: linear-gradient(
+    135deg,
+    #ec4899 0%,
+    #9333ea 50%,
+    #14b8a6 100%
+  );
+  --habit-gradient-2: linear-gradient(
+    135deg,
+    #f59e0b 0%,
+    #ec4899 50%,
+    #9333ea 100%
+  );
+  --habit-gradient-3: linear-gradient(
+    135deg,
+    #14b8a6 0%,
+    #3b82f6 50%,
+    #9333ea 100%
+  );
+}
+
+/* Light theme adjustments */
+[data-theme="light"] {
+  /* Softer gradients for light mode */
+  --habit-gradient-1: linear-gradient(135deg, #ddd6fe 0%, #fbbf24 100%);
+  --habit-gradient-2: linear-gradient(135deg, #bfdbfe 0%, #c084fc 100%);
+  --habit-gradient-3: linear-gradient(135deg, #a7f3d0 0%, #bfdbfe 100%);
+}
+
+/* Vibrant theme enhancements */
+[data-theme="vibrant"] {
+  /* Extra bold gradients */
+  --habit-gradient-1: linear-gradient(
+    135deg,
+    #ff006e 0%,
+    #8338ec 50%,
+    #3a86ff 100%
+  );
+  --habit-gradient-2: linear-gradient(
+    135deg,
+    #3a86ff 0%,
+    #ff006e 50%,
+    #ffb700 100%
+  );
+  --habit-gradient-3: linear-gradient(
+    135deg,
+    #00f5ff 0%,
+    #ff006e 50%,
+    #8338ec 100%
+  );
+}
+
+/* Habit card enhancements */
+.habit-card-gradient {
+  background: linear-gradient(
+    135deg,
+    rgba(147, 51, 234, 0.05) 0%,
+    rgba(236, 72, 153, 0.05) 100%
+  );
+}
+
+.habit-card-gradient:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(147, 51, 234, 0.1) 0%,
+    rgba(236, 72, 153, 0.1) 100%
+  );
+}
+
+/* Streak fire animation */
+@keyframes fire-flicker {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+    filter: hue-rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) translateY(-2px);
+    filter: hue-rotate(10deg);
+  }
+  50% {
+    transform: scale(0.95) translateY(1px);
+    filter: hue-rotate(-10deg);
+  }
+  75% {
+    transform: scale(1.05) translateY(-1px);
+    filter: hue-rotate(5deg);
+  }
+}
+
+.streak-fire {
+  animation: fire-flicker 2s ease-in-out infinite;
+}
+
+.animate-fire-flicker {
+  animation: fire-flicker 2s ease-in-out infinite;
+}
+
+/* Achievement sparkle */
+@keyframes achievement-sparkle {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.achievement-sparkle {
+  position: absolute;
+  animation: achievement-sparkle 1s ease-out;
+}
+
+/* Level up glow */
+@keyframes level-up-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(147, 51, 234, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+  }
+}
+
+.level-up-glow {
+  animation: level-up-glow 2s ease-out;
+}
+
+/* Rainbow text for perfect days */
+@keyframes rainbow-text {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.rainbow-text {
+  background: linear-gradient(
+    90deg,
+    #ff0080 0%,
+    #ff8c00 14%,
+    #ffd700 28%,
+    #00ff00 42%,
+    #00ffff 56%,
+    #0080ff 70%,
+    #8000ff 84%,
+    #ff0080 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow-text 3s linear infinite;
+}
+
+/* Habit completion ripple */
+@keyframes completion-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.completion-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(147, 51, 234, 0.3) 0%,
+    transparent 70%
+  );
+  animation: completion-ripple 0.6s ease-out;
+}
+
+/* Mobile-specific color adjustments */
+@media (max-width: 640px) {
+  /* Reduce gradient complexity on mobile for performance */
+  .animate-float-orb {
+    opacity: 0.15;
+  }
+
+  /* Simpler gradients for mobile */
+  .bg-gradient-to-br {
+    background-image: linear-gradient(
+      135deg,
+      var(--tw-gradient-from),
+      var(--tw-gradient-to)
+    );
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  /* Stronger gradients for better visibility */
+  .bg-gradient-to-r,
+  .bg-gradient-to-br {
+    filter: contrast(1.2);
+  }
+}
+
+/* Print styles */
+@media print {
+  /* Remove animations and decorative elements */
+  .animate-float-orb,
+  .animate-shimmer,
+  .animate-progress-fill {
+    animation: none !important;
+  }
+
+  /* Ensure gradients are visible in print */
+  .bg-gradient-to-r,
+  .bg-gradient-to-br {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

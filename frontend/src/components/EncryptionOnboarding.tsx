@@ -34,7 +34,7 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
 
   if (variant === "banner") {
     return (
-      <div className="bg-[var(--accent-bg)] border-b border-[var(--accent)]/20">
+      <div className="encryption-setup-banner bg-[var(--accent-bg)] border-b border-[var(--accent)]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between flex-wrap">
             <div className="flex items-center flex-1">
@@ -90,7 +90,9 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
           <div className="flex items-center">
             <Shield className="h-8 w-8 text-[var(--accent)] mr-3" />
             <div>
-              <h2 className="text-xl font-bold text-[var(--text)]">Protect Your Privacy</h2>
+              <h2 className="text-xl font-bold text-[var(--text)]">
+                Protect Your Privacy
+              </h2>
               <p className="text-sm text-[var(--text-muted)]">
                 Set up encryption for your journal
               </p>

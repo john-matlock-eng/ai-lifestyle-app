@@ -1,8 +1,11 @@
 """
 Integration test fixtures
 """
-import pytest
+
 from unittest.mock import Mock
+
+import pytest
+
 
 @pytest.fixture
 def test_client():
@@ -17,7 +20,4 @@ def test_client():
 @pytest.fixture
 def auth_headers():
     """Provide authentication headers for integration tests"""
-    return {
-        "Authorization": "Bearer test-token",
-        "Content-Type": "application/json"
-    }
+    return {"Authorization": "Bearer test-token", "Content-Type": "application/json"}

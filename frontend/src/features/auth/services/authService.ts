@@ -23,6 +23,21 @@ export interface UserProfile {
   updatedAt: string;
 }
 
+export interface TutorialStep {
+  id: string;
+  name: string;
+  completedAt?: string;
+  skippedAt?: string;
+}
+
+export interface TutorialPreferences {
+  enabled: boolean;
+  completedSteps: string[];
+  skippedSteps: string[];
+  lastShownStep?: string;
+  lastShownAt?: string;
+}
+
 export interface UserPreferences {
   units?: "metric" | "imperial";
   language?: string;
@@ -33,6 +48,7 @@ export interface UserPreferences {
   };
   dietaryRestrictions?: string[];
   fitnessGoals?: string[];
+  tutorials?: TutorialPreferences;
 }
 
 export interface RegisterResponse {
@@ -137,6 +153,24 @@ class AuthService {
       updates,
     );
     return data;
+  }
+
+  async updateTutorialPreferences(
+    preferences: Partial<TutorialPreferences>,
+  ): Promise<UserProfile> {
+    const currentUser = await this.getCurrentUser();
+    return this.updateProfile({
+      preferences: {
+        ...currentUser.preferences,
+        tutorials: {
+          enabled: currentUser.preferences?.tutorials?.enabled ?? true,
+          completedSteps: currentUser.preferences?.tutorials?.completedSteps ?? [],
+          skippedSteps: currentUser.preferences?.tutorials?.skippedSteps ?? [],
+          ...currentUser.preferences?.tutorials,
+          ...preferences,
+        } as TutorialPreferences,
+      },
+    });
   }
 
   async requestPasswordReset(

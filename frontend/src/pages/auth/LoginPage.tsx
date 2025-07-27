@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import LoginForm from "../../features/auth/components/LoginForm";
-// import DevTools from '../../components/common/DevTools';
+import EnhancedLoginForm from "../../features/auth/components/EnhancedLoginForm";
+import AuthLayout from "../../features/auth/components/AuthLayout";
+import { EllieLogo } from "../../components/common";
+import type { useEnhancedAuthShihTzu } from "../../hooks/useEnhancedAuthShihTzu";
 
 const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -9,6 +11,9 @@ const LoginPage: React.FC = () => {
     type: "info" | "error";
     text: string;
   } | null>(null);
+  const [companion, setCompanion] = useState<
+    ReturnType<typeof useEnhancedAuthShihTzu> | undefined
+  >(undefined);
 
   useEffect(() => {
     const messageParam = searchParams.get("message");
@@ -32,30 +37,38 @@ const LoginPage: React.FC = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-background text-theme">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h1 className="mt-6 text-center text-3xl font-extrabold text-theme">
-          AI Lifestyle App
-        </h1>
-      </div>
-
-      <div className="mt-8">
-        {message && (
-          <div className="max-w-md mx-auto mb-4">
-            <div
-              className={`rounded-md p-4 ${
-                message.type === "error"
-                  ? "bg-red-50 text-red-800 border border-red-200"
-                  : "bg-blue-50 text-blue-800 border border-blue-200"
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-            </div>
+    <AuthLayout onShihTzuReady={setCompanion}>
+      <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-theme">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="flex justify-center">
+            <EllieLogo variant="full" size="lg" className="mb-4" />
           </div>
-        )}
-        <LoginForm />
+          <h1 className="mt-6 text-center text-3xl font-extrabold text-theme">
+            AI Lifestyle App
+          </h1>
+          <p className="mt-2 text-center text-sm text-muted">
+            Welcome back! Ellie is excited to see you 🐕✨
+          </p>
+        </div>
+
+        <div className="mt-8">
+          {message && (
+            <div className="max-w-md mx-auto mb-4">
+              <div
+                className={`rounded-md p-4 ${
+                  message.type === "error"
+                    ? "bg-red-50 text-red-800 border border-red-200"
+                    : "bg-blue-50 text-blue-800 border border-blue-200"
+                }`}
+              >
+                <p className="text-sm">{message.text}</p>
+              </div>
+            </div>
+          )}
+          <EnhancedLoginForm companion={companion} />
+        </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 

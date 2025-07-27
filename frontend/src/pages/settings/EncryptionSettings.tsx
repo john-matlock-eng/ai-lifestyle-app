@@ -259,7 +259,7 @@ const EncryptionSettings: React.FC = () => {
       await unlockEncryption(masterPassword);
       const encryptionService = getEncryptionService();
       const keyId = await encryptionService.getPublicKeyId();
-      
+
       // Update user profile
       await updateProfileMutation.mutateAsync({
         encryptionEnabled: true,

@@ -5,6 +5,7 @@ import {
   refreshAccessToken,
   clearTokens,
 } from "../features/auth/utils/tokenManager";
+// Note: Case conversion not needed - backend handles camelCase/snake_case via Pydantic
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -22,6 +23,10 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Note: Backend expects camelCase and handles conversion internally via Pydantic
+    // Do NOT convert request data here
+
     return config;
   },
   (error) => {
@@ -31,7 +36,11 @@ apiClient.interceptors.request.use(
 
 // Response interceptor for token refresh
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Note: Backend returns camelCase directly via Pydantic's alias_generator
+    // No conversion needed here
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & {
       _retry?: boolean;

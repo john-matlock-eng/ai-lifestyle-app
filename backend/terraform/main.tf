@@ -369,6 +369,41 @@ module "api_gateway" {
       authorization_type = "JWT"
     }
 
+    # Habit endpoints
+    "GET /habits" = {
+      authorization_type = "JWT"
+    }
+    "POST /habits" = {
+      authorization_type = "JWT"
+    }
+    "GET /habits/today" = {
+      authorization_type = "JWT"
+    }
+    "GET /habits/{habitId}" = {
+      authorization_type = "JWT"
+    }
+    "PATCH /habits/{habitId}" = {
+      authorization_type = "JWT"
+    }
+    "DELETE /habits/{habitId}" = {
+      authorization_type = "JWT"
+    }
+    "POST /habits/{habitId}/check-in" = {
+      authorization_type = "JWT"
+    }
+    "POST /habits/{habitId}/skip" = {
+      authorization_type = "JWT"
+    }
+    "GET /habits/{habitId}/analytics" = {
+      authorization_type = "JWT"
+    }
+    "GET /users/stats" = {
+      authorization_type = "JWT"
+    }
+    "PUT /habits/reorder" = {
+      authorization_type = "JWT"
+    }
+
     # Encryption endpoints
     "POST /encryption/setup" = {
       authorization_type = "JWT"

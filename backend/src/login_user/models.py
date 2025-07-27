@@ -3,36 +3,33 @@ Pydantic models for user login endpoint.
 Matches OpenAPI contract specifications exactly.
 """
 
-from typing import Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Any, Dict, Optional
 from uuid import UUID
+
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class LoginRequest(BaseModel):
     """Login request matching OpenAPI schema"""
-    email: EmailStr = Field(
-        ...,
-        description="User's email address",
-        example="user@example.com"
-    )
+
+    email: EmailStr = Field(..., description="User's email address", example="user@example.com")
     password: str = Field(
         ...,
         description="User's password",
         min_length=1,  # Just ensure it's not empty
         max_length=128,
-        repr=False  # Exclude from string representation
+        repr=False,  # Exclude from string representation
     )
-    
+
     class Config:
         # Hide password in any JSON serialization for logging
-        json_encoders = {
-            str: lambda v: "<redacted>" if "password" in str(v).lower() else v
-        }
+        json_encoders = {str: lambda v: "<redacted>" if "password" in str(v).lower() else v}
 
 
 class UserProfile(BaseModel):
     """User profile data returned in login response"""
+
     userId: str = Field(..., description="Unique user identifier")
     email: EmailStr = Field(..., description="User's email address")
     firstName: str = Field(..., description="User's first name")
@@ -49,6 +46,7 @@ class UserProfile(BaseModel):
 
 class LoginResponse(BaseModel):
     """Successful login response when MFA is not required"""
+
     accessToken: str = Field(..., description="JWT access token for API calls")
     refreshToken: str = Field(..., description="JWT refresh token for getting new access tokens")
     tokenType: str = Field(default="Bearer", description="Token type for Authorization header")
@@ -58,6 +56,7 @@ class LoginResponse(BaseModel):
 
 class MfaLoginResponse(BaseModel):
     """Login response when MFA is required"""
+
     sessionToken: str = Field(..., description="Temporary session token for MFA verification")
     mfaRequired: bool = Field(default=True, description="Indicates MFA is required")
     tokenType: str = Field(default="Bearer", description="Token type")
@@ -65,6 +64,7 @@ class MfaLoginResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Standard error response"""
+
     error: str = Field(..., description="Error type/code")
     message: str = Field(..., description="Human-readable error message")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
@@ -74,6 +74,7 @@ class ErrorResponse(BaseModel):
 
 class ValidationErrorResponse(BaseModel):
     """Validation error response"""
+
     error: str = Field(default="VALIDATION_ERROR", description="Error type")
     message: str = Field(default="Validation failed", description="Error message")
     validation_errors: list[Dict[str, str]] = Field(..., description="List of validation errors")
@@ -84,6 +85,7 @@ class ValidationErrorResponse(BaseModel):
 # Cognito-specific models
 class CognitoAuthResponse(BaseModel):
     """Response from Cognito authentication"""
+
     accessToken: Optional[str] = None
     refreshToken: Optional[str] = None
     idToken: Optional[str] = None
