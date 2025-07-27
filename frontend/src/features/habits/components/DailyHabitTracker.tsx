@@ -18,7 +18,8 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
   const completedToday = habits.filter(h => h.completedToday).length;
   const totalHabits = habits.length;
   const completionPercentage = totalHabits > 0 ? (completedToday / totalHabits) * 100 : 0;
-  const totalStreak = habits.reduce((sum, h) => sum + h.currentStreak, 0);
+  const totalStreak = habits.reduce((sum, h) => sum + (h.currentStreak || 0), 0);
+  const weeklyScore = habits.reduce((sum, h) => sum + (h.weekProgress?.filter(Boolean).length || 0), 0);
   
   return (
     <div>
@@ -53,7 +54,7 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
         />
         <StatsCard
           label="Weekly Score"
-          value={habits.reduce((sum, h) => sum + h.weekProgress.filter(Boolean).length, 0)}
+          value={weeklyScore}
           icon={<Award className="w-6 h-6" />}
           gradient="from-purple-500 to-pink-500"
           iconBg="bg-purple-500/20"
