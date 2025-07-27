@@ -76,6 +76,24 @@ const ImprovedDashboardPage: React.FC = () => {
   
   return (
     <div className="min-h-screen relative">
+      {/* Debug: Show current theme */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 left-4 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium z-50 shadow-lg">
+          Theme: <span className="text-yellow-400">{theme}</span>
+          {theme !== 'balloon' && (
+            <button 
+              onClick={() => {
+                localStorage.setItem('theme-preference', 'balloon');
+                window.location.reload();
+              }}
+              className="ml-3 px-2 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs"
+            >
+              Switch to Balloon 🎈
+            </button>
+          )}
+        </div>
+      )}
+      
       {/* Enhanced Animated Background for Balloon Theme */}
       {theme === 'balloon' && (
         <div className="absolute inset-0 -z-10 overflow-hidden">

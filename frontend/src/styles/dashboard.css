@@ -598,6 +598,13 @@
   transform: translateY(-4px) scale(1.02);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  [data-theme="balloon"] .animate-float-orb {
+    opacity: 0.15;
+    filter: blur(40px);
+  }
   
   .balloon-theme-container::before {
     opacity: 0.5;

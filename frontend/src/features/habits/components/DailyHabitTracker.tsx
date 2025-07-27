@@ -3,6 +3,7 @@ import { HabitCard } from './HabitCard';
 import type { Habit } from '@/types/habits';
 import { Target, TrendingUp, Flame, Award } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useTheme } from '@/contexts/useTheme';
 
 interface DailyHabitTrackerProps {
   habits: Habit[];
@@ -15,6 +16,9 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
   onHabitToggle,
   onSkipHabit 
 }) => {
+  const { theme } = useTheme();
+  const isBalloonTheme = theme === 'balloon';
+  
   const completedToday = habits.filter(h => h.completedToday).length;
   const totalHabits = habits.length;
   const completionPercentage = totalHabits > 0 ? (completedToday / totalHabits) * 100 : 0;
@@ -22,9 +26,14 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
   const weeklyScore = habits.reduce((sum, h) => sum + (h.weekProgress?.filter(Boolean).length || 0), 0);
   
   return (
-    <div>
+    <div className={isBalloonTheme ? 'glass-morphism rounded-xl p-6' : ''}>
       <h2 className="text-2xl font-bold mb-6">
-        <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+        <span className={clsx(
+          "bg-gradient-to-r bg-clip-text text-transparent",
+          isBalloonTheme 
+            ? "from-[#8b5cf6] via-[#ec4899] to-[#06b6d4]"
+            : "from-purple-600 to-pink-600"
+        )}>
           Today's Habits
         </span>
       </h2>
@@ -35,34 +44,43 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
           label="Completed Today"
           value={`${completedToday}/${totalHabits}`}
           icon={<Target className="w-6 h-6" />}
-          gradient="from-blue-500 to-cyan-500"
-          iconBg="bg-blue-500/20"
+          gradient={isBalloonTheme ? "from-[#06b6d4] to-[#0891b2]" : "from-blue-500 to-cyan-500"}
+          iconBg={isBalloonTheme ? "bg-[#06b6d4]/20" : "bg-blue-500/20"}
+          isBalloonTheme={isBalloonTheme}
         />
         <StatsCard
           label="Daily Progress"
           value={`${Math.round(completionPercentage)}%`}
           icon={<TrendingUp className="w-6 h-6" />}
-          gradient="from-emerald-500 to-teal-500"
-          iconBg="bg-emerald-500/20"
+          gradient={isBalloonTheme ? "from-[#8b5cf6] to-[#7c3aed]" : "from-emerald-500 to-teal-500"}
+          iconBg={isBalloonTheme ? "bg-[#8b5cf6]/20" : "bg-emerald-500/20"}
+          isBalloonTheme={isBalloonTheme}
         />
         <StatsCard
           label="Total Streak Days"
           value={totalStreak}
           icon={<Flame className="w-6 h-6" />}
-          gradient="from-orange-500 to-red-500"
-          iconBg="bg-orange-500/20"
+          gradient={isBalloonTheme ? "from-[#ec4899] to-[#db2777]" : "from-orange-500 to-red-500"}
+          iconBg={isBalloonTheme ? "bg-[#ec4899]/20" : "bg-orange-500/20"}
+          isBalloonTheme={isBalloonTheme}
         />
         <StatsCard
           label="Weekly Score"
           value={weeklyScore}
           icon={<Award className="w-6 h-6" />}
-          gradient="from-purple-500 to-pink-500"
-          iconBg="bg-purple-500/20"
+          gradient={isBalloonTheme ? "from-[#f9a8d4] to-[#ec4899]" : "from-purple-500 to-pink-500"}
+          iconBg={isBalloonTheme ? "bg-[#f9a8d4]/20" : "bg-purple-500/20"}
+          isBalloonTheme={isBalloonTheme}
         />
       </div>
       
       {/* Overall Progress Bar */}
-      <div className="relative overflow-hidden rounded-xl p-6 mb-6 bg-gradient-to-br from-purple-600/10 to-pink-600/10 border border-purple-500/20">
+      <div className={clsx(
+        "relative overflow-hidden rounded-xl p-6 mb-6 border",
+        isBalloonTheme 
+          ? "bg-gradient-to-br from-[#8b5cf6]/10 via-[#ec4899]/10 to-[#06b6d4]/10 border-white/20" 
+          : "bg-gradient-to-br from-purple-600/10 to-pink-600/10 border-purple-500/20"
+      )}>
         <div className="relative z-10">
           <div className="flex justify-between items-center mb-3">
             <span className="text-lg font-semibold text-[var(--text)]">Today's Progress</span>
@@ -70,19 +88,34 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
           </div>
           <div className="h-6 bg-[var(--surface-muted)] rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 transition-all duration-1000 ease-out relative overflow-hidden"
+              className={clsx(
+                "h-full transition-all duration-1000 ease-out relative overflow-hidden",
+                isBalloonTheme
+                  ? "bg-gradient-to-r from-[#f9a8d4] via-[#ec4899] via-[#8b5cf6] to-[#06b6d4]"
+                  : "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
+              )}
               style={{ width: `${completionPercentage}%` }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
             </div>
           </div>
           {completionPercentage === 100 && (
-            <p className="mt-3 text-center font-medium bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <p className={clsx(
+              "mt-3 text-center font-medium bg-gradient-to-r bg-clip-text text-transparent",
+              isBalloonTheme
+                ? "from-[#8b5cf6] via-[#ec4899] to-[#06b6d4]"
+                : "from-purple-600 to-pink-600"
+            )}>
               🎆 Perfect Day! All habits completed! 🎆
             </p>
           )}
         </div>
-        <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 opacity-20 blur-2xl" />
+        <div className={clsx(
+          "absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-20 blur-2xl",
+          isBalloonTheme
+            ? "bg-gradient-to-br from-[#8b5cf6] via-[#ec4899] to-[#06b6d4]"
+            : "bg-gradient-to-br from-purple-500 to-pink-500"
+        )} />
       </div>
       
       {/* Habit Cards */}
@@ -114,8 +147,14 @@ const StatsCard: React.FC<{
   icon: React.ReactNode;
   gradient: string;
   iconBg: string;
-}> = ({ label, value, icon, gradient, iconBg }) => (
-  <div className="relative overflow-hidden rounded-lg bg-[var(--surface)] border border-[var(--surface-muted)] p-4 hover:scale-105 transition-transform cursor-pointer group">
+  isBalloonTheme?: boolean;
+}> = ({ label, value, icon, gradient, iconBg, isBalloonTheme }) => (
+  <div className={clsx(
+    "relative overflow-hidden rounded-lg border p-4 hover:scale-105 transition-transform cursor-pointer group",
+    isBalloonTheme 
+      ? "bg-white/95 border-white/20 shadow-xl" 
+      : "bg-[var(--surface)] border-[var(--surface-muted)]"
+  )}>
     <div className="relative z-10 flex items-center justify-between">
       <div>
         <p className="text-xs text-[var(--text-muted)]">{label}</p>
@@ -125,7 +164,11 @@ const StatsCard: React.FC<{
         </p>
       </div>
       <div className={clsx("p-2 rounded-lg", iconBg)}>
-        <div className={clsx("bg-gradient-to-br bg-clip-text text-transparent", gradient)}>
+        <div className={clsx(
+          "bg-gradient-to-br bg-clip-text",
+          isBalloonTheme ? "" : "text-transparent",
+          gradient
+        )}>
           {icon}
         </div>
       </div>
