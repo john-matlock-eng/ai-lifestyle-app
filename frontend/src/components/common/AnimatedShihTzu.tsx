@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { clsx } from 'clsx';
+import React, { useState, useEffect, useRef } from "react";
+import { clsx } from "clsx";
 
 export interface AnimatedShihTzuProps {
-  mood?: 'idle' | 'happy' | 'sleeping' | 'curious' | 'walking';
+  mood?: "idle" | "happy" | "sleeping" | "curious" | "walking";
   position?: { x: number; y: number };
   onPositionChange?: (position: { x: number; y: number }) => void;
   onClick?: () => void;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
-const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({ 
-  mood = 'idle', 
+const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
+  mood = "idle",
   position = { x: 100, y: 100 },
   onPositionChange,
   onClick,
-  size = 'md',
-  className
+  size = "md",
+  className,
 }) => {
   const [currentPosition, setCurrentPosition] = useState(position);
   const [isMoving, setIsMoving] = useState(false);
@@ -27,7 +27,7 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
   const sizeMap = {
     sm: { width: 60, height: 60 },
     md: { width: 80, height: 80 },
-    lg: { width: 100, height: 100 }
+    lg: { width: 100, height: 100 },
   };
 
   const currentSize = sizeMap[size];
@@ -49,18 +49,18 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
     // Check if position actually changed
     if (position.x !== currentPosition.x || position.y !== currentPosition.y) {
       setIsMoving(true);
-      
+
       positionTimerRef.current = setTimeout(() => {
         setCurrentPosition(position);
         setIsMoving(false);
-        
+
         // Only call onPositionChange if it exists and position actually changed
         if (onPositionChange) {
           onPositionChange(position);
         }
       }, 50);
     }
-    
+
     // Cleanup function
     return () => {
       if (positionTimerRef.current) {
@@ -75,10 +75,16 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
       onClick();
     } else {
       // Default behavior: cycle through moods
-      const moods: Array<AnimatedShihTzuProps['mood']> = ['idle', 'happy', 'sleeping', 'curious', 'walking'];
+      const moods: Array<AnimatedShihTzuProps["mood"]> = [
+        "idle",
+        "happy",
+        "sleeping",
+        "curious",
+        "walking",
+      ];
       const currentIndex = moods.indexOf(currentMood);
       const nextMood = moods[(currentIndex + 1) % moods.length];
-      setCurrentMood(nextMood || 'idle');
+      setCurrentMood(nextMood || "idle");
     }
   };
 
@@ -87,12 +93,12 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
       ref={shihTzuRef}
       className={clsx(
         "absolute cursor-pointer transition-all duration-1000 ease-in-out",
-        className
+        className,
       )}
       style={{
         left: `${currentPosition.x}px`,
         top: `${currentPosition.y}px`,
-        transform: isMoving ? 'translateY(-10px)' : 'translateY(0)',
+        transform: isMoving ? "translateY(-10px)" : "translateY(0)",
       }}
       onClick={handleClick}
     >
@@ -101,8 +107,8 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
         height={currentSize.height}
         viewBox="0 0 100 100"
         className={clsx(
-          currentMood === 'happy' && 'animate-bounce',
-          currentMood === 'walking' && 'animate-walk'
+          currentMood === "happy" && "animate-bounce",
+          currentMood === "walking" && "animate-walk",
         )}
       >
         {/* Define custom animations */}
@@ -212,15 +218,15 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
           fill="white"
           stroke="#e5e7eb"
           strokeWidth="1"
-          className={currentMood === 'sleeping' ? 'animate-gentle-breathe' : ''}
+          className={currentMood === "sleeping" ? "animate-gentle-breathe" : ""}
         />
-        
+
         {/* Head group - this will rotate for curiosity */}
-        <g 
-          transform={currentMood === 'curious' ? undefined : 'rotate(0 50 35)'}
-          style={{ transformOrigin: '50px 35px' }}
+        <g
+          transform={currentMood === "curious" ? undefined : "rotate(0 50 35)"}
+          style={{ transformOrigin: "50px 35px" }}
         >
-          {currentMood === 'curious' && (
+          {currentMood === "curious" && (
             <animateTransform
               attributeName="transform"
               attributeType="XML"
@@ -230,7 +236,7 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
               repeatCount="indefinite"
             />
           )}
-          
+
           {/* Ears - drawn first so they appear behind the head */}
           {/* Left ear - attaches at top-side of head */}
           <path
@@ -239,7 +245,7 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
             stroke="#e5e7eb"
             strokeWidth="1"
           />
-          
+
           {/* Right ear - attaches at top-side of head */}
           <path
             d="M 67 25 Q 75 35 72 48 Q 70 52 67 48 Q 65 40 67 25"
@@ -247,7 +253,7 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
             stroke="#e5e7eb"
             strokeWidth="1"
           />
-          
+
           {/* Head */}
           <circle
             cx="50"
@@ -257,18 +263,38 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
             stroke="#e5e7eb"
             strokeWidth="1"
           />
-          
+
           {/* Eyes */}
-          {currentMood !== 'sleeping' ? (
+          {currentMood !== "sleeping" ? (
             <>
-              <circle cx="42" cy="35" r={currentMood === 'curious' ? "4" : "3"} fill="black">
-                {currentMood === 'happy' && (
-                  <animate attributeName="cy" values="35;33;35" dur="0.3s" repeatCount="indefinite" />
+              <circle
+                cx="42"
+                cy="35"
+                r={currentMood === "curious" ? "4" : "3"}
+                fill="black"
+              >
+                {currentMood === "happy" && (
+                  <animate
+                    attributeName="cy"
+                    values="35;33;35"
+                    dur="0.3s"
+                    repeatCount="indefinite"
+                  />
                 )}
               </circle>
-              <circle cx="58" cy="35" r={currentMood === 'curious' ? "4" : "3"} fill="black">
-                {currentMood === 'happy' && (
-                  <animate attributeName="cy" values="35;33;35" dur="0.3s" repeatCount="indefinite" />
+              <circle
+                cx="58"
+                cy="35"
+                r={currentMood === "curious" ? "4" : "3"}
+                fill="black"
+              >
+                {currentMood === "happy" && (
+                  <animate
+                    attributeName="cy"
+                    values="35;33;35"
+                    dur="0.3s"
+                    repeatCount="indefinite"
+                  />
                 )}
               </circle>
               <circle cx="43" cy="34" r="1" fill="white" />
@@ -276,35 +302,67 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
             </>
           ) : (
             <>
-              <path d="M 39 35 Q 42 37 45 35" stroke="black" strokeWidth="1.5" fill="none" />
-              <path d="M 55 35 Q 58 37 61 35" stroke="black" strokeWidth="1.5" fill="none" />
+              <path
+                d="M 39 35 Q 42 37 45 35"
+                stroke="black"
+                strokeWidth="1.5"
+                fill="none"
+              />
+              <path
+                d="M 55 35 Q 58 37 61 35"
+                stroke="black"
+                strokeWidth="1.5"
+                fill="none"
+              />
             </>
           )}
-          
+
           {/* Eyebrows for curious expression */}
-          {currentMood === 'curious' && (
+          {currentMood === "curious" && (
             <>
-              <path d="M 37 30 L 42 28" stroke="black" strokeWidth="1" fill="none" />
-              <path d="M 58 28 L 63 30" stroke="black" strokeWidth="1" fill="none" />
+              <path
+                d="M 37 30 L 42 28"
+                stroke="black"
+                strokeWidth="1"
+                fill="none"
+              />
+              <path
+                d="M 58 28 L 63 30"
+                stroke="black"
+                strokeWidth="1"
+                fill="none"
+              />
             </>
           )}
-          
+
           {/* Nose */}
           <ellipse cx="50" cy="42" rx="3" ry="2" fill="#8B4513" />
-          
+
           {/* Mouth */}
-          {currentMood === 'happy' ? (
-            <path d="M 45 44 Q 50 48 55 44" stroke="black" strokeWidth="1.5" fill="none">
-              <animate attributeName="d" 
-                values="M 45 44 Q 50 48 55 44;M 45 44 Q 50 49 55 44;M 45 44 Q 50 48 55 44" 
-                dur="0.5s" 
-                repeatCount="indefinite" />
+          {currentMood === "happy" ? (
+            <path
+              d="M 45 44 Q 50 48 55 44"
+              stroke="black"
+              strokeWidth="1.5"
+              fill="none"
+            >
+              <animate
+                attributeName="d"
+                values="M 45 44 Q 50 48 55 44;M 45 44 Q 50 49 55 44;M 45 44 Q 50 48 55 44"
+                dur="0.5s"
+                repeatCount="indefinite"
+              />
             </path>
           ) : (
-            <path d="M 47 44 Q 50 46 53 44" stroke="black" strokeWidth="1" fill="none" />
+            <path
+              d="M 47 44 Q 50 46 53 44"
+              stroke="black"
+              strokeWidth="1"
+              fill="none"
+            />
           )}
         </g>
-        
+
         {/* Tail */}
         <ellipse
           cx="25"
@@ -315,40 +373,98 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
           stroke="#e5e7eb"
           strokeWidth="1"
           transform="rotate(-45 25 55)"
-          className={currentMood === 'happy' ? 'animate-wag' : ''}
+          className={currentMood === "happy" ? "animate-wag" : ""}
         />
-        
+
         {/* Front Legs */}
-        <rect x="40" y="70" width="6" height="15" rx="3" fill="white" stroke="#e5e7eb" strokeWidth="1"
-          className={currentMood === 'walking' ? 'animate-walk-front-leg' : ''} />
-        <rect x="54" y="70" width="6" height="15" rx="3" fill="white" stroke="#e5e7eb" strokeWidth="1"
-          className={currentMood === 'walking' ? 'animate-walk-back-leg' : ''} />
-        
+        <rect
+          x="40"
+          y="70"
+          width="6"
+          height="15"
+          rx="3"
+          fill="white"
+          stroke="#e5e7eb"
+          strokeWidth="1"
+          className={currentMood === "walking" ? "animate-walk-front-leg" : ""}
+        />
+        <rect
+          x="54"
+          y="70"
+          width="6"
+          height="15"
+          rx="3"
+          fill="white"
+          stroke="#e5e7eb"
+          strokeWidth="1"
+          className={currentMood === "walking" ? "animate-walk-back-leg" : ""}
+        />
+
         {/* Happy sparkles */}
-        {currentMood === 'happy' && (
+        {currentMood === "happy" && (
           <>
-            <text x="70" y="25" className="animate-sparkle" fontSize="12">✨</text>
-            <text x="20" y="20" className="animate-sparkle-delayed" fontSize="10">✨</text>
-            <text x="25" y="45" className="animate-sparkle-delayed-2" fontSize="8">✨</text>
+            <text x="70" y="25" className="animate-sparkle" fontSize="12">
+              ✨
+            </text>
+            <text
+              x="20"
+              y="20"
+              className="animate-sparkle-delayed"
+              fontSize="10"
+            >
+              ✨
+            </text>
+            <text
+              x="25"
+              y="45"
+              className="animate-sparkle-delayed-2"
+              fontSize="8"
+            >
+              ✨
+            </text>
           </>
         )}
-        
+
         {/* Sleeping Z's */}
-        {currentMood === 'sleeping' && (
+        {currentMood === "sleeping" && (
           <>
-            <text x="65" y="30" className="animate-float" fontSize="14" fill="#6b7280">Z</text>
-            <text x="70" y="20" className="animate-float-delayed" fontSize="10" fill="#9ca3af">z</text>
+            <text
+              x="65"
+              y="30"
+              className="animate-float"
+              fontSize="14"
+              fill="#6b7280"
+            >
+              Z
+            </text>
+            <text
+              x="70"
+              y="20"
+              className="animate-float-delayed"
+              fontSize="10"
+              fill="#9ca3af"
+            >
+              z
+            </text>
           </>
         )}
-        
+
         {/* Curious question mark */}
-        {currentMood === 'curious' && (
-          <text x="70" y="25" className="animate-float-subtle" fontSize="16" fill="#3b82f6">?</text>
+        {currentMood === "curious" && (
+          <text
+            x="70"
+            y="25"
+            className="animate-float-subtle"
+            fontSize="16"
+            fill="#3b82f6"
+          >
+            ?
+          </text>
         )}
       </svg>
-      
+
       {/* Optional mood indicator */}
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === "development" && (
         <div className="text-center mt-1">
           <span className="text-xs bg-gray-100 px-2 py-1 rounded-full capitalize">
             {currentMood}
@@ -359,6 +475,6 @@ const AnimatedShihTzu: React.FC<AnimatedShihTzuProps> = ({
   );
 };
 
-AnimatedShihTzu.displayName = 'AnimatedShihTzu';
+AnimatedShihTzu.displayName = "AnimatedShihTzu";
 
 export default AnimatedShihTzu;

@@ -5,7 +5,9 @@ import { EllieLogo } from "../../components/common";
 import type { useEnhancedAuthShihTzu } from "../../hooks/useEnhancedAuthShihTzu";
 
 const RegisterPage: React.FC = () => {
-  const [companion, setCompanion] = useState<ReturnType<typeof useEnhancedAuthShihTzu> | undefined>(undefined);
+  const [companion, setCompanion] = useState<
+    ReturnType<typeof useEnhancedAuthShihTzu> | undefined
+  >(undefined);
 
   return (
     <AuthLayout onShihTzuReady={setCompanion}>

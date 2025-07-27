@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface ProgressRingProps {
   progress: number;
@@ -7,16 +7,16 @@ interface ProgressRingProps {
   color?: string;
 }
 
-export const ProgressRing: React.FC<ProgressRingProps> = ({ 
-  progress, 
-  size = 60, 
+export const ProgressRing: React.FC<ProgressRingProps> = ({
+  progress,
+  size = 60,
   strokeWidth = 4,
-  color = "#3B82F6"
+  color = "#3B82F6",
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
-  
+
   return (
     <svg width={size} height={size} className="transform -rotate-90">
       <circle

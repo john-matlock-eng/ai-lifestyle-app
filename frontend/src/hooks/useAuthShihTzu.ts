@@ -1,26 +1,37 @@
 // src/hooks/useAuthShihTzu.ts
-import { useEffect, useCallback, useRef, useState } from 'react';
-import { useShihTzuCompanion } from './useShihTzuCompanion';
+import { useEffect, useCallback, useRef, useState } from "react";
+import { useShihTzuCompanion } from "./useShihTzuCompanion";
 
-type CompanionState = 'idle' | 'focused' | 'typing' | 'validating' | 'error' | 'success';
+type CompanionState =
+  | "idle"
+  | "focused"
+  | "typing"
+  | "validating"
+  | "error"
+  | "success";
 
 export const useAuthShihTzu = () => {
   // Position the companion near the form (assuming form is centered and ~400px wide)
   const formWidth = 400;
   const formCenterX = window.innerWidth / 2;
-  const initialX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
-  
+  const initialX = Math.min(
+    formCenterX + formWidth / 2 + 100,
+    window.innerWidth - 150,
+  );
+
   const companion = useShihTzuCompanion({
     initialPosition: { x: initialX, y: 200 },
     idleTimeout: 10000, // Shorter timeout for auth pages
   });
 
   // State management for companion behavior
-  const [companionState, setCompanionState] = useState<CompanionState>('idle');
+  const [companionState, setCompanionState] = useState<CompanionState>("idle");
   const [currentField, setCurrentField] = useState<string | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const moodTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastPasswordStrength = useRef<'weak' | 'medium' | 'strong' | null>(null);
+  const lastPasswordStrength = useRef<"weak" | "medium" | "strong" | null>(
+    null,
+  );
   const hasGreeted = useRef(false);
 
   // Greet user on mount - but only once
@@ -31,10 +42,10 @@ export const useAuthShihTzu = () => {
       const greetTimeout = setTimeout(() => {
         companion.showCuriosity();
         setTimeout(() => {
-          companion.setMood('idle');
+          companion.setMood("idle");
         }, 3000);
       }, 100);
-      
+
       return () => clearTimeout(greetTimeout);
     }
   }, []); // Empty dependency array - only run once
@@ -48,19 +59,25 @@ export const useAuthShihTzu = () => {
   }, []);
 
   // React to form input focus - position companion above the field
-  const handleInputFocus = useCallback((inputElement: HTMLInputElement | HTMLElement) => {
-    const fieldName = inputElement.getAttribute('name') || inputElement.getAttribute('id') || 'field';
-    setCurrentField(fieldName);
-    setCompanionState('focused');
-    
-    // Move to the focused element - positioned above it
-    companion.moveToElement(inputElement, 'above');
-    
-    // Only change mood if not already in a special state
-    if (companionState !== 'error' && companionState !== 'success') {
-      companion.setMood('curious');
-    }
-  }, [companion, companionState]);
+  const handleInputFocus = useCallback(
+    (inputElement: HTMLInputElement | HTMLElement) => {
+      const fieldName =
+        inputElement.getAttribute("name") ||
+        inputElement.getAttribute("id") ||
+        "field";
+      setCurrentField(fieldName);
+      setCompanionState("focused");
+
+      // Move to the focused element - positioned above it
+      companion.moveToElement(inputElement, "above");
+
+      // Only change mood if not already in a special state
+      if (companionState !== "error" && companionState !== "success") {
+        companion.setMood("curious");
+      }
+    },
+    [companion, companionState],
+  );
 
   // React to typing with debouncing
   const handleTyping = useCallback(() => {
@@ -70,33 +87,33 @@ export const useAuthShihTzu = () => {
     }
 
     // Only change state if not in error or success
-    if (companionState !== 'error' && companionState !== 'success') {
-      setCompanionState('typing');
-      
+    if (companionState !== "error" && companionState !== "success") {
+      setCompanionState("typing");
+
       // Keep curious mood while typing
-      if (companion.mood !== 'curious') {
-        companion.setMood('curious');
+      if (companion.mood !== "curious") {
+        companion.setMood("curious");
       }
     }
 
     // Set timeout to return to idle after typing stops
     typingTimeoutRef.current = setTimeout(() => {
-      if (companionState === 'typing') {
-        setCompanionState('idle');
-        companion.setMood('idle');
+      if (companionState === "typing") {
+        setCompanionState("idle");
+        companion.setMood("idle");
       }
     }, 1500); // Wait 1.5 seconds after typing stops
   }, [companion, companionState]);
 
   // React to validation errors
   const handleError = useCallback(() => {
-    setCompanionState('error');
-    companion.setMood('idle');
-    
+    setCompanionState("error");
+    companion.setMood("idle");
+
     // Clear any pending timeouts
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (moodTimeoutRef.current) clearTimeout(moodTimeoutRef.current);
-    
+
     // Shake animation
     const currentPos = companion.position;
     const shakePositions = [
@@ -106,22 +123,22 @@ export const useAuthShihTzu = () => {
       { x: currentPos.x, y: currentPos.y },
     ];
     companion.followPath(shakePositions);
-    
+
     // Return to idle after error animation
     moodTimeoutRef.current = setTimeout(() => {
-      setCompanionState('idle');
+      setCompanionState("idle");
     }, 3000);
   }, [companion]);
 
   // React to successful submission
   const handleSuccess = useCallback(() => {
-    setCompanionState('success');
+    setCompanionState("success");
     companion.celebrate();
-    
+
     // Clear any pending timeouts
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (moodTimeoutRef.current) clearTimeout(moodTimeoutRef.current);
-    
+
     // Move to center for celebration
     companion.setPosition({
       x: window.innerWidth / 2 - 50,
@@ -131,93 +148,111 @@ export const useAuthShihTzu = () => {
 
   // React to loading states
   const handleLoading = useCallback(() => {
-    setCompanionState('validating');
-    companion.setMood('walking');
+    setCompanionState("validating");
+    companion.setMood("walking");
   }, [companion]);
 
   // React to password strength - only if strength actually changed
-  const handlePasswordStrength = useCallback((strength: 'weak' | 'medium' | 'strong') => {
-    // Only react if strength changed and not in error/success state
-    if (lastPasswordStrength.current !== strength && 
-        companionState !== 'error' && 
-        companionState !== 'success') {
-      lastPasswordStrength.current = strength;
-      
-      switch (strength) {
-        case 'weak':
-          companion.setMood('idle');
-          break;
-        case 'medium':
-          companion.setMood('curious');
-          break;
-        case 'strong':
-          companion.setMood('happy');
-          // Return to typing state after showing happiness
-          moodTimeoutRef.current = setTimeout(() => {
-            if (companionState === 'typing') {
-              companion.setMood('curious');
-            } else {
-              companion.setMood('idle');
-            }
-          }, 2000);
-          break;
+  const handlePasswordStrength = useCallback(
+    (strength: "weak" | "medium" | "strong") => {
+      // Only react if strength changed and not in error/success state
+      if (
+        lastPasswordStrength.current !== strength &&
+        companionState !== "error" &&
+        companionState !== "success"
+      ) {
+        lastPasswordStrength.current = strength;
+
+        switch (strength) {
+          case "weak":
+            companion.setMood("idle");
+            break;
+          case "medium":
+            companion.setMood("curious");
+            break;
+          case "strong":
+            companion.setMood("happy");
+            // Return to typing state after showing happiness
+            moodTimeoutRef.current = setTimeout(() => {
+              if (companionState === "typing") {
+                companion.setMood("curious");
+              } else {
+                companion.setMood("idle");
+              }
+            }, 2000);
+            break;
+        }
       }
-    }
-  }, [companion, companionState]);
+    },
+    [companion, companionState],
+  );
 
   // React to field completion
   const handleFieldComplete = useCallback(() => {
     // Only react if in appropriate state
-    if (companionState === 'idle' || companionState === 'focused' || companionState === 'typing' || companionState === 'validating') {
+    if (
+      companionState === "idle" ||
+      companionState === "focused" ||
+      companionState === "typing" ||
+      companionState === "validating"
+    ) {
       // Quick happy animation
       const previousMood = companion.mood;
-      companion.setMood('happy');
-      
+      companion.setMood("happy");
+
       moodTimeoutRef.current = setTimeout(() => {
-        if (companionState === 'idle' || companionState === 'focused' || companionState === 'typing' || companionState === 'validating') {
-          companion.setMood(previousMood === 'happy' ? 'idle' : previousMood);
+        if (
+          companionState === "idle" ||
+          companionState === "focused" ||
+          companionState === "typing" ||
+          companionState === "validating"
+        ) {
+          companion.setMood(previousMood === "happy" ? "idle" : previousMood);
         }
       }, 1000);
     }
   }, [companion, companionState]);
 
   // React to different error types
-  const handleSpecificError = useCallback((errorType: 'network' | 'unauthorized' | 'rate-limit' | 'server') => {
-    setCompanionState('error');
-    
-    switch (errorType) {
-      case 'network':
-        companion.setMood('sleeping');
-        break;
-      case 'unauthorized':
-        handleError();
-        break;
-      case 'rate-limit': {
-        // Dizzy animation - walking in circles
-        companion.setMood('walking');
-        const center = companion.position;
-        const radius = 30;
-        const circlePositions = Array.from({ length: 8 }, (_, i) => {
-          const angle = (i / 8) * 2 * Math.PI;
-          return {
-            x: center.x + radius * Math.cos(angle),
-            y: center.y + radius * Math.sin(angle),
-          };
-        });
-        companion.followPath(circlePositions);
-        break;
+  const handleSpecificError = useCallback(
+    (errorType: "network" | "unauthorized" | "rate-limit" | "server") => {
+      setCompanionState("error");
+
+      switch (errorType) {
+        case "network":
+          companion.setMood("sleeping");
+          break;
+        case "unauthorized":
+          handleError();
+          break;
+        case "rate-limit": {
+          // Dizzy animation - walking in circles
+          companion.setMood("walking");
+          const center = companion.position;
+          const radius = 30;
+          const circlePositions = Array.from({ length: 8 }, (_, i) => {
+            const angle = (i / 8) * 2 * Math.PI;
+            return {
+              x: center.x + radius * Math.cos(angle),
+              y: center.y + radius * Math.sin(angle),
+            };
+          });
+          companion.followPath(circlePositions);
+          break;
+        }
+        case "server":
+          companion.showCuriosity();
+          break;
       }
-      case 'server':
-        companion.showCuriosity();
-        break;
-    }
-    
-    // Return to idle after error display
-    moodTimeoutRef.current = setTimeout(() => {
-      setCompanionState('idle');
-      companion.setMood('idle');
-    }, 5000);
-  }, [companion, handleError]);
+
+      // Return to idle after error display
+      moodTimeoutRef.current = setTimeout(() => {
+        setCompanionState("idle");
+        companion.setMood("idle");
+      }, 5000);
+    },
+    [companion, handleError],
+  );
 
   // Add blur handler to detect when user leaves a field
   const handleInputBlur = useCallback(() => {
@@ -225,13 +260,13 @@ export const useAuthShihTzu = () => {
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-    
+
     // Return to idle if not in special state
-    if (companionState === 'typing' || companionState === 'focused') {
-      setCompanionState('idle');
-      companion.setMood('idle');
+    if (companionState === "typing" || companionState === "focused") {
+      setCompanionState("idle");
+      companion.setMood("idle");
     }
-    
+
     setCurrentField(null);
   }, [companion, companionState]);
 

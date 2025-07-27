@@ -36,10 +36,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     setError,
   } = useForm<FormData>({
     resolver: zodResolver(registerSchema),
-    mode: 'onChange',
+    mode: "onChange",
     defaultValues: {
       termsAccepted: false,
-    }
+    },
   });
 
   const password = watch("password");
@@ -51,25 +51,25 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
       if (passwordStrengthDebounceRef.current) {
         clearTimeout(passwordStrengthDebounceRef.current);
       }
-      
+
       passwordStrengthDebounceRef.current = setTimeout(() => {
         const strength = checkPasswordStrength(password);
-        
+
         if (strength.score !== lastPasswordStrength.current) {
           lastPasswordStrength.current = strength.score;
-          
+
           // Enhanced reactions with thoughts and particles
           if (strength.score <= 1) {
-            companion.handlePasswordStrength('weak');
+            companion.handlePasswordStrength("weak");
             companion.showThought("Let's make it stronger! 💪", 2000);
           } else if (strength.score <= 3) {
-            companion.handlePasswordStrength('medium');
+            companion.handlePasswordStrength("medium");
             companion.showThought("Getting better! 🔐", 2000);
-            companion.triggerParticleEffect('sparkles');
+            companion.triggerParticleEffect("sparkles");
           } else {
-            companion.handlePasswordStrength('strong');
+            companion.handlePasswordStrength("strong");
             companion.showThought("Perfect password! 🛡️", 2000);
-            companion.triggerParticleEffect('hearts');
+            companion.triggerParticleEffect("hearts");
           }
         }
       }, 500);
@@ -79,9 +79,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   // React to form errors with enhanced companion
   useEffect(() => {
     const errorCount = Object.keys(errors).length;
-    if (errorCount > 0 && companion && hasInteracted && companion.companionState !== 'error') {
+    if (
+      errorCount > 0 &&
+      companion &&
+      hasInteracted &&
+      companion.companionState !== "error"
+    ) {
       companion.handleError();
-      
+
       // Specific error messages
       if (errors.email) {
         companion.showThought("Check your email format 📧", 3000);
@@ -96,7 +101,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   // React to general errors
   useEffect(() => {
     if (generalError && companion) {
-      companion.handleSpecificError('server');
+      companion.handleSpecificError("server");
       companion.showThought("Hmm, let me check... 🤔", 3000);
     }
   }, [generalError, companion]);
@@ -105,7 +110,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   useEffect(() => {
     return () => {
       if (typingDebounceRef.current) clearTimeout(typingDebounceRef.current);
-      if (passwordStrengthDebounceRef.current) clearTimeout(passwordStrengthDebounceRef.current);
+      if (passwordStrengthDebounceRef.current)
+        clearTimeout(passwordStrengthDebounceRef.current);
     };
   }, []);
 
@@ -214,7 +220,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
   */
 
   const registerMutation = useMutation({
-    mutationFn: (data: Omit<FormData, "confirmPassword">) => 
+    mutationFn: (data: Omit<FormData, "confirmPassword">) =>
       authService.register(data),
     onMutate: () => {
       if (companion) {
@@ -226,16 +232,16 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
       if (companion) {
         companion.handleSuccess();
         companion.showThought("Account created! Welcome! 🎊", 4000);
-        
+
         // Extra celebration for new users
         setTimeout(() => {
-          companion.triggerParticleEffect('hearts');
+          companion.triggerParticleEffect("hearts");
         }, 500);
         setTimeout(() => {
-          companion.triggerParticleEffect('sparkles');
+          companion.triggerParticleEffect("sparkles");
         }, 1000);
       }
-      
+
       setTimeout(() => {
         navigate("/register/success", {
           state: {
@@ -247,9 +253,18 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
     },
     onError: (error: unknown) => {
       console.error("Registration error:", error);
-      
-      const errorData = error as { response?: { data?: { validation_errors?: Array<{ field: string; message: string }>; message?: string }; status?: number }; code?: string };
-      
+
+      const errorData = error as {
+        response?: {
+          data?: {
+            validation_errors?: Array<{ field: string; message: string }>;
+            message?: string;
+          };
+          status?: number;
+        };
+        code?: string;
+      };
+
       if (errorData.response?.data?.validation_errors) {
         errorData.response.data.validation_errors.forEach((validationError) => {
           const field = validationError.field as keyof FormData;
@@ -259,7 +274,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             });
           }
         });
-        
+
         if (companion) {
           companion.showThought("Let's fix these issues... 📝", 3000);
         }
@@ -267,17 +282,18 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
         setError("email", {
           message: "An account with this email already exists",
         });
-        
+
         if (companion) {
           companion.showThought("This email is taken! 🤷", 3000);
         }
       } else if (errorData.code === "ERR_NETWORK") {
         setGeneralError(
-          "Unable to connect to the server. Make sure the backend is running."
+          "Unable to connect to the server. Make sure the backend is running.",
         );
       } else {
         setGeneralError(
-          errorData.response?.data?.message || "Something went wrong. Please try again."
+          errorData.response?.data?.message ||
+            "Something went wrong. Please try again.",
         );
       }
     },
@@ -285,13 +301,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
 
   const onSubmit = async (data: FormData) => {
     setGeneralError("");
-    
+
     // Enhanced: pre-submit encouragement
     if (companion) {
       companion.encourage();
       companion.showThought("Here we go! 🎉", 1500);
     }
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
@@ -303,7 +319,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
         <h2 className="text-center text-3xl font-extrabold text-[var(--text)] mb-6">
           Create your account
         </h2>
-        
+
         <p className="text-center text-sm text-muted mb-6">
           Already have an account?{" "}
           <Link
@@ -313,13 +329,17 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
               companion?.showCuriosity();
               companion?.showThought("Have an account? 🤔", 2000);
             }}
-            onMouseLeave={() => companion?.setMood('idle')}
+            onMouseLeave={() => companion?.setMood("idle")}
           >
             Sign in
           </Link>
         </p>
 
-        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
           {generalError && (
             <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
               {generalError}
@@ -387,18 +407,25 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
                 onChange={async (e) => {
                   const registration = register("termsAccepted");
                   await registration.onChange(e);
-                  
+
                   // Enhanced: celebrate terms acceptance
-                  if (e.target.checked && companion && companion.companionState !== 'error') {
+                  if (
+                    e.target.checked &&
+                    companion &&
+                    companion.companionState !== "error"
+                  ) {
                     companion.handleFieldComplete();
                     companion.showThought("Almost ready! ✔️", 1500);
-                    companion.triggerParticleEffect('sparkles');
+                    companion.triggerParticleEffect("sparkles");
                   }
                 }}
               />
             </div>
             <div className="ml-3 text-sm">
-              <label htmlFor="termsAccepted" className="font-medium text-[var(--text)]">
+              <label
+                htmlFor="termsAccepted"
+                className="font-medium text-[var(--text)]"
+              >
                 I agree to the{" "}
                 <Link
                   to="/terms"
@@ -408,7 +435,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
                     companion?.showCuriosity();
                     companion?.showThought("Good to read these! 📄", 2000);
                   }}
-                  onMouseLeave={() => companion?.setMood('idle')}
+                  onMouseLeave={() => companion?.setMood("idle")}
                 >
                   Terms and Conditions
                 </Link>{" "}
@@ -421,13 +448,15 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
                     companion?.showCuriosity();
                     companion?.showThought("Privacy matters! 🔒", 2000);
                   }}
-                  onMouseLeave={() => companion?.setMood('idle')}
+                  onMouseLeave={() => companion?.setMood("idle")}
                 >
                   Privacy Policy
                 </Link>
               </label>
               {errors.termsAccepted && (
-                <p className="mt-1 text-red-600 text-xs">{errors.termsAccepted.message}</p>
+                <p className="mt-1 text-red-600 text-xs">
+                  {errors.termsAccepted.message}
+                </p>
               )}
             </div>
           </div>
@@ -442,10 +471,12 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             onMouseEnter={() => {
               if (watchedValues.termsAccepted && companion) {
                 companion.showThought("Ready to join? 🚀", 1500);
-                companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
+                companion.setMood(
+                  "excited" as Parameters<typeof companion.setMood>[0],
+                );
               }
             }}
-            onMouseLeave={() => companion?.setMood('idle')}
+            onMouseLeave={() => companion?.setMood("idle")}
           >
             Create account
           </Button>

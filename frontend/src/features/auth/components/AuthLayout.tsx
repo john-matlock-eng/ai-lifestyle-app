@@ -1,14 +1,19 @@
 // src/features/auth/components/AuthLayout.tsx
-import React, { useRef, useEffect } from 'react';
-import { useEnhancedAuthShihTzu } from '@/hooks/useEnhancedAuthShihTzu';
-import EnhancedShihTzu from '@/components/common/EnhancedShihTzu';
+import React, { useRef, useEffect } from "react";
+import { useEnhancedAuthShihTzu } from "@/hooks/useEnhancedAuthShihTzu";
+import EnhancedShihTzu from "@/components/common/EnhancedShihTzu";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
-  onShihTzuReady?: (companion: ReturnType<typeof useEnhancedAuthShihTzu>) => void;
+  onShihTzuReady?: (
+    companion: ReturnType<typeof useEnhancedAuthShihTzu>,
+  ) => void;
 }
 
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onShihTzuReady }) => {
+export const AuthLayout: React.FC<AuthLayoutProps> = ({
+  children,
+  onShihTzuReady,
+}) => {
   const companion = useEnhancedAuthShihTzu();
   const readyCallbackRef = useRef(false);
 
@@ -27,18 +32,23 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onShihTzuReady
         <div className="absolute top-20 left-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl animate-float-delayed" />
       </div>
-      
+
       {/* Content */}
       <div className="relative z-10">
-        {React.Children.map(children, child => {
+        {React.Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             // Pass companion to children components
-            return React.cloneElement(child as React.ReactElement<{ companion?: ReturnType<typeof useEnhancedAuthShihTzu> }>, { companion });
+            return React.cloneElement(
+              child as React.ReactElement<{
+                companion?: ReturnType<typeof useEnhancedAuthShihTzu>;
+              }>,
+              { companion },
+            );
           }
           return child;
         })}
       </div>
-      
+
       {/* Enhanced Animated Shih Tzu - with higher z-index for mobile */}
       <EnhancedShihTzu
         mood={companion.mood}
@@ -53,11 +63,11 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onShihTzuReady
         className="z-[100] drop-shadow-lg"
         style={{
           // Ensure companion is always visible and not cut off
-          position: 'fixed' as const,
-          pointerEvents: 'auto' as const,
+          position: "fixed" as const,
+          pointerEvents: "auto" as const,
         }}
       />
-      
+
       {/* Helper styles for floating animations */}
       <style>{`
         @keyframes float {

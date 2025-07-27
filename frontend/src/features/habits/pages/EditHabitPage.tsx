@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useHabits } from '../hooks/useHabits';
-import { HabitForm } from '../components/HabitForm';
-import type { UpdateHabitRequest, Habit } from '@/types/habits';
-import { ArrowLeft, Trash2 } from 'lucide-react';
-import { Button } from '@/components/common';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useHabits } from "../hooks/useHabits";
+import { HabitForm } from "../components/HabitForm";
+import type { UpdateHabitRequest, Habit } from "@/types/habits";
+import { ArrowLeft, Trash2 } from "lucide-react";
+import { Button } from "@/components/common";
 // TODO: Add toast notifications
-import { habitService } from '../services/habitService';
+import { habitService } from "../services/habitService";
 
 export const EditHabitPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,60 +15,60 @@ export const EditHabitPage: React.FC = () => {
   const [habit, setHabit] = useState<Habit | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  
+
   useEffect(() => {
     const loadHabit = async () => {
       if (!habitId) {
-        navigate('/habits');
+        navigate("/habits");
         return;
       }
-      
+
       try {
         setIsLoading(true);
         const habitData = await habitService.getHabit(habitId);
         setHabit(habitData);
       } catch (error) {
-        console.error('Failed to load habit:', error);
+        console.error("Failed to load habit:", error);
         // TODO: Show error notification
-        navigate('/habits');
+        navigate("/habits");
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     loadHabit();
   }, [habitId, navigate]);
-  
+
   const handleSubmit = async (data: UpdateHabitRequest) => {
     if (!habitId) return;
-    
+
     try {
       await updateHabit(habitId, data);
       // TODO: Show success notification
-      navigate('/habits');
+      navigate("/habits");
     } catch (error) {
-      console.error('Failed to update habit:', error);
+      console.error("Failed to update habit:", error);
       // TODO: Show error notification
     }
   };
-  
+
   const handleDelete = async () => {
     if (!habitId) return;
-    
+
     try {
       await deleteHabit(habitId);
       // TODO: Show success notification
-      navigate('/habits');
+      navigate("/habits");
     } catch (error) {
-      console.error('Failed to delete habit:', error);
+      console.error("Failed to delete habit:", error);
       // TODO: Show error notification
     }
   };
-  
+
   const handleCancel = () => {
-    navigate('/habits');
+    navigate("/habits");
   };
-  
+
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -85,24 +85,20 @@ export const EditHabitPage: React.FC = () => {
       </div>
     );
   }
-  
+
   if (!habit) {
     return null;
   }
-  
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header with back button and delete */}
       <div className="mb-6 flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/habits')}
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate("/habits")}>
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Habits
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -113,7 +109,7 @@ export const EditHabitPage: React.FC = () => {
           Delete Habit
         </Button>
       </div>
-      
+
       {/* Form Container */}
       <div className="bg-gray-50 rounded-lg p-6">
         <HabitForm
@@ -123,7 +119,7 @@ export const EditHabitPage: React.FC = () => {
           isSubmitting={isUpdating}
         />
       </div>
-      
+
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -132,10 +128,11 @@ export const EditHabitPage: React.FC = () => {
               Delete Habit?
             </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{habit.title}"? This action cannot be undone.
-              All progress and history for this habit will be permanently removed.
+              Are you sure you want to delete "{habit.title}"? This action
+              cannot be undone. All progress and history for this habit will be
+              permanently removed.
             </p>
-            
+
             <div className="flex justify-end space-x-3">
               <Button
                 variant="outline"
@@ -156,7 +153,7 @@ export const EditHabitPage: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* Habit Statistics */}
       <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -165,11 +162,15 @@ export const EditHabitPage: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <p className="text-sm text-gray-500">Current Streak</p>
-            <p className="text-2xl font-bold text-gray-900">{habit.currentStreak} days</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {habit.currentStreak} days
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Longest Streak</p>
-            <p className="text-2xl font-bold text-gray-900">{habit.longestStreak} days</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {habit.longestStreak} days
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Total Points</p>
@@ -182,23 +183,25 @@ export const EditHabitPage: React.FC = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="mt-6 pt-6 border-t border-gray-200">
-          <h4 className="font-medium text-gray-800 mb-3">This Week's Progress</h4>
+          <h4 className="font-medium text-gray-800 mb-3">
+            This Week's Progress
+          </h4>
           <div className="flex justify-between">
-            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
+            {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => {
               const isCompleted = habit.weekProgress[index];
               return (
                 <div key={index} className="flex flex-col items-center">
                   <span className="text-xs text-gray-500 mb-1">{day}</span>
-                  <div 
+                  <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
                       isCompleted
-                        ? 'bg-green-500 border-green-500 text-white'
-                        : 'border-gray-300 text-gray-400'
+                        ? "bg-green-500 border-green-500 text-white"
+                        : "border-gray-300 text-gray-400"
                     }`}
                   >
-                    {isCompleted && '✓'}
+                    {isCompleted && "✓"}
                   </div>
                 </div>
               );

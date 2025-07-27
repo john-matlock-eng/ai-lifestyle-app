@@ -2,20 +2,20 @@
  * Type definitions for habit tracking feature
  */
 
-export type HabitPattern = 'daily' | 'weekly' | 'custom';
+export type HabitPattern = "daily" | "weekly" | "custom";
 
-export type HabitCategory = 
-  | 'health' 
-  | 'fitness' 
-  | 'productivity' 
-  | 'mindfulness' 
-  | 'learning' 
-  | 'social' 
-  | 'creative' 
-  | 'financial' 
-  | 'other';
+export type HabitCategory =
+  | "health"
+  | "fitness"
+  | "productivity"
+  | "mindfulness"
+  | "learning"
+  | "social"
+  | "creative"
+  | "financial"
+  | "other";
 
-export type HabitTrend = 'improving' | 'declining' | 'stable';
+export type HabitTrend = "improving" | "declining" | "stable";
 
 /**
  * Base habit interface
@@ -23,41 +23,41 @@ export type HabitTrend = 'improving' | 'declining' | 'stable';
 export interface Habit {
   id: string;
   userId: string;
-  
+
   // Basic Info
   title: string;
   description?: string;
   category: HabitCategory;
   icon: string;
   color: string;
-  
+
   // Tracking
   pattern: HabitPattern;
   targetDays: number;
   currentStreak: number;
   longestStreak: number;
   lastCompleted?: string; // ISO date string
-  
+
   // Today's Status
   completedToday: boolean;
   skippedToday: boolean;
-  
+
   // Weekly Progress (last 7 days)
   weekProgress: boolean[];
-  
+
   // Gamification
   points: number;
   bonusMultiplier: number;
-  
+
   // UI
   displayOrder: number;
   showOnDashboard: boolean;
   motivationalText?: string;
   reminderTime?: string;
-  
+
   // Links
   goalId?: string;
-  
+
   // Metadata
   createdAt: string;
   updatedAt: string;
@@ -149,7 +149,7 @@ export interface HabitListResponse {
  */
 export interface HabitAnalytics {
   habitId: string;
-  period: 'week' | 'month' | 'year';
+  period: "week" | "month" | "year";
   completionRate: number;
   averageStreak: number;
   bestTimeOfDay?: string;
@@ -182,14 +182,14 @@ export interface HabitMilestone {
  * Default milestones
  */
 export const HABIT_MILESTONES: HabitMilestone[] = [
-  { days: 7, label: 'One Week', icon: '🔥', points: 50 },
-  { days: 14, label: 'Two Weeks', icon: '⚡', points: 75 },
-  { days: 21, label: 'Three Weeks', icon: '🌟', points: 100 },
-  { days: 30, label: 'One Month', icon: '🏆', points: 150 },
-  { days: 60, label: 'Two Months', icon: '💎', points: 200 },
-  { days: 90, label: 'Three Months', icon: '👑', points: 300 },
-  { days: 180, label: 'Six Months', icon: '🌈', points: 500 },
-  { days: 365, label: 'One Year', icon: '🎉', points: 1000 }
+  { days: 7, label: "One Week", icon: "🔥", points: 50 },
+  { days: 14, label: "Two Weeks", icon: "⚡", points: 75 },
+  { days: 21, label: "Three Weeks", icon: "🌟", points: 100 },
+  { days: 30, label: "One Month", icon: "🏆", points: 150 },
+  { days: 60, label: "Two Months", icon: "💎", points: 200 },
+  { days: 90, label: "Three Months", icon: "👑", points: 300 },
+  { days: 180, label: "Six Months", icon: "🌈", points: 500 },
+  { days: 365, label: "One Year", icon: "🎉", points: 1000 },
 ];
 
 /**
@@ -206,15 +206,20 @@ export interface HabitCategoryConfig {
  * Default category configurations
  */
 export const HABIT_CATEGORIES: HabitCategoryConfig[] = [
-  { value: 'health', label: 'Health', icon: '❤️', color: '#EF4444' },
-  { value: 'fitness', label: 'Fitness', icon: '💪', color: '#F59E0B' },
-  { value: 'productivity', label: 'Productivity', icon: '📈', color: '#3B82F6' },
-  { value: 'mindfulness', label: 'Mindfulness', icon: '🧘', color: '#8B5CF6' },
-  { value: 'learning', label: 'Learning', icon: '📚', color: '#10B981' },
-  { value: 'social', label: 'Social', icon: '👥', color: '#EC4899' },
-  { value: 'creative', label: 'Creative', icon: '🎨', color: '#F97316' },
-  { value: 'financial', label: 'Financial', icon: '💰', color: '#84CC16' },
-  { value: 'other', label: 'Other', icon: '📌', color: '#6B7280' }
+  { value: "health", label: "Health", icon: "❤️", color: "#EF4444" },
+  { value: "fitness", label: "Fitness", icon: "💪", color: "#F59E0B" },
+  {
+    value: "productivity",
+    label: "Productivity",
+    icon: "📈",
+    color: "#3B82F6",
+  },
+  { value: "mindfulness", label: "Mindfulness", icon: "🧘", color: "#8B5CF6" },
+  { value: "learning", label: "Learning", icon: "📚", color: "#10B981" },
+  { value: "social", label: "Social", icon: "👥", color: "#EC4899" },
+  { value: "creative", label: "Creative", icon: "🎨", color: "#F97316" },
+  { value: "financial", label: "Financial", icon: "💰", color: "#84CC16" },
+  { value: "other", label: "Other", icon: "📌", color: "#6B7280" },
 ];
 
 /**
@@ -233,17 +238,23 @@ export interface LevelConfig {
  */
 export function getLevelConfig(level: number): LevelConfig {
   const baseConfigs: LevelConfig[] = [
-    { level: 1, minPoints: 0, maxPoints: 99, label: 'Beginner', icon: '🌱' },
-    { level: 2, minPoints: 100, maxPoints: 199, label: 'Novice', icon: '🌿' },
-    { level: 3, minPoints: 200, maxPoints: 299, label: 'Apprentice', icon: '🌳' },
-    { level: 4, minPoints: 300, maxPoints: 399, label: 'Adept', icon: '⭐' },
-    { level: 5, minPoints: 400, maxPoints: 499, label: 'Expert', icon: '🌟' },
+    { level: 1, minPoints: 0, maxPoints: 99, label: "Beginner", icon: "🌱" },
+    { level: 2, minPoints: 100, maxPoints: 199, label: "Novice", icon: "🌿" },
+    {
+      level: 3,
+      minPoints: 200,
+      maxPoints: 299,
+      label: "Apprentice",
+      icon: "🌳",
+    },
+    { level: 4, minPoints: 300, maxPoints: 399, label: "Adept", icon: "⭐" },
+    { level: 5, minPoints: 400, maxPoints: 499, label: "Expert", icon: "🌟" },
   ];
-  
+
   if (level <= 5) {
     return baseConfigs[level - 1];
   }
-  
+
   // For levels above 5, calculate dynamically
   const minPoints = (level - 1) * 100;
   const maxPoints = level * 100 - 1;
@@ -252,6 +263,6 @@ export function getLevelConfig(level: number): LevelConfig {
     minPoints,
     maxPoints,
     label: `Master ${level - 5}`,
-    icon: '👑'
+    icon: "👑",
   };
 }

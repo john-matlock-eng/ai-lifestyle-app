@@ -25,10 +25,14 @@ interface EnhancedRegistrationFormProps {
  * encouragement, celebrations, and helpful feedback
  * Note: Companion is provided by AuthLayout, not created internally
  */
-const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ companion }) => {
+const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({
+  companion,
+}) => {
   const navigate = useNavigate();
   const [generalError, setGeneralError] = useState<string>("");
-  const [completedFields, setCompletedFields] = useState<Set<string>>(new Set());
+  const [completedFields, setCompletedFields] = useState<Set<string>>(
+    new Set(),
+  );
   const formRef = useRef<HTMLFormElement>(null);
   const passwordStrengthDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const lastPasswordStrength = useRef<number>(-1);
@@ -41,10 +45,10 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
     setError,
   } = useForm<FormData>({
     resolver: zodResolver(registerSchema),
-    mode: 'onChange',
+    mode: "onChange",
     defaultValues: {
       termsAccepted: false,
-    }
+    },
   });
 
   const password = watch("password");
@@ -53,22 +57,28 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
   // Greet new user on mount (only if companion exists)
   useEffect(() => {
     if (!companion) return;
-    
+
     const greetTimer = setTimeout(() => {
-      companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
+      companion.setMood("excited" as Parameters<typeof companion.setMood>[0]);
       companion.showThought("Hi there! Let's create your account! 🌟", 4000);
-      companion.triggerParticleEffect('sparkles');
-      
+      companion.triggerParticleEffect("sparkles");
+
       // Move to a welcoming position
       const formWidth = 400;
       const formCenterX = window.innerWidth / 2;
-      const welcomeX = Math.min(formCenterX - formWidth / 2 - 100, window.innerWidth - 150);
+      const welcomeX = Math.min(
+        formCenterX - formWidth / 2 - 100,
+        window.innerWidth - 150,
+      );
       companion.setPosition({ x: welcomeX, y: 150 });
-      
+
       setTimeout(() => {
-        companion.setMood('happy');
+        companion.setMood("happy");
         // Move to default position
-        const defaultX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
+        const defaultX = Math.min(
+          formCenterX + formWidth / 2 + 100,
+          window.innerWidth - 150,
+        );
         companion.setPosition({ x: defaultX, y: 200 });
       }, 3000);
     }, 500);
@@ -82,22 +92,24 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
       if (passwordStrengthDebounceRef.current) {
         clearTimeout(passwordStrengthDebounceRef.current);
       }
-      
+
       passwordStrengthDebounceRef.current = setTimeout(() => {
         const strength = checkPasswordStrength(password);
-        
+
         if (strength.score !== lastPasswordStrength.current) {
           lastPasswordStrength.current = strength.score;
-          
+
           if (strength.score <= 1) {
-            companion.handlePasswordStrength('weak');
+            companion.handlePasswordStrength("weak");
           } else if (strength.score <= 3) {
-            companion.handlePasswordStrength('medium');
+            companion.handlePasswordStrength("medium");
           } else {
-            companion.handlePasswordStrength('strong');
+            companion.handlePasswordStrength("strong");
             // Extra celebration for strong password
             setTimeout(() => {
-              companion.setMood('proud' as Parameters<typeof companion.setMood>[0]);
+              companion.setMood(
+                "proud" as Parameters<typeof companion.setMood>[0],
+              );
             }, 1000);
           }
         }
@@ -108,9 +120,9 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
   // React to form errors
   useEffect(() => {
     const errorCount = Object.keys(errors).length;
-    if (errorCount > 0 && companion && companion.companionState !== 'error') {
+    if (errorCount > 0 && companion && companion.companionState !== "error") {
       companion.handleError();
-      
+
       // Specific error guidance
       if (errors.email) {
         companion.showThought("Let's check that email format 📧", 3000);
@@ -127,21 +139,21 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
   // React to general errors
   useEffect(() => {
     if (generalError && companion) {
-      companion.handleSpecificError('server');
+      companion.handleSpecificError("server");
     }
   }, [generalError, companion]);
 
   // Track progress and encourage
   useEffect(() => {
     if (!companion) return;
-    
+
     const filledFields = [
       watchedValues.firstName,
       watchedValues.lastName,
       watchedValues.email,
       watchedValues.password,
       watchedValues.confirmPassword,
-      watchedValues.termsAccepted
+      watchedValues.termsAccepted,
     ].filter(Boolean).length;
 
     const progress = (filledFields / 6) * 100;
@@ -149,9 +161,9 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
     // Progress milestones
     if (progress === 50 && completedFields.size === 3) {
       companion.showThought("Halfway there! Keep going! 🎯", 2000);
-      companion.triggerParticleEffect('sparkles');
+      companion.triggerParticleEffect("sparkles");
     } else if (progress === 83 && completedFields.size === 5) {
-      companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
+      companion.setMood("excited" as Parameters<typeof companion.setMood>[0]);
       companion.showThought("Almost done! Just one more! 🏁", 2000);
     }
   }, [watchedValues, completedFields, companion]);
@@ -166,11 +178,11 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
   }, []);
 
   const handleFieldComplete = (fieldName: string) => {
-    setCompletedFields(prev => new Set([...prev, fieldName]));
+    setCompletedFields((prev) => new Set([...prev, fieldName]));
   };
 
   const registerMutation = useMutation({
-    mutationFn: (data: Omit<FormData, "confirmPassword">) => 
+    mutationFn: (data: Omit<FormData, "confirmPassword">) =>
       authService.register(data),
     onMutate: () => {
       if (companion) {
@@ -182,20 +194,22 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
       if (companion) {
         companion.handleSuccess();
         companion.showThought("Welcome to the family! 🎊", 4000);
-        
+
         // Epic celebration sequence
         setTimeout(() => {
-          companion.triggerParticleEffect('hearts');
+          companion.triggerParticleEffect("hearts");
         }, 500);
         setTimeout(() => {
-          companion.triggerParticleEffect('sparkles');
+          companion.triggerParticleEffect("sparkles");
         }, 1000);
         setTimeout(() => {
-          companion.setMood('celebrating' as Parameters<typeof companion.setMood>[0]);
+          companion.setMood(
+            "celebrating" as Parameters<typeof companion.setMood>[0],
+          );
           companion.showThought("Let's start your journey! 🌈", 3000);
         }, 1500);
       }
-      
+
       setTimeout(() => {
         navigate("/register/success", {
           state: {
@@ -207,9 +221,18 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
     },
     onError: (error: unknown) => {
       console.error("Registration error:", error);
-      
-      const errorData = error as { response?: { data?: { validation_errors?: Array<{ field: string; message: string }>; message?: string }; status?: number }; code?: string };
-      
+
+      const errorData = error as {
+        response?: {
+          data?: {
+            validation_errors?: Array<{ field: string; message: string }>;
+            message?: string;
+          };
+          status?: number;
+        };
+        code?: string;
+      };
+
       if (errorData.response?.data?.validation_errors) {
         errorData.response.data.validation_errors.forEach((validationError) => {
           const field = validationError.field as keyof FormData;
@@ -219,7 +242,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
             });
           }
         });
-        
+
         if (companion) {
           companion.showThought("Let's fix these issues... 📝", 3000);
         }
@@ -227,17 +250,18 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
         setError("email", {
           message: "An account with this email already exists",
         });
-        
+
         if (companion) {
           companion.showThought("This email is already taken! 🤷", 3000);
         }
       } else if (errorData.code === "ERR_NETWORK") {
         setGeneralError(
-          "Unable to connect to the server. Make sure the backend is running."
+          "Unable to connect to the server. Make sure the backend is running.",
         );
       } else {
         setGeneralError(
-          errorData.response?.data?.message || "Something went wrong. Please try again."
+          errorData.response?.data?.message ||
+            "Something went wrong. Please try again.",
         );
       }
     },
@@ -245,13 +269,13 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
 
   const onSubmit = async (data: FormData) => {
     setGeneralError("");
-    
+
     // Pre-submit celebration
     if (companion) {
       companion.encourage();
       companion.showThought("Here we go! Creating your account! 🎉", 2000);
     }
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
@@ -263,7 +287,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
         <h2 className="text-center text-3xl font-extrabold text-[var(--text)] mb-6">
           Create your account
         </h2>
-        
+
         <p className="text-center text-sm text-muted mb-6">
           Already have an account?{" "}
           <Link
@@ -273,13 +297,17 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
               companion?.showCuriosity();
               companion?.showThought("Already a member? 🤔", 2000);
             }}
-            onMouseLeave={() => companion?.setMood('idle')}
+            onMouseLeave={() => companion?.setMood("idle")}
           >
             Sign in
           </Link>
         </p>
 
-        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
           {generalError && (
             <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm">
               {generalError}
@@ -363,20 +391,29 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
                 onChange={async (e) => {
                   const registration = register("termsAccepted");
                   await registration.onChange(e);
-                  
+
                   // Celebrate terms acceptance
-                  if (e.target.checked && companion && companion.companionState !== 'error') {
+                  if (
+                    e.target.checked &&
+                    companion &&
+                    companion.companionState !== "error"
+                  ) {
                     handleFieldComplete("termsAccepted");
                     companion.handleFieldComplete();
                     companion.showThought("Great! Almost ready! ✅", 1500);
-                    companion.triggerParticleEffect('sparkles');
-                    companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
+                    companion.triggerParticleEffect("sparkles");
+                    companion.setMood(
+                      "excited" as Parameters<typeof companion.setMood>[0],
+                    );
                   }
                 }}
               />
             </div>
             <div className="ml-3 text-sm">
-              <label htmlFor="termsAccepted" className="font-medium text-[var(--text)]">
+              <label
+                htmlFor="termsAccepted"
+                className="font-medium text-[var(--text)]"
+              >
                 I agree to the{" "}
                 <Link
                   to="/terms"
@@ -386,7 +423,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
                     companion?.showCuriosity();
                     companion?.showThought("Good to read these! 📄", 2000);
                   }}
-                  onMouseLeave={() => companion?.setMood('idle')}
+                  onMouseLeave={() => companion?.setMood("idle")}
                 >
                   Terms and Conditions
                 </Link>{" "}
@@ -399,13 +436,15 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
                     companion?.showCuriosity();
                     companion?.showThought("Privacy matters! 🔒", 2000);
                   }}
-                  onMouseLeave={() => companion?.setMood('idle')}
+                  onMouseLeave={() => companion?.setMood("idle")}
                 >
                   Privacy Policy
                 </Link>
               </label>
               {errors.termsAccepted && (
-                <p className="mt-1 text-red-600 text-xs">{errors.termsAccepted.message}</p>
+                <p className="mt-1 text-red-600 text-xs">
+                  {errors.termsAccepted.message}
+                </p>
               )}
             </div>
           </div>
@@ -418,14 +457,21 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
             loadingText="Creating account..."
             disabled={!watchedValues.termsAccepted}
             onMouseEnter={() => {
-              if (watchedValues.termsAccepted && !isSubmitting && !registerMutation.isPending && companion) {
+              if (
+                watchedValues.termsAccepted &&
+                !isSubmitting &&
+                !registerMutation.isPending &&
+                companion
+              ) {
                 companion.showThought("Ready to join? 🚀", 1500);
-                companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
+                companion.setMood(
+                  "excited" as Parameters<typeof companion.setMood>[0],
+                );
               }
             }}
             onMouseLeave={() => {
               if (!isSubmitting && !registerMutation.isPending && companion) {
-                companion.setMood('idle');
+                companion.setMood("idle");
               }
             }}
           >

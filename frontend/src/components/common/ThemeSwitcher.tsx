@@ -12,7 +12,10 @@ const ThemeSwitcher: React.FC = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -35,7 +38,9 @@ const ThemeSwitcher: React.FC = () => {
       >
         <div className="flex items-center gap-2">
           <span className="text-lg">{currentTheme?.icon}</span>
-          <span className="text-[var(--text)] font-medium">{currentTheme?.label}</span>
+          <span className="text-[var(--text)] font-medium">
+            {currentTheme?.label}
+          </span>
         </div>
         <svg
           className={clsx("dropdown-arrow", isOpen && "open")}
@@ -66,16 +71,20 @@ const ThemeSwitcher: React.FC = () => {
               }}
               className={clsx(
                 "theme-dropdown-item",
-                theme === option.value && "selected"
+                theme === option.value && "selected",
               )}
               role="option"
               aria-selected={theme === option.value}
             >
               <span className="text-lg">{option.icon}</span>
               <div className="flex-1">
-                <div className="font-medium text-[var(--text)]">{option.label}</div>
+                <div className="font-medium text-[var(--text)]">
+                  {option.label}
+                </div>
                 {option.description && (
-                  <div className="text-xs text-[var(--text-muted)]">{option.description}</div>
+                  <div className="text-xs text-[var(--text-muted)]">
+                    {option.description}
+                  </div>
                 )}
               </div>
               {theme === option.value && (

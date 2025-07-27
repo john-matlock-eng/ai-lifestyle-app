@@ -97,7 +97,7 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
       // Return the raw markdown/HTML content
       const content = contentLines.join("\n").trim();
       // If it contains HTML tags, return it as is for HTML rendering
-      if (content.includes('<p>') || content.includes('<div>')) {
+      if (content.includes("<p>") || content.includes("<div>")) {
         return content;
       }
       return content;
@@ -332,7 +332,10 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
 
       default:
         // For unknown types, render the HTML directly
-        if (typeof section.content === 'string' && section.content.includes('<')) {
+        if (
+          typeof section.content === "string" &&
+          section.content.includes("<")
+        ) {
           return <div dangerouslySetInnerHTML={{ __html: section.content }} />;
         }
         return renderTextSection(section.content);
@@ -346,15 +349,19 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
     }
 
     const text = typeof content === "string" ? content : String(content);
-    
+
     // Check if the content is just empty HTML tags
-    const strippedContent = text.replace(/<[^>]*>/g, '').trim();
+    const strippedContent = text.replace(/<[^>]*>/g, "").trim();
     if (!strippedContent) {
       return <p className="journal-empty-content">No content added</p>;
     }
 
     // If content contains HTML tags, render it as HTML
-    if (text.includes('<p>') || text.includes('<div>') || text.includes('<ul>')) {
+    if (
+      text.includes("<p>") ||
+      text.includes("<div>") ||
+      text.includes("<ul>")
+    ) {
       return <div dangerouslySetInnerHTML={{ __html: text }} />;
     }
 
@@ -425,7 +432,8 @@ export const JournalEntryRenderer: React.FC<JournalEntryRendererProps> = ({
             }
 
             // Fallback for unknown emotions - capitalize first letter
-            const capitalizedEmotion = emotionId.charAt(0).toUpperCase() + emotionId.slice(1);
+            const capitalizedEmotion =
+              emotionId.charAt(0).toUpperCase() + emotionId.slice(1);
             return (
               <span
                 key={index}

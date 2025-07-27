@@ -11,7 +11,9 @@ const LoginPage: React.FC = () => {
     type: "info" | "error";
     text: string;
   } | null>(null);
-  const [companion, setCompanion] = useState<ReturnType<typeof useEnhancedAuthShihTzu> | undefined>(undefined);
+  const [companion, setCompanion] = useState<
+    ReturnType<typeof useEnhancedAuthShihTzu> | undefined
+  >(undefined);
 
   useEffect(() => {
     const messageParam = searchParams.get("message");

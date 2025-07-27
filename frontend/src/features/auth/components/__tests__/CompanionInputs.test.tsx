@@ -1,16 +1,16 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import CompanionInput from '../CompanionInput';
-import CompanionPasswordInput from '../CompanionPasswordInput';
-import type { useEnhancedAuthShihTzu } from '../../../../hooks/useEnhancedAuthShihTzu';
+import React from "react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import CompanionInput from "../CompanionInput";
+import CompanionPasswordInput from "../CompanionPasswordInput";
+import type { useEnhancedAuthShihTzu } from "../../../../hooks/useEnhancedAuthShihTzu";
 
 // Mock the companion hook
 const mockCompanion: ReturnType<typeof useEnhancedAuthShihTzu> = {
-  mood: 'idle',
+  mood: "idle",
   position: { x: 100, y: 100 },
   setMood: vi.fn(),
   setPosition: vi.fn(),
@@ -29,14 +29,14 @@ const mockCompanion: ReturnType<typeof useEnhancedAuthShihTzu> = {
   handlePasswordStrength: vi.fn(),
   handleFieldComplete: vi.fn(),
   handleSpecificError: vi.fn(),
-  companionState: 'idle',
+  companionState: "idle",
   currentField: null,
   personality: {
     traits: { happiness: 75, energy: 60, curiosity: 70 },
     needs: { attention: 50, rest: 50, exercise: 50 },
-    bond: { level: 1, interactions: 0 }
+    bond: { level: 1, interactions: 0 },
   },
-  thoughtBubble: { show: false, text: '' },
+  thoughtBubble: { show: false, text: "" },
   particleEffect: null,
   accessories: [],
   showThought: vi.fn(),
@@ -54,18 +54,16 @@ const queryClient = new QueryClient({
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      {children}
-    </BrowserRouter>
+    <BrowserRouter>{children}</BrowserRouter>
   </QueryClientProvider>
 );
 
-describe('CompanionInput', () => {
+describe("CompanionInput", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders input with companion integration', () => {
+  it("renders input with companion integration", () => {
     render(
       <CompanionInput
         label="Email"
@@ -73,15 +71,15 @@ describe('CompanionInput', () => {
         companion={mockCompanion}
         fieldName="email"
       />,
-      { wrapper }
+      { wrapper },
     );
 
-    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toBeInTheDocument();
   });
 
-  it('triggers companion interactions on focus', async () => {
+  it("triggers companion interactions on focus", async () => {
     const user = userEvent.setup();
-    
+
     render(
       <CompanionInput
         label="Email"
@@ -89,23 +87,23 @@ describe('CompanionInput', () => {
         companion={mockCompanion}
         fieldName="email"
       />,
-      { wrapper }
+      { wrapper },
     );
 
-    const input = screen.getByLabelText('Email');
+    const input = screen.getByLabelText("Email");
     await user.click(input);
 
     expect(mockCompanion.handleInputFocus).toHaveBeenCalledWith(input);
     expect(mockCompanion.showThought).toHaveBeenCalledWith(
       "Let's start with your email! 📧",
-      2500
+      2500,
     );
-    expect(mockCompanion.setMood).toHaveBeenCalledWith('curious');
+    expect(mockCompanion.setMood).toHaveBeenCalledWith("curious");
   });
 
-  it('shows typing animation on input change', async () => {
+  it("shows typing animation on input change", async () => {
     const user = userEvent.setup();
-    
+
     render(
       <CompanionInput
         label="Email"
@@ -113,20 +111,20 @@ describe('CompanionInput', () => {
         companion={mockCompanion}
         fieldName="email"
       />,
-      { wrapper }
+      { wrapper },
     );
 
-    const input = screen.getByLabelText('Email');
-    await user.type(input, 'test@example.com');
+    const input = screen.getByLabelText("Email");
+    await user.type(input, "test@example.com");
 
     await waitFor(() => {
       expect(mockCompanion.handleTyping).toHaveBeenCalled();
     });
   });
 
-  it('celebrates valid email on blur', async () => {
+  it("celebrates valid email on blur", async () => {
     const user = userEvent.setup();
-    
+
     render(
       <CompanionInput
         label="Email"
@@ -134,27 +132,32 @@ describe('CompanionInput', () => {
         companion={mockCompanion}
         fieldName="email"
       />,
-      { wrapper }
+      { wrapper },
     );
 
-    const input = screen.getByLabelText('Email');
-    await user.type(input, 'test@example.com');
+    const input = screen.getByLabelText("Email");
+    await user.type(input, "test@example.com");
     fireEvent.blur(input);
 
     expect(mockCompanion.handleFieldComplete).toHaveBeenCalled();
-    expect(mockCompanion.showThought).toHaveBeenCalledWith("Valid email! ✅", 1500);
-    expect(mockCompanion.triggerParticleEffect).toHaveBeenCalledWith('sparkles');
+    expect(mockCompanion.showThought).toHaveBeenCalledWith(
+      "Valid email! ✅",
+      1500,
+    );
+    expect(mockCompanion.triggerParticleEffect).toHaveBeenCalledWith(
+      "sparkles",
+    );
   });
 });
 
-describe('CompanionPasswordInput', () => {
+describe("CompanionPasswordInput", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('shows password-specific thoughts on focus', async () => {
+  it("shows password-specific thoughts on focus", async () => {
     const user = userEvent.setup();
-    
+
     render(
       <CompanionPasswordInput
         label="Password"
@@ -162,22 +165,22 @@ describe('CompanionPasswordInput', () => {
         companion={mockCompanion}
         fieldName="password"
       />,
-      { wrapper }
+      { wrapper },
     );
 
-    const input = screen.getByLabelText('Password');
+    const input = screen.getByLabelText("Password");
     await user.click(input);
 
     expect(mockCompanion.showThought).toHaveBeenCalledWith(
       "Create a strong password! 🔐",
-      2500
+      2500,
     );
-    expect(mockCompanion.setMood).toHaveBeenCalledWith('protective');
+    expect(mockCompanion.setMood).toHaveBeenCalledWith("protective");
   });
 
-  it('validates password match for confirm password field', async () => {
+  it("validates password match for confirm password field", async () => {
     const user = userEvent.setup();
-    
+
     render(
       <CompanionPasswordInput
         label="Confirm Password"
@@ -186,20 +189,23 @@ describe('CompanionPasswordInput', () => {
         fieldName="confirmPassword"
         watchPassword="test123"
       />,
-      { wrapper }
+      { wrapper },
     );
 
-    const input = screen.getByLabelText('Confirm Password');
-    await user.type(input, 'test123');
+    const input = screen.getByLabelText("Confirm Password");
+    await user.type(input, "test123");
 
-    expect(mockCompanion.showThought).toHaveBeenCalledWith("Passwords match! 🎯", 1500);
-    expect(mockCompanion.triggerParticleEffect).toHaveBeenCalledWith('hearts');
-    expect(mockCompanion.setMood).toHaveBeenCalledWith('celebrating');
+    expect(mockCompanion.showThought).toHaveBeenCalledWith(
+      "Passwords match! 🎯",
+      1500,
+    );
+    expect(mockCompanion.triggerParticleEffect).toHaveBeenCalledWith("hearts");
+    expect(mockCompanion.setMood).toHaveBeenCalledWith("celebrating");
   });
 
-  it('shows concern when passwords do not match', async () => {
+  it("shows concern when passwords do not match", async () => {
     const user = userEvent.setup();
-    
+
     render(
       <CompanionPasswordInput
         label="Confirm Password"
@@ -208,13 +214,16 @@ describe('CompanionPasswordInput', () => {
         fieldName="confirmPassword"
         watchPassword="test123"
       />,
-      { wrapper }
+      { wrapper },
     );
 
-    const input = screen.getByLabelText('Confirm Password');
-    await user.type(input, 'test456');
+    const input = screen.getByLabelText("Confirm Password");
+    await user.type(input, "test456");
 
-    expect(mockCompanion.showThought).toHaveBeenCalledWith("Not matching yet... 🤔", 1500);
-    expect(mockCompanion.setMood).toHaveBeenCalledWith('concerned');
+    expect(mockCompanion.showThought).toHaveBeenCalledWith(
+      "Not matching yet... 🤔",
+      1500,
+    );
+    expect(mockCompanion.setMood).toHaveBeenCalledWith("concerned");
   });
 });

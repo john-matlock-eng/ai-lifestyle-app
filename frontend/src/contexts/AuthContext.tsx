@@ -250,7 +250,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       clearTokens();
       queryClient.clear();
       setSessionExpiry(null);
-      
+
       // Clear encryption state
       const encryptionService = getEncryptionService();
       encryptionService.clear();

@@ -1,38 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 // import { useNavigate } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import type { 
-  CreateHabitRequest, 
-  UpdateHabitRequest, 
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import type {
+  CreateHabitRequest,
+  UpdateHabitRequest,
   Habit,
-  HabitCategory 
-} from '@/types/habits';
-import { HABIT_CATEGORIES } from '@/types/habits';
-import { Button, Input } from '@/components/common';
-import { 
-  Save, 
-  X, 
-  Target, 
+  HabitCategory,
+} from "@/types/habits";
+import { HABIT_CATEGORIES } from "@/types/habits";
+import { Button, Input } from "@/components/common";
+import {
+  Save,
+  X,
+  Target,
   Clock,
   Link as LinkIcon,
-  Sparkles
-} from 'lucide-react';
+  Sparkles,
+} from "lucide-react";
 
 // Validation schema
 const habitFormSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title is too long'),
-  description: z.string().max(1000, 'Description is too long').optional(),
-  category: z.enum(['health', 'fitness', 'productivity', 'mindfulness', 'learning', 'social', 'creative', 'financial', 'other'] as const),
-  icon: z.string().min(1, 'Icon is required'),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format'),
-  pattern: z.enum(['daily', 'weekly', 'custom']),
+  title: z.string().min(1, "Title is required").max(200, "Title is too long"),
+  description: z.string().max(1000, "Description is too long").optional(),
+  category: z.enum([
+    "health",
+    "fitness",
+    "productivity",
+    "mindfulness",
+    "learning",
+    "social",
+    "creative",
+    "financial",
+    "other",
+  ] as const),
+  icon: z.string().min(1, "Icon is required"),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color format"),
+  pattern: z.enum(["daily", "weekly", "custom"]),
   targetDays: z.number().min(1).max(365),
-  motivationalText: z.string().max(200, 'Motivational text is too long').optional(),
-  reminderTime: z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format').optional().or(z.literal('')),
+  motivationalText: z
+    .string()
+    .max(200, "Motivational text is too long")
+    .optional(),
+  reminderTime: z
+    .string()
+    .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format")
+    .optional()
+    .or(z.literal("")),
   goalId: z.string().optional(),
-  showOnDashboard: z.boolean()
+  showOnDashboard: z.boolean(),
 });
 
 type HabitFormData = z.infer<typeof habitFormSchema>;
@@ -46,67 +63,95 @@ interface HabitFormProps {
 
 // Popular emoji icons for habits
 const EMOJI_ICONS = [
-  '💪', '🏃', '🧘', '📚', '💊', '💧', '🥗', '🎯',
-  '✍️', '🎨', '🎵', '💰', '🌱', '🧠', '😴', '🚭',
-  '📱', '🏋️', '🚴', '🏊', '⛰️', '🧘‍♀️', '🧘‍♂️', '📖',
-  '✅', '⭐', '🔥', '💎', '🌟', '🌈', '🎉', '🏆'
+  "💪",
+  "🏃",
+  "🧘",
+  "📚",
+  "💊",
+  "💧",
+  "🥗",
+  "🎯",
+  "✍️",
+  "🎨",
+  "🎵",
+  "💰",
+  "🌱",
+  "🧠",
+  "😴",
+  "🚭",
+  "📱",
+  "🏋️",
+  "🚴",
+  "🏊",
+  "⛰️",
+  "🧘‍♀️",
+  "🧘‍♂️",
+  "📖",
+  "✅",
+  "⭐",
+  "🔥",
+  "💎",
+  "🌟",
+  "🌈",
+  "🎉",
+  "🏆",
 ];
 
 // Preset colors
 const PRESET_COLORS = [
-  '#EF4444', // red
-  '#F97316', // orange
-  '#F59E0B', // amber
-  '#EAB308', // yellow
-  '#84CC16', // lime
-  '#10B981', // emerald
-  '#06B6D4', // cyan
-  '#3B82F6', // blue
-  '#6366F1', // indigo
-  '#8B5CF6', // purple
-  '#A855F7', // violet
-  '#EC4899', // pink
+  "#EF4444", // red
+  "#F97316", // orange
+  "#F59E0B", // amber
+  "#EAB308", // yellow
+  "#84CC16", // lime
+  "#10B981", // emerald
+  "#06B6D4", // cyan
+  "#3B82F6", // blue
+  "#6366F1", // indigo
+  "#8B5CF6", // purple
+  "#A855F7", // violet
+  "#EC4899", // pink
 ];
 
-export const HabitForm: React.FC<HabitFormProps> = ({ 
-  habit, 
-  onSubmit, 
+export const HabitForm: React.FC<HabitFormProps> = ({
+  habit,
+  onSubmit,
   onCancel,
-  isSubmitting = false 
+  isSubmitting = false,
 }) => {
   // const navigate = useNavigate(); // TODO: Use for navigation
-  const [selectedIcon, setSelectedIcon] = useState(habit?.icon || '🎯');
-  const [selectedColor, setSelectedColor] = useState(habit?.color || '#3B82F6');
+  const [selectedIcon, setSelectedIcon] = useState(habit?.icon || "🎯");
+  const [selectedColor, setSelectedColor] = useState(habit?.color || "#3B82F6");
   const [showIconPicker, setShowIconPicker] = useState(false);
-  
+
   const isEditing = !!habit;
-  
+
   const {
     register,
     handleSubmit,
     control,
     watch,
     setValue,
-    formState: { errors }
+    formState: { errors },
   } = useForm<HabitFormData>({
     resolver: zodResolver(habitFormSchema),
     defaultValues: {
-      title: habit?.title || '',
-      description: habit?.description || '',
-      category: habit?.category as HabitCategory || 'other',
-      icon: habit?.icon || '🎯',
-      color: habit?.color || '#3B82F6',
-      pattern: habit?.pattern || 'daily',
+      title: habit?.title || "",
+      description: habit?.description || "",
+      category: (habit?.category as HabitCategory) || "other",
+      icon: habit?.icon || "🎯",
+      color: habit?.color || "#3B82F6",
+      pattern: habit?.pattern || "daily",
       targetDays: habit?.targetDays || 30,
-      motivationalText: habit?.motivationalText || '',
-      reminderTime: habit?.reminderTime || '',
-      goalId: habit?.goalId || '',
-      showOnDashboard: habit?.showOnDashboard ?? true
-    }
+      motivationalText: habit?.motivationalText || "",
+      reminderTime: habit?.reminderTime || "",
+      goalId: habit?.goalId || "",
+      showOnDashboard: habit?.showOnDashboard ?? true,
+    },
   });
 
   // const selectedCategory = watch('category'); // TODO: Use for conditional rendering
-  const pattern = watch('pattern');
+  const pattern = watch("pattern");
 
   const onFormSubmit = async (data: HabitFormData) => {
     try {
@@ -118,10 +163,10 @@ export const HabitForm: React.FC<HabitFormProps> = ({
         description: data.description || undefined,
         goalId: data.goalId || undefined,
       };
-      
+
       await onSubmit(submitData);
     } catch (error) {
-      console.error('Failed to save habit:', error);
+      console.error("Failed to save habit:", error);
     }
   };
 
@@ -130,14 +175,9 @@ export const HabitForm: React.FC<HabitFormProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gradient">
-          {isEditing ? 'Edit Habit' : 'Create New Habit'}
+          {isEditing ? "Edit Habit" : "Create New Habit"}
         </h2>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
           <X className="w-4 h-4" />
         </Button>
       </div>
@@ -145,7 +185,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({
       {/* Icon and Color Selection */}
       <div className="glass rounded-lg shadow-md border border-surface-muted p-6 hover-lift">
         <h3 className="text-lg font-medium text-theme mb-4">Appearance</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Icon Picker */}
           <div>
@@ -163,7 +203,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({
               </button>
               <span className="text-sm text-muted">Click to change</span>
             </div>
-            
+
             {showIconPicker && (
               <div className="mt-3 p-3 bg-surface rounded-lg grid grid-cols-8 gap-2">
                 {EMOJI_ICONS.map((emoji) => (
@@ -172,11 +212,13 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                     type="button"
                     onClick={() => {
                       setSelectedIcon(emoji);
-                      setValue('icon', emoji);
+                      setValue("icon", emoji);
                       setShowIconPicker(false);
                     }}
                     className={`w-10 h-10 rounded flex items-center justify-center text-xl hover:bg-surface-muted transition-colors ${
-                      selectedIcon === emoji ? 'bg-surface-muted ring-2 ring-accent' : ''
+                      selectedIcon === emoji
+                        ? "bg-surface-muted ring-2 ring-accent"
+                        : ""
                     }`}
                   >
                     {emoji}
@@ -184,7 +226,7 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                 ))}
               </div>
             )}
-            <input type="hidden" {...register('icon')} value={selectedIcon} />
+            <input type="hidden" {...register("icon")} value={selectedIcon} />
           </div>
 
           {/* Color Picker */}
@@ -215,14 +257,14 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                     />
                   )}
                 />
-                <label 
+                <label
                   htmlFor="color-picker"
                   className="px-3 py-1 text-sm border border-surface-muted rounded-md hover:bg-surface-muted cursor-pointer text-theme"
                 >
                   Custom
                 </label>
               </div>
-              
+
               <div className="grid grid-cols-6 gap-2">
                 {PRESET_COLORS.map((color) => (
                   <button
@@ -230,10 +272,12 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                     type="button"
                     onClick={() => {
                       setSelectedColor(color);
-                      setValue('color', color);
+                      setValue("color", color);
                     }}
                     className={`w-8 h-8 rounded-full ring-2 ring-offset-2 transition-all ${
-                      selectedColor === color ? 'ring-accent' : 'ring-transparent'
+                      selectedColor === color
+                        ? "ring-accent"
+                        : "ring-transparent"
                     }`}
                     style={{ backgroundColor: color }}
                   />
@@ -241,7 +285,9 @@ export const HabitForm: React.FC<HabitFormProps> = ({
               </div>
             </div>
             {errors.color && (
-              <p className="mt-1 text-sm text-red-600">{errors.color.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.color.message}
+              </p>
             )}
           </div>
         </div>
@@ -249,44 +295,57 @@ export const HabitForm: React.FC<HabitFormProps> = ({
 
       {/* Basic Information */}
       <div className="glass rounded-lg shadow-md border border-surface-muted p-6 hover-lift">
-        <h3 className="text-lg font-medium text-theme mb-4">Basic Information</h3>
-        
+        <h3 className="text-lg font-medium text-theme mb-4">
+          Basic Information
+        </h3>
+
         <div className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-theme mb-1">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-theme mb-1"
+            >
               Habit Title *
             </label>
             <Input
               id="title"
-              {...register('title')}
+              {...register("title")}
               placeholder="e.g., Morning Meditation"
               error={errors.title?.message}
             />
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-theme mb-1">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-theme mb-1"
+            >
               Description
             </label>
             <textarea
               id="description"
-              {...register('description')}
+              {...register("description")}
               rows={3}
               className="form-textarea"
               placeholder="Add more details about this habit..."
             />
             {errors.description && (
-              <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.description.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-theme mb-1">
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium text-theme mb-1"
+            >
               Category *
             </label>
             <select
               id="category"
-              {...register('category')}
+              {...register("category")}
               className="form-select"
             >
               {HABIT_CATEGORIES.map((cat) => (
@@ -296,7 +355,9 @@ export const HabitForm: React.FC<HabitFormProps> = ({
               ))}
             </select>
             {errors.category && (
-              <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.category.message}
+              </p>
             )}
           </div>
         </div>
@@ -304,26 +365,28 @@ export const HabitForm: React.FC<HabitFormProps> = ({
 
       {/* Tracking Settings */}
       <div className="glass rounded-lg shadow-md border border-surface-muted p-6 hover-lift">
-        <h3 className="text-lg font-medium text-theme mb-4">Tracking Settings</h3>
-        
+        <h3 className="text-lg font-medium text-theme mb-4">
+          Tracking Settings
+        </h3>
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-theme mb-2">
               Pattern *
             </label>
             <div className="grid grid-cols-3 gap-3">
-              {(['daily', 'weekly', 'custom'] as const).map((p) => (
+              {(["daily", "weekly", "custom"] as const).map((p) => (
                 <label
                   key={p}
                   className={`relative flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-all ${
                     pattern === p
-                      ? 'border-accent bg-accent text-white glow'
-                      : 'border-surface-muted hover:border-accent'
+                      ? "border-accent bg-accent text-white glow"
+                      : "border-surface-muted hover:border-accent"
                   }`}
                 >
                   <input
                     type="radio"
-                    {...register('pattern')}
+                    {...register("pattern")}
                     value={p}
                     className="sr-only"
                   />
@@ -334,7 +397,10 @@ export const HabitForm: React.FC<HabitFormProps> = ({
           </div>
 
           <div>
-            <label htmlFor="targetDays" className="block text-sm font-medium text-theme mb-1">
+            <label
+              htmlFor="targetDays"
+              className="block text-sm font-medium text-theme mb-1"
+            >
               Target Days <Target className="inline w-4 h-4 text-muted ml-1" />
             </label>
             <Controller
@@ -347,7 +413,9 @@ export const HabitForm: React.FC<HabitFormProps> = ({
                   type="number"
                   min="1"
                   max="365"
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => field.onChange(parseInt(e.target.value) || 1)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    field.onChange(parseInt(e.target.value) || 1)
+                  }
                   error={errors.targetDays?.message}
                 />
               )}
@@ -361,16 +429,22 @@ export const HabitForm: React.FC<HabitFormProps> = ({
 
       {/* Motivation & Reminders */}
       <div className="glass rounded-lg shadow-md border border-surface-muted p-6 hover-lift">
-        <h3 className="text-lg font-medium text-theme mb-4">Motivation & Reminders</h3>
-        
+        <h3 className="text-lg font-medium text-theme mb-4">
+          Motivation & Reminders
+        </h3>
+
         <div className="space-y-4">
           <div>
-            <label htmlFor="motivationalText" className="block text-sm font-medium text-theme mb-1">
-              Motivational Text <Sparkles className="inline w-4 h-4 text-muted ml-1" />
+            <label
+              htmlFor="motivationalText"
+              className="block text-sm font-medium text-theme mb-1"
+            >
+              Motivational Text{" "}
+              <Sparkles className="inline w-4 h-4 text-muted ml-1" />
             </label>
             <Input
               id="motivationalText"
-              {...register('motivationalText')}
+              {...register("motivationalText")}
               placeholder="e.g., A calm mind is a powerful mind"
               error={errors.motivationalText?.message}
             />
@@ -380,12 +454,15 @@ export const HabitForm: React.FC<HabitFormProps> = ({
           </div>
 
           <div>
-            <label htmlFor="reminderTime" className="block text-sm font-medium text-theme mb-1">
+            <label
+              htmlFor="reminderTime"
+              className="block text-sm font-medium text-theme mb-1"
+            >
               Reminder Time <Clock className="inline w-4 h-4 text-muted ml-1" />
             </label>
             <Input
               id="reminderTime"
-              {...register('reminderTime')}
+              {...register("reminderTime")}
               type="time"
               error={errors.reminderTime?.message}
             />
@@ -395,14 +472,14 @@ export const HabitForm: React.FC<HabitFormProps> = ({
           </div>
 
           <div>
-            <label htmlFor="goalId" className="block text-sm font-medium text-theme mb-1">
-              Link to Goal <LinkIcon className="inline w-4 h-4 text-muted ml-1" />
-            </label>
-            <select
-              id="goalId"
-              {...register('goalId')}
-              className="form-select"
+            <label
+              htmlFor="goalId"
+              className="block text-sm font-medium text-theme mb-1"
             >
+              Link to Goal{" "}
+              <LinkIcon className="inline w-4 h-4 text-muted ml-1" />
+            </label>
+            <select id="goalId" {...register("goalId")} className="form-select">
               <option value="">No linked goal</option>
               {/* TODO: Fetch and display user's goals */}
             </select>
@@ -412,10 +489,13 @@ export const HabitForm: React.FC<HabitFormProps> = ({
             <input
               id="showOnDashboard"
               type="checkbox"
-              {...register('showOnDashboard')}
+              {...register("showOnDashboard")}
               className="h-4 w-4 text-accent focus:ring-accent border-surface-muted rounded"
             />
-            <label htmlFor="showOnDashboard" className="ml-2 block text-sm text-theme">
+            <label
+              htmlFor="showOnDashboard"
+              className="ml-2 block text-sm text-theme"
+            >
               Show on dashboard
             </label>
           </div>
@@ -432,13 +512,9 @@ export const HabitForm: React.FC<HabitFormProps> = ({
         >
           Cancel
         </Button>
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          isLoading={isSubmitting}
-        >
+        <Button type="submit" disabled={isSubmitting} isLoading={isSubmitting}>
           <Save className="w-4 h-4 mr-2" />
-          {isEditing ? 'Update Habit' : 'Create Habit'}
+          {isEditing ? "Update Habit" : "Create Habit"}
         </Button>
       </div>
     </form>

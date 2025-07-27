@@ -18,6 +18,7 @@ import { JournalImportPage } from '@/features/journal/pages';
 ## How It Works
 
 ### User Flow
+
 1. User clicks "Import" button on the journal page
 2. User fills out the import form:
    - Title (required)
@@ -32,6 +33,7 @@ import { JournalImportPage } from '@/features/journal/pages';
 ### Technical Details
 
 The import feature:
+
 - Uses the existing `createEntry` API
 - Supports encryption if enabled
 - Saves to IndexedDB for offline search

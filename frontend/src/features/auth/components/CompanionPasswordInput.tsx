@@ -1,11 +1,11 @@
-import React, { forwardRef, useRef, useImperativeHandle } from 'react';
-import PasswordInput from './PasswordInput';
-import type { PasswordInputProps } from './PasswordInput';
-import type { useEnhancedAuthShihTzu } from '../../../hooks/useEnhancedAuthShihTzu';
+import React, { forwardRef, useRef, useImperativeHandle } from "react";
+import PasswordInput from "./PasswordInput";
+import type { PasswordInputProps } from "./PasswordInput";
+import type { useEnhancedAuthShihTzu } from "../../../hooks/useEnhancedAuthShihTzu";
 
 interface CompanionPasswordInputProps extends PasswordInputProps {
   companion?: ReturnType<typeof useEnhancedAuthShihTzu>;
-  fieldName: 'password' | 'confirmPassword' | 'currentPassword';
+  fieldName: "password" | "confirmPassword" | "currentPassword";
   watchPassword?: string; // For confirmPassword validation
   onFieldComplete?: () => void;
 }
@@ -14,8 +14,23 @@ interface CompanionPasswordInputProps extends PasswordInputProps {
  * Enhanced PasswordInput component that integrates with the Shih Tzu companion
  * Provides password strength feedback and validation animations
  */
-const CompanionPasswordInput = forwardRef<HTMLInputElement, CompanionPasswordInputProps>(
-  ({ companion, fieldName, watchPassword, onFieldComplete, onFocus, onChange, onBlur, ...props }, ref) => {
+const CompanionPasswordInput = forwardRef<
+  HTMLInputElement,
+  CompanionPasswordInputProps
+>(
+  (
+    {
+      companion,
+      fieldName,
+      watchPassword,
+      onFieldComplete,
+      onFocus,
+      onChange,
+      onBlur,
+      ...props
+    },
+    ref,
+  ) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const hasValueRef = useRef(false);
@@ -34,17 +49,21 @@ const CompanionPasswordInput = forwardRef<HTMLInputElement, CompanionPasswordInp
 
       // Field-specific thoughts and moods
       switch (fieldName) {
-        case 'password':
+        case "password":
           companion.showThought("Create a strong password! 🔐", 2500);
-          companion.setMood('protective' as Parameters<typeof companion.setMood>[0]);
+          companion.setMood(
+            "protective" as Parameters<typeof companion.setMood>[0],
+          );
           break;
-        case 'confirmPassword':
+        case "confirmPassword":
           companion.showThought("Let's make sure they match! 🔄", 2500);
-          companion.setMood('encouraging' as Parameters<typeof companion.setMood>[0]);
+          companion.setMood(
+            "encouraging" as Parameters<typeof companion.setMood>[0],
+          );
           break;
-        case 'currentPassword':
+        case "currentPassword":
           companion.showThought("Type carefully... 🔒", 2500);
-          companion.setMood('zen' as Parameters<typeof companion.setMood>[0]);
+          companion.setMood("zen" as Parameters<typeof companion.setMood>[0]);
           break;
       }
     };
@@ -67,21 +86,28 @@ const CompanionPasswordInput = forwardRef<HTMLInputElement, CompanionPasswordInp
       const hasValue = value.length > 0;
 
       // For confirmPassword, check if it matches
-      if (fieldName === 'confirmPassword' && watchPassword) {
+      if (fieldName === "confirmPassword" && watchPassword) {
         if (value === watchPassword && value.length > 0) {
           companion.showThought("Passwords match! 🎯", 1500);
-          companion.triggerParticleEffect('hearts');
-          companion.setMood('celebrating' as Parameters<typeof companion.setMood>[0]);
-        } else if (value.length >= watchPassword.length && value !== watchPassword) {
+          companion.triggerParticleEffect("hearts");
+          companion.setMood(
+            "celebrating" as Parameters<typeof companion.setMood>[0],
+          );
+        } else if (
+          value.length >= watchPassword.length &&
+          value !== watchPassword
+        ) {
           companion.showThought("Not matching yet... 🤔", 1500);
-          companion.setMood('concerned' as Parameters<typeof companion.setMood>[0]);
+          companion.setMood(
+            "concerned" as Parameters<typeof companion.setMood>[0],
+          );
         }
       }
 
       // Set timeout to return to idle
       typingTimeoutRef.current = setTimeout(() => {
-        if (companion.companionState === 'typing') {
-          companion.setMood('idle');
+        if (companion.companionState === "typing") {
+          companion.setMood("idle");
         }
       }, 1500);
 
@@ -106,10 +132,13 @@ const CompanionPasswordInput = forwardRef<HTMLInputElement, CompanionPasswordInp
         companion.handleFieldComplete();
 
         // Field-specific celebrations
-        if (fieldName === 'confirmPassword' && watchPassword === e.target.value) {
+        if (
+          fieldName === "confirmPassword" &&
+          watchPassword === e.target.value
+        ) {
           companion.showThought("Perfect match! ✅", 1500);
-          companion.triggerParticleEffect('sparkles');
-          companion.setMood('proud' as Parameters<typeof companion.setMood>[0]);
+          companion.triggerParticleEffect("sparkles");
+          companion.setMood("proud" as Parameters<typeof companion.setMood>[0]);
         }
 
         onFieldComplete?.();
@@ -121,18 +150,20 @@ const CompanionPasswordInput = forwardRef<HTMLInputElement, CompanionPasswordInp
       if (props.error && companion && hasValueRef.current) {
         // Field-specific error messages
         switch (fieldName) {
-          case 'password':
-            if (props.error.includes('8 characters')) {
+          case "password":
+            if (props.error.includes("8 characters")) {
               companion.showThought("Make it longer! 📏", 3000);
             } else {
               companion.showThought("Let's strengthen this! 💪", 3000);
             }
             break;
-          case 'confirmPassword':
+          case "confirmPassword":
             companion.showThought("Passwords don't match! 🔄", 3000);
-            companion.setMood('concerned' as Parameters<typeof companion.setMood>[0]);
+            companion.setMood(
+              "concerned" as Parameters<typeof companion.setMood>[0],
+            );
             break;
-          case 'currentPassword':
+          case "currentPassword":
             companion.showThought("That doesn't look right... 🤔", 3000);
             break;
         }
@@ -148,9 +179,9 @@ const CompanionPasswordInput = forwardRef<HTMLInputElement, CompanionPasswordInp
         onBlur={handleBlur}
       />
     );
-  }
+  },
 );
 
-CompanionPasswordInput.displayName = 'CompanionPasswordInput';
+CompanionPasswordInput.displayName = "CompanionPasswordInput";
 
 export default CompanionPasswordInput;

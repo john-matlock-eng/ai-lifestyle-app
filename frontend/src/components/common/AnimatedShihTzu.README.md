@@ -13,10 +13,10 @@ A delightful animated white Shih Tzu companion for your AI Lifestyle App. This c
 ## Basic Usage
 
 ```tsx
-import { AnimatedShihTzu } from '@/components/common';
+import { AnimatedShihTzu } from "@/components/common";
 
 function MyComponent() {
-  const [mood, setMood] = useState('idle');
+  const [mood, setMood] = useState("idle");
   const [position, setPosition] = useState({ x: 100, y: 100 });
 
   return (
@@ -34,7 +34,7 @@ function MyComponent() {
 The `useShihTzuCompanion` hook provides a complete state management solution:
 
 ```tsx
-import { useShihTzuCompanion } from '@/hooks/useShihTzuCompanion';
+import { useShihTzuCompanion } from "@/hooks/useShihTzuCompanion";
 
 function MyApp() {
   const {
@@ -76,10 +76,10 @@ function MyApp() {
 const handleGoalComplete = async (goalId: string) => {
   // Complete the goal
   await completeGoal(goalId);
-  
+
   // Celebrate with the companion
   shihTzuCompanion.celebrate();
-  
+
   // Move companion to the completed goal element
   const goalElement = document.getElementById(`goal-${goalId}`);
   if (goalElement) {
@@ -94,17 +94,13 @@ const handleGoalComplete = async (goalId: string) => {
 // In your journal component
 const JournalEntry = () => {
   const { startJournaling } = useShihTzuCompanion();
-  
+
   useEffect(() => {
     // When journal opens, companion curls up in corner
     startJournaling();
   }, []);
 
-  return (
-    <div className="journal-container">
-      {/* Journal content */}
-    </div>
-  );
+  return <div className="journal-container">{/* Journal content */}</div>;
 };
 ```
 
@@ -126,9 +122,9 @@ const handleStreakMilestone = (days: number) => {
   // Move to center of screen
   shihTzuCompanion.setPosition({
     x: window.innerWidth / 2 - 40,
-    y: window.innerHeight / 2 - 40
+    y: window.innerHeight / 2 - 40,
   });
-  
+
   // Extended celebration
   shihTzuCompanion.celebrate();
 };
@@ -138,22 +134,22 @@ const handleStreakMilestone = (days: number) => {
 
 ### AnimatedShihTzu Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| mood | `'idle' \| 'happy' \| 'sleeping' \| 'curious' \| 'walking'` | `'idle'` | Current mood/animation state |
-| position | `{ x: number; y: number }` | `{ x: 100, y: 100 }` | Position on screen |
-| onPositionChange | `(position: { x: number; y: number }) => void` | - | Callback when position changes |
-| onClick | `() => void` | - | Custom click handler (defaults to mood cycling) |
-| size | `'sm' \| 'md' \| 'lg'` | `'md'` | Size of the companion |
-| className | `string` | - | Additional CSS classes |
+| Prop             | Type                                                        | Default              | Description                                     |
+| ---------------- | ----------------------------------------------------------- | -------------------- | ----------------------------------------------- |
+| mood             | `'idle' \| 'happy' \| 'sleeping' \| 'curious' \| 'walking'` | `'idle'`             | Current mood/animation state                    |
+| position         | `{ x: number; y: number }`                                  | `{ x: 100, y: 100 }` | Position on screen                              |
+| onPositionChange | `(position: { x: number; y: number }) => void`              | -                    | Callback when position changes                  |
+| onClick          | `() => void`                                                | -                    | Custom click handler (defaults to mood cycling) |
+| size             | `'sm' \| 'md' \| 'lg'`                                      | `'md'`               | Size of the companion                           |
+| className        | `string`                                                    | -                    | Additional CSS classes                          |
 
 ### useShihTzuCompanion Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| initialMood | `mood` | `'idle'` | Starting mood |
-| initialPosition | `{ x: number; y: number }` | `{ x: 100, y: 100 }` | Starting position |
-| idleTimeout | `number` | `30000` | Time before auto-idle (ms) |
+| Option          | Type                       | Default              | Description                |
+| --------------- | -------------------------- | -------------------- | -------------------------- |
+| initialMood     | `mood`                     | `'idle'`             | Starting mood              |
+| initialPosition | `{ x: number; y: number }` | `{ x: 100, y: 100 }` | Starting position          |
+| idleTimeout     | `number`                   | `30000`              | Time before auto-idle (ms) |
 
 ## Mood Descriptions
 

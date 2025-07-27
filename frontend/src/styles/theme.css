@@ -292,7 +292,14 @@
 [data-theme="balloon"] {
   --bg: #faf5ff;
   --background: #faf5ff;
-  --bg-gradient: linear-gradient(135deg, #f3e7ff 0%, #ffe0f0 25%, #e0f9ff 50%, #f0e0ff 75%, #ffe0f0 100%);
+  --bg-gradient: linear-gradient(
+    135deg,
+    #f3e7ff 0%,
+    #ffe0f0 25%,
+    #e0f9ff 50%,
+    #f0e0ff 75%,
+    #ffe0f0 100%
+  );
   --surface: #ffffff;
   --surface-hover: #f8f0ff;
   --surface-muted: #f0e6ff;
@@ -310,11 +317,17 @@
   --balloon-pink: #ec4899;
   --balloon-turquoise: #06b6d4;
   --balloon-light-pink: #f9a8d4;
-  
+
   --accent: #8b5cf6;
   --accent-hover: #7c3aed;
   --accent-glow: 0 0 60px rgba(139, 92, 246, 0.8);
-  --accent-gradient: linear-gradient(135deg, #ec4899 0%, #8b5cf6 33%, #06b6d4 66%, #f9a8d4 100%);
+  --accent-gradient: linear-gradient(
+    135deg,
+    #ec4899 0%,
+    #8b5cf6 33%,
+    #06b6d4 66%,
+    #f9a8d4 100%
+  );
 
   --button-hover-bg: rgba(139, 92, 246, 0.15);
   --button-active-bg: rgba(139, 92, 246, 0.25);

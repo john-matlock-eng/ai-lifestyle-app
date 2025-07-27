@@ -87,7 +87,8 @@
 }
 
 @keyframes floatSubtle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -101,12 +102,12 @@
     max-width: 200px;
     @apply px-2.5 py-1.5;
   }
-  
+
   .thoughtBubbleText {
     @apply text-xs;
     line-height: 1.4;
   }
-  
+
   .companionContainer {
     /* Ensure companion doesn't interfere with touch targets on mobile */
     pointer-events: auto;
@@ -135,7 +136,7 @@
     @apply border-2 border-black;
     background: white;
   }
-  
+
   .thoughtBubbleText {
     @apply text-black font-semibold;
   }

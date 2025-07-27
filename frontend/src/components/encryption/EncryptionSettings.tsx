@@ -32,7 +32,9 @@ export const EncryptionSettings: React.FC = () => {
     <div className="bg-[var(--surface)] rounded-lg shadow p-6">
       <div className="flex items-center mb-4">
         <Shield className="h-6 w-6 text-[var(--accent)] mr-2" />
-        <h2 className="text-xl font-semibold text-[var(--text)]">Encryption Settings</h2>
+        <h2 className="text-xl font-semibold text-[var(--text)]">
+          Encryption Settings
+        </h2>
       </div>
 
       <div className="space-y-4">

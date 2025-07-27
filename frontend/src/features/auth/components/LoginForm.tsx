@@ -37,7 +37,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     setError,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    mode: 'onChange',
+    mode: "onChange",
     defaultValues: {
       rememberMe: false,
     },
@@ -48,7 +48,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
   // React to form errors with enhanced companion
   useEffect(() => {
     const errorCount = Object.keys(errors).length;
-    if (errorCount > 0 && companion && hasInteracted && companion.companionState !== 'error') {
+    if (
+      errorCount > 0 &&
+      companion &&
+      hasInteracted &&
+      companion.companionState !== "error"
+    ) {
       companion.handleError();
     }
   }, [errors, companion, hasInteracted]);
@@ -57,9 +62,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
   useEffect(() => {
     if (generalError && companion) {
       if (generalError.includes("Too many")) {
-        companion.handleSpecificError('rate-limit');
+        companion.handleSpecificError("rate-limit");
       } else if (generalError.includes("Unable to connect")) {
-        companion.handleSpecificError('network');
+        companion.handleSpecificError("network");
       } else {
         companion.handleError();
       }
@@ -185,7 +190,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
             message: "Invalid email or password",
           });
           if (companion) {
-            companion.handleSpecificError('unauthorized');
+            companion.handleSpecificError("unauthorized");
             companion.showThought("Let's try again... 🤔", 3000);
           }
         } else if (error.response?.status === 429) {
@@ -252,12 +257,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     if (data.rememberMe !== undefined) {
       setRememberMe(data.rememberMe);
     }
-    
+
     // Enhanced: encourage before submit
     if (companion) {
       companion.encourage();
     }
-    
+
     await loginMutation.mutateAsync(data);
   };
 
@@ -275,11 +280,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
     setMfaSession(null);
     setGeneralError("");
     if (companion) {
-      companion.setMood('idle');
+      companion.setMood("idle");
       companion.showThought("No problem, let's try again! 👍", 2000);
       const formWidth = 400;
       const formCenterX = window.innerWidth / 2;
-      const defaultX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
+      const defaultX = Math.min(
+        formCenterX + formWidth / 2 + 100,
+        window.innerWidth - 150,
+      );
       companion.setPosition({
         x: defaultX,
         y: 200,
@@ -346,14 +354,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
                 companion?.showCuriosity();
                 companion?.showThought("Need an account? 🤔", 2000);
               }}
-              onMouseLeave={() => companion?.setMood('idle')}
+              onMouseLeave={() => companion?.setMood("idle")}
             >
               create a new account
             </Link>
           </p>
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
           {generalError && (
             <div
               className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm"
@@ -405,11 +417,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
                 onChange={async (e) => {
                   const registration = register("rememberMe");
                   await registration.onChange(e);
-                  
+
                   // Enhanced: react to remember me
                   if (e.target.checked && companion) {
                     companion.showThought("I'll remember you! 🧠", 1500);
-                    companion.triggerParticleEffect('hearts');
+                    companion.triggerParticleEffect("hearts");
                   }
                 }}
               />
@@ -429,7 +441,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ companion }) => {
                   companion?.showCuriosity();
                   companion?.showThought("Forgot something? 🤷", 2000);
                 }}
-                onMouseLeave={() => companion?.setMood('idle')}
+                onMouseLeave={() => companion?.setMood("idle")}
               >
                 Forgot your password?
               </Link>

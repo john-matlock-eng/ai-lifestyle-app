@@ -2,48 +2,48 @@
 // This file provides the foundation for the enhanced companion system
 
 // Keep existing type for backward compatibility
-export type { AnimatedShihTzuProps } from '../components/common/AnimatedShihTzu';
+export type { AnimatedShihTzuProps } from "../components/common/AnimatedShihTzu";
 
 // Enhanced mood system - start with existing moods and add new ones gradually
-export type CompanionMood = 
+export type CompanionMood =
   // Existing moods (keep these working)
-  | 'idle' 
-  | 'happy' 
-  | 'sleeping' 
-  | 'curious' 
-  | 'walking'
+  | "idle"
+  | "happy"
+  | "sleeping"
+  | "curious"
+  | "walking"
   // New moods to implement
-  | 'excited'      // Super happy state
-  | 'playful'      // Wants to play
-  | 'zen'          // Calm/meditative
-  | 'encouraging'  // Cheering user on
-  | 'protective'   // When user needs support
-  | 'proud'        // After achievements
-  | 'mischievous'; // Playful trouble
+  | "excited" // Super happy state
+  | "playful" // Wants to play
+  | "zen" // Calm/meditative
+  | "encouraging" // Cheering user on
+  | "protective" // When user needs support
+  | "proud" // After achievements
+  | "mischievous"; // Playful trouble
 
 // Simplified personality to start - expand as needed
 export interface CompanionPersonality {
   // Start with basic traits
   traits: {
     happiness: number; // 0-100
-    energy: number;    // 0-100
+    energy: number; // 0-100
   };
-  
+
   // Simple needs system
   needs: {
     attention: number; // 0-100
-    rest: number;      // 0-100
+    rest: number; // 0-100
   };
-  
+
   // Basic bond tracking
   bond: {
-    level: number;     // 1-10
+    level: number; // 1-10
     interactions: number;
   };
 }
 
 // Particle effects for visual enhancement
-export type ParticleEffect = 'hearts' | 'sparkles' | 'treats' | 'zzz';
+export type ParticleEffect = "hearts" | "sparkles" | "treats" | "zzz";
 
 // Thought bubble for communication
 export interface ThoughtBubble {
@@ -59,7 +59,7 @@ export interface CompanionIntegration {
   };
   goals?: {
     enableCelebrations: boolean;
-    celebrationLevel: 'basic' | 'enhanced';
+    celebrationLevel: "basic" | "enhanced";
   };
   journal?: {
     enableZenMode: boolean;
@@ -88,7 +88,7 @@ export interface CompanionState {
 }
 
 // Interaction types for user engagement
-export type CompanionInteraction = 'pet' | 'feed' | 'play';
+export type CompanionInteraction = "pet" | "feed" | "play";
 
 // Achievement system foundation
 export interface CompanionAchievement {

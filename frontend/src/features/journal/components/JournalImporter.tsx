@@ -20,24 +20,26 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
   const [content, setContent] = useState("");
   const [selectedDate, setSelectedDate] = useState(() => {
     const now = new Date();
-    return now.toISOString().split('T')[0];
+    return now.toISOString().split("T")[0];
   });
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [tags, setTags] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ title?: string; content?: string }>({});
+  const [errors, setErrors] = useState<{ title?: string; content?: string }>(
+    {},
+  );
 
   const validateForm = () => {
     const newErrors: { title?: string; content?: string } = {};
-    
+
     if (!title.trim()) {
       newErrors.title = "Title is required";
     }
-    
+
     if (!content.trim()) {
       newErrors.content = "Content is required";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -46,14 +48,20 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
     if (!validateForm() || isSubmitting) return;
 
     setIsSubmitting(true);
-    
+
     try {
-      const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
-      const tagsList = tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-      
+      const wordCount = content
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0).length;
+      const tagsList = tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+
       // Create the entry with the selected date
       // Note: The backend will handle the actual date when creating the entry
-      
+
       const entry: CreateJournalEntryRequest = {
         title: title.trim(),
         content: content.trim(),
@@ -75,19 +83,36 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
     }
   };
 
-  const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
-  const selectedEmotion = selectedMoods[0] ? getEmotionById(selectedMoods[0]) : null;
+  const wordCount = content
+    .trim()
+    .split(/\s+/)
+    .filter((word) => word.length > 0).length;
+  const selectedEmotion = selectedMoods[0]
+    ? getEmotionById(selectedMoods[0])
+    : null;
 
   // Format date for display
   const formatDisplayDate = (dateString: string): string => {
-    const date = new Date(dateString + 'T12:00:00');
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                    'July', 'August', 'September', 'October', 'November', 'December'];
+    const date = new Date(dateString + "T12:00:00");
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
 
   // Get today's date in YYYY-MM-DD format for max date
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -106,7 +131,10 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
       <div className="glass rounded-xl p-8 space-y-6">
         {/* Title Input */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-theme mb-2 flex items-center">
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-theme mb-2 flex items-center"
+          >
             <FileText className="w-4 h-4 mr-2" />
             Title
           </label>
@@ -122,7 +150,10 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
 
         {/* Date Picker */}
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-theme mb-2 flex items-center">
+          <label
+            htmlFor="date"
+            className="block text-sm font-medium text-theme mb-2 flex items-center"
+          >
             <Calendar className="w-4 h-4 mr-2" />
             Date
           </label>
@@ -140,7 +171,9 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
 
         {/* Mood Selector */}
         <div>
-          <label className="block text-sm font-medium text-theme mb-2">How were you feeling?</label>
+          <label className="block text-sm font-medium text-theme mb-2">
+            How were you feeling?
+          </label>
           <EmotionSelector
             value={selectedMoods}
             onChange={setSelectedMoods}
@@ -150,7 +183,10 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
 
         {/* Content Textarea */}
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-theme mb-2 flex items-center justify-between">
+          <label
+            htmlFor="content"
+            className="block text-sm font-medium text-theme mb-2 flex items-center justify-between"
+          >
             <span className="flex items-center">
               <FileText className="w-4 h-4 mr-2" />
               Journal Content
@@ -172,7 +208,10 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
 
         {/* Tags Input */}
         <div>
-          <label htmlFor="tags" className="block text-sm font-medium text-theme mb-2 flex items-center">
+          <label
+            htmlFor="tags"
+            className="block text-sm font-medium text-theme mb-2 flex items-center"
+          >
             <Hash className="w-4 h-4 mr-2" />
             Tags (optional)
           </label>
@@ -195,11 +234,7 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
             <Save className="w-4 h-4 mr-2" />
             {isSubmitting ? "Importing..." : "Import Entry"}
           </Button>
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
+          <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
             <X className="w-4 h-4 mr-2" />
             Cancel
           </Button>
@@ -211,28 +246,37 @@ export const JournalImporter: React.FC<JournalImporterProps> = ({
         <div className="mt-8 glass rounded-xl p-6">
           <h3 className="text-lg font-semibold text-theme mb-4">Preview</h3>
           <div className="space-y-3">
-            {title && (
-              <h4 className="text-xl font-bold text-theme">{title}</h4>
-            )}
+            {title && <h4 className="text-xl font-bold text-theme">{title}</h4>}
             <div className="flex items-center gap-4 text-sm text-muted">
               <span>{formatDisplayDate(selectedDate)}</span>
               {selectedEmotion && (
                 <span className="flex items-center">
-                  <span className="mr-1">{getEmotionEmoji(selectedEmotion.id)}</span>
+                  <span className="mr-1">
+                    {getEmotionEmoji(selectedEmotion.id)}
+                  </span>
                   <span>{selectedEmotion.label}</span>
                 </span>
               )}
             </div>
             {content && (
-              <p className="text-theme whitespace-pre-wrap line-clamp-6">{content}</p>
+              <p className="text-theme whitespace-pre-wrap line-clamp-6">
+                {content}
+              </p>
             )}
             {tags && (
               <div className="flex flex-wrap gap-2">
-                {tags.split(',').map((tag) => tag.trim()).filter(tag => tag.length > 0).map((tag, index) => (
-                  <span key={index} className="px-2 py-1 bg-surface-muted rounded-full text-xs text-muted">
-                    #{tag}
-                  </span>
-                ))}
+                {tags
+                  .split(",")
+                  .map((tag) => tag.trim())
+                  .filter((tag) => tag.length > 0)
+                  .map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-surface-muted rounded-full text-xs text-muted"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
               </div>
             )}
           </div>

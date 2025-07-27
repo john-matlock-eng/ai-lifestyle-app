@@ -1,11 +1,13 @@
 # Enhanced Companion Test Page
 
 ## Overview
+
 The enhanced companion system has been integrated into the Auth Test Page (`/auth-test`) for testing and fine-tuning before rolling out to the entire application.
 
 ## What's New
 
 ### Visual Enhancements
+
 - **9 Enhanced Moods**: idle, happy, curious, excited, playful, zen, proud, concerned, celebrating
 - **Particle Effects**: Hearts, sparkles, treats, and sleep (zzz) particles
 - **Thought Bubbles**: Companion can express thoughts and emotions
@@ -14,11 +16,13 @@ The enhanced companion system has been integrated into the Auth Test Page (`/aut
 - **Petting Interaction**: Click the companion to pet it!
 
 ### Personality System
+
 - **Happiness Meter**: Tracks companion's overall happiness
 - **Attention Needs**: Decreases over time, increases with interaction
 - **Bond Level**: Grows with each interaction
 
 ### Smart Behaviors
+
 - **Context-Aware Thoughts**: Different messages for email vs password fields
 - **Password Strength Reactions**: Visual feedback as password gets stronger
 - **Error Handling**: Concerned reactions with helpful messages
@@ -54,11 +58,13 @@ The enhanced companion system has been integrated into the Auth Test Page (`/aut
 ## Implementation Details
 
 ### New Files Created
+
 1. `EnhancedShihTzu.tsx` - Enhanced companion component with all visual features
 2. `useEnhancedAuthShihTzu.ts` - Enhanced hook with personality and interaction logic
 3. Updated `AuthTestPage.tsx` - Full test environment with debug controls
 
 ### Key Features to Note
+
 - **Backward Compatible**: Toggle between basic and enhanced modes
 - **Performance Optimized**: Smooth animations with cleanup
 - **Extensible**: Easy to add new moods, particles, and behaviors

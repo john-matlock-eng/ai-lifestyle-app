@@ -23,10 +23,10 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Note: Backend expects camelCase and handles conversion internally via Pydantic
     // Do NOT convert request data here
-    
+
     return config;
   },
   (error) => {

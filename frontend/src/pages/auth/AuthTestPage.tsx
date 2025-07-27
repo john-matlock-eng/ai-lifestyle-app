@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
-import LoginForm from '../../features/auth/components/LoginForm';
-import { useEnhancedAuthShihTzu } from '../../hooks/useEnhancedAuthShihTzu';
-import EnhancedShihTzu from '../../components/common/EnhancedShihTzu';
+import React, { useState } from "react";
+import LoginForm from "../../features/auth/components/LoginForm";
+import { useEnhancedAuthShihTzu } from "../../hooks/useEnhancedAuthShihTzu";
+import EnhancedShihTzu from "../../components/common/EnhancedShihTzu";
 
 const AuthTestPage: React.FC = () => {
   const companion = useEnhancedAuthShihTzu();
   const [showDebugInfo, setShowDebugInfo] = useState(true);
   const [useEnhanced, setUseEnhanced] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<'default' | 'winter' | 'party' | 'workout' | 'balloon'>('balloon');
+  const [selectedVariant, setSelectedVariant] = useState<
+    "default" | "winter" | "party" | "workout" | "balloon"
+  >("balloon");
 
   const testPositioning = () => {
-    const firstInput = document.querySelector('input[type="email"], input[type="text"]') as HTMLElement;
+    const firstInput = document.querySelector(
+      'input[type="email"], input[type="text"]',
+    ) as HTMLElement;
     if (firstInput) {
-      companion.moveToElement(firstInput, 'above');
+      companion.moveToElement(firstInput, "above");
     }
   };
 
@@ -21,7 +25,7 @@ const AuthTestPage: React.FC = () => {
     "I'm learning new tricks! 🎓",
     "You're amazing! ⭐",
     "Let's have some fun! 🎉",
-    "Time for a walk? 🚶"
+    "Time for a walk? 🚶",
   ];
 
   return (
@@ -40,18 +44,39 @@ const AuthTestPage: React.FC = () => {
               <h3 className="font-bold text-sm">Companion Debug Panel</h3>
               <button
                 onClick={() => setUseEnhanced(!useEnhanced)}
-                className={`text-xs px-2 py-1 rounded ${useEnhanced ? 'bg-green-500 text-white' : 'bg-gray-300'}`}
+                className={`text-xs px-2 py-1 rounded ${useEnhanced ? "bg-green-500 text-white" : "bg-gray-300"}`}
               >
-                {useEnhanced ? 'Enhanced ON' : 'Enhanced OFF'}
+                {useEnhanced ? "Enhanced ON" : "Enhanced OFF"}
               </button>
             </div>
-            
+
             {/* Companion Stats */}
             <div className="text-xs space-y-1 mb-3">
-              <p>Mood: <span className="font-mono text-purple-600">{companion.mood}</span></p>
-              <p>State: <span className="font-mono text-blue-600">{companion.companionState}</span></p>
-              <p>Position: <span className="font-mono">({Math.round(companion.position.x)}, {Math.round(companion.position.y)})</span></p>
-              <p>Field: <span className="font-mono text-green-600">{companion.currentField || 'none'}</span></p>
+              <p>
+                Mood:{" "}
+                <span className="font-mono text-purple-600">
+                  {companion.mood}
+                </span>
+              </p>
+              <p>
+                State:{" "}
+                <span className="font-mono text-blue-600">
+                  {companion.companionState}
+                </span>
+              </p>
+              <p>
+                Position:{" "}
+                <span className="font-mono">
+                  ({Math.round(companion.position.x)},{" "}
+                  {Math.round(companion.position.y)})
+                </span>
+              </p>
+              <p>
+                Field:{" "}
+                <span className="font-mono text-green-600">
+                  {companion.currentField || "none"}
+                </span>
+              </p>
             </div>
 
             {/* Personality Stats */}
@@ -62,24 +87,30 @@ const AuthTestPage: React.FC = () => {
                   <div className="flex justify-between text-xs">
                     <span>Happiness:</span>
                     <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-yellow-400 h-2 rounded-full transition-all"
-                        style={{ width: `${companion.personality.traits.happiness}%` }}
+                        style={{
+                          width: `${companion.personality.traits.happiness}%`,
+                        }}
                       />
                     </div>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span>Attention:</span>
                     <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-pink-400 h-2 rounded-full transition-all"
-                        style={{ width: `${companion.personality.needs.attention}%` }}
+                        style={{
+                          width: `${companion.personality.needs.attention}%`,
+                        }}
                       />
                     </div>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span>Bond Lvl:</span>
-                    <span className="font-mono">{companion.personality.bond.level.toFixed(1)}</span>
+                    <span className="font-mono">
+                      {companion.personality.bond.level.toFixed(1)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -89,10 +120,24 @@ const AuthTestPage: React.FC = () => {
             <div className="border-t pt-2">
               <h4 className="text-xs font-semibold mb-2">Moods</h4>
               <div className="grid grid-cols-3 gap-1">
-                {['idle', 'happy', 'curious', 'excited', 'playful', 'zen', 'proud', 'concerned', 'celebrating'].map(mood => (
+                {[
+                  "idle",
+                  "happy",
+                  "curious",
+                  "excited",
+                  "playful",
+                  "zen",
+                  "proud",
+                  "concerned",
+                  "celebrating",
+                ].map((mood) => (
                   <button
                     key={mood}
-                    onClick={() => companion.setMood(mood as Parameters<typeof companion.setMood>[0])}
+                    onClick={() =>
+                      companion.setMood(
+                        mood as Parameters<typeof companion.setMood>[0],
+                      )
+                    }
                     className="text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 capitalize"
                   >
                     {mood}
@@ -109,25 +154,27 @@ const AuthTestPage: React.FC = () => {
                   <h4 className="text-xs font-semibold mb-2">Particles</h4>
                   <div className="grid grid-cols-2 gap-1">
                     <button
-                      onClick={() => companion.triggerParticleEffect('hearts')}
+                      onClick={() => companion.triggerParticleEffect("hearts")}
                       className="text-xs px-2 py-1 bg-red-200 rounded hover:bg-red-300"
                     >
                       ❤️ Hearts
                     </button>
                     <button
-                      onClick={() => companion.triggerParticleEffect('sparkles')}
+                      onClick={() =>
+                        companion.triggerParticleEffect("sparkles")
+                      }
                       className="text-xs px-2 py-1 bg-yellow-200 rounded hover:bg-yellow-300"
                     >
                       ✨ Sparkles
                     </button>
                     <button
-                      onClick={() => companion.triggerParticleEffect('treats')}
+                      onClick={() => companion.triggerParticleEffect("treats")}
                       className="text-xs px-2 py-1 bg-orange-200 rounded hover:bg-orange-300"
                     >
                       🦴 Treats
                     </button>
                     <button
-                      onClick={() => companion.triggerParticleEffect('zzz')}
+                      onClick={() => companion.triggerParticleEffect("zzz")}
                       className="text-xs px-2 py-1 bg-blue-200 rounded hover:bg-blue-300"
                     >
                       💤 Sleep
@@ -139,13 +186,17 @@ const AuthTestPage: React.FC = () => {
                 <div className="border-t pt-2 mt-2">
                   <h4 className="text-xs font-semibold mb-2">Thoughts</h4>
                   <select
-                    onChange={(e) => companion.showThought(e.target.value, 3000)}
+                    onChange={(e) =>
+                      companion.showThought(e.target.value, 3000)
+                    }
                     className="w-full text-xs p-1 border rounded"
                     defaultValue=""
                   >
                     <option value="">Show a thought...</option>
                     {testThoughts.map((thought, i) => (
-                      <option key={i} value={thought}>{thought}</option>
+                      <option key={i} value={thought}>
+                        {thought}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -154,15 +205,25 @@ const AuthTestPage: React.FC = () => {
                 <div className="border-t pt-2 mt-2">
                   <h4 className="text-xs font-semibold mb-2">Variants</h4>
                   <div className="grid grid-cols-3 gap-1">
-                    {(['default', 'winter', 'party', 'workout', 'balloon'] as const).map(variant => (
+                    {(
+                      [
+                        "default",
+                        "winter",
+                        "party",
+                        "workout",
+                        "balloon",
+                      ] as const
+                    ).map((variant) => (
                       <button
                         key={variant}
                         onClick={() => setSelectedVariant(variant)}
                         className={`text-xs px-2 py-1 rounded capitalize ${
-                          selectedVariant === variant ? 'bg-purple-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                          selectedVariant === variant
+                            ? "bg-purple-500 text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
                         }`}
                       >
-                        {variant === 'balloon' ? '🎈 Balloon' : variant}
+                        {variant === "balloon" ? "🎈 Balloon" : variant}
                       </button>
                     ))}
                   </div>
@@ -214,13 +275,13 @@ const AuthTestPage: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         {/* Toggle Debug Info Button */}
         <button
           onClick={() => setShowDebugInfo(!showDebugInfo)}
           className="fixed top-4 left-4 text-xs px-3 py-2 bg-gray-100 rounded-lg shadow hover:bg-gray-200 z-50"
         >
-          {showDebugInfo ? 'Hide' : 'Show'} Debug
+          {showDebugInfo ? "Hide" : "Show"} Debug
         </button>
 
         {/* Header */}
@@ -232,7 +293,9 @@ const AuthTestPage: React.FC = () => {
             Enhanced Companion Test Page
           </p>
           <p className="mt-1 text-center text-xs text-muted">
-            {useEnhanced ? '✨ Enhanced companion with personality, particles, and thoughts!' : '🐕 Basic companion mode'}
+            {useEnhanced
+              ? "✨ Enhanced companion with personality, particles, and thoughts!"
+              : "🐕 Basic companion mode"}
           </p>
         </div>
 
@@ -244,7 +307,9 @@ const AuthTestPage: React.FC = () => {
         {/* Instructions */}
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <h3 className="text-sm font-semibold mb-2">🎮 Interactive Features:</h3>
+            <h3 className="text-sm font-semibold mb-2">
+              🎮 Interactive Features:
+            </h3>
             <ul className="text-xs space-y-1 text-muted">
               <li>• Click the companion to pet it (watch for hearts!)</li>
               <li>• Focus on form fields to see contextual thoughts</li>
@@ -284,7 +349,7 @@ const AuthTestPage: React.FC = () => {
           <div className="text-6xl animate-bounce">🐕</div>
         </div>
       )}
-      
+
       {/* Animation styles */}
       <style>{`
         @keyframes float {

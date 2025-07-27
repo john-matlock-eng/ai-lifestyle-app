@@ -3,7 +3,6 @@ import type { JournalEntry, SharedJournalsResponse } from "@/types/journal";
 import journalApi from "@/api/journal";
 
 export class JournalService {
-
   /**
    * Get a journal entry and decrypt if necessary
    */
@@ -18,11 +17,12 @@ export class JournalService {
     ) {
       try {
         // For shared entries, the encryptedKey is already re-encrypted for us
-        const decryptedContent = await getEncryptionService().tryDecryptWithFallback({
-          content: entry.content,
-          encryptedKey: entry.encryptedKey,
-          iv: entry.encryptionIv,
-        });
+        const decryptedContent =
+          await getEncryptionService().tryDecryptWithFallback({
+            content: entry.content,
+            encryptedKey: entry.encryptedKey,
+            iv: entry.encryptionIv,
+          });
 
         return {
           ...entry,
@@ -30,18 +30,21 @@ export class JournalService {
         };
       } catch (error) {
         console.error("Failed to decrypt journal content:", error);
-        
+
         // Provide more specific error messages
         if (entry.shareAccess) {
           throw new Error(
             "Unable to decrypt shared content. The owner may need to re-share this entry with updated encryption.",
           );
         }
-        
-        if (error instanceof Error && error.message.includes("encryption keys are out of sync")) {
+
+        if (
+          error instanceof Error &&
+          error.message.includes("encryption keys are out of sync")
+        ) {
           throw error; // Pass through the detailed error message
         }
-        
+
         throw new Error(
           "Unable to decrypt journal content. Please check your encryption setup in Settings > Security.",
         );
@@ -87,7 +90,9 @@ export class JournalService {
         `/api/users/by-email?email=${encodeURIComponent(recipientEmail)}`,
       );
       if (!recipientResponse.ok) {
-        throw new Error("Recipient not found. Make sure they have an account and have set up encryption.");
+        throw new Error(
+          "Recipient not found. Make sure they have an account and have set up encryption.",
+        );
       }
       const recipientData = await recipientResponse.json();
 
@@ -102,10 +107,10 @@ export class JournalService {
         console.error("Cannot decrypt entry for sharing:", decryptError);
         throw new Error(
           "Unable to share this entry. The encryption keys may be out of sync. " +
-          "Please try: \n" +
-          "1. Resetting your encryption in Settings > Security\n" +
-          "2. Re-saving this entry to update its encryption\n" +
-          "3. Creating a new encrypted copy of this entry",
+            "Please try: \n" +
+            "1. Resetting your encryption in Settings > Security\n" +
+            "2. Re-saving this entry to update its encryption\n" +
+            "3. Creating a new encrypted copy of this entry",
         );
       }
 
@@ -121,9 +126,11 @@ export class JournalService {
 
       return { shareId };
     } catch (error) {
-      if (error instanceof Error && 
-          (error.message.includes("encryption keys may be out of sync") ||
-           error.message.includes("Recipient not found"))) {
+      if (
+        error instanceof Error &&
+        (error.message.includes("encryption keys may be out of sync") ||
+          error.message.includes("Recipient not found"))
+      ) {
         throw error;
       }
       throw new Error(
@@ -177,17 +184,17 @@ export class JournalService {
     try {
       // Get the entry
       const entry = await this.getJournalEntry(entryId);
-      
+
       if (!entry.isEncrypted) {
         throw new Error("Entry is not encrypted");
       }
-      
+
       // The content is already decrypted from getJournalEntry
       // Now re-encrypt with current keys
       const newEncryptedData = await getEncryptionService().encryptContent(
         entry.content,
       );
-      
+
       // Update the entry with new encryption
       const updatedEntry = await journalApi.updateEntry(entryId, {
         content: newEncryptedData.content,
@@ -196,9 +203,9 @@ export class JournalService {
         wordCount: entry.wordCount, // Preserve word count
         isEncrypted: true,
       });
-      
+
       console.log("[Journal] Successfully re-encrypted entry", entryId);
-      
+
       return updatedEntry;
     } catch (error) {
       console.error("[Journal] Failed to re-encrypt entry", entryId, error);

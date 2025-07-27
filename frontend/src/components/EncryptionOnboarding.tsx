@@ -90,7 +90,9 @@ export const EncryptionOnboarding: React.FC<EncryptionOnboardingProps> = ({
           <div className="flex items-center">
             <Shield className="h-8 w-8 text-[var(--accent)] mr-3" />
             <div>
-              <h2 className="text-xl font-bold text-[var(--text)]">Protect Your Privacy</h2>
+              <h2 className="text-xl font-bold text-[var(--text)]">
+                Protect Your Privacy
+              </h2>
               <p className="text-sm text-[var(--text-muted)]">
                 Set up encryption for your journal
               </p>

@@ -27,7 +27,9 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [generalError, setGeneralError] = useState<string>("");
-  const [mfaSession, setMfaSession] = useState<{ sessionToken: string } | null>(null);
+  const [mfaSession, setMfaSession] = useState<{ sessionToken: string } | null>(
+    null,
+  );
   const [showMfa, setShowMfa] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -38,7 +40,7 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
     setError,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    mode: 'onChange',
+    mode: "onChange",
     defaultValues: {
       rememberMe: false,
     },
@@ -47,14 +49,14 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
   // Greet user on mount (only if companion exists)
   useEffect(() => {
     if (!companion) return;
-    
+
     const greetTimer = setTimeout(() => {
-      companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
+      companion.setMood("excited" as Parameters<typeof companion.setMood>[0]);
       companion.showThought("Welcome back! Let's get you signed in 🎉", 4000);
-      companion.triggerParticleEffect('sparkles');
-      
+      companion.triggerParticleEffect("sparkles");
+
       setTimeout(() => {
-        companion.setMood('idle');
+        companion.setMood("idle");
       }, 3000);
     }, 500);
 
@@ -63,7 +65,11 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
 
   // React to form errors
   useEffect(() => {
-    if (Object.keys(errors).length > 0 && companion && companion.companionState !== 'error') {
+    if (
+      Object.keys(errors).length > 0 &&
+      companion &&
+      companion.companionState !== "error"
+    ) {
       companion.handleError();
     }
   }, [errors, companion]);
@@ -72,9 +78,9 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
   useEffect(() => {
     if (generalError && companion) {
       if (generalError.includes("Too many")) {
-        companion.handleSpecificError('rate-limit');
+        companion.handleSpecificError("rate-limit");
       } else if (generalError.includes("Unable to connect")) {
-        companion.handleSpecificError('network');
+        companion.handleSpecificError("network");
       } else {
         companion.handleError();
       }
@@ -94,7 +100,7 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
         if (companion) {
           companion.showCuriosity();
           companion.showThought("Two-factor authentication required! 📱", 3000);
-          
+
           // Move companion to a good viewing position
           if (formRef.current) {
             const rect = formRef.current.getBoundingClientRect();
@@ -104,7 +110,7 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
             });
           }
         }
-        
+
         setMfaSession({ sessionToken: data.sessionToken });
         setShowMfa(true);
       } else {
@@ -112,15 +118,15 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
         if (companion) {
           companion.handleSuccess();
           companion.showThought("Welcome back! Let's go! 🚀", 4000);
-          
+
           // Victory dance
           setTimeout(() => {
-            companion.triggerParticleEffect('hearts');
+            companion.triggerParticleEffect("hearts");
           }, 500);
         }
-        
+
         queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-        
+
         setTimeout(() => {
           navigate("/dashboard", { replace: true });
         }, 2000);
@@ -133,7 +139,7 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
             message: "Invalid email or password",
           });
           if (companion) {
-            companion.handleSpecificError('unauthorized');
+            companion.handleSpecificError("unauthorized");
           }
         } else if (error.response?.status === 429) {
           setGeneralError("Too many login attempts. Please try again later.");
@@ -168,9 +174,9 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
         companion.handleSuccess();
         companion.showThought("Perfect! You're in! 🎊", 3000);
       }
-      
+
       queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-      
+
       setTimeout(() => {
         navigate("/dashboard", { replace: true });
       }, 2000);
@@ -201,13 +207,13 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
     if (data.rememberMe !== undefined) {
       setRememberMe(data.rememberMe);
     }
-    
+
     // Pre-submit encouragement
     if (companion) {
       companion.encourage();
       companion.showThought("Here we go! 🎯", 1500);
     }
-    
+
     await loginMutation.mutateAsync(data);
   };
 
@@ -224,15 +230,18 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
     setShowMfa(false);
     setMfaSession(null);
     setGeneralError("");
-    
+
     if (companion) {
-      companion.setMood('idle');
+      companion.setMood("idle");
       companion.showThought("No problem, let's try again! 👍", 2000);
-      
+
       // Move back to default position
       const formWidth = 400;
       const formCenterX = window.innerWidth / 2;
-      const defaultX = Math.min(formCenterX + formWidth / 2 + 100, window.innerWidth - 150);
+      const defaultX = Math.min(
+        formCenterX + formWidth / 2 + 100,
+        window.innerWidth - 150,
+      );
       companion.setPosition({
         x: defaultX,
         y: 200,
@@ -299,14 +308,18 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
                 companion?.showCuriosity();
                 companion?.showThought("Need an account? 🤔", 2000);
               }}
-              onMouseLeave={() => companion?.setMood('idle')}
+              onMouseLeave={() => companion?.setMood("idle")}
             >
               create a new account
             </Link>
           </p>
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
           {generalError && (
             <div
               className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md text-sm"
@@ -362,11 +375,11 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
                 onChange={async (e) => {
                   const registration = register("rememberMe");
                   await registration.onChange(e);
-                  
+
                   // React to remember me
                   if (e.target.checked && companion) {
                     companion.showThought("I'll remember you! 🧠", 1500);
-                    companion.triggerParticleEffect('hearts');
+                    companion.triggerParticleEffect("hearts");
                   }
                 }}
               />
@@ -386,7 +399,7 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
                   companion?.showCuriosity();
                   companion?.showThought("Forgot something? 🤷", 2000);
                 }}
-                onMouseLeave={() => companion?.setMood('idle')}
+                onMouseLeave={() => companion?.setMood("idle")}
               >
                 Forgot your password?
               </Link>
@@ -401,13 +414,15 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
             loadingText="Signing in..."
             onMouseEnter={() => {
               if (!isSubmitting && !loginMutation.isPending && companion) {
-                companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
+                companion.setMood(
+                  "excited" as Parameters<typeof companion.setMood>[0],
+                );
                 companion.showThought("Let's go! 🚀", 1500);
               }
             }}
             onMouseLeave={() => {
               if (!isSubmitting && !loginMutation.isPending && companion) {
-                companion.setMood('idle');
+                companion.setMood("idle");
               }
             }}
           >

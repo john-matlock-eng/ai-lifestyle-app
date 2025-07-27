@@ -44,7 +44,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
     if (hasAttemptedAutoUnlock || isCheckingAutoUnlock) {
       return;
     }
-    
+
     setHasAttemptedAutoUnlock(true);
     setIsCheckingAutoUnlock(true);
 
@@ -128,7 +128,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       if (hasLocalSetup) {
         // We have local keys - check if they match the current user's encryption status
         const localKeyId = await encryptionService.getPublicKeyId();
-        
+
         if (profileHasEncryption) {
           // Both local and profile have encryption - this is the normal case
           setIsEncryptionSetup(true);
@@ -138,13 +138,20 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
           setIsEncryptionLocked(!isInitialized);
 
           // Trigger auto-unlock if needed
-          if (!isInitialized && !hasAttemptedAutoUnlock && !isCheckingAutoUnlock && user?.userId) {
+          if (
+            !isInitialized &&
+            !hasAttemptedAutoUnlock &&
+            !isCheckingAutoUnlock &&
+            user?.userId
+          ) {
             attemptAutoUnlock();
           }
         } else {
           // Local keys exist but profile says no encryption
           // This means we have keys from a different user - clear them
-          console.log("[Encryption] Found local keys but user profile has no encryption - clearing old keys");
+          console.log(
+            "[Encryption] Found local keys but user profile has no encryption - clearing old keys",
+          );
           await encryptionService.reset();
           setIsEncryptionSetup(false);
           setIsEncryptionLocked(false);
@@ -183,7 +190,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       setEncryptionKeyId(keyId);
       setIsEncryptionSetup(true);
       setIsEncryptionLocked(false);
-      
+
       // Mark that we've attempted unlock to prevent auto-unlock from triggering
       setHasAttemptedAutoUnlock(true);
     } catch (error) {
@@ -217,7 +224,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       setEncryptionKeyId(keyId);
       setIsEncryptionSetup(true);
       setIsEncryptionLocked(false); // Important: unlock after setup
-      
+
       // Mark that setup is complete to prevent unlock prompt
       setHasAttemptedAutoUnlock(true);
     } catch (error) {
@@ -241,7 +248,7 @@ export const EncryptionProvider: React.FC<EncryptionProviderProps> = ({
       setEncryptionKeyId(keyId);
       setIsEncryptionSetup(true);
       setIsEncryptionLocked(false);
-      
+
       // Mark that we've completed the reset
       setHasAttemptedAutoUnlock(true);
     } catch (error) {

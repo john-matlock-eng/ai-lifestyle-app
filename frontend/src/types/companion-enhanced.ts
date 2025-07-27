@@ -1,20 +1,34 @@
 // Enhanced type definitions for the companion system
 
-import type { AnimatedShihTzuProps } from '../components/common/AnimatedShihTzu';
+import type { AnimatedShihTzuProps } from "../components/common/AnimatedShihTzu";
 
 // Extended mood types that include all animated moods
-export type ExtendedMood = AnimatedShihTzuProps['mood'] | 
-  'excited' | 'playful' | 'zen' | 'proud' | 'concerned' | 
-  'celebrating' | 'encouraging' | 'protective' | 'mischievous';
+export type ExtendedMood =
+  | AnimatedShihTzuProps["mood"]
+  | "excited"
+  | "playful"
+  | "zen"
+  | "proud"
+  | "concerned"
+  | "celebrating"
+  | "encouraging"
+  | "protective"
+  | "mischievous";
 
 // Particle effect types
-export type ParticleEffect = 'hearts' | 'sparkles' | 'treats' | 'zzz';
+export type ParticleEffect = "hearts" | "sparkles" | "treats" | "zzz";
 
 // Companion variants
-export type CompanionVariant = 'default' | 'winter' | 'party' | 'workout' | 'balloon';
+export type CompanionVariant =
+  | "default"
+  | "winter"
+  | "party"
+  | "workout"
+  | "balloon";
 
 // Enhanced companion props that extend the base animated props
-export interface EnhancedShihTzuProps extends Omit<AnimatedShihTzuProps, 'mood'> {
+export interface EnhancedShihTzuProps
+  extends Omit<AnimatedShihTzuProps, "mood"> {
   mood?: ExtendedMood;
   onPet?: () => void;
   accessories?: string[];
@@ -30,7 +44,7 @@ export interface ThoughtBubbleConfig {
   show: boolean;
   text: string;
   duration?: number;
-  position?: 'above' | 'below' | 'auto';
+  position?: "above" | "below" | "auto";
 }
 
 // Companion position with bounds checking
@@ -61,20 +75,20 @@ export interface EnhancedCompanionState {
 // Companion personality traits
 export interface CompanionPersonalityTraits {
   happiness: number; // 0-100
-  energy: number;    // 0-100
+  energy: number; // 0-100
   curiosity: number; // 0-100
 }
 
 // Companion needs
 export interface CompanionNeeds {
   attention: number; // 0-100
-  rest: number;      // 0-100
-  exercise: number;  // 0-100
+  rest: number; // 0-100
+  exercise: number; // 0-100
 }
 
 // Companion bond information
 export interface CompanionBond {
-  level: number;      // 1-10
+  level: number; // 1-10
   interactions: number;
   lastInteraction: Date;
 }
@@ -98,12 +112,7 @@ export interface UseCompanionOptions {
 }
 
 // Companion interaction types
-export type CompanionInteraction = 
-  | 'pet'
-  | 'feed'
-  | 'play'
-  | 'talk'
-  | 'train';
+export type CompanionInteraction = "pet" | "feed" | "play" | "talk" | "train";
 
 // Companion response to interactions
 export interface CompanionResponse {
@@ -157,7 +166,10 @@ export interface CompanionContextValue {
   interact: (interaction: CompanionInteraction) => void;
   showThought: (text: string, duration?: number) => void;
   triggerParticleEffect: (effect: ParticleEffect) => void;
-  moveToElement: (element: HTMLElement, placement?: 'above' | 'below' | 'left' | 'right') => void;
+  moveToElement: (
+    element: HTMLElement,
+    placement?: "above" | "below" | "left" | "right",
+  ) => void;
 }
 
 // Feature flags for gradual feature rollout
@@ -177,27 +189,53 @@ export interface CompanionTheme {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
-  thoughtBubbleStyle: 'rounded' | 'speech' | 'cloud';
-  particleStyle: 'emoji' | 'svg' | 'canvas';
+  thoughtBubbleStyle: "rounded" | "speech" | "cloud";
+  particleStyle: "emoji" | "svg" | "canvas";
 }
 
 // Export helper type guards
-export const isExtendedMood = (mood: string | undefined): mood is ExtendedMood => {
+export const isExtendedMood = (
+  mood: string | undefined,
+): mood is ExtendedMood => {
   if (!mood) return false;
   const validMoods: ExtendedMood[] = [
-    'idle', 'happy', 'sleeping', 'curious', 'walking',
-    'excited', 'playful', 'zen', 'proud', 'concerned',
-    'celebrating', 'encouraging', 'protective', 'mischievous'
+    "idle",
+    "happy",
+    "sleeping",
+    "curious",
+    "walking",
+    "excited",
+    "playful",
+    "zen",
+    "proud",
+    "concerned",
+    "celebrating",
+    "encouraging",
+    "protective",
+    "mischievous",
   ];
   return validMoods.includes(mood as ExtendedMood);
 };
 
 export const isParticleEffect = (effect: string): effect is ParticleEffect => {
-  const validEffects: ParticleEffect[] = ['hearts', 'sparkles', 'treats', 'zzz'];
+  const validEffects: ParticleEffect[] = [
+    "hearts",
+    "sparkles",
+    "treats",
+    "zzz",
+  ];
   return validEffects.includes(effect as ParticleEffect);
 };
 
-export const isCompanionVariant = (variant: string): variant is CompanionVariant => {
-  const validVariants: CompanionVariant[] = ['default', 'winter', 'party', 'workout', 'balloon'];
+export const isCompanionVariant = (
+  variant: string,
+): variant is CompanionVariant => {
+  const validVariants: CompanionVariant[] = [
+    "default",
+    "winter",
+    "party",
+    "workout",
+    "balloon",
+  ];
   return validVariants.includes(variant as CompanionVariant);
 };
