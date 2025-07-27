@@ -46,6 +46,38 @@ class NotificationPreferences(BaseModel):
     sms: bool = Field(default=False, description="SMS notifications enabled")
 
 
+class TutorialStep(str, Enum):
+    """Tutorial step identifiers."""
+    
+    DASHBOARD_INTRO = "dashboard_intro"
+    ENCRYPTION_SETUP = "encryption_setup"
+    HABIT_CREATION = "habit_creation"
+    JOURNAL_INTRO = "journal_intro"
+    GOALS_INTRO = "goals_intro"
+    MEALS_INTRO = "meals_intro"
+    WORKOUTS_INTRO = "workouts_intro"
+    PROFILE_COMPLETION = "profile_completion"
+    SETTINGS_OVERVIEW = "settings_overview"
+
+
+class TutorialPreferences(BaseModel):
+    """User tutorial preferences and progress."""
+    
+    enabled: bool = Field(default=True, description="Whether tutorials are enabled")
+    completedSteps: List[TutorialStep] = Field(
+        default_factory=list, description="List of completed tutorial steps"
+    )
+    skippedSteps: List[TutorialStep] = Field(
+        default_factory=list, description="List of skipped tutorial steps"
+    )
+    lastShownStep: Optional[TutorialStep] = Field(
+        default=None, description="Last tutorial step shown to user"
+    )
+    lastShownAt: Optional[datetime] = Field(
+        default=None, description="When the last tutorial was shown"
+    )
+
+
 class UserPreferences(BaseModel):
     """User preferences model."""
 
@@ -65,6 +97,9 @@ class UserPreferences(BaseModel):
     )
     fitnessGoals: List[FitnessGoal] = Field(
         default_factory=list, description="List of fitness goals"
+    )
+    tutorials: TutorialPreferences = Field(
+        default_factory=TutorialPreferences, description="Tutorial preferences and progress"
     )
 
 
@@ -121,6 +156,13 @@ class UserProfileResponse(BaseModel):
                     "notifications": {"email": True, "push": True, "sms": False},
                     "dietaryRestrictions": ["vegetarian", "gluten-free"],
                     "fitnessGoals": ["weight-loss", "endurance"],
+                    "tutorials": {
+                        "enabled": True,
+                        "completedSteps": ["dashboard_intro"],
+                        "skippedSteps": [],
+                        "lastShownStep": "dashboard_intro",
+                        "lastShownAt": "2025-01-01T10:00:00Z"
+                    },
                 },
                 "createdAt": "2025-01-01T10:00:00Z",
                 "updatedAt": "2025-01-01T12:00:00Z",
@@ -296,6 +338,13 @@ class UserProfile(BaseModel):
                     "notifications": {"email": True, "push": True, "sms": False},
                     "dietaryRestrictions": ["vegetarian", "gluten-free"],
                     "fitnessGoals": ["weight-loss", "endurance"],
+                    "tutorials": {
+                        "enabled": True,
+                        "completedSteps": ["dashboard_intro"],
+                        "skippedSteps": [],
+                        "lastShownStep": "dashboard_intro",
+                        "lastShownAt": "2025-01-01T10:00:00Z"
+                    },
                 },
                 "createdAt": "2025-01-01T10:00:00Z",
                 "updatedAt": "2025-01-01T12:00:00Z",

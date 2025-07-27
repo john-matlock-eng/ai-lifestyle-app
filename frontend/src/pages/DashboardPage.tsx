@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts";
 import { EncryptionOnboarding } from "../components/EncryptionOnboarding";
 import { useEncryption } from "../contexts/useEncryption";
+import { useEnhancedAuthShihTzu } from "../hooks/useEnhancedAuthShihTzu";
+import { CompanionTutorial } from "../features/tutorials";
 import { clsx } from "clsx";
 import "../styles/dashboard.css";
 
@@ -11,6 +13,7 @@ const DashboardPage: React.FC = () => {
   const { isEncryptionEnabled } = useEncryption();
   const [showEncryptionBanner, setShowEncryptionBanner] = useState(true);
   const [greeting, setGreeting] = useState("");
+  const companion = useEnhancedAuthShihTzu();
 
   // Check if user has dismissed the banner before
   useEffect(() => {
@@ -126,14 +129,23 @@ const DashboardPage: React.FC = () => {
   ];
 
   // Quick actions with colorful backgrounds
-  const quickActions = [
+  const quickActions: {
+    title: string;
+    description: string;
+    icon: string;
+    href: string;
+    gradient: string;
+    hoverGradient: string;
+    className?: string;
+  }[] = [
     {
-      title: "Log a Meal",
-      description: "Track your nutrition",
-      icon: "🍽️",
-      href: "/meals/new",
+      title: "New Habit",
+      description: "Build healthy routines",
+      icon: "🎯",
+      href: "/habits/new",
       gradient: "from-purple-600 to-pink-600",
       hoverGradient: "hover:from-purple-700 hover:to-pink-700",
+      className: "new-habit-button",
     },
     {
       title: "Start Workout",
@@ -194,7 +206,7 @@ const DashboardPage: React.FC = () => {
 
       {/* Encryption Onboarding Banner */}
       {showEncryptionBanner && !isEncryptionEnabled && (
-        <div className="-mx-4 -mt-6 mb-6 sm:-mx-6 lg:-mx-8">
+        <div className="encryption-banner -mx-4 -mt-6 mb-6 sm:-mx-6 lg:-mx-8">
           <EncryptionOnboarding
             variant="banner"
             onDismiss={handleDismissEncryptionBanner}
@@ -285,6 +297,7 @@ const DashboardPage: React.FC = () => {
                 "hover:scale-105 hover:shadow-xl",
                 action.gradient,
                 action.hoverGradient,
+                action.className,
               )}
             >
               <div className="relative z-10">
@@ -540,6 +553,9 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Companion Tutorial System */}
+      <CompanionTutorial companion={companion} pageId="dashboard" />
     </div>
   );
 };
