@@ -3,6 +3,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useShihTzuCompanion } from './useShihTzuCompanion';
+import type { AnimatedShihTzuProps } from '../components/common/AnimatedShihTzu';
 import type { 
   CompanionMood, 
   CompanionPersonality, 
@@ -19,6 +20,31 @@ interface UseEnhancedCompanionOptions {
   initialPosition?: { x: number; y: number };
 }
 
+// Map extended moods to base moods for backward compatibility
+const mapToBaseMood = (mood: CompanionMood | undefined): AnimatedShihTzuProps['mood'] => {
+  if (!mood) return undefined;
+  
+  // Map extended moods to base moods
+  const moodMap: Record<string, AnimatedShihTzuProps['mood']> = {
+    'idle': 'idle',
+    'happy': 'happy',
+    'sleeping': 'sleeping',
+    'curious': 'curious',
+    'walking': 'walking',
+    'excited': 'happy',
+    'playful': 'happy',
+    'zen': 'idle',
+    'encouraging': 'happy',
+    'protective': 'curious',
+    'proud': 'happy',
+    'mischievous': 'curious',
+    'concerned': 'curious',
+    'celebrating': 'happy'
+  };
+  
+  return moodMap[mood] || 'idle';
+};
+
 export const useEnhancedCompanion = (options: UseEnhancedCompanionOptions = {}) => {
   // Default feature flags - start with most features disabled
   const features: CompanionFeatureFlags = {
@@ -33,7 +59,7 @@ export const useEnhancedCompanion = (options: UseEnhancedCompanionOptions = {}) 
 
   // Use existing companion hook as foundation
   const baseCompanion = useShihTzuCompanion({
-    initialMood: options.initialMood,
+    initialMood: mapToBaseMood(options.initialMood),
     initialPosition: options.initialPosition
   });
 
@@ -125,7 +151,7 @@ export const useEnhancedCompanion = (options: UseEnhancedCompanionOptions = {}) 
       mood = features.enableAdvancedMoods ? 'zen' : 'idle';
     }
     
-    baseCompanion.setMood(mood as Parameters<typeof baseCompanion.setMood>[0]);
+    baseCompanion.setMood(mapToBaseMood(mood));
     
     if (features.enableThoughts) {
       showThought(greeting, 3000);
