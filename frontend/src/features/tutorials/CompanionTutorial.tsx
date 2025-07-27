@@ -7,11 +7,13 @@ import { ChevronRight, EyeOff } from "lucide-react";
 interface CompanionTutorialProps {
   companion?: ReturnType<typeof useEnhancedAuthShihTzu>;
   pageId?: string;
+  debugStartTutorial?: string; // For debugging - immediately start this tutorial
 }
 
 export const CompanionTutorial: React.FC<CompanionTutorialProps> = ({
   companion,
   pageId,
+  debugStartTutorial,
 }) => {
   const {
     tutorialState,
@@ -20,6 +22,7 @@ export const CompanionTutorial: React.FC<CompanionTutorialProps> = ({
     skipTutorial,
     disableTutorials,
     checkPageTutorials,
+    startTutorial,
     getProgress,
   } = useTutorialManager();
 
@@ -28,20 +31,55 @@ export const CompanionTutorial: React.FC<CompanionTutorialProps> = ({
 
   // Check for page-specific tutorials on mount
   useEffect(() => {
-    if (pageId && tutorialPrefs.enabled) {
-      // Small delay to let page render
+    console.log('[CompanionTutorial] Page ID:', pageId);
+    console.log('[CompanionTutorial] Tutorial enabled:', tutorialPrefs.enabled);
+    console.log('[CompanionTutorial] Tutorial prefs:', tutorialPrefs);
+    
+    if (pageId && tutorialPrefs.enabled !== false) {
+      // Small delay to let page render and companion initialize
       const timer = setTimeout(() => {
+        console.log('[CompanionTutorial] Checking page tutorials after delay');
         checkPageTutorials(pageId);
-      }, 500);
+      }, 1000); // Increased delay to ensure everything is loaded
       return () => clearTimeout(timer);
     }
   }, [pageId, tutorialPrefs.enabled, checkPageTutorials]);
 
+  // Debug: Immediately start tutorial if debugStartTutorial is provided
+  useEffect(() => {
+    if (debugStartTutorial && companion) {
+      console.log('[CompanionTutorial] Debug: Starting tutorial immediately:', debugStartTutorial);
+      startTutorial(debugStartTutorial);
+    }
+  }, [debugStartTutorial, companion, startTutorial]);
+
+  // Debug: Listen for manual tutorial triggers
+  useEffect(() => {
+    const handleManualTutorial = (event: CustomEvent) => {
+      console.log('[CompanionTutorial] Manual tutorial trigger:', event.detail);
+      if (event.detail?.stepId) {
+        startTutorial(event.detail.stepId);
+      }
+    };
+
+    window.addEventListener('start-tutorial', handleManualTutorial as EventListener);
+    return () => {
+      window.removeEventListener('start-tutorial', handleManualTutorial as EventListener);
+    };
+  }, [startTutorial]);
+
   // Handle companion reactions to tutorial state
   useEffect(() => {
-    if (!companion || !tutorialState.currentStep) return;
+    if (!companion || !tutorialState.currentStep) {
+      console.log('[CompanionTutorial] Companion not ready or no current step', {
+        companion: !!companion,
+        currentStep: tutorialState.currentStep
+      });
+      return;
+    }
 
     if (tutorialState.isActive) {
+      console.log('[CompanionTutorial] Showing tutorial with companion');
       // Show companion thought for current tutorial
       companion.showThought(
         tutorialState.currentStep.companionThoughts.intro,
@@ -142,6 +180,14 @@ export const CompanionTutorial: React.FC<CompanionTutorialProps> = ({
     await disableTutorials();
     setShowDisableConfirm(false);
   };
+
+  // Debug: Log render conditions
+  console.log('[CompanionTutorial] Render check:', {
+    enabled: tutorialPrefs.enabled,
+    isActive: tutorialState.isActive,
+    currentStep: tutorialState.currentStep,
+    companion: !!companion
+  });
 
   // Don't render if tutorials are disabled or no active tutorial
   if (!tutorialPrefs.enabled || !tutorialState.isActive || !tutorialState.currentStep) {

@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts";
 import { EncryptionOnboarding } from "../components/EncryptionOnboarding";
 import { useEncryption } from "../contexts/useEncryption";
-import { useEnhancedAuthShihTzu } from "../hooks/useEnhancedAuthShihTzu";
 import { CompanionTutorial } from "../features/tutorials";
+import { CompanionProvider } from "../features/tutorials/CompanionProvider";
+import type { useEnhancedAuthShihTzu } from "../hooks/useEnhancedAuthShihTzu";
 import { clsx } from "clsx";
 import "../styles/dashboard.css";
 
@@ -13,7 +14,12 @@ const DashboardPage: React.FC = () => {
   const { isEncryptionEnabled } = useEncryption();
   const [showEncryptionBanner, setShowEncryptionBanner] = useState(true);
   const [greeting, setGreeting] = useState("");
-  const companion = useEnhancedAuthShihTzu();
+  const [companion, setCompanion] = useState<ReturnType<typeof useEnhancedAuthShihTzu> | undefined>(undefined);
+  
+  // Debug: Log companion state
+  useEffect(() => {
+    console.log('[Dashboard] Companion initialized:', !!companion);
+  }, [companion]);
 
   // Check if user has dismissed the banner before
   useEffect(() => {
@@ -193,8 +199,23 @@ const DashboardPage: React.FC = () => {
     },
   ];
 
+  // Debug: Add manual tutorial trigger for testing
+  useEffect(() => {
+    // Define custom window property for debugging
+    interface CustomWindow extends Window {
+      startTutorial?: (stepId: string) => void;
+    }
+    
+    (window as CustomWindow).startTutorial = (stepId: string) => {
+      console.log('[Dashboard] Manually starting tutorial:', stepId);
+      const event = new CustomEvent('start-tutorial', { detail: { stepId } });
+      window.dispatchEvent(event);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen">
+    <CompanionProvider onCompanionReady={setCompanion}>
+      <div className="min-h-screen">
       {/* Decorative background gradient */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 -left-1/4 h-96 w-96 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] opacity-10 blur-3xl animate-float-orb" />
@@ -206,7 +227,7 @@ const DashboardPage: React.FC = () => {
 
       {/* Encryption Onboarding Banner */}
       {showEncryptionBanner && !isEncryptionEnabled && (
-        <div className="encryption-banner -mx-4 -mt-6 mb-6 sm:-mx-6 lg:-mx-8">
+        <div className="-mx-4 -mt-6 mb-6 sm:-mx-6 lg:-mx-8">
           <EncryptionOnboarding
             variant="banner"
             onDismiss={handleDismissEncryptionBanner}
@@ -555,8 +576,41 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* Companion Tutorial System */}
-      <CompanionTutorial companion={companion} pageId="dashboard" />
-    </div>
+      <CompanionTutorial 
+        companion={companion} 
+        pageId="dashboard"
+        // Force show dashboard intro for testing - remove this line after testing
+        debugStartTutorial="dashboard_intro"
+      />
+      
+      {/* Debug Panel - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 left-4 z-50 glass rounded-lg p-4 max-w-xs">
+          <h4 className="text-sm font-semibold mb-2">Tutorial Debug</h4>
+          <div className="space-y-2">
+            <button
+              onClick={() => ((window as unknown) as { startTutorial?: (id: string) => void }).startTutorial?.('encryption_setup')}
+              className="block w-full text-left text-xs px-2 py-1 rounded bg-surface-muted hover:bg-surface-hover"
+            >
+              Start Encryption Tutorial
+            </button>
+            <button
+              onClick={() => ((window as unknown) as { startTutorial?: (id: string) => void }).startTutorial?.('dashboard_intro')}
+              className="block w-full text-left text-xs px-2 py-1 rounded bg-surface-muted hover:bg-surface-hover"
+            >
+              Start Dashboard Intro
+            </button>
+            <button
+              onClick={() => ((window as unknown) as { startTutorial?: (id: string) => void }).startTutorial?.('habit_creation')}
+              className="block w-full text-left text-xs px-2 py-1 rounded bg-surface-muted hover:bg-surface-hover"
+            >
+              Start Habit Tutorial
+            </button>
+          </div>
+        </div>
+      )}
+      </div>
+    </CompanionProvider>
   );
 };
 

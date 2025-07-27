@@ -43,7 +43,7 @@ export const TUTORIAL_STEPS: Record<string, TutorialStepConfig> = {
     },
     autoProgressAfter: 30000, // 30 seconds
     requiresAction: true,
-    targetElement: ".encryption-banner",
+    targetElement: ".encryption-setup-banner",
     placement: "below",
   },
   
@@ -174,11 +174,18 @@ export function shouldShowTutorial(
     skippedSteps: string[];
   },
 ): boolean {
-  if (!tutorialPrefs?.enabled) return false;
+  // Default to enabled if not specified
+  if (tutorialPrefs?.enabled === false) return false;
+  
+  // If no preferences at all, show tutorial (new user)
+  if (!tutorialPrefs) return true;
+  
+  const completedSteps = tutorialPrefs.completedSteps || [];
+  const skippedSteps = tutorialPrefs.skippedSteps || [];
   
   const isDone = 
-    tutorialPrefs.completedSteps.includes(stepId) || 
-    tutorialPrefs.skippedSteps.includes(stepId);
+    completedSteps.includes(stepId) || 
+    skippedSteps.includes(stepId);
     
   return !isDone;
 }

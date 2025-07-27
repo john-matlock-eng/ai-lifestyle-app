@@ -25,11 +25,14 @@ export function useTutorialManager() {
   });
   const [autoProgressTimer, setAutoProgressTimer] = useState<NodeJS.Timeout | null>(null);
 
-  // Get tutorial preferences from user profile
-  const tutorialPrefs = user?.preferences?.tutorials || {
+  // Get tutorial preferences from user profile with proper defaults
+  const tutorialPrefs: TutorialPreferences = {
     enabled: true,
     completedSteps: [],
     skippedSteps: [],
+    lastShownStep: undefined,
+    lastShownAt: undefined,
+    ...user?.preferences?.tutorials,
   };
 
   // Mutation to update tutorial preferences
@@ -41,12 +44,7 @@ export function useTutorialManager() {
         lastShownAt: new Date().toISOString(),
       };
 
-      const updatedProfile = await authService.updateProfile({
-        preferences: {
-          ...user?.preferences,
-          tutorials: newPrefs,
-        },
-      });
+      const updatedProfile = await authService.updateTutorialPreferences(newPrefs);
 
       return updatedProfile;
     },
@@ -118,8 +116,16 @@ export function useTutorialManager() {
   // Start a specific tutorial step
   const startTutorial = useCallback(
     (stepId: string) => {
+      console.log('[Tutorial] Attempting to start:', stepId);
       const stepConfig = TUTORIAL_STEPS[stepId];
-      if (!stepConfig || !shouldShowTutorial(stepId, tutorialPrefs)) {
+      
+      if (!stepConfig) {
+        console.log('[Tutorial] Step config not found for:', stepId);
+        return;
+      }
+      
+      if (!shouldShowTutorial(stepId, tutorialPrefs)) {
+        console.log('[Tutorial] Tutorial already completed/skipped:', stepId);
         return;
       }
 
@@ -159,6 +165,9 @@ export function useTutorialManager() {
   // Check for tutorials on specific pages
   const checkPageTutorials = useCallback(
     (pageId: string) => {
+      console.log('[Tutorial] Checking tutorials for page:', pageId);
+      console.log('[Tutorial] User preferences:', tutorialPrefs);
+      
       // Map pages to tutorial steps
       const pageTutorialMap: Record<string, string[]> = {
         dashboard: ["encryption_setup", "dashboard_intro", "habit_creation"],
@@ -171,9 +180,14 @@ export function useTutorialManager() {
       };
 
       const tutorials = pageTutorialMap[pageId] || [];
+      console.log('[Tutorial] Available tutorials for this page:', tutorials);
       
       for (const tutorialId of tutorials) {
-        if (shouldShowTutorial(tutorialId, tutorialPrefs)) {
+        const shouldShow = shouldShowTutorial(tutorialId, tutorialPrefs);
+        console.log(`[Tutorial] Should show ${tutorialId}:`, shouldShow);
+        
+        if (shouldShow) {
+          console.log('[Tutorial] Starting tutorial:', tutorialId);
           startTutorial(tutorialId);
           break;
         }
