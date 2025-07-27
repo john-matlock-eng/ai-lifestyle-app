@@ -55,7 +55,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
     if (!companion) return;
     
     const greetTimer = setTimeout(() => {
-      companion.setMood('excited' as any);
+      companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
       companion.showThought("Hi there! Let's create your account! 🌟", 4000);
       companion.triggerParticleEffect('sparkles');
       
@@ -97,7 +97,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
             companion.handlePasswordStrength('strong');
             // Extra celebration for strong password
             setTimeout(() => {
-              companion.setMood('proud' as any);
+              companion.setMood('proud' as Parameters<typeof companion.setMood>[0]);
             }, 1000);
           }
         }
@@ -151,7 +151,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
       companion.showThought("Halfway there! Keep going! 🎯", 2000);
       companion.triggerParticleEffect('sparkles');
     } else if (progress === 83 && completedFields.size === 5) {
-      companion.setMood('excited' as any);
+      companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
       companion.showThought("Almost done! Just one more! 🏁", 2000);
     }
   }, [watchedValues, completedFields, companion]);
@@ -191,7 +191,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
           companion.triggerParticleEffect('sparkles');
         }, 1000);
         setTimeout(() => {
-          companion.setMood('celebrating' as any);
+          companion.setMood('celebrating' as Parameters<typeof companion.setMood>[0]);
           companion.showThought("Let's start your journey! 🌈", 3000);
         }, 1500);
       }
@@ -205,11 +205,13 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
         });
       }, 3000);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Registration error:", error);
       
-      if (error.response?.data?.validation_errors) {
-        error.response.data.validation_errors.forEach((validationError: any) => {
+      const errorData = error as { response?: { data?: { validation_errors?: Array<{ field: string; message: string }>; message?: string }; status?: number }; code?: string };
+      
+      if (errorData.response?.data?.validation_errors) {
+        errorData.response.data.validation_errors.forEach((validationError) => {
           const field = validationError.field as keyof FormData;
           if (field in errors) {
             setError(field, {
@@ -221,7 +223,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
         if (companion) {
           companion.showThought("Let's fix these issues... 📝", 3000);
         }
-      } else if (error.response?.status === 409) {
+      } else if (errorData.response?.status === 409) {
         setError("email", {
           message: "An account with this email already exists",
         });
@@ -229,13 +231,13 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
         if (companion) {
           companion.showThought("This email is already taken! 🤷", 3000);
         }
-      } else if (error.code === "ERR_NETWORK") {
+      } else if (errorData.code === "ERR_NETWORK") {
         setGeneralError(
           "Unable to connect to the server. Make sure the backend is running."
         );
       } else {
         setGeneralError(
-          error.response?.data?.message || "Something went wrong. Please try again."
+          errorData.response?.data?.message || "Something went wrong. Please try again."
         );
       }
     },
@@ -250,6 +252,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
       companion.showThought("Here we go! Creating your account! 🎉", 2000);
     }
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
   };
@@ -367,7 +370,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
                     companion.handleFieldComplete();
                     companion.showThought("Great! Almost ready! ✅", 1500);
                     companion.triggerParticleEffect('sparkles');
-                    companion.setMood('excited' as any);
+                    companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
                   }
                 }}
               />
@@ -417,7 +420,7 @@ const EnhancedRegistrationForm: React.FC<EnhancedRegistrationFormProps> = ({ com
             onMouseEnter={() => {
               if (watchedValues.termsAccepted && !isSubmitting && !registerMutation.isPending && companion) {
                 companion.showThought("Ready to join? 🚀", 1500);
-                companion.setMood('excited' as any);
+                companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
               }
             }}
             onMouseLeave={() => {

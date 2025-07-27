@@ -33,7 +33,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, onShihTzuReady
         {React.Children.map(children, child => {
           if (React.isValidElement(child)) {
             // Pass companion to children components
-            return React.cloneElement(child as React.ReactElement<any>, { companion });
+            return React.cloneElement(child as React.ReactElement<{ companion?: ReturnType<typeof useEnhancedAuthShihTzu> }>, { companion });
           }
           return child;
         })}

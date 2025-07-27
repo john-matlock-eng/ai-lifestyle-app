@@ -33,7 +33,7 @@ export const useEnhancedCompanion = (options: UseEnhancedCompanionOptions = {}) 
 
   // Use existing companion hook as foundation
   const baseCompanion = useShihTzuCompanion({
-    initialMood: options.initialMood as any, // Cast for now
+    initialMood: options.initialMood as Parameters<typeof useShihTzuCompanion>[0]['initialMood'],
     initialPosition: options.initialPosition
   });
 
@@ -125,7 +125,7 @@ export const useEnhancedCompanion = (options: UseEnhancedCompanionOptions = {}) 
       mood = features.enableAdvancedMoods ? 'zen' : 'idle';
     }
     
-    baseCompanion.setMood(mood as any);
+    baseCompanion.setMood(mood as Parameters<typeof baseCompanion.setMood>[0]);
     
     if (features.enableThoughts) {
       showThought(greeting, 3000);

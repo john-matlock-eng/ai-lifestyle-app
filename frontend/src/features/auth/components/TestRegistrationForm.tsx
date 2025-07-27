@@ -19,9 +19,10 @@ const TestRegistrationForm: React.FC = () => {
       
       const result1 = await apiClient.post("/auth/register", payload1);
       setResponse(`Success with camelCase: ${JSON.stringify(result1.data)}`);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Test 1 failed:", err);
-      setError(`Test 1 failed: ${err.response?.data?.message || err.message}`);
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      setError(`Test 1 failed: ${error.response?.data?.message || error.message}`);
       
       // Test 2: Try with snake_case
       try {
@@ -36,9 +37,10 @@ const TestRegistrationForm: React.FC = () => {
         
         const result2 = await apiClient.post("/auth/register", payload2);
         setResponse(`Success with snake_case: ${JSON.stringify(result2.data)}`);
-      } catch (err2: any) {
+      } catch (err2) {
         console.error("Test 2 also failed:", err2);
-        setError(prev => prev + `\nTest 2 failed: ${err2.response?.data?.message || err2.message}`);
+        const error2 = err2 as { response?: { data?: { message?: string } }; message?: string };
+        setError(prev => prev + `\nTest 2 failed: ${error2.response?.data?.message || error2.message}`);
       }
     }
   };

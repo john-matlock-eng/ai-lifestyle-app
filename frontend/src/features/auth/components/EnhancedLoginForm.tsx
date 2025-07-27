@@ -49,7 +49,7 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
     if (!companion) return;
     
     const greetTimer = setTimeout(() => {
-      companion.setMood('excited' as any);
+      companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
       companion.showThought("Welcome back! Let's get you signed in 🎉", 4000);
       companion.triggerParticleEffect('sparkles');
       
@@ -401,7 +401,7 @@ const EnhancedLoginForm: React.FC<EnhancedLoginFormProps> = ({ companion }) => {
             loadingText="Signing in..."
             onMouseEnter={() => {
               if (!isSubmitting && !loginMutation.isPending && companion) {
-                companion.setMood('excited' as any);
+                companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
                 companion.showThought("Let's go! 🚀", 1500);
               }
             }}

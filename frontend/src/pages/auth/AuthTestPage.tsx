@@ -92,7 +92,7 @@ const AuthTestPage: React.FC = () => {
                 {['idle', 'happy', 'curious', 'excited', 'playful', 'zen', 'proud', 'concerned', 'celebrating'].map(mood => (
                   <button
                     key={mood}
-                    onClick={() => companion.setMood(mood as any)}
+                    onClick={() => companion.setMood(mood as Parameters<typeof companion.setMood>[0])}
                     className="text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 capitalize"
                   >
                     {mood}

@@ -57,6 +57,10 @@
   animation: fire-flicker 2s ease-in-out infinite;
 }
 
+.animate-fire-flicker {
+  animation: fire-flicker 2s ease-in-out infinite;
+}
+
 /* Achievement sparkle */
 @keyframes achievement-sparkle {
   0% {

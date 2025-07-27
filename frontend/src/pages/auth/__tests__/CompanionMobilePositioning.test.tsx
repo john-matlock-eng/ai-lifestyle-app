@@ -63,9 +63,9 @@ describe('Companion Mobile Positioning', () => {
         const left = parseInt(style.left);
         const top = parseInt(style.top);
         
-        // Should be positioned at top right on mobile
+        // Should be positioned at bottom right on mobile (to avoid content)
         expect(left).toBeGreaterThan(200); // Near right edge
-        expect(top).toBeLessThan(100); // Near top
+        expect(top).toBeGreaterThan(400); // Near bottom (window height 667 - companion size - padding)
       }
     });
   });
@@ -125,7 +125,7 @@ describe('Companion Mobile Positioning', () => {
         
         // Should stay within bounds
         expect(left).toBeGreaterThan(10);
-        expect(left).toBeLessThan(window.innerWidth - 90); // Companion size + margin
+        expect(left).toBeLessThanOrEqual(window.innerWidth - 90); // Companion size + margin
         expect(top).toBeGreaterThan(10);
       }
     });

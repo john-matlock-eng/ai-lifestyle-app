@@ -245,11 +245,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
         });
       }, 2000);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error("Registration error:", error);
       
-      if (error.response?.data?.validation_errors) {
-        error.response.data.validation_errors.forEach((validationError: any) => {
+      const errorData = error as { response?: { data?: { validation_errors?: Array<{ field: string; message: string }>; message?: string }; status?: number }; code?: string };
+      
+      if (errorData.response?.data?.validation_errors) {
+        errorData.response.data.validation_errors.forEach((validationError) => {
           const field = validationError.field as keyof FormData;
           if (field in errors) {
             setError(field, {
@@ -261,7 +263,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
         if (companion) {
           companion.showThought("Let's fix these issues... 📝", 3000);
         }
-      } else if (error.response?.status === 409) {
+      } else if (errorData.response?.status === 409) {
         setError("email", {
           message: "An account with this email already exists",
         });
@@ -269,13 +271,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
         if (companion) {
           companion.showThought("This email is taken! 🤷", 3000);
         }
-      } else if (error.code === "ERR_NETWORK") {
+      } else if (errorData.code === "ERR_NETWORK") {
         setGeneralError(
           "Unable to connect to the server. Make sure the backend is running."
         );
       } else {
         setGeneralError(
-          error.response?.data?.message || "Something went wrong. Please try again."
+          errorData.response?.data?.message || "Something went wrong. Please try again."
         );
       }
     },
@@ -290,6 +292,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
       companion.showThought("Here we go! 🎉", 1500);
     }
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...registerData } = data;
     await registerMutation.mutateAsync(registerData);
   };
@@ -439,7 +442,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ companion }) => {
             onMouseEnter={() => {
               if (watchedValues.termsAccepted && companion) {
                 companion.showThought("Ready to join? 🚀", 1500);
-                companion.setMood('excited' as any);
+                companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
               }
             }}
             onMouseLeave={() => companion?.setMood('idle')}

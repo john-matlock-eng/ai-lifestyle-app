@@ -147,7 +147,7 @@ export const useEnhancedAuthShihTzu = () => {
     if (!hasGreeted.current) {
       hasGreeted.current = true;
       const greetTimeout = setTimeout(() => {
-        companion.setMood('excited' as any);
+        companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
         showThought("Welcome! Let's get started 👋", 3500);
         triggerParticleEffect('sparkles');
         
@@ -205,7 +205,7 @@ export const useEnhancedAuthShihTzu = () => {
       companion.setMood('curious');
     } else if (fieldName === 'password') {
       showThought("Keep it secure 🔒", 2500);
-      companion.setMood('protective' as any);
+      companion.setMood('protective' as Parameters<typeof companion.setMood>[0]);
     }
     
     // Update personality
@@ -251,7 +251,7 @@ export const useEnhancedAuthShihTzu = () => {
   // Enhanced error without excessive shaking
   const handleError = useCallback(() => {
     setCompanionState('error');
-    companion.setMood('concerned' as any);
+    companion.setMood('concerned' as Parameters<typeof companion.setMood>[0]);
     showThought("Let's try again 🤝", 3000);
     
     // Subtle head shake only (no position movement)
@@ -272,7 +272,7 @@ export const useEnhancedAuthShihTzu = () => {
   // Enhanced success celebration with controlled positioning
   const handleSuccess = useCallback(() => {
     setCompanionState('success');
-    companion.setMood('celebrating' as any);
+    companion.setMood('celebrating' as Parameters<typeof companion.setMood>[0]);
     setAccessories(['party-hat']);
     
     showThought("Welcome aboard! 🎊", 4000);
@@ -329,7 +329,7 @@ export const useEnhancedAuthShihTzu = () => {
       
       switch (strength) {
         case 'weak':
-          companion.setMood('concerned' as any);
+          companion.setMood('concerned' as Parameters<typeof companion.setMood>[0]);
           showThought("Add more characters 💪", 2000);
           break;
         case 'medium':
@@ -338,7 +338,7 @@ export const useEnhancedAuthShihTzu = () => {
           triggerParticleEffect('sparkles');
           break;
         case 'strong':
-          companion.setMood('proud' as any);
+          companion.setMood('proud' as Parameters<typeof companion.setMood>[0]);
           showThought("Strong password! 🛡️", 2000);
           triggerParticleEffect('hearts');
           // Update personality for achievement
@@ -382,11 +382,11 @@ export const useEnhancedAuthShihTzu = () => {
         triggerParticleEffect('zzz');
         break;
       case 'unauthorized':
-        companion.setMood('concerned' as any);
+        companion.setMood('concerned' as Parameters<typeof companion.setMood>[0]);
         showThought("Check your details 🤔", 3000);
         break;
       case 'rate-limit':
-        companion.setMood('zen' as any);
+        companion.setMood('zen' as Parameters<typeof companion.setMood>[0]);
         showThought("Let's take a break ⏱️", 5000);
         // No dizzy animation - zen mode is calmer
         break;
@@ -439,7 +439,7 @@ export const useEnhancedAuthShihTzu = () => {
   }, [companion, showThought, triggerParticleEffect]);
 
   const celebrate = useCallback(() => {
-    companion.setMood('celebrating' as any);
+    companion.setMood('celebrating' as Parameters<typeof companion.setMood>[0]);
     triggerParticleEffect('sparkles');
     showThought("Yay! 🎉", 2000);
     

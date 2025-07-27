@@ -42,7 +42,8 @@
       "Bash(then echo \"Missing json import: $file\")",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(make lint:*)"
     ],
     "deny": []
   }

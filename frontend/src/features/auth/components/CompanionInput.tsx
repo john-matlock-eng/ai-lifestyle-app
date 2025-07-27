@@ -39,11 +39,11 @@ const CompanionInput = forwardRef<HTMLInputElement, CompanionInputProps>(
           break;
         case 'password':
           companion.showThought("Keep it secure! 🔒", 2500);
-          companion.setMood('protective' as any);
+          companion.setMood('protective' as Parameters<typeof companion.setMood>[0]);
           break;
         case 'firstName':
           companion.showThought("Nice to meet you! 👋", 2500);
-          companion.setMood('excited' as any);
+          companion.setMood('excited' as Parameters<typeof companion.setMood>[0]);
           break;
         case 'lastName':
           companion.showThought("And your last name... ✍️", 2500);
@@ -51,7 +51,7 @@ const CompanionInput = forwardRef<HTMLInputElement, CompanionInputProps>(
           break;
         case 'confirmPassword':
           companion.showThought("One more time! 🔄", 2500);
-          companion.setMood('encouraging' as any);
+          companion.setMood('encouraging' as Parameters<typeof companion.setMood>[0]);
           break;
       }
     };
