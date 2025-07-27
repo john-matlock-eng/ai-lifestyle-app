@@ -426,11 +426,17 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* Ensure white text is always visible */
-[data-theme="balloon"] .text-white {
+/* Ensure white text is always visible on gradient backgrounds */
+[data-theme="balloon"] .welcome-banner .text-white {
   color: #ffffff !important;
-  paint-order: stroke fill;
-  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Extra strong shadows for banner text */
+.text-shadow-banner {
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Vibrant theme enhancements */

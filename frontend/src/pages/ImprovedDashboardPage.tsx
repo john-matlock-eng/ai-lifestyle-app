@@ -145,7 +145,7 @@ const ImprovedDashboardPage: React.FC = () => {
       )}
       
       {/* Enhanced Welcome Header */}
-      <div className="relative overflow-hidden mb-6 -mx-4 -mt-6 sm:-mx-6 lg:-mx-8">
+      <div className="welcome-banner relative overflow-hidden mb-6 -mx-4 -mt-6 sm:-mx-6 lg:-mx-8">
         <div className={`absolute inset-0 ${
           theme === 'balloon' ? 'bg-gradient-to-r from-[#8b5cf6] via-[#ec4899] to-[#06b6d4]' :
           isVibrantTheme ? 'bg-gradient-to-r from-[#ff006e] via-[#8338ec] to-[#3a86ff]' :
